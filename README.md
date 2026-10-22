@@ -69,3 +69,8 @@ for utility. Both are `null` when `before` is not at least 0.01 above chance.
 Reports from different harness configs refuse to compare. Bitwise reproducibility is
 guaranteed on the same machine and library versions; across BLAS builds expect agreement
 to many decimal places, not bit-for-bit.
+
+## Design docs
+
+- [Video harness: dataset contract and pipeline](docs/design/video-harness.md) — SPLAVU-style
+  latent anonymization for arbitrary labelled video datasets, reusing these scorers. Not implemented yet.
