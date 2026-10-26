@@ -1,10 +1,13 @@
-"""Resumable action-model training on original frames, reusing upstream code.
+"""Resumable training for upstream action or privacy classifiers, on original frames.
 
-Same datasets, models, optimizer, schedule and Trainer as upstream action_train.py,
-but the epoch loop goes through resumable.run_epochs and the output directory is
-fixed, so a VM restart resumes instead of starting over.
+Same datasets, models, optimizer and Trainer as upstream action_train.py and
+privacy_train.py. The epoch loop goes through resumable.run_epochs and the output
+directory is fixed, so a VM restart resumes instead of starting over.
 
-Output: <out>/action/<dataset>/<model_name>/
+  action  (default):  -> upstream action_train.py   (Adam, lr from --lr)
+  privacy (-privacy): -> upstream privacy_train.py  (AdamW with its default lr, as upstream)
+
+Output: <out>/<kind>/<dataset>/<model_name>/
     last.pt       checkpoint after every epoch (resume point)
     best.pt       best test top-1 so far, upstream format (used by eval)
     DONE.json     written when the run finishes; re-running is a no-op
@@ -12,8 +15,10 @@ Output: <out>/action/<dataset>/<model_name>/
 
 Run from the upstream checkout, because upstream dataset paths are relative to it:
     cd SelectivePrivacyPreservation
-    python <repo>/replication/selective-privacy/scripts/train_action.py \
+    python <repo>/replication/selective-privacy/scripts/train_model.py \
         --architecture x3d_s --datasetname kth -pretrained -train_backbone --out <dir>
+    python <repo>/replication/selective-privacy/scripts/train_model.py \
+        --architecture resnet18 --datasetname kth -pretrained -train_backbone -privacy --out <dir>
 """
 
 import os
@@ -43,23 +48,30 @@ cfg = build_cfg()
 
 import resumable  # noqa: E402
 from dataset.db_factory import DBfactory  # noqa: E402
-from models.valid_models import action_models  # noqa: E402
+from models.valid_models import action_models, privacy_models  # noqa: E402
 from simulation.simulation import Simulation  # noqa: E402
-from utils.model_utils import build_model, build_model_name, set_seed  # noqa: E402
+from utils.model_utils import (  # noqa: E402
+    build_model,
+    build_model_name,
+    build_model_name_singleframe,
+    build_model_privacy,
+    set_seed,
+)
 from utils.Trainer import Trainer  # noqa: E402
 
 
-
 def main():
-    if cfg["privacy"]:
-        raise SystemExit("train_action.py trains action models; privacy needs train_privacy.py")
     arch = cfg["architecture"]
-    if arch not in action_models:
-        raise SystemExit(f"{arch} is not an action architecture in models/valid_models.py")
+    privacy = cfg["privacy"]
+    allowed = privacy_models if privacy else action_models
+    if arch not in allowed:
+        kind = "privacy" if privacy else "action"
+        raise SystemExit(f"{arch} is not a {kind} architecture in models/valid_models.py")
 
     set_seed()
     torch.backends.cudnn.benchmark = True
     ds = cfg["datasetname"]
+    kind = "privacy" if privacy else "action"
 
     train_ds = DBfactory(ds, set_split="train", config=cfg)
     test_ds = DBfactory(ds, set_split="test", config=cfg)
@@ -68,19 +80,24 @@ def main():
         cfg["batch_size"],
         num_workers=cfg["num_workers"],
         shuffle=True,
-        drop_last=True,
+        drop_last=not privacy,
     )
     test_dl = DataLoader(
         test_ds,
         cfg["batch_size"],
         num_workers=cfg["num_workers"],
         shuffle=True,
-        drop_last=True,
+        drop_last=not privacy,
     )
 
-    model = build_model(arch, cfg["pretrained"], train_ds.num_classes, cfg["train_backbone"])
-    model.name = build_model_name(cfg)
-    optimizer = optim.Adam(model.parameters(), lr=cfg["lr"])
+    if privacy:
+        model = build_model_privacy(arch, cfg["pretrained"], train_ds.num_classes, cfg["train_backbone"])
+        model.name = build_model_name_singleframe(cfg)
+        optimizer = optim.AdamW(model.parameters())
+    else:
+        model = build_model(arch, cfg["pretrained"], train_ds.num_classes, cfg["train_backbone"])
+        model.name = build_model_name(cfg)
+        optimizer = optim.Adam(model.parameters(), lr=cfg["lr"])
     criterion = nn.CrossEntropyLoss().cuda()
     model = model.cuda()
 
@@ -88,7 +105,7 @@ def main():
     # suspend=True appends to suspend.log instead of truncating it and skips the
     # git snapshot that a fresh numbered run would take (provenance.json covers it).
     with Simulation(
-        sim_name=f"action/{ds}/{model.name}",
+        sim_name=f"{kind}/{ds}/{model.name}",
         output_root=cfg["out"],
         numbered=False,
         suspend=True,
@@ -100,6 +117,7 @@ def main():
 
         resumable.atomic_json_save(
             {
+                "kind": kind,
                 "upstream_commit": resumable.git_head(UPSTREAM),
                 "openlatent_commit": resumable.git_head(HERE),
                 "cfg": cfg,
