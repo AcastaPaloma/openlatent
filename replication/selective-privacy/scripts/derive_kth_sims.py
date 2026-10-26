@@ -110,7 +110,7 @@ def check(video, template, batch):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--templates", nargs="+", default=["torso", "arm", "leg", "hair"])
-    ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--batch", type=int, default=16, help="frames per DINO forward; 4 processes share the A100")
     ap.add_argument("--check", type=str, default=None)
     args = ap.parse_args()
 
