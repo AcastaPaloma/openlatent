@@ -17,12 +17,32 @@ JOBS="${JOBS:-8}"
 
 mkdir -p "$RAW" "$DATA"
 
+# Downloads run in parallel: the KTH host gives roughly 0.7 MB/s per connection,
+# so six sequential downloads would take about 6x longer.
+download_one() {
+  a="$1"
+  wget -q -c -O "$RAW/$a.zip.part" "https://www.csc.kth.se/cvap/actions/$a.zip" \
+    || wget -q -c -O "$RAW/$a.zip.part" "http://www.nada.kth.se/cvap/actions/$a.zip"
+  mv "$RAW/$a.zip.part" "$RAW/$a.zip"
+}
+
+pids=""
 for a in $ACTIONS; do
   if [ ! -f "$RAW/$a.zip" ]; then
-    wget -q -c -O "$RAW/$a.zip.part" "https://www.csc.kth.se/cvap/actions/$a.zip" \
-      || wget -q -c -O "$RAW/$a.zip.part" "http://www.nada.kth.se/cvap/actions/$a.zip"
-    mv "$RAW/$a.zip.part" "$RAW/$a.zip"
+    download_one "$a" &
+    pids="$pids $!"
   fi
+done
+failed=0
+for pid in $pids; do
+  wait "$pid" || failed=1
+done
+if [ "$failed" -ne 0 ]; then
+  echo "one or more KTH downloads failed; rerun to resume" >&2
+  exit 1
+fi
+
+for a in $ACTIONS; do
   if [ ! -d "$RAW/$a" ]; then
     mkdir -p "$RAW/$a"
     unzip -q "$RAW/$a.zip" -d "$RAW/$a"
