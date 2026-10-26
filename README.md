@@ -74,3 +74,5 @@ to many decimal places, not bit-for-bit.
 
 - [Video harness: dataset contract and pipeline](docs/design/video-harness.md) — SPLAVU-style
   latent anonymization for arbitrary labelled video datasets, reusing these scorers. Not implemented yet.
+- [Maintained repos and verifiable checkpoints](docs/research/maintained-repos.md) — what to build on,
+  with pinned checkpoint hashes; re-check with `scripts/repo_health.py`.

@@ -1,0 +1,35 @@
+# method: privacy-preserving action / latent anonymization (reference)
+DAVEISHAN/SPAct
+UCF-CRCV/PrivacyBeyondPixels
+UCF-CRCV/TeD-SPAD
+ml-postech/Skeleton-anonymization
+kaipackhaeuser/PriCheXy-Net
+# privacy attacks / evaluation
+ffhibnese/Model-Inversion-Attack-ToolBox
+Trusted-AI/adversarial-robustness-toolbox
+privacytrustlab/ml_privacy_meter
+JonasGeiping/breaching
+vec2text/vec2text
+# defenses / erasure / DP / adversarial fairness
+EleutherAI/concept-erasure
+meta-pytorch/opacus
+fairlearn/fairlearn
+Trusted-AI/AIF360
+# anonymizers in other modalities
+facebookresearch/EgoBlur
+hukkelas/deep_privacy2
+hanweikung/face_anon_simple
+Voice-Privacy-Challenge/Voice-Privacy-Challenge-2024
+Voice-Privacy-Challenge/Voice-Privacy-Challenge-2026
+# foundations with checkpoints
+mlmed/torchxrayvision
+Project-MONAI/MONAI
+facebookresearch/vjepa2
+huggingface/transformers
+kennymckormick/pyskl
+open-mmlab/mmaction2
+lightly-ai/lightly
+deepinsight/insightface
+facebookresearch/pytorchvideo
+PyAV-Org/PyAV
+kaipackhaeuser/CXR-Patient-ReID
