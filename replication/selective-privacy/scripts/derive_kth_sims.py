@@ -32,7 +32,11 @@ from torchvision import transforms  # noqa: E402
 from torchvision.utils import save_image  # noqa: E402
 
 from matcher.extractor import ViTExtractor  # noqa: E402
-from matcher.helpers import chunk_cosine_sim, similarity_from_descriptor  # noqa: E402
+from matcher.helpers import (  # noqa: E402
+    chunk_cosine_sim,
+    get_best_matching_descriptor,
+    similarity_from_descriptor,
+)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mirror  # noqa: E402
@@ -43,6 +47,11 @@ LOAD_SIZE = 224
 LAYER = 11
 STRIDE = 4
 MODEL = "dino_vits8"  # upstream default; the descriptors were made with it
+
+# --targeted (upstream use_targeted=True) writes to kth_<t>T_sim so it never mixes with the
+# default-setting maps. The upstream loader reads them via --obfuscate torsoT armT legT hairT.
+SUFFIX = ""
+STAGE = "sims"
 
 
 def test_videos():
@@ -73,10 +82,28 @@ def maps_for_frames(extractor, descriptors, paths, img_size, batch):
     return out
 
 
+def sim_dir(template, video):
+    return os.path.join(f"data/kth_{template}{SUFFIX}_sim", video)
+
+
+def targeted_descriptors(extractor, descriptors, first_frame):
+    """Upstream use_targeted=True: replace each template with its best-matching token in the
+    clip's first frame (same computation as matcher.helpers.get_best_matching_descriptor)."""
+    with torch.no_grad():
+        x = extractor.preprocess(first_frame, LOAD_SIZE)[0].cuda()
+        descs = extractor.extract_descriptors(x, LAYER, "key", False, include_cls=False)
+        out = {}
+        for t, d in descriptors.items():
+            sim = chunk_cosine_sim(d.to(descs.device)[None, None, None], descs)
+            best = int(torch.argmax(sim.reshape(-1)).item())
+            out[t] = descs[:, :, best].squeeze()
+    return out
+
+
 def incomplete_templates(descriptors, video, n_frames):
     todo = []
     for t in descriptors:
-        dst = os.path.join(f"data/kth_{t}_sim", video)
+        dst = sim_dir(t, video)
         if not (os.path.isdir(dst) and len(os.listdir(dst)) == n_frames):
             todo.append(t)
     return todo
@@ -88,20 +115,22 @@ def process_clip(extractor, descriptors, video, batch, mirror_dir=""):
     todo = incomplete_templates(descriptors, video, len(frames))
     if not todo:
         return "skipped"
-    if mirror.restore_clip(mirror_dir, "sims", video, UPSTREAM):
+    if mirror.restore_clip(mirror_dir, STAGE, video, UPSTREAM):
         todo = incomplete_templates(descriptors, video, len(frames))
         if not todo:
             return "restored"
 
     img_size = PIL.Image.open(frames[0]).size[::-1]
-    maps = maps_for_frames(extractor, {t: descriptors[t] for t in todo}, frames, img_size, batch)
+    use = {t: descriptors[t] for t in todo}
+    if SUFFIX:
+        use = targeted_descriptors(extractor, use, frames[0])
+    maps = maps_for_frames(extractor, use, frames, img_size, batch)
     for t in todo:
-        dst = os.path.join(f"data/kth_{t}_sim", video)
+        dst = sim_dir(t, video)
         os.makedirs(dst, exist_ok=True)
         for m, p in zip(maps[t], frames):
             save_image(m, os.path.join(dst, os.path.basename(p)))
-    mirror.save_clip(mirror_dir, "sims", video, UPSTREAM,
-                     [os.path.join(f"data/kth_{t}_sim", video) for t in descriptors])
+    mirror.save_clip(mirror_dir, STAGE, video, UPSTREAM, [sim_dir(t, video) for t in descriptors])
     return "done " + ",".join(todo)
 
 
@@ -110,8 +139,8 @@ def missing_maps(template, videos):
     bad = []
     for video in videos:
         frames = [n for n in os.listdir(os.path.join("data/kth", video)) if n.endswith(".png")]
-        sim_dir = os.path.join(f"data/kth_{template}_sim", video)
-        have = len(os.listdir(sim_dir)) if os.path.isdir(sim_dir) else 0
+        d = sim_dir(template, video)
+        have = len(os.listdir(d)) if os.path.isdir(d) else 0
         if have != len(frames):
             bad.append((video, have, len(frames)))
     return bad
@@ -123,6 +152,13 @@ def check(video, batch):
     descs = load_descriptors(TEMPLATES, "cuda")
     paths = sorted(glob(os.path.join("data/kth", video, "*.png")))[:8]
     img_size = PIL.Image.open(paths[0]).size[::-1]
+    if SUFFIX:
+        mine = targeted_descriptors(extractor, descs, paths[0])
+        for t in TEMPLATES:
+            ref_d = get_best_matching_descriptor(descs[t], paths[0])
+            print(f"check {video} / {t}: targeted descriptor max |diff| vs upstream = "
+                  f"{(ref_d - mine[t]).abs().max().item():.6f}", flush=True)
+        descs = mine
     new = maps_for_frames(extractor, descs, paths, img_size, batch)
     for t in TEMPLATES:
         with torch.no_grad():
@@ -138,7 +174,12 @@ def main():
     ap.add_argument("--check", type=str, default=None, help="compare with upstream on this clip and exit")
     ap.add_argument("--mirror", type=str, default=os.environ.get("DERIVED_MIRROR", ""),
                     help="per-clip tar mirror on Drive (see mirror.py); empty disables")
+    ap.add_argument("--targeted", action="store_true",
+                    help="upstream use_targeted=True; writes kth_<t>T_sim")
     args = ap.parse_args()
+    global SUFFIX, STAGE
+    if args.targeted:
+        SUFFIX, STAGE = "T", "sims_targeted"
 
     if args.check:
         check(args.check, args.batch)
@@ -149,7 +190,8 @@ def main():
             raise SystemExit(f"missing descriptor output/descriptors/{t}.pt")
 
     videos = test_videos()
-    print(f"KTH test split: {len(videos)} clips; templates: {TEMPLATES}; batch {args.batch}", flush=True)
+    print(f"KTH test split: {len(videos)} clips; templates: {TEMPLATES}; batch {args.batch}; "
+          f"targeted: {bool(SUFFIX)}", flush=True)
     extractor = ViTExtractor(MODEL, STRIDE, device="cuda")
     descriptors = load_descriptors(TEMPLATES, "cuda")
     for i, video in enumerate(videos, 1):

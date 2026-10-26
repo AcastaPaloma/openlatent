@@ -35,11 +35,6 @@ def f05(a_pct, p_pct):
     return 0.5 * (a_pct / 100.0 + 1.0 - p_pct / 100.0)
 
 
-def ours_tag(conds):
-    tags = [t for t in conds if t.startswith("obf_")]
-    return tags[0] if tags else None
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
@@ -66,23 +61,20 @@ def main():
 
     a_model = next(iter(action), None)
     p_model = next(iter(privacy), None)
-    a_orig = action.get(a_model, {}).get("original") if a_model else None
-    p_orig = privacy.get(p_model, {}).get("original") if p_model else None
-    a_tag = ours_tag(action.get(a_model, {})) if a_model else None
-    p_tag = ours_tag(privacy.get(p_model, {})) if p_model else None
-    a_ours = action[a_model][a_tag] if a_tag else None
-    p_ours = privacy[p_model][p_tag] if p_tag else None
+    a_conds = action.get(a_model, {}) if a_model else {}
+    p_conds = privacy.get(p_model, {}) if p_model else {}
 
-    if a_model and a_orig is not None:
-        p_txt = f"{p_orig:.2f}" if p_orig is not None else "-"
-        f_txt = f"{f05(a_orig, p_orig):.2f}" if p_orig is not None else "-"
-        lines.append(f"| This run, original, action {a_model} | {a_orig:.2f} | {p_txt} | {f_txt} |")
-    if a_model and a_ours is not None and p_ours is not None:
-        lines.append(f"| This run, ours, action {a_model} + privacy {p_model} | {a_ours:.2f} | "
-                     f"{p_ours:.2f} | {f05(a_ours, p_ours):.2f} |")
-    elif a_model and a_ours is not None:
-        lines.append(f"| This run, ours, action {a_model} | {a_ours:.2f} | - | - |")
+    def row(label, a, p):
+        a_txt = f"{a:.2f}" if a is not None else "-"
+        p_txt = f"{p:.2f}" if p is not None else "-"
+        f_txt = f"{f05(a, p):.2f}" if a is not None and p is not None else "-"
+        lines.append(f"| {label} | {a_txt} | {p_txt} | {f_txt} |")
 
+    if a_model or p_model:
+        row(f"This run, original ({a_model} / {p_model})", a_conds.get("original"), p_conds.get("original"))
+    for tag in sorted(set(a_conds) | set(p_conds)):
+        if tag.startswith("obf_"):
+            row(f"This run, {tag} ({a_model} / {p_model})", a_conds.get(tag), p_conds.get(tag))
     lines.append("")
     lines.append("Models evaluated:")
     lines.append("")
