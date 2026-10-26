@@ -3,21 +3,30 @@
 Upstream: [f-ilic/SelectivePrivacyPreservation](https://github.com/f-ilic/SelectivePrivacyPreservation) at commit `7e8b98d`.
 Paper: [arXiv 2403.12710](https://arxiv.org/abs/2403.12710).
 
-Status: **KTH run complete (one action + one privacy model). Utility reproduces; privacy protection
-does not.** Last updated 2026-10-26.
+Status: **KTH: utility reproduces; privacy protection does not, with either matcher setting.**
+Three of five privacy models and one action model done; the rest of the paper's model sets are
+queued (`scripts/run_kth_all_models.sh`). Last updated 2026-10-26.
 
 ## Verdict (KTH)
+
+Averaged over the models finished so far (1 action / 3 privacy; full table in `results/kth.md`):
 
 | Setting | Action top-1 | Privacy top-1 | f_0.5 |
 |---|---|---|---|
 | Paper, original (13 action / 5 privacy models, averaged) | 90.15 | 91.87 | 0.49 |
 | Paper, ours | 88.67 | **5.46** | 0.92 |
-| This run, original (X3D-S / ResNet-18) | 91.33 | 98.00 | 0.47 |
-| This run, ours (torso, arm, leg, hair) | 90.00 | **85.33** | 0.52 |
+| This run, original | 91.33 | 97.78 | 0.47 |
+| This run, ours, default matcher (`use_targeted=False`) | 90.00 | **87.56** | 0.51 |
+| This run, ours, `use_targeted=True` | 87.33 | **54.22** | 0.67 |
 
 - **Action utility reproduces.** Obfuscation costs X3D-S 1.3 points (paper: 1.5 points, 13-model average).
-- **Privacy protection does not reproduce.** The person-ID classifier still gets 85.33% under
-  obfuscation, against 5.46% in the paper. It drops 12.7 points, not 86.
+- **Privacy protection does not reproduce.** ResNet-18/50/101 person-ID classifiers still get
+  85-91% under default obfuscation, against 5.46% in the paper. The three models agree within
+  5 points, so this is not one weak classifier.
+- **`use_targeted=True` closes about half the gap and no more.** Privacy falls to 52.7-55.3%, and
+  action drops 4 points. Targeted mode builds its descriptors from each clip's first frame; when
+  nobody is in that frame it matches background texture and obfuscates scenery (see
+  `scripts/make_figures.py`, side-by-side figure).
 - **Why, as far as we can trace it.** Upstream blends each pixel toward motion-consistent noise with
   `torch.lerp(frame, afd, sim)`, where `sim` is the mean of the template similarity maps scaled to [0, 1].
   With the released descriptors and the documented default matcher settings (DINO ViT-S/8, stride 4,
@@ -27,14 +36,12 @@ does not.** Last updated 2026-10-26.
   normalisation or thresholding to these maps (the only rescaling, `clamp(80, 255)`, is in a
   visualisation script). Our maps equal upstream's `similarity_from_descriptor` output exactly
   (max difference 0.000000 on the check clip, all four templates).
-- **What would settle it.** The paper's numbers need a step or setting that is not in the released code:
-  normalised or thresholded similarity maps, or per-video targeted descriptors (`use_targeted=True`,
-  not the documented default). Re-running the similarity stage with `use_targeted=True` is the
-  cheapest test (about 1.5 h on an A100). A note to the authors asking which setting produced Table 2
-  would be faster.
-- **Caveats.** One model per side rather than the paper's averages; the privacy metric scores one random
-  frame per clip, as `privacy_eval.py` does; model selection by best test top-1, as upstream does.
-  The privacy gap (85 vs 5) is far larger than any of these could explain.
+- **What would settle it.** The paper's numbers need a step or setting that is not in the released
+  code, most likely normalised or thresholded similarity maps. `use_targeted=True` alone is not it.
+  Asking the authors which setting produced Table 2 is the fastest route.
+- **Caveats.** Model sets still partial; the privacy metric scores one random frame per clip, as
+  `privacy_eval.py` does; model selection by best test top-1, as upstream does. The privacy gap
+  (88 or 54 vs 5) is far larger than any of these could explain.
 
 Raw evaluation JSON: `MyDrive/openlatent-replication/runs/eval/`; table: `results/kth.md`;
 diagnostic: `scripts/inspect_obfuscation.py`.
@@ -162,5 +169,9 @@ replication/selective-privacy/
 - [x] X3D-S and ResNet-18 trained on original frames.
 - [x] Test-split AFD and similarity maps (torso, arm, leg, hair), equivalence-checked against upstream.
 - [x] Original and obfuscated evaluations; comparison table; verdict above.
-- [ ] Optional: `use_targeted=True` similarity ablation to test the most likely explanation.
-- [ ] More architectures (paper averages 13 + 5); SBU and IPN.
+- [x] `use_targeted=True` similarity ablation (all 150 test clips).
+- [x] Privacy: ResNet-18, ResNet-50, ResNet-101.
+- [ ] Privacy: ViT, ViT-B/32 (running).
+- [ ] Action: the 9 remaining non-E2S models (queued). E2S-X3D S/M/L are out of scope: they need
+      training-split optical flow and upstream's separate E2S trainer.
+- [ ] SBU and IPN.
