@@ -83,12 +83,51 @@ replication/selective-privacy/
   results/           per-run metrics and the comparison table
 ```
 
+## Deviations from the paper and upstream (all deliberate, all recorded)
+
+- **Scope.** One action model (X3D-S) and one privacy model (ResNet-18) on KTH. The paper
+  averages 13 action and 5 privacy models. Full coverage did not fit the compute budget in
+  this pass.
+- **Batch size.** X3D-S runs at micro-batch 32 with 2-step gradient accumulation, for an
+  effective batch of 64 (upstream's default). Batch 64 ran out of memory on the A100-40GB.
+  BatchNorm statistics therefore use micro-batches of 32.
+- **Missing clip.** `person13_handclapping_d3_uncomp` is in upstream metadata but not in the
+  KTH release, so its row is dropped (`scripts/fix_kth_metadata.py`). 599 clips remain.
+- **Derived inputs for the test split only.** Obfuscation happens only at test time, so AFD
+  and similarity maps are built for the 150 test clips.
+- **Batched RAFT for AFD.** Upstream runs RAFT one frame pair at a time (about 0.2 s per pair).
+  `derive_kth_afd.py` batches pairs and matches upstream on a 10-frame check: flow differs by at
+  most 0.015 px, and 0.019% of AFD pixels differ (fp16 rounding).
+- **Evaluation protocol.** Training's per-epoch test top-1 uses upstream's `drop_last=True`.
+  Final numbers come from `eval_model.py`, which scores the full test split with no dropped
+  batch, as upstream's `action_eval.py` does. So the two can differ by a point or two.
+- **Privacy metric.** The paper's text says privacy is averaged over 32 frames per clip.
+  Upstream `privacy_eval.py` scores one random frame per clip. We follow the code.
+- **Model selection.** Checkpoints are chosen by best test top-1 during training (upstream
+  protocol). This is optimistic, so the held-out number is the full-test evaluation of that
+  checkpoint.
+- **Dependencies.** `scripts/compat.py` aliases a module that torchvision removed, so
+  pytorchvideo 0.1.3 imports on torch 2.11. Only the unused AugMix path needs it.
+- **SBU and IPN.** SBU's host did not respond from the sandbox. IPN needs an external
+  download and is not started.
+
+## Durability
+
+- Checkpoints (`last.pt`, `best.pt`), `DONE.json`, provenance and eval JSON are written atomically.
+- `scripts/sync_drive.sh push` mirrors runs, logs, raw KTH archives and derived inputs to
+  `MyDrive/openlatent-replication`. `pull` restores them after a VM restart.
+- Jobs are launched detached (own session, no inherited pipes). A stopped cell cannot take
+  them down.
+
 ## Status
 
 - [x] Read upstream code, identify protocol and data layout.
-- [x] Confirm KTH download host is reachable from the sandbox (HTTP 200).
-- [ ] Switch the Colab runtime to GPU.
-- [ ] Mount Drive, clone upstream at 7e8b98d, install dependencies.
-- [ ] KTH frames, AFD, similarity maps.
-- [ ] KTH action and privacy runs with resume.
-- [ ] Comparison table and verdict.
+- [x] Colab runtime on A100-40GB; upstream imports and pretrained X3D-S run.
+- [x] KTH extracted and verified (599 clips, frame counts match metadata).
+- [x] Resumable training and eval, tested with crash-and-resume on the GPU.
+- [x] X3D-S original-frame training finished; full-test evaluation 91.33% (paper KTH original 90.15, 13-model average).
+- [~] ResNet-18 privacy training (500 epochs) in progress; original-frame eval runs on completion.
+- [~] Test-split AFD and similarity maps for torso, arm, leg, hair.
+- [ ] Obfuscated evaluation for X3D-S and ResNet-18 (chained in `scripts/run_kth_eval.sh`).
+- [ ] Comparison table (`scripts/summarize_kth.py`) and verdict.
+- [ ] SBU, IPN.
