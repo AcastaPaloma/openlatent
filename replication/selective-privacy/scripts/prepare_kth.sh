@@ -28,8 +28,8 @@ download_one() {
   url="https://www.csc.kth.se/cvap/actions/$a.zip"
   part="$RAW/$a.zip.part"
   expected=$(curl -sIL --max-time 60 "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{n=$2} END{print n}')
-  curl -fL --retry 5 --retry-delay 5 -C - -o "$part" "$url" \
-    || { rm -f "$part"; curl -fL --retry 5 --retry-delay 5 -o "$part" "$url"; }
+  curl -fsSL --retry 5 --retry-delay 5 -C - -o "$part" "$url" \
+    || { rm -f "$part"; curl -fsSL --retry 5 --retry-delay 5 -o "$part" "$url"; }
   actual=$(stat -c%s "$part")
   if [ -n "$expected" ] && [ "$actual" != "$expected" ]; then
     echo "size mismatch for $a: got $actual bytes, server says $expected" >&2
