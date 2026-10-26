@@ -28,7 +28,7 @@ import csv
 import glob
 import os
 import sys
-from types import SimpleNamespace
+import argparse as _argparse
 
 UPSTREAM = os.getcwd()
 AFD_DIR = os.path.join(UPSTREAM, "afd")
@@ -52,7 +52,7 @@ UPSAMPLE = 4  # upstream generate_kth.py calls flow_from_video(..., upsample_fac
 
 
 def load_raft():
-    args = SimpleNamespace(small=False, mixed_precision=True, alternate_corr=False, dropout=0)
+    args = _argparse.Namespace(small=False, mixed_precision=True, alternate_corr=False, dropout=0)  # Namespace supports `in`, as RAFT needs
     model = torch.nn.DataParallel(RAFT(args))
     model.load_state_dict(torch.load("RAFT/models/raft-sintel.pth"))
     model = model.module
