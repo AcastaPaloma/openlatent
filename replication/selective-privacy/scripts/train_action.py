@@ -26,6 +26,7 @@ UPSTREAM = os.getcwd()
 sys.path.insert(0, UPSTREAM)
 sys.path.insert(0, HERE)
 
+import compat  # noqa: E402,F401  (must precede pytorchvideo imports)
 import matplotlib  # noqa: E402
 
 matplotlib.use("Agg")
