@@ -112,7 +112,11 @@ def main():
     ap.add_argument("--templates", nargs="+", default=["torso", "arm", "leg", "hair"])
     ap.add_argument("--batch", type=int, default=8, help="frames per DINO forward; each process holds ~6 GB at 8, ~13 GB at 16")
     ap.add_argument("--check", type=str, default=None)
+    ap.add_argument("--tf32", type=int, default=1,
+                    help="1: TF32 matmuls (faster on A100, ~1e-3 rounding vs fp32 upstream); 0: exact fp32")
     args = ap.parse_args()
+    torch.backends.cuda.matmul.allow_tf32 = bool(args.tf32)
+    torch.backends.cudnn.allow_tf32 = bool(args.tf32)
 
     if args.check:
         check(args.check, args.templates[0], args.batch)
