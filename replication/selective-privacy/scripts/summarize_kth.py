@@ -1,12 +1,12 @@
-"""Summarize the KTH evaluations next to the paper's Table 2 row.
+"""Summarize KTH evaluations next to the paper's Table 2 row, averaged across models.
 
-Reads <out>/eval/<kind>/kth/<model>/<tag>.json (written by eval_model.py) and prints a
-markdown table with:
-  action  top-1 (original, obfuscated)   privacy top-1 (original, obfuscated)
-  f_0.5 = 0.5 * (a + (1 - p)), a and p as fractions
+Reads <out>/eval/<kind>/kth/<model>/<tag>.json (written by eval_model.py). Like the paper,
+the headline row for each condition averages top-1 over every action model and every
+privacy model evaluated under that condition. f_0.5 = 0.5 * (a + (1 - p)), a and p as
+fractions. Per-model numbers follow, so partial coverage is visible.
 
-The paper's KTH row averages 13 action models and 5 privacy models. We run one of each,
-so the comparison is indicative, not exact. Each row states its model.
+Conditions: original, obf_arm_hair_leg_torso (default matcher),
+obf_armT_hairT_legT_torsoT (use_targeted=True).
 
 Usage: python summarize_kth.py <out_dir> [--write results.md]
 """
@@ -16,18 +16,19 @@ import glob
 import json
 import os
 
-PAPER_KTH = {
-    "original": {"action": 90.15, "privacy": 91.87},
-    "ours": {"action": 88.67, "privacy": 5.46, "f05": 0.92},
-}
+PAPER = {"original": (90.15, 91.87, 13, 5), "ours": (88.67, 5.46, 13, 5)}
+CONDITIONS = [
+    ("original", "Original frames"),
+    ("obf_arm_hair_leg_torso", "Obfuscated, default matcher"),
+    ("obf_armT_hairT_legT_torsoT", "Obfuscated, use_targeted=True"),
+]
 
 
 def load(out):
-    rows = {}
+    rows = {"action": {}, "privacy": {}}
     for path in glob.glob(os.path.join(out, "eval", "*", "kth", "*", "*.json")):
         d = json.load(open(path))
-        key = (d["kind"], d["architecture"])
-        rows.setdefault(key, {})[d["condition"]] = d["top1"]
+        rows[d["kind"]].setdefault(d["architecture"], {})[d["condition"]] = d["top1"]
     return rows
 
 
@@ -35,53 +36,42 @@ def f05(a_pct, p_pct):
     return 0.5 * (a_pct / 100.0 + 1.0 - p_pct / 100.0)
 
 
+def mean(values):
+    return sum(values) / len(values) if values else None
+
+
+def fmt(x):
+    return f"{x:.2f}" if x is not None else "-"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
     ap.add_argument("--write", default=None)
     args = ap.parse_args()
-
     rows = load(args.out)
-    action = {k[1]: v for k, v in rows.items() if k[0] == "action"}
-    privacy = {k[1]: v for k, v in rows.items() if k[0] == "privacy"}
 
-    lines = []
-    lines.append("## KTH: this replication vs paper Table 2")
-    lines.append("")
-    lines.append("| Setting | Action top-1 | Privacy top-1 | f_0.5 |")
-    lines.append("|---|---|---|---|")
-    lines.append(
-        f"| Paper, original (13 action / 5 privacy models, averaged) | "
-        f"{PAPER_KTH['original']['action']:.2f} | {PAPER_KTH['original']['privacy']:.2f} | - |"
-    )
-    lines.append(
-        f"| Paper, ours (same averaging) | {PAPER_KTH['ours']['action']:.2f} | "
-        f"{PAPER_KTH['ours']['privacy']:.2f} | {PAPER_KTH['ours']['f05']:.2f} |"
-    )
+    lines = ["## KTH: this replication vs paper Table 2 (averaged over models)", "",
+             "| Setting | Action top-1 | Privacy top-1 | f_0.5 | Models (action / privacy) |",
+             "|---|---|---|---|---|"]
+    for key, label in (("original", "Paper, original frames"), ("ours", "Paper, ours")):
+        a, p, na, np_ = PAPER[key]
+        lines.append(f"| {label} | {a:.2f} | {p:.2f} | {f05(a, p):.2f} | {na} / {np_} |")
+    for tag, label in CONDITIONS:
+        acts = [c[tag] for c in rows["action"].values() if tag in c]
+        privs = [c[tag] for c in rows["privacy"].values() if tag in c]
+        a, p = mean(acts), mean(privs)
+        f = fmt(f05(a, p)) if a is not None and p is not None else "-"
+        lines.append(f"| This run, {label.lower()} | {fmt(a)} | {fmt(p)} | {f} | {len(acts)} / {len(privs)} |")
 
-    a_model = next(iter(action), None)
-    p_model = next(iter(privacy), None)
-    a_conds = action.get(a_model, {}) if a_model else {}
-    p_conds = privacy.get(p_model, {}) if p_model else {}
+    for kind in ("action", "privacy"):
+        lines += ["", f"### {kind.capitalize()} models", "",
+                  "| Model | " + " | ".join(lbl for _, lbl in CONDITIONS) + " |",
+                  "|---|" + "---|" * len(CONDITIONS)]
+        for arch in sorted(rows[kind]):
+            c = rows[kind][arch]
+            lines.append(f"| `{arch}` | " + " | ".join(fmt(c.get(t)) for t, _ in CONDITIONS) + " |")
 
-    def row(label, a, p):
-        a_txt = f"{a:.2f}" if a is not None else "-"
-        p_txt = f"{p:.2f}" if p is not None else "-"
-        f_txt = f"{f05(a, p):.2f}" if a is not None and p is not None else "-"
-        lines.append(f"| {label} | {a_txt} | {p_txt} | {f_txt} |")
-
-    if a_model or p_model:
-        row(f"This run, original ({a_model} / {p_model})", a_conds.get("original"), p_conds.get("original"))
-    for tag in sorted(set(a_conds) | set(p_conds)):
-        if tag.startswith("obf_"):
-            row(f"This run, {tag} ({a_model} / {p_model})", a_conds.get(tag), p_conds.get(tag))
-    lines.append("")
-    lines.append("Models evaluated:")
-    lines.append("")
-    for kind, models in (("action", action), ("privacy", privacy)):
-        for name, conds in models.items():
-            detail = ", ".join(f"{k}={v:.2f}" for k, v in sorted(conds.items()))
-            lines.append(f"- {kind} `{name}`: {detail}")
     text = "\n".join(lines) + "\n"
     print(text)
     if args.write:
