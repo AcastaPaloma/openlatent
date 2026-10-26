@@ -5,6 +5,8 @@
 # Prerequisites: GPU runtime, Drive mounted at /content/drive, and this repo cloned at
 # /content/openlatent (branch replicate-selective-privacy).
 #
+# SKIP_DERIVED=1 skips restoring the derived AFD and similarity maps (training-only workers).
+#
 # Usage: bash colab_bootstrap.sh
 set -euo pipefail
 

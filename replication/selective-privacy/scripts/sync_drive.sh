@@ -8,7 +8,9 @@
 #   bundle  : local -> Drive, one tar per derived directory (bundles/<dir>.tar). A few
 #             large files copy to Drive in minutes; tens of thousands of PNGs take hours.
 #   pull    : Drive -> local. Restores everything after a VM restart, before resuming.
-#             Derived directories come from bundles when present.
+#             Derived directories come from bundles when present; SKIP_DERIVED=1 skips
+#             them (training-only workers).
+#   pull-runs : Drive -> local for runs/ only (picks up other workers' checkpoints).
 #
 # Local disk stays the working copy, so training and I/O stay fast. Drive is the
 # durable copy. Frames under data/kth are not synced: they are re-extracted from the
@@ -87,6 +89,12 @@ pull() {
     rsync -a --partial "$z" "$LOCAL/kth_raw/"
   done
   shopt -u nullglob
+  if [ -f "$REMOTE/splits/kth/metadata.csv" ]; then
+    mkdir -p "$UP/data/splits/kth"
+    rsync -a "$REMOTE/splits/kth/metadata.csv" "$UP/data/splits/kth/"
+  fi
+  # training-only workers do not need the derived inputs; skip the slow restore
+  [ "${SKIP_DERIVED:-0}" = 1 ] && return 0
   mkdir -p "$UP/data"
   for d in $DERIVED $TARGETED; do
     if [ -f "$REMOTE/bundles/$d.tar" ]; then
@@ -100,18 +108,15 @@ pull() {
       sync_dir "$REMOTE/derived/$d" "$UP/data/$d"
     fi
   done
-  if [ -f "$REMOTE/splits/kth/metadata.csv" ]; then
-    mkdir -p "$UP/data/splits/kth"
-    rsync -a "$REMOTE/splits/kth/metadata.csv" "$UP/data/splits/kth/"
-  fi
 }
 
 case "$MODE" in
   push) push ;;
   pull) pull ;;
+  pull-runs) sync_dir "$REMOTE/runs" "$LOCAL/runs" ;;
   derived) derived ;;
   bundle) bundle ;;
-  *) echo "usage: sync_drive.sh push|derived|bundle|pull" >&2; exit 2 ;;
+  *) echo "usage: sync_drive.sh push|derived|bundle|pull|pull-runs" >&2; exit 2 ;;
 esac
 
 echo "sync $MODE done: $(date -u +%H:%M:%S)"

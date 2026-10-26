@@ -15,10 +15,16 @@
 # sized so each model fits on an A100-40GB.
 #
 # To split the queue across VMs (or across lanes on one GPU), set PRIVACY and ACTION to
-# disjoint subsets; an empty string runs none of that kind. See colab_worker.sh.
+# disjoint subsets; an empty string runs none of that kind. MODE=train skips evals (for
+# workers without the derived inputs, see colab_worker.sh); MODE=eval only evaluates
+# models whose training finished (DONE.json). Any mode exits 3 while a listed model is
+# still untrained (eval mode) or an eval failed, so eval_worker_runs.sh can poll and retry.
 #
-# Usage: [PRIVACY="..."] [ACTION="..."] run_kth_all_models.sh <upstream_dir> <out_dir>
+# Usage: [MODE=all|train|eval] [PRIVACY="..."] [ACTION="..."] run_kth_all_models.sh <upstream_dir> <out_dir>
 set -uo pipefail
+
+MODE="${MODE:-all}"
+PENDING=0
 
 UP="${1:?usage: run_kth_all_models.sh <upstream_dir> <out_dir>}"
 OUT="${2:?usage: run_kth_all_models.sh <upstream_dir> <out_dir>}"
@@ -50,15 +56,23 @@ run_model() {
     epochs=500
   fi
 
-  log "== $kind $arch: train (batch $bs x $acc, $epochs epochs)"
-  if ! python "$HERE/train_model.py" "${flags[@]}" --num_epochs "$epochs" \
-      --batch_size "$bs" --accumulate_grad_batches "$acc"; then
-    log "!! $kind $arch: training failed; skipping its evals"
-    return 0
-  fi
-
   local name
-  name=$(ls "$OUT/$kind/kth" | grep -E "^${arch}(__|____)" | head -1)
+  if [ "$MODE" = eval ]; then
+    name=$(ls "$OUT/$kind/kth" 2>/dev/null | grep -E "^${arch}(__|____)" | head -1)
+    if [ -z "$name" ] || [ ! -f "$OUT/$kind/kth/$name/DONE.json" ]; then
+      PENDING=$((PENDING + 1))
+      return 0
+    fi
+  else
+    log "== $kind $arch: train (batch $bs x $acc, $epochs epochs)"
+    if ! python "$HERE/train_model.py" "${flags[@]}" --num_epochs "$epochs" \
+        --batch_size "$bs" --accumulate_grad_batches "$acc"; then
+      log "!! $kind $arch: training failed; skipping its evals"
+      return 0
+    fi
+    [ "$MODE" = train ] && return 0
+    name=$(ls "$OUT/$kind/kth" | grep -E "^${arch}(__|____)" | head -1)
+  fi
   local evaldir="$OUT/eval/$kind/kth/$name"
 
   for cond in original default targeted; do
@@ -70,11 +84,13 @@ run_model() {
                 until targeted_ready; do sleep 60; done ;;
     esac
     if [ -f "$json" ]; then
-      log "   $cond: exists"
+      [ "$MODE" = eval ] || log "   $cond: exists"
       continue
     fi
+    [ "$MODE" = eval ] && log "== $kind $arch: $cond eval"
     if ! python "$HERE/eval_model.py" "${flags[@]}" --batch_size "$bs" "${extra[@]}"; then
       log "!! $kind $arch: $cond eval failed"
+      PENDING=$((PENDING + 1))
     fi
   done
 }
@@ -87,4 +103,7 @@ for spec in $ACTION; do
   IFS=: read -r arch bs acc <<< "$spec"
   run_model action "$arch" "$bs" "$acc"
 done
-log "all KTH models done"
+if [ "$PENDING" -gt 0 ]; then
+  exit 3
+fi
+log "all KTH models done (mode $MODE)"
