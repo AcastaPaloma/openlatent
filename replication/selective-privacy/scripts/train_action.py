@@ -17,7 +17,6 @@ Run from the upstream checkout, because upstream dataset paths are relative to i
 """
 
 import os
-import subprocess
 import sys
 from os.path import join
 
@@ -49,18 +48,6 @@ from simulation.simulation import Simulation  # noqa: E402
 from utils.model_utils import build_model, build_model_name, set_seed  # noqa: E402
 from utils.Trainer import Trainer  # noqa: E402
 
-
-def git_head(path):
-    try:
-        out = subprocess.run(
-            ["git", "-C", path, "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return out.stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
 
 
 def main():
@@ -113,8 +100,8 @@ def main():
 
         resumable.atomic_json_save(
             {
-                "upstream_commit": git_head(UPSTREAM),
-                "openlatent_commit": git_head(HERE),
+                "upstream_commit": resumable.git_head(UPSTREAM),
+                "openlatent_commit": resumable.git_head(HERE),
                 "cfg": cfg,
                 "torch": torch.__version__,
                 "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,

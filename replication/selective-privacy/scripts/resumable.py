@@ -19,6 +19,7 @@ import json
 import math
 import os
 import random
+import subprocess
 
 import numpy as np
 import torch
@@ -26,6 +27,20 @@ import torch
 LAST = "last.pt"
 BEST = "best.pt"
 DONE = "DONE.json"
+
+
+def git_head(path):
+    """Commit hash of the git checkout at `path`, or None if it is not a checkout."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", path, "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return out.stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
 
 
 def atomic_torch_save(obj, path):
