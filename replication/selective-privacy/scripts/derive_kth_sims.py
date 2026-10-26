@@ -14,7 +14,7 @@ or the run fails.
 
 Usage (from the upstream checkout):
     python <repo>/replication/selective-privacy/scripts/derive_kth_sims.py --check person01_boxing_d1_uncomp
-    python <repo>/replication/selective-privacy/scripts/derive_kth_sims.py --batch 8
+    python <repo>/replication/selective-privacy/scripts/derive_kth_sims.py --batch 8 --mirror <drive dir>
 """
 
 import argparse
@@ -33,6 +33,9 @@ from torchvision.utils import save_image  # noqa: E402
 
 from matcher.extractor import ViTExtractor  # noqa: E402
 from matcher.helpers import chunk_cosine_sim, similarity_from_descriptor  # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mirror  # noqa: E402
 
 META = os.path.join(UPSTREAM, "data/splits/kth/metadata.csv")
 TEMPLATES = ["torso", "arm", "leg", "hair"]  # the paper's KTH template set
@@ -70,16 +73,25 @@ def maps_for_frames(extractor, descriptors, paths, img_size, batch):
     return out
 
 
-def process_clip(extractor, descriptors, video, batch):
-    src = os.path.join("data/kth", video)
-    frames = sorted(glob(os.path.join(src, "*.png")))
+def incomplete_templates(descriptors, video, n_frames):
     todo = []
     for t in descriptors:
         dst = os.path.join(f"data/kth_{t}_sim", video)
-        if not (os.path.isdir(dst) and len(os.listdir(dst)) == len(frames)):
+        if not (os.path.isdir(dst) and len(os.listdir(dst)) == n_frames):
             todo.append(t)
+    return todo
+
+
+def process_clip(extractor, descriptors, video, batch, mirror_dir=""):
+    src = os.path.join("data/kth", video)
+    frames = sorted(glob(os.path.join(src, "*.png")))
+    todo = incomplete_templates(descriptors, video, len(frames))
     if not todo:
         return "skipped"
+    if mirror.restore_clip(mirror_dir, "sims", video, UPSTREAM):
+        todo = incomplete_templates(descriptors, video, len(frames))
+        if not todo:
+            return "restored"
 
     img_size = PIL.Image.open(frames[0]).size[::-1]
     maps = maps_for_frames(extractor, {t: descriptors[t] for t in todo}, frames, img_size, batch)
@@ -88,6 +100,8 @@ def process_clip(extractor, descriptors, video, batch):
         os.makedirs(dst, exist_ok=True)
         for m, p in zip(maps[t], frames):
             save_image(m, os.path.join(dst, os.path.basename(p)))
+    mirror.save_clip(mirror_dir, "sims", video, UPSTREAM,
+                     [os.path.join(f"data/kth_{t}_sim", video) for t in descriptors])
     return "done " + ",".join(todo)
 
 
@@ -122,6 +136,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--batch", type=int, default=8, help="frames per DINO forward")
     ap.add_argument("--check", type=str, default=None, help="compare with upstream on this clip and exit")
+    ap.add_argument("--mirror", type=str, default=os.environ.get("DERIVED_MIRROR", ""),
+                    help="per-clip tar mirror on Drive (see mirror.py); empty disables")
     args = ap.parse_args()
 
     if args.check:
@@ -137,7 +153,7 @@ def main():
     extractor = ViTExtractor(MODEL, STRIDE, device="cuda")
     descriptors = load_descriptors(TEMPLATES, "cuda")
     for i, video in enumerate(videos, 1):
-        status = process_clip(extractor, descriptors, video, args.batch)
+        status = process_clip(extractor, descriptors, video, args.batch, args.mirror)
         if i % 25 == 0 or i == len(videos):
             print(f"[{i}/{len(videos)}] {video}: {status}", flush=True)
 

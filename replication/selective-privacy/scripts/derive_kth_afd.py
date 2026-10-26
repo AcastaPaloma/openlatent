@@ -45,6 +45,9 @@ from RAFT.core.raft import RAFT  # noqa: E402
 from RAFT.core.utils.utils import InputPadder  # noqa: E402
 from util import chunker, firstframe_warp, flow_from_video, set_seed, upsample_flow  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mirror  # noqa: E402
+
 DATA = os.path.join(UPSTREAM, "data")
 META = os.path.join(DATA, "splits/kth/metadata.csv")
 CHUNK = 301  # upstream generate_kth.py chunksize
@@ -112,15 +115,25 @@ def write_png(path, tensor):
     cv2.imwrite(path, tensor.numpy(), [cv2.IMWRITE_PNG_COMPRESSION, 9])
 
 
-def process_video(model, video, batch):
+def outputs_complete(names, afd_dir, flow_dir):
+    have_afd = set(os.listdir(afd_dir)) if os.path.isdir(afd_dir) else set()
+    have_flow = set(os.listdir(flow_dir)) if os.path.isdir(flow_dir) else set()
+    return set(names) <= have_afd and set(names) <= have_flow
+
+
+def process_video(model, video, batch, mirror_dir=""):
     frame_paths = sorted(glob.glob(os.path.join(DATA, "kth", video, "*.png")))
     afd_dir = os.path.join(DATA, "kth_afd", video)
     flow_dir = os.path.join(DATA, "kth_flow", video)
     names = [os.path.basename(p) for p in frame_paths]
-    have_afd = set(os.listdir(afd_dir)) if os.path.isdir(afd_dir) else set()
-    have_flow = set(os.listdir(flow_dir)) if os.path.isdir(flow_dir) else set()
-    if set(names) <= have_afd and set(names) <= have_flow:
+    rel_dirs = [os.path.join("data/kth_afd", video), os.path.join("data/kth_flow", video)]
+    if outputs_complete(names, afd_dir, flow_dir):
+        # Already present locally (e.g. pulled from Drive): make sure the mirror has it too.
+        if mirror_dir and not os.path.exists(os.path.join(mirror_dir, "afd", f"{video}.tar")):
+            mirror.save_clip(mirror_dir, "afd", video, UPSTREAM, rel_dirs)
         return "skipped"
+    if mirror.restore_clip(mirror_dir, "afd", video, UPSTREAM) and outputs_complete(names, afd_dir, flow_dir):
+        return "restored"
 
     for chunk in chunker(frame_paths, CHUNK):
         set_seed()
@@ -137,6 +150,7 @@ def process_video(model, video, batch):
             write_png(os.path.join(afd_dir, os.path.basename(p)), im)
         for im, p in zip(rgbflows.unbind(0), chunk):
             write_png(os.path.join(flow_dir, os.path.basename(p)), im)
+    mirror.save_clip(mirror_dir, "afd", video, UPSTREAM, rel_dirs)
     return "done"
 
 
@@ -144,6 +158,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--batch", type=int, default=8, help="RAFT frame pairs per forward pass")
     ap.add_argument("--check", type=str, default=None, help="validate batched flow on this clip and exit")
+    ap.add_argument("--mirror", type=str, default=os.environ.get("DERIVED_MIRROR", ""),
+                    help="per-clip tar mirror on Drive (see mirror.py); empty disables")
     args = ap.parse_args()
 
     model = load_raft()
@@ -154,7 +170,7 @@ def main():
     videos = test_videos()
     print(f"KTH test split: {len(videos)} clips")
     for i, video in enumerate(videos, 1):
-        status = process_video(model, video, args.batch)
+        status = process_video(model, video, args.batch, args.mirror)
         print(f"[{i}/{len(videos)}] {video}: {status}", flush=True)
 
 
