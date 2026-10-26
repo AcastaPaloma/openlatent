@@ -93,6 +93,8 @@ def check_against_upstream(model, video, n_frames=10, batch=8):
     diffs = torch.stack([(a - b).abs().max() for a, b in zip(ref, new)])
     print(f"check {video}: {len(ref)} pairs, max |flow diff| = {diffs.max().item():.6f} px, "
           f"mean of per-pair max = {diffs.mean().item():.6f} px")
+    # firstframe_warp draws its noise from torch.rand, so seed both runs identically.
+    set_seed()
     afd_ref = firstframe_warp(ref, usecolor=True)
     set_seed()
     afd_new = firstframe_warp(new, usecolor=True)
