@@ -42,10 +42,13 @@ if [ "$failed" -ne 0 ]; then
   exit 1
 fi
 
+# Unzip to a .tmp folder and rename on success, so an interrupted unzip is redone.
 for a in $ACTIONS; do
   if [ ! -d "$RAW/$a" ]; then
-    mkdir -p "$RAW/$a"
-    unzip -q "$RAW/$a.zip" -d "$RAW/$a"
+    rm -rf "$RAW/$a.tmp"
+    mkdir -p "$RAW/$a.tmp"
+    unzip -q "$RAW/$a.zip" -d "$RAW/$a.tmp"
+    mv "$RAW/$a.tmp" "$RAW/$a"
   fi
 done
 
