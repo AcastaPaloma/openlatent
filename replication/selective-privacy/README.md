@@ -3,7 +3,41 @@
 Upstream: [f-ilic/SelectivePrivacyPreservation](https://github.com/f-ilic/SelectivePrivacyPreservation) at commit `7e8b98d`.
 Paper: [arXiv 2403.12710](https://arxiv.org/abs/2403.12710).
 
-Status: **plan, not yet run.** Last updated 2026-10-26.
+Status: **KTH run complete (one action + one privacy model). Utility reproduces; privacy protection
+does not.** Last updated 2026-10-26.
+
+## Verdict (KTH)
+
+| Setting | Action top-1 | Privacy top-1 | f_0.5 |
+|---|---|---|---|
+| Paper, original (13 action / 5 privacy models, averaged) | 90.15 | 91.87 | 0.49 |
+| Paper, ours | 88.67 | **5.46** | 0.92 |
+| This run, original (X3D-S / ResNet-18) | 91.33 | 98.00 | 0.47 |
+| This run, ours (torso, arm, leg, hair) | 90.00 | **85.33** | 0.52 |
+
+- **Action utility reproduces.** Obfuscation costs X3D-S 1.3 points (paper: 1.5 points, 13-model average).
+- **Privacy protection does not reproduce.** The person-ID classifier still gets 85.33% under
+  obfuscation, against 5.46% in the paper. It drops 12.7 points, not 86.
+- **Why, as far as we can trace it.** Upstream blends each pixel toward motion-consistent noise with
+  `torch.lerp(frame, afd, sim)`, where `sim` is the mean of the template similarity maps scaled to [0, 1].
+  With the released descriptors and the documented default matcher settings (DINO ViT-S/8, stride 4,
+  key facet, layer 11, `use_targeted=False`), that weight has median 0.11 and maximum 0.42 over 981
+  KTH test frames. No pixel is ever more than 42% noise, and only 1.5% reach 25%. Per template, the
+  99th percentile is 0.29-0.44, and at most 0.6% of pixels reach 0.5 (leg). The released code applies no
+  normalisation or thresholding to these maps (the only rescaling, `clamp(80, 255)`, is in a
+  visualisation script). Our maps equal upstream's `similarity_from_descriptor` output exactly
+  (max difference 0.000000 on the check clip, all four templates).
+- **What would settle it.** The paper's numbers need a step or setting that is not in the released code:
+  normalised or thresholded similarity maps, or per-video targeted descriptors (`use_targeted=True`,
+  not the documented default). Re-running the similarity stage with `use_targeted=True` is the
+  cheapest test (about 1.5 h on an A100). A note to the authors asking which setting produced Table 2
+  would be faster.
+- **Caveats.** One model per side rather than the paper's averages; the privacy metric scores one random
+  frame per clip, as `privacy_eval.py` does; model selection by best test top-1, as upstream does.
+  The privacy gap (85 vs 5) is far larger than any of these could explain.
+
+Raw evaluation JSON: `MyDrive/openlatent-replication/runs/eval/`; table: `results/kth.md`;
+diagnostic: `scripts/inspect_obfuscation.py`.
 
 ## Goal
 
@@ -124,10 +158,9 @@ replication/selective-privacy/
 - [x] Read upstream code, identify protocol and data layout.
 - [x] Colab runtime on A100-40GB; upstream imports and pretrained X3D-S run.
 - [x] KTH extracted and verified (599 clips, frame counts match metadata).
-- [x] Resumable training and eval, tested with crash-and-resume on the GPU.
-- [x] X3D-S original-frame training finished; full-test evaluation 91.33% (paper KTH original 90.15, 13-model average).
-- [~] ResNet-18 privacy training (500 epochs) in progress; original-frame eval runs on completion.
-- [~] Test-split AFD and similarity maps for torso, arm, leg, hair.
-- [ ] Obfuscated evaluation for X3D-S and ResNet-18 (chained in `scripts/run_kth_eval.sh`).
-- [ ] Comparison table (`scripts/summarize_kth.py`) and verdict.
-- [ ] SBU, IPN.
+- [x] Resumable training and eval, tested with crash-and-resume on the GPU and again on real runs.
+- [x] X3D-S and ResNet-18 trained on original frames.
+- [x] Test-split AFD and similarity maps (torso, arm, leg, hair), equivalence-checked against upstream.
+- [x] Original and obfuscated evaluations; comparison table; verdict above.
+- [ ] Optional: `use_targeted=True` similarity ablation to test the most likely explanation.
+- [ ] More architectures (paper averages 13 + 5); SBU and IPN.
