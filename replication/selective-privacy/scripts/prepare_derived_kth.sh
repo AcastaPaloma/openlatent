@@ -23,11 +23,25 @@ cd "$UP"
 echo "== AFD + optical flow, test split, RAFT batch $AFD_BATCH =="
 python "$HERE/derive_kth_afd.py" --batch "$AFD_BATCH"
 
-echo "== similarity maps, test split, templates: $TEMPLATES =="
-python "$HERE/derive_kth_sims.py" --templates $TEMPLATES
+echo "== similarity maps, test split, templates: $TEMPLATES (one process per template) =="
+LOG_DIR="${LOG_DIR:-$UP/derived_logs}"
+mkdir -p "$LOG_DIR"
+pids=""
+for t in $TEMPLATES; do
+  python "$HERE/derive_kth_sims.py" --templates "$t" > "$LOG_DIR/sims_$t.log" 2>&1 &
+  pids="$pids $!"
+done
+failed=0
+for pid in $pids; do
+  wait "$pid" || failed=1
+done
+if [ "$failed" -ne 0 ]; then
+  echo "similarity map generation failed; see $LOG_DIR/sims_*.log" >&2
+  exit 1
+fi
 
 echo "KTH derived inputs (test split) done:"
-for d in kth_afd kth_flow kth_torso_sim kth_arm_sim kth_leg_sim kth_hair_sim; do
+for d in kth_afd kth_flow $(for t in $TEMPLATES; do echo kth_${t}_sim; done); do
   if [ -d "$UP/data/$d" ]; then
     echo "  $d: $(find "$UP/data/$d" -type f | wc -l) files"
   fi

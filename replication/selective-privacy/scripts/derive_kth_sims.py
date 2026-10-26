@@ -55,6 +55,25 @@ def main():
             if i % 25 == 0 or i == len(videos):
                 print(f"[{t}] {i}/{len(videos)}", flush=True)
 
+        bad = missing_maps(t, videos)
+        if bad:
+            for video, have, want in bad[:10]:
+                print(f"[{t}] incomplete: {video} has {have} maps for {want} frames", flush=True)
+            raise SystemExit(f"[{t}] {len(bad)} clips incomplete")
+        print(f"[{t}] verified: one map per frame for all {len(videos)} clips", flush=True)
+
+
+def missing_maps(template, videos):
+    """Clips whose similarity-map count differs from their frame count."""
+    bad = []
+    for video in videos:
+        frames = [n for n in os.listdir(os.path.join("data/kth", video)) if n.endswith(".png")]
+        sim_dir = os.path.join(f"data/kth_{template}_sim", video)
+        have = len(os.listdir(sim_dir)) if os.path.isdir(sim_dir) else 0
+        if have != len(frames):
+            bad.append((video, have, len(frames)))
+    return bad
+
 
 if __name__ == "__main__":
     main()
