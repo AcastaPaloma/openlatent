@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Mirror replication state between the VM's local disk and Google Drive.
 #
-#   push : local -> Drive. Run checkpoints, DONE/provenance/eval JSON, logs, raw KTH
-#          archives, and the expensive derived inputs (AFD, flow, similarity maps).
-#   pull : Drive -> local. Use after a VM restart, before resuming the jobs.
+#   push    : local -> Drive. Run checkpoints, DONE/provenance/eval JSON, logs, raw KTH
+#             archives. Cheap, so it can run on a timer.
+#   derived : local -> Drive for the derived inputs (AFD, flow, similarity maps). Run
+#             once when a stage completes; it is slow on tens of thousands of files.
+#   pull    : Drive -> local. Restores everything after a VM restart, before resuming.
 #
 # Local disk stays the working copy, so training and I/O stay fast. Drive is the
 # durable copy. Frames under data/kth are not synced: they are re-extracted from the
@@ -30,6 +32,9 @@ sync_dir() {
   fi
 }
 
+# push: small, frequently changing state. Safe to run every few minutes. Derived inputs
+# are excluded: they hold tens of thousands of files, and rescanning them on Drive on
+# every pass made the push take 20+ minutes. Sync them with `derived` once per stage.
 push() {
   sync_dir "$LOCAL/runs" "$REMOTE/runs"
   sync_dir "$LOCAL/logs" "$REMOTE/logs"
@@ -39,13 +44,17 @@ push() {
     rsync -a --partial "$z" "$REMOTE/raw/"
   done
   shopt -u nullglob
-  for d in $DERIVED; do
-    sync_dir "$UP/data/$d" "$REMOTE/derived/$d"
-  done
   if [ -f "$UP/data/splits/kth/metadata.csv" ]; then
     mkdir -p "$REMOTE/splits/kth"
     rsync -a "$UP/data/splits/kth/metadata.csv" "$REMOTE/splits/kth/"
   fi
+}
+
+# derived: the expensive inputs. Run once a stage is complete, not on a timer.
+derived() {
+  for d in $DERIVED; do
+    sync_dir "$UP/data/$d" "$REMOTE/derived/$d"
+  done
 }
 
 pull() {
@@ -69,7 +78,8 @@ pull() {
 case "$MODE" in
   push) push ;;
   pull) pull ;;
-  *) echo "usage: sync_drive.sh push|pull" >&2; exit 2 ;;
+  derived) derived ;;
+  *) echo "usage: sync_drive.sh push|pull|derived" >&2; exit 2 ;;
 esac
 
 echo "sync $MODE done: $(date -u +%H:%M:%S)"
