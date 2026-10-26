@@ -19,12 +19,39 @@ mkdir -p "$RAW" "$DATA"
 
 # Downloads run in parallel: the KTH host gives roughly 0.7 MB/s per connection,
 # so six sequential downloads would take about 6x longer.
+#
+# Each archive is checked twice before it is accepted: its size must match the
+# server's Content-Length, and `unzip -t` must pass. A bad archive is deleted, so a
+# rerun downloads it again rather than unzipping garbage.
 download_one() {
   a="$1"
-  wget -q -c -O "$RAW/$a.zip.part" "https://www.csc.kth.se/cvap/actions/$a.zip" \
-    || wget -q -c -O "$RAW/$a.zip.part" "http://www.nada.kth.se/cvap/actions/$a.zip"
-  mv "$RAW/$a.zip.part" "$RAW/$a.zip"
+  url="https://www.csc.kth.se/cvap/actions/$a.zip"
+  part="$RAW/$a.zip.part"
+  expected=$(curl -sIL --max-time 60 "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{n=$2} END{print n}')
+  curl -fL --retry 5 --retry-delay 5 -C - -o "$part" "$url" \
+    || { rm -f "$part"; curl -fL --retry 5 --retry-delay 5 -o "$part" "$url"; }
+  actual=$(stat -c%s "$part")
+  if [ -n "$expected" ] && [ "$actual" != "$expected" ]; then
+    echo "size mismatch for $a: got $actual bytes, server says $expected" >&2
+    rm -f "$part"
+    return 1
+  fi
+  if ! unzip -tq "$part" >/dev/null; then
+    echo "zip integrity check failed for $a" >&2
+    rm -f "$part"
+    return 1
+  fi
+  mv "$part" "$RAW/$a.zip"
 }
+
+# Drop archives (and anything unzipped from them) that fail the integrity check,
+# e.g. left behind by an earlier run that was interrupted or downloaded twice.
+for a in $ACTIONS; do
+  if [ -f "$RAW/$a.zip" ] && ! unzip -tq "$RAW/$a.zip" >/dev/null; then
+    echo "removing corrupt $a.zip and its extracted folder" >&2
+    rm -rf "$RAW/$a.zip" "$RAW/$a" "$RAW/$a.tmp"
+  fi
+done
 
 pids=""
 for a in $ACTIONS; do
