@@ -94,17 +94,22 @@ def missing_maps(template, videos):
     return bad
 
 
-def check(video, template, batch):
+def check(video, template, batch, tf32):
     """Batched maps vs upstream similarity_from_descriptor on one clip."""
     extractor = ViTExtractor(MODEL, STRIDE, device="cuda")
     desc = load_descriptor(template, "cuda")
     paths = sorted(glob(os.path.join("data/kth", video, "*.png")))[:8]
     img_size = PIL.Image.open(paths[0]).size[::-1]
+    # Upstream reference always runs in exact fp32; the batched run uses the --tf32 setting.
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
     with torch.no_grad():
         ref = similarity_from_descriptor(desc, paths, LOAD_SIZE, LAYER, "key", False, STRIDE)
+    torch.backends.cuda.matmul.allow_tf32 = tf32
+    torch.backends.cudnn.allow_tf32 = tf32
     new = batched_sims(extractor, desc, paths, img_size, batch)
     diffs = [(a.float().cpu() - b.float().cpu()).abs().max().item() for a, b in zip(ref, new)]
-    print(f"check {video} / {template}: {len(paths)} frames, max |sim diff| = {max(diffs):.6f}", flush=True)
+    print(f"check {video} / {template}: {len(paths)} frames, tf32={tf32}, max |sim diff| vs fp32 upstream = {max(diffs):.6f}", flush=True)
 
 
 def main():
@@ -119,7 +124,7 @@ def main():
     torch.backends.cudnn.allow_tf32 = bool(args.tf32)
 
     if args.check:
-        check(args.check, args.templates[0], args.batch)
+        check(args.check, args.templates[0], args.batch, bool(args.tf32))
         return
 
     videos = test_videos()
