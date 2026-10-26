@@ -14,7 +14,10 @@
 # Batch sizes keep the effective batch at upstream's 64 (micro-batch x accumulation),
 # sized so each model fits on an A100-40GB.
 #
-# Usage: run_kth_all_models.sh <upstream_dir> <out_dir>
+# To split the queue across VMs (or across lanes on one GPU), set PRIVACY and ACTION to
+# disjoint subsets; an empty string runs none of that kind. See colab_worker.sh.
+#
+# Usage: [PRIVACY="..."] [ACTION="..."] run_kth_all_models.sh <upstream_dir> <out_dir>
 set -uo pipefail
 
 UP="${1:?usage: run_kth_all_models.sh <upstream_dir> <out_dir>}"
@@ -24,9 +27,9 @@ DEFAULT_OBF="torso arm leg hair"
 TARGETED_OBF="torsoT armT legT hairT"
 
 # name:micro_batch:accumulation
-PRIVACY="resnet18:128:1 resnet50:128:1 resnet101:128:1 vit:64:2 vit_b_32:128:1"
-ACTION="x3d_s:32:2 x3d_m:16:4 x3d_l:8:8 slow_r50:16:4 i3d_r50:16:4 c2d_r50:16:4 \
-r2plus1d_r50:8:8 slowfast_r50:8:8 csn_r101:8:8 mvit_base_16x4:8:8"
+PRIVACY="${PRIVACY-resnet18:128:1 resnet50:128:1 resnet101:128:1 vit:64:2 vit_b_32:128:1}"
+ACTION="${ACTION-x3d_s:32:2 x3d_m:16:4 x3d_l:8:8 slow_r50:16:4 i3d_r50:16:4 c2d_r50:16:4 \
+r2plus1d_r50:8:8 slowfast_r50:8:8 csn_r101:8:8 mvit_base_16x4:8:8}"
 
 cd "$UP"
 

@@ -5,21 +5,29 @@
 #             archives. Cheap, so it can run on a timer.
 #   derived : local -> Drive for the derived inputs (AFD, flow, similarity maps). Run
 #             once when a stage completes; it is slow on tens of thousands of files.
+#   bundle  : local -> Drive, one tar per derived directory (bundles/<dir>.tar). A few
+#             large files copy to Drive in minutes; tens of thousands of PNGs take hours.
 #   pull    : Drive -> local. Restores everything after a VM restart, before resuming.
+#             Derived directories come from bundles when present.
 #
 # Local disk stays the working copy, so training and I/O stay fast. Drive is the
 # durable copy. Frames under data/kth are not synced: they are re-extracted from the
 # archives in a few minutes. rsync never deletes, so a partial sync cannot remove
 # finished work on either side.
 #
-# Usage: sync_drive.sh push|pull
+# Several VMs can share one Drive folder (see colab_worker.sh): each trains different
+# models, and --update keeps a VM from overwriting a newer file on the other side with
+# the older copy it pulled at startup.
+#
+# Usage: sync_drive.sh push|derived|bundle|pull
 set -euo pipefail
 
-MODE="${1:?usage: sync_drive.sh push|pull}"
+MODE="${1:?usage: sync_drive.sh push|derived|bundle|pull}"
 LOCAL="${LOCAL:-/content/work}"
 UP="$LOCAL/SelectivePrivacyPreservation"
 REMOTE="${REMOTE:-/content/drive/MyDrive/openlatent-replication}"
 DERIVED="kth_afd kth_flow kth_torso_sim kth_arm_sim kth_leg_sim kth_hair_sim"
+TARGETED="kth_torsoT_sim kth_armT_sim kth_legT_sim kth_hairT_sim"
 
 test -d "$REMOTE" || { echo "Drive not mounted at $REMOTE" >&2; exit 1; }
 
@@ -28,7 +36,7 @@ sync_dir() {
   local src="$1" dst="$2"
   if [ -d "$src" ]; then
     mkdir -p "$dst"
-    rsync -a --partial "$src/" "$dst/"
+    rsync -a --partial --update "$src/" "$dst/"
   fi
 }
 
@@ -57,6 +65,19 @@ derived() {
   done
 }
 
+# bundle: tar each complete derived directory to Drive, written under a temporary name
+# and renamed, so a bundle on Drive is never partial.
+bundle() {
+  mkdir -p "$REMOTE/bundles"
+  for d in $DERIVED $TARGETED; do
+    if [ -d "$UP/data/$d" ]; then
+      tar -C "$UP/data" -cf "$REMOTE/bundles/.$d.tar.tmp" "$d"
+      mv "$REMOTE/bundles/.$d.tar.tmp" "$REMOTE/bundles/$d.tar"
+      echo "  bundled $d: $(du -h "$REMOTE/bundles/$d.tar" | cut -f1)"
+    fi
+  done
+}
+
 pull() {
   sync_dir "$REMOTE/runs" "$LOCAL/runs"
   sync_dir "$REMOTE/logs" "$LOCAL/logs"
@@ -66,8 +87,18 @@ pull() {
     rsync -a --partial "$z" "$LOCAL/kth_raw/"
   done
   shopt -u nullglob
-  for d in $DERIVED; do
-    sync_dir "$REMOTE/derived/$d" "$UP/data/$d"
+  mkdir -p "$UP/data"
+  for d in $DERIVED $TARGETED; do
+    if [ -f "$REMOTE/bundles/$d.tar" ]; then
+      if [ ! -d "$UP/data/$d" ]; then
+        # extract beside the target and rename, so an interrupted pull leaves no partial dir
+        rm -rf "$UP/data/.extract_$d" && mkdir -p "$UP/data/.extract_$d"
+        tar -C "$UP/data/.extract_$d" -xf "$REMOTE/bundles/$d.tar"
+        mv "$UP/data/.extract_$d/$d" "$UP/data/$d" && rmdir "$UP/data/.extract_$d"
+      fi
+    else
+      sync_dir "$REMOTE/derived/$d" "$UP/data/$d"
+    fi
   done
   if [ -f "$REMOTE/splits/kth/metadata.csv" ]; then
     mkdir -p "$UP/data/splits/kth"
@@ -79,7 +110,8 @@ case "$MODE" in
   push) push ;;
   pull) pull ;;
   derived) derived ;;
-  *) echo "usage: sync_drive.sh push|pull|derived" >&2; exit 2 ;;
+  bundle) bundle ;;
+  *) echo "usage: sync_drive.sh push|derived|bundle|pull" >&2; exit 2 ;;
 esac
 
 echo "sync $MODE done: $(date -u +%H:%M:%S)"
