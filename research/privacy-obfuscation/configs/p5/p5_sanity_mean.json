@@ -1,0 +1,16 @@
+{
+ "name": "p5_sanity_mean",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "mean"
+ },
+ "eval": {
+  "privacy": [
+   "frame_r50",
+   "r3d"
+  ],
+  "clean_attacker": false
+ }
+}
