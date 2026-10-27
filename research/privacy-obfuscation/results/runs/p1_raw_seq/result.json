@@ -1,0 +1,33 @@
+{
+ "name": "p1_raw_seq",
+ "config": {
+  "name": "p1_raw_seq",
+  "dataset": "kth",
+  "split": "seq",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  }
+ },
+ "git": "1868990",
+ "split": "seq",
+ "n_train": 1797,
+ "n_test": 594,
+ "strong": {
+  "action/r2p1d": 99.15825128555298,
+  "person/frame_r50": 100.0,
+  "person/r3d": 100.0
+ },
+ "weak": {
+  "action/r2p1d": 98.98989796638489,
+  "person/frame_r50": 100.0,
+  "person/r3d": 100.0
+ },
+ "action_top1": 99.15825128555298,
+ "privacy_top1": 100.0,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 73.14959718386332
+}

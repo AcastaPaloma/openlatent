@@ -166,7 +166,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     alpha, epochs, restart = cfg.get("alpha", 1.0), cfg["epochs"], cfg.get("restart_every", 0)
     max_ent = n_priv * math.log(2) if priv_kind == "multilabel" else math.log(n_priv)
     keep_margin, collapse_drop = cfg.get("keep_margin", 5.0), cfg.get("collapse_drop", 30.0)
-    collapse_patience = cfg.get("collapse_patience", 3)
+    collapse_patience, min_action = cfg.get("collapse_patience", 3), cfg.get("min_action", 40.0)
     best_act, kept, kept_epoch, collapsed = 0.0, None, 0, 0
     hist = []
     for ep in range(epochs):
@@ -228,6 +228,9 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             kept = {k: v.detach().clone() for k, v in f.state_dict().items() if not k.startswith("vae.")}
             kept_epoch = ep + 1
         collapsed = collapsed + 1 if acc < best_act - collapse_drop else 0
+        if ep + 1 >= 3 and best_act < min_action:  # never learned the task (p2_unet_a3_vadv: 17% from epoch 1)
+            log(f"  utility never reached {min_action:.0f} (best {best_act:.1f}) in {ep + 1} epochs; stopping")
+            break
         if collapsed >= collapse_patience:
             log(f"  collapse: action {acc:.1f} vs best {best_act:.1f} for {collapsed} epochs; stopping, keeping epoch {kept_epoch}")
             break

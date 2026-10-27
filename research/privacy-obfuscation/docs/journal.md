@@ -107,3 +107,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   killed and requeued on VM2/VM3 with the guard.
 - H9: training against a frame adversary alone leaves gait identity; an ensemble adversary
   (frame + video) is needed. Implementing (adversary list, mean entropy).
+
+### 2026-10-27 08:05 UTC: learned BDQ vs a frame adversary; alpha-3 U-Net vs video adversary
+- p2_bdq_a1 (Colab; BDQ trained against a frame ResNet-18): action 93.5; identity strong
+  frame_r50 31.3, but r3d 69.9, so privacy = 69.9. Weak protocol: 4.85 (frame).
+  H4 confirmed for a learned anonymizer: optimising against a frame adversary hides appearance
+  but leaves gait for a video attacker, and a weak frame-only evaluation would have reported ~5%.
+- p2_unet_a3_vadv (alpha 3 vs R3D adversary, with the collapse guard) never learned action
+  (17% from epoch 1): the guard compares to the best epoch, which was already chance. Killed.
+  Added min_action (40 by epoch 3) so such runs stop early.
+- Raw on the seq split: 99.2 / 100.0, so same-video splits make identity trivial; Ilic's split
+  (99.5) is barely harder. KTH identity is saturated for raw video under every split.
+- Next: ensemble-adversary runs (frame + video) for U-Net (alpha 1, 0.5), BDQ and the VAE latent edit.
