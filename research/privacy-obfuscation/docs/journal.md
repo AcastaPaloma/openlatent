@@ -562,3 +562,18 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p2_bdq_a7_ens_warm: action collapsed at epoch 6 (17%); the guard kept an earlier epoch: 64.7 / 27.1, on the curve.
 - Attacker-budget check for the best low-utility point: p1_diff_down64_e24 trains every model 24 epochs instead
   of 12. If identity rises well above 11, the result is attacker under-training rather than obfuscation.
+
+### 2026-10-27 21:55 UTC: one number per frame; the x64 result replicates; scenario split
+- p1_diff_down120 (one number per frame: global motion energy): action 54.2, identity 6.9 (ResNet-50 3.7;
+  chance 16.7 / 4.0). Per action: running 76, handwaving 65, walking 59, jogging 51, handclapping 41, boxing 33.
+- p1_diff_down64_s1 (attacker seed 1): 70.7 / 10.9 vs seed 0 69.9 / 11.0. The 1x2 px point replicates.
+- p1_diff_down32_scenario: 58.0 / 42.7 (Ilic split 93.6 / 63.9; raw on the scenario split 88.7 / 97.7). On unseen
+  recording conditions the coarse motion map loses much more action than identity drops.
+- p2_bdq_a5_ens_s3: 92.3 / 55.2 (seeds 0-3: 84.4/37.0, 86.5/48.0, 93.0/60.0, 92.3/55.2). On the curve.
+- p2_bdq_down4_a5_ens (BDQ then x4 downsample, trained end to end; collapsed after epoch 2, kept epoch 2):
+  90.6 / 52.3, on the curve.
+- Information ladder on KTH (fixed motion maps, numbers per frame -> action / identity):
+  1 -> 54.2 / 6.9; 2 -> 69.9 / 11.0; 12 (3x4) -> 87.8 / 57.2; 15 (3x5) -> 93.6 / 63.9; 48 (6x8) -> 95.3 / 82.4.
+- H31: a learned stage before coarse pooling should be able to choose *which* motion to keep. Tests:
+  p2_bdq_down32_a3_ens, p2_bdq_down64_a1_ens (BDQ then fixed downsample, end to end).
+  p1_diff_down64_tshuffle: with two numbers per frame, does action still need temporal order?
