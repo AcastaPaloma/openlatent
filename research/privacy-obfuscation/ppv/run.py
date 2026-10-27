@@ -86,7 +86,7 @@ def load_dataset(cfg, log):
         frames = kth.load_frames(root, [r["video"] for r in rows])
         log(f"kth split={split}: {len(rows_tr)} train / {len(rows_te)} test subsequences, {len(frames)} videos")
         return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=len(kth.ACTIONS), n_priv=25,
-                    priv_kind="multiclass", priv_task="person", tag=f"kth_{split}", stride=cfg.get("clip_stride", 2), big=False, in_ch=1)
+                    priv_kind="multiclass", priv_task="person", tag=f"kth_{split}" + (f"_st{cfg['clip_stride']}" if cfg.get("clip_stride", 2) != 2 else ""), stride=cfg.get("clip_stride", 2), big=False, in_ch=1)
     if ds == "ucf101_vp":
         rows_tr, rows_te, frames = ucf101.load(os.path.join(WORK, "data", "ucf101"))
         log(f"VP-UCF101 split 1: {len(rows_tr)} train / {len(rows_te)} test videos")
