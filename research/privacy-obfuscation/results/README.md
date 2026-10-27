@@ -14,6 +14,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | run | dataset | anonymizer | split | action (strong) | privacy (strong, best) | leakage | privacy frame / video | action (weak) | privacy (weak) | min |
 |---|---|---|---|---|---|---|---|---|---|---|
 | p2_bdq_a3_lr3e-3 | kth | `{type: bdq}` | ilic | 89.1 | **46.2** | 44.1% | 18.7 / 46.2 | 35.8 | 4.0 | 86 |
+| p2_bdq_a5_lr3e-3 | kth | `{type: bdq}` | ilic | 76.9 | **35.3** | 32.8% | 15.2 / 35.3 | 32.1 | 5.2 | 92 |
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1_ens | kth | `{type: bdq}` | ilic | 94.1 | **65.2** | 64.1% | 37.3 / 65.2 | 37.5 | 4.0 | 113 |
 | p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 69.0% | 31.3 / 69.9 | 35.1 | 4.8 | 122 |

@@ -238,3 +238,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Colab backlog now hardens the leads: BDQ alpha 3 seed 2; VAE ensemble seed 1 and on the
   scenario split (does the in-training chance-level adversary survive retrained attackers, and
   does it transfer to unseen recording conditions?).
+
+### 2026-10-27 11:35 UTC: learned BDQ dominates fixed filters on KTH
+| BDQ (frame adversary, lr 3e-3) | action | identity strong (frame / video) | leakage |
+|---|---|---|---|
+| alpha 1 | 93.5 | 69.9 (31.3 / 69.9) | 69% |
+| alpha 3 | 89.1 | 46.2 (18.7 / 46.2) | 44% |
+| alpha 5 | 76.9 | 35.3 (15.2 / 35.3) | 33% |
+| (x64 downsampling) | 48.7 | 38.1 (32.1 / 38.1) | 36% |
+- H14 confirmed: alpha moves BDQ along a utility-privacy curve that sits well above every fixed
+  filter (at ~35-38% identity, BDQ keeps 28 more action points than x64 downsampling).
+- The video attacker is 20 points above the frame attacker at every alpha. Training against a frame
+  adversary leaves gait; this gap is what the ensemble runs are testing.
