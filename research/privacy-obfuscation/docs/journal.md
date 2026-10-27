@@ -327,3 +327,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   randomness is ~1 point, so BDQ's 20-40 point seed spread is the anonymizer, not the evaluation.
 - H19: BDQ's quantiser thresholds settle into different regimes depending on early adversary
   dynamics; selecting the operating point needs a validation split, not the seed.
+
+### 2026-10-27 14:35 UTC: all three b_steps=1 VAE variants fooled their adversaries
+- p2_vae_a1 (VAE edit vs frame adversary): 97.2 / 85.1 (61.9 / 85.1). With p2_vae_a1_vadv (75.6)
+  and p2_vae_a1_ens (82.6), every VAE latent-edit run with one adversary step per f step kept
+  75-85% identity despite chance-level in-training adversaries.
+- Adversary warm-up confirmed working (896 B-only batches on frozen f before training resumes).
+- New probes of the gait channel: p1_hold4 (temporal hold: every 4th frame repeated, removing fine
+  motion timing) and p2_down4_bdq_a3 (x4 downsampling chained before learned BDQ, removing body-shape
+  detail before motion is quantised). H20: gait identity needs finer spatial or temporal detail than
+  action recognition, so one of these moves the curve.

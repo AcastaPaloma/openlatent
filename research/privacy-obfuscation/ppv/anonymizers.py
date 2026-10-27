@@ -74,6 +74,10 @@ class Fixed(nn.Module):
             return per_frame(lambda f: F.interpolate(f, size=(h, w), mode=mode), small).clamp(0, 1)
         if k == "diff":
             return (tdiff(x).abs() * p.get("gain", 4.0)).clamp(0, 1)
+        if k == "hold":  # temporal hold: every k-th frame repeated k times (removes fine motion timing)
+            kk = p["k"]
+            idx = (torch.arange(x.shape[2], device=x.device) // kk) * kk
+            return x[:, :, idx]
         if k == "bdq_fixed":
             d = tdiff(blur2d(x, p["sigma"]))  # [-1, 1]
             n = p["levels"]
@@ -223,10 +227,26 @@ class PersonBox(nn.Module):
         return out.view(b, t, c, h, w).transpose(1, 2)
 
 
+class Chain(nn.Module):
+    """Apply anonymizers in order, e.g. [{"type": "down", "factor": 4}, {"type": "bdq"}]."""
+
+    def __init__(self, stages, in_ch=1):
+        super().__init__()
+        self.stages = nn.ModuleList([build(c, in_ch) for c in stages])
+        self.learned = any(getattr(m, "learned", False) for m in self.stages)
+
+    def forward(self, x):
+        for m in self.stages:
+            x = m(x)
+        return x
+
+
 def build(cfg, in_ch=1):
     cfg = dict(cfg)
     kind = cfg.pop("type")
-    if kind in ("raw", "bg_median", "fg_only", "blur", "down", "pixelate", "diff", "bdq_fixed"):
+    if kind == "chain":
+        return Chain(cfg["stages"], in_ch)
+    if kind in ("raw", "bg_median", "fg_only", "hold", "blur", "down", "pixelate", "diff", "bdq_fixed"):
         return Fixed(kind, **cfg)
     if kind == "person_box":
         return PersonBox(**cfg)
