@@ -462,3 +462,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Test without retraining: p6_bdq_a5_ens_tshuffle and p6_bdq_a5_ens_warm_tshuffle (frozen checkpoints, chain
   [bdq, tshuffle], fresh attackers). run.py now loads a single-stage checkpoint into a chain's learned stage and
   refuses silently-missing keys.
+
+### 2026-10-27 19:20 UTC: frozen vs retrained attackers, all runs (results/frozen_attackers.md)
+- Frozen attackers (trained on raw video only, never shown an obfuscated frame; the Ilic et al. protocol) vs
+  retrained attackers, same architectures, same runs. KTH: median gap 62.4 identity points over 54 obfuscated runs;
+  in 43 of 54 the frozen attacker recovers < 1/4 of what the retrained one does. Examples (frozen -> retrained):
+  blur8 8.7 -> 95.0, down16 11.5 -> 92.6, frame difference 13.5 -> 97.5, VAE edit 4.0 -> 82.6, BDQ a5 ens 3.8 -> 37.0.
+  Every learned method looks perfect (at chance) to a frozen attacker. VP-UCF101: median gap 9.4 cMAP points
+  (attribute cMAP has a 58.7 blind floor, so the scale is compressed).
+- Takeaway: the frozen protocol measures domain shift, not privacy. Only the retrained numbers are reported as results.
