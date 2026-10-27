@@ -284,24 +284,31 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
 
 def _windows(frames, window, ctx):
     """(video, n_windows, index, segment, (offset, length)) for every window of every video.
-    Each segment carries `ctx` frames of left context and is padded to window + ctx frames."""
+    Each segment carries `ctx` frames of context on both sides and is padded to window + 2 ctx frames.
+    Context must cover the anonymizer's temporal receptive field: with too little, frames at window edges
+    see zero padding, and a learned 3D-conv edit can leave them nearly unedited (near-raw release)."""
     for v in frames:
         arr = frames[v]
         n = len(arr)
         n_win = (n + window - 1) // window
         for wi, s in enumerate(range(0, n, window)):
-            a, e = max(0, s - ctx), min(n, s + window)
+            a, e = max(0, s - ctx), min(n, s + window + ctx)
             seg = np.asarray(arr[a:e])
-            if len(seg) < window + ctx:  # pad by repeating the last frame
-                seg = np.concatenate([seg, np.repeat(seg[-1:], window + ctx - len(seg), 0)])
+            if s - a < ctx:  # video start: repeat the first frame so every window has the same left context
+                seg = np.concatenate([np.repeat(seg[:1], ctx - (s - a), 0), seg])
+                a -= ctx - (s - a)
+            if len(seg) < window + 2 * ctx:  # pad by repeating the last frame
+                seg = np.concatenate([seg, np.repeat(seg[-1:], window + 2 * ctx - len(seg), 0)])
             yield v, n_win, wi, seg, (s - a, min(window, n - s))
 
 
 @torch.no_grad()
-def materialize(f, frames, window=32, ctx=2, batch=32, out_dir=None):
+def materialize(f, frames, window=32, ctx=8, batch=32, out_dir=None):
     """Apply f to every frame of every video; returns {video: uint8 (T, H, W[, 3])}.
-    Windows carry `ctx` frames of left context so temporal ops (differences, 3D convs)
+    Windows carry `ctx` frames of context on each side so temporal ops (differences, 3D convs)
     see real neighbours at window boundaries; only the window's own frames are kept.
+    ctx=8 covers the VAE edit's +-6-frame receptive field (ctx=2 released near-raw edge frames
+    for the VP-UCF101 VAE runs; see scripts/boundary_check.py).
     Batches mix windows from different videos (UCF101 videos are 2-4 windows long), and
     with `out_dir` each finished video is written to <out_dir>/<video>.npy by a writer thread
     and returned memory-mapped on access (datasets too large for a second copy in RAM)."""

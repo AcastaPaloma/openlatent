@@ -1,0 +1,15 @@
+{
+ "name": "p6_vae_a1_ctx8",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "vae_latent"
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "anonymizer_from": "p3_vae_a1",
+ "note": "re-release with 8-frame two-sided context (ctx=2 leaked near-raw edge frames); same checkpoint, fresh attackers"
+}

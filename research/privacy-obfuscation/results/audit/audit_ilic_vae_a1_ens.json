@@ -1,0 +1,16 @@
+{
+ "split": "ilic",
+ "n_train_rows": 1793,
+ "n_test_rows": 598,
+ "shared_videos": 0,
+ "test_videos": 150,
+ "test_videos_sharing_session_with_train": 150,
+ "techniques": {
+  "vae_a1_ens": {
+   "nn_identity": 21.739129722118378,
+   "nn_action": 50.167226791381836,
+   "nn_same_session": 13.712374581939798,
+   "pixel_std": 0.09497804194688797
+  }
+ }
+}

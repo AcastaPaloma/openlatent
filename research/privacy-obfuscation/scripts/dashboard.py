@@ -25,6 +25,9 @@ PHASES = {
     "p1": "Phase 1: fixed obfuscators and controls (KTH)",
     "p2": "Phase 2: learned obfuscators (KTH)",
     "p3": "Phase 3: VP-UCF101 (5 privacy attributes)",
+    "p4": "Phase 4: DINOv2 attacker (attack-only)",
+    "p5": "Phase 5: sanity controls",
+    "p6": "Phase 6: re-evaluations after the release fix",
 }
 
 

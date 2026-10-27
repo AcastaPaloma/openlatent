@@ -397,3 +397,25 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
     alone explains its 38%.
 - p2_down4_bdq_a3 (x4 downsampling before BDQ): 93.1 / 65.1 (31.9 / 65.1), on the BDQ curve. Removing spatial
   detail first doesn't remove gait (H20 spatial part rejected). p4_dino_down64: 36.6 (R3D/ResNet: 38.1).
+
+### 2026-10-27 18:40 UTC: gallery of every method; a real release bug in the VP-UCF101 VAE runs
+- results/figures/gallery_{kth_1..5,ucf101_vp_1..2}.png: every finished run's released output on the same 4 test
+  clips (sorted by privacy score), with contrast-stretched copies and a 4-frame temporal strip. What it shows:
+  * fixed filters keep the person and scene (blur/down/pix up to x16), consistent with 91-99% identity;
+  * frame difference and fg-only keep a sharp, clothed silhouette: 94-98% identity is real, not a bug;
+  * scene-only (median) has no person at all and still gives 89-91% identity (KTH session/scene cue);
+  * best BDQ checkpoints (24-37% identity) release a flat frame with a few gray blobs on moving limbs;
+    the jogging clip keeps a whole-body silhouette, which is the gait signal the R3D attacker uses;
+  * U-Net outputs are binary masks or stripe patterns that still trace the body/scene layout (79-96% identity);
+  * KTH VAE edits are a gray patterned frame; the body is faint but present after contrast stretch (75-85%).
+- Bug found by the gallery (VP-UCF101 VAE only): some released frames are nearly the raw frame. Cause: the VAE's
+  latent edit is a 6-layer 3D conv (+-6 frames receptive field) and materialize() gave each 32-frame window only
+  2 frames of left context and none on the right; edge frames saw zero padding and were left almost unedited.
+  scripts/boundary_check.py on the exact release path (corr > 0.9 with raw = near-raw):
+  p3_vae_a1 27.5% of windows at position 0 (1.0% of frames); p3_vae_a1_ens 57% at position 31 (1.4%).
+  KTH VAE, U-Net and BDQ checkpoints: 0 near-raw frames. So the VP-UCF101 VAE numbers (66.0/70.2, 78.0/72.2)
+  are contaminated; all other numbers are unaffected.
+- Fix: materialize() now carries 8 frames of real context on both sides of every window (edge frames repeated at
+  video start/end). Re-evaluating both checkpoints with fresh attackers: p6_vae_a1_ctx8, p6_vae_a1_ens_ctx8.
+  p3_vae_a1_ens_warm (running on old code) gets the same re-evaluation when it finishes.
+- p5_sanity_const (all-black frames): action r2p1d trains at chance (train acc 16-17%, chance 16.7) as it should.
