@@ -1,0 +1,33 @@
+{
+ "name": "p1_raw_scenario",
+ "config": {
+  "name": "p1_raw_scenario",
+  "dataset": "kth",
+  "split": "scenario",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  }
+ },
+ "git": "1868990",
+ "split": "scenario",
+ "n_train": 1791,
+ "n_test": 600,
+ "strong": {
+  "action/r2p1d": 88.66666555404663,
+  "person/frame_r50": 95.16666531562805,
+  "person/r3d": 97.66666889190674
+ },
+ "weak": {
+  "action/r2p1d": 92.83333420753479,
+  "person/frame_r50": 95.99999785423279,
+  "person/r3d": 97.66666889190674
+ },
+ "action_top1": 88.66666555404663,
+ "privacy_top1": 97.66666889190674,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 43.5597970088323
+}

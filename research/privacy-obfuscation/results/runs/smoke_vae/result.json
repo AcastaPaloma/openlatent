@@ -1,0 +1,56 @@
+{
+ "name": "smoke_vae",
+ "config": {
+  "name": "smoke_vae",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "vae_latent"
+  },
+  "adv": {
+   "epochs": 1,
+   "alpha": 1.0,
+   "restart_every": 0,
+   "batch": 4,
+   "repeats": 1
+  },
+  "eval": {
+   "epochs": 1,
+   "repeats": 1,
+   "action": [
+    "r2p1d"
+   ],
+   "privacy": [
+    "frame_r18"
+   ],
+   "clean_attacker": false
+  }
+ },
+ "git": "919b587",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.6979433871373268,
+   "adv_entropy": 3.183127042970487,
+   "adv_loss": 3.1485100920711244,
+   "train_action_acc": 74.609375,
+   "train_adv_acc": 6.919642857142857
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 95.652174949646,
+  "person/frame_r18": 13.04347813129425
+ },
+ "weak": {},
+ "action_top1": 95.652174949646,
+ "privacy_top1": 13.04347813129425,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 100.05446908473968
+}

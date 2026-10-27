@@ -1,3 +1,12 @@
 [05:50:40] run smoke_vae @ 919b587: {"name": "smoke_vae", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "vae_latent"}, "adv": {"epochs": 1, "alpha": 1.0, "restart_every": 0, "batch": 4, "repeats": 1}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r18"], "clean_attacker": false}}
 [05:50:42] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
 [06:02:22]   [adv] epoch 1/1 action_acc 74.6 adv_acc 6.9 adv_entropy 3.18/3.22 (685s)
+[07:28:34] materialised anonymised dataset (5172s)
+[07:28:35] strong eval: training action r2p1d on anonymised data
+[07:29:45]   [action] epoch 1/1 loss 0.723 train_acc 73.4 (69s)
+[07:30:07]   strong action/r2p1d: 95.65
+[07:30:08] strong eval: training person frame_r18 on anonymised data
+[07:30:23]   [person] epoch 1/1 loss 3.191 train_acc 5.1 (15s)
+[07:30:44]   strong person/frame_r18: 13.04
+[07:30:44] DONE smoke_vae: action 95.65  privacy (strong, best attacker) 13.04  (100.1 min)
+[07:30:46] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/smoke_vae

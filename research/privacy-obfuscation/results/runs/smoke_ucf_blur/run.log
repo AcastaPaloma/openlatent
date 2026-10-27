@@ -1,0 +1,17 @@
+[06:53:22] run smoke_ucf_blur @ 68b95c3: {"name": "smoke_ucf_blur", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "blur", "sigma": 2}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r18"], "clean_attacker": true}}
+[06:53:22] VP-UCF101 split 1: 9537 train / 3783 test videos
+[07:17:37] materialised anonymised dataset (1454s)
+[07:17:37] strong eval: training action r2p1d on anonymised data
+[07:21:22]   [action] epoch 1/1 loss 2.294 train_acc 59.3 (224s)
+[07:23:00]   strong action/r2p1d: 79.67
+[07:23:01] training clean action model r2p1d (cached at /home/ubuntu/work/cache/ucf101_vp_s1_action_r2p1d_e1.pt)
+[07:26:37]   [action] epoch 1/1 loss 1.936 train_acc 68.4 (215s)
+[07:28:07]   weak action/r2p1d: 24.05
+[07:28:08] strong eval: training attr frame_r18 on anonymised data
+[07:29:23]   [attr] epoch 1/1 loss 0.506 train_acc 76.5 (75s)
+[07:30:24]   strong attr/frame_r18: 68.02  (AP per attribute [96.2, 79.2, 95.1, 29.4, 40.1], F1 53.2)
+[07:30:24] training clean attr model frame_r18 (cached at /home/ubuntu/work/cache/ucf101_vp_s1_attr_frame_r18_e1.pt)
+[07:31:35]   [attr] epoch 1/1 loss 0.500 train_acc 76.8 (70s)
+[07:32:29]   weak attr/frame_r18: 66.40
+[07:32:29] DONE smoke_ucf_blur: action 79.67  privacy cmap (strong, best attacker) 68.02  (39.1 min)
+[07:32:44] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/smoke_ucf_blur

@@ -77,3 +77,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Guard now needs 3 consecutive collapsed epochs before stopping (best-epoch keeping unchanged).
 - H8: for BDQ, alpha mainly controls how fast sigma grows; a high alpha with a high lr drives
   sigma past the point where action survives within 1-2 epochs.
+
+### 2026-10-27 07:35 UTC: p1_raw_scenario (KTH, test = scenario d2 for every person)
+- Raw video: action 88.7, identity 97.7 (frame 95.2 / video 97.7); weak 92.8 / 97.7.
+- Identity transfers to a recording condition never seen for that person in training, so the
+  attacker isn't only memorising a person-specific session. It may still read location cues
+  shared by d1/d2 (both outdoors). The scene-only control (p1_bgmedian, Ilic split; c12 on this
+  split) separates person from place.
+- Action is 9 points lower on this split than on Ilic's (88.7 vs ~97): scale variation (d2) is
+  harder for action than for identity.

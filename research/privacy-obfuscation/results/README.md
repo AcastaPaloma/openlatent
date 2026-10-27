@@ -14,3 +14,4 @@ Chance: action 16.7, identity 4.0. Sorted by action - privacy (strong).
 | p1_blur8 | kth | `{type: blur, sigma: 8}` | ilic | 94.5 | **95.0** | 95.0 / 94.8 | 16.7 | 8.7 | 70 |
 | p1_pix8 | kth | `{type: pixelate, factor: 8}` | ilic | 96.3 | **97.2** | 96.2 / 97.2 | 16.7 | 14.0 | 70 |
 | p1_pix4 | kth | `{type: pixelate, factor: 4}` | ilic | 97.7 | **99.0** | 98.2 / 99.0 | 58.0 | 23.2 | 70 |
+| p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
