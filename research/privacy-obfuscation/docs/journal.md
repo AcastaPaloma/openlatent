@@ -228,3 +228,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   versions. The ensemble is not stronger than the video adversary alone for BDQ.
 - Direction: VP-UCF101 becomes the main benchmark. Its attributes are appearance (face, skin,
   gender) while action is largely motion, so separation is plausible. Adding UCF101 to VM1/VM3.
+
+### 2026-10-27 10:55 UTC: VAE reconstruction alone hides nothing; KTH downsampling sweep done
+- p2_vae_recon (frozen SD-VAE encode/decode, no edit): action 97.5, identity 98.7 (98.7 / 98.0),
+  weak 99.0 / 99.3. Any privacy from the VAE latent-edit runs is due to the learned edit, not the
+  VAE bottleneck (H3's control satisfied).
+- Downsampling on KTH: x2 98.5, x4 98.2, x8 97.2, x16 92.6, x32 91.0 (action 78.6), x64 38.1
+  (action 48.7). Identity only falls when action falls with it.
+- Colab backlog now hardens the leads: BDQ alpha 3 seed 2; VAE ensemble seed 1 and on the
+  scenario split (does the in-training chance-level adversary survive retrained attackers, and
+  does it transfer to unseen recording conditions?).
