@@ -4,16 +4,18 @@
 |---|---|---|---|---|
 | Paper, original frames | 90.15 | 91.87 | 0.49 | 13 / 5 |
 | Paper, ours | 88.67 | 5.46 | 0.92 | 13 / 5 |
-| This run, original frames | 87.78 | 90.17 | 0.49 | 3 / 4 |
-| This run, obfuscated, default matcher | 86.67 | 79.83 | 0.53 | 3 / 4 |
-| This run, obfuscated, use_targeted=true | 86.00 | 48.33 | 0.69 | 3 / 4 |
+| This run, original frames | 88.67 | 90.17 | 0.49 | 5 / 4 |
+| This run, obfuscated, default matcher | 88.00 | 79.83 | 0.54 | 4 / 4 |
+| This run, obfuscated, use_targeted=true | 87.07 | 48.33 | 0.69 | 5 / 4 |
 
 ### Action models
 
 | Model | Original frames | Obfuscated, default matcher | Obfuscated, use_targeted=True |
 |---|---|---|---|
 | `i3d_r50` | 83.33 | 80.00 | 82.00 |
+| `r2plus1d_r50` | 89.33 | - | 86.67 |
 | `slow_r50` | 88.67 | 90.00 | 88.67 |
+| `slowfast_r50` | 90.67 | 92.00 | 90.67 |
 | `x3d_s` | 91.33 | 90.00 | 87.33 |
 
 ### Privacy models
