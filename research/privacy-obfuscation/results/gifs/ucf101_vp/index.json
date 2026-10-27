@@ -1,0 +1,193 @@
+{
+ "clips": [
+  {
+   "video": "ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c01",
+   "action": "ApplyEyeMakeup"
+  },
+  {
+   "video": "GolfSwing/v_GolfSwing_g07_c02",
+   "action": "GolfSwing"
+  },
+  {
+   "video": "PlayingViolin/v_PlayingViolin_g02_c02",
+   "action": "PlayingViolin"
+  },
+  {
+   "video": "YoYo/v_YoYo_g07_c04",
+   "action": "YoYo"
+  }
+ ],
+ "runs": [
+  {
+   "run": "p3_raw_s1",
+   "file": "p3_raw_s1.gif",
+   "split": "s1",
+   "action": 90.37800431251526,
+   "privacy": 76.95462413825143,
+   "leakage": 102.01489159156577,
+   "kb": 1091
+  },
+  {
+   "run": "p3_raw",
+   "file": "p3_raw.gif",
+   "split": "ilic",
+   "action": 91.75257682800293,
+   "privacy": 76.59407786790283,
+   "leakage": 100.0,
+   "kb": 1091
+  },
+  {
+   "run": "p3_vae_recon",
+   "file": "p3_vae_recon.gif",
+   "split": "s1",
+   "action": 86.86227798461914,
+   "privacy": 76.45770992198263,
+   "leakage": 99.23791576784849,
+   "kb": 1190
+  },
+  {
+   "run": "p3_diff",
+   "file": "p3_diff.gif",
+   "split": "ilic",
+   "action": 88.36901783943176,
+   "privacy": 75.99584857682,
+   "leakage": 96.65683084929515,
+   "kb": 1400
+  },
+  {
+   "run": "p3_bdq_a1",
+   "file": "p3_bdq_a1.gif",
+   "split": "s1",
+   "action": 87.78747320175171,
+   "privacy": 75.22350898399021,
+   "leakage": 92.34065653435518,
+   "kb": 862
+  },
+  {
+   "run": "p3_down4",
+   "file": "p3_down4.gif",
+   "split": "ilic",
+   "action": 84.45677757263184,
+   "privacy": 75.07651522756937,
+   "leakage": 91.51919058620197,
+   "kb": 902
+  },
+  {
+   "run": "p3_bdq_a3_ens",
+   "file": "p3_bdq_a3_ens.gif",
+   "split": "s1",
+   "action": 87.78747320175171,
+   "privacy": 74.87256778991511,
+   "leakage": 90.3794423456956,
+   "kb": 825
+  },
+  {
+   "run": "p3_bdq_a3_lr3e-3",
+   "file": "p3_bdq_a3_lr3e-3.gif",
+   "split": "s1",
+   "action": 87.1530532836914,
+   "privacy": 74.60281191958836,
+   "leakage": 88.87192755606445,
+   "kb": 536
+  },
+  {
+   "run": "p3_personbox_blur",
+   "file": "p3_personbox_blur.gif",
+   "split": "s1",
+   "action": 75.89215040206909,
+   "privacy": 73.64717779354766,
+   "leakage": 83.53142254040864,
+   "kb": 934
+  },
+  {
+   "run": "p3_blur4",
+   "file": "p3_blur4.gif",
+   "split": "ilic",
+   "action": 79.93655800819397,
+   "privacy": 73.54538153988346,
+   "leakage": 82.96254017376384,
+   "kb": 825
+  },
+  {
+   "run": "p3_personbox",
+   "file": "p3_personbox.gif",
+   "split": "s1",
+   "action": 70.39386630058289,
+   "privacy": 73.13455570885428,
+   "leakage": 80.66666421937282,
+   "kb": 518
+  },
+  {
+   "run": "p3_vae_a1_ens",
+   "file": "p3_vae_a1_ens.gif",
+   "split": "s1",
+   "action": 77.98044085502625,
+   "privacy": 72.18094413928847,
+   "leakage": 75.33746214142538,
+   "kb": 1368
+  },
+  {
+   "run": "p3_down8",
+   "file": "p3_down8.gif",
+   "split": "ilic",
+   "action": 72.24425077438354,
+   "privacy": 72.1066727017891,
+   "leakage": 74.9224005883928,
+   "kb": 822
+  },
+  {
+   "run": "p3_pix8",
+   "file": "p3_pix8.gif",
+   "split": "s1",
+   "action": 72.61433005332947,
+   "privacy": 72.07499261037776,
+   "leakage": 74.7453582638584,
+   "kb": 412
+  },
+  {
+   "run": "p3_pix16",
+   "file": "p3_pix16.gif",
+   "split": "s1",
+   "action": 55.16785383224487,
+   "privacy": 70.85262036750144,
+   "leakage": 67.91420299617664,
+   "kb": 287
+  },
+  {
+   "run": "p3_down16",
+   "file": "p3_down16.gif",
+   "split": "ilic",
+   "action": 53.66111397743225,
+   "privacy": 70.29876402118623,
+   "leakage": 64.81900943323433,
+   "kb": 695
+  },
+  {
+   "run": "p3_blur8",
+   "file": "p3_blur8.gif",
+   "split": "ilic",
+   "action": 58.92149209976196,
+   "privacy": 70.25769614061385,
+   "leakage": 64.58950400202097,
+   "kb": 733
+  },
+  {
+   "run": "p3_vae_a1",
+   "file": "p3_vae_a1.gif",
+   "split": "s1",
+   "action": 66.03224873542786,
+   "privacy": 70.22844457443173,
+   "leakage": 64.4260333476623,
+   "kb": 831
+  },
+  {
+   "run": "p3_blur16",
+   "file": "p3_blur16.gif",
+   "split": "s1",
+   "action": 39.968279004096985,
+   "privacy": 68.73528491376362,
+   "leakage": 56.081598548110875,
+   "kb": 575
+  }
+ ]
+}
