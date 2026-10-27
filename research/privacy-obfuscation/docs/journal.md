@@ -374,3 +374,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p4_dino_bdq_a5_ens: DINOv2 (probe / fine-tune) 18.6 / 35.1 on the BDQ ensemble alpha-5 output, vs R3D 37.0 and
   ResNet-50 13.2 from the original run. DINO does not break BDQ: with appearance quantised away, an appearance
   model gains nothing and the video (gait) attacker stays the binding one. The BDQ number holds up.
+
+### 2026-10-27 17:35 UTC: adversary warm-up for BDQ; DINO on low-identity BDQ
+- p2_bdq_a5_ens_warm (adversary trained one epoch on frozen f after every restart): 61.4 / 23.6 (11.4 / 23.6),
+  on the extrapolated BDQ curve (68.4 / 28.9 for seed 3). A converged adversary moves BDQ along its curve, not past it.
+- p4_dino_bdq_a3_s3: DINOv2 13.0 on the 68.4 / 28.9 BDQ output (R3D: 28.9). On every BDQ output so far the video
+  attacker, not DINO, is the binding one.
+- Next: p1_diff_down8 (frame difference, then x8 downsampling): does coarse motion keep action but drop gait identity?
