@@ -310,3 +310,20 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 ### 2026-10-27 13:55 UTC: BDQ alpha 3 across three seeds
 - Seeds 0 / 1 / 2: identity 46.2 / 68.7 / 66.6 (action 89.1 / 94.5 / 91.6). Seed 0 was the outlier;
   alpha 3 sits around 60% identity on average. Report means with ranges from now on.
+
+### 2026-10-27 14:20 UTC: BDQ seeds lie on one trade-off curve; evaluation noise is small
+| run | action | identity strong (frame / video) |
+|---|---|---|
+| BDQ a3 s3 | 68.4 | 28.9 (11.4 / 28.9) |
+| BDQ a5 s0 | 76.9 | 35.3 (15.2 / 35.3) |
+| BDQ a3 s0 | 89.1 | 46.2 (18.7 / 46.2) |
+| BDQ a5 s1 | 90.3 | 48.0 (26.3 / 48.0) |
+| BDQ a3 s2 | 91.6 | 66.6 (35.8 / 66.6) |
+| BDQ a3 s1 | 94.5 | 68.7 (31.6 / 68.7) |
+- The seed decides where on one action-identity curve a BDQ run ends, more than alpha does
+  (seeds of alpha 3 span 28.9-68.7). The curve is steep: ~1 identity point per action point given
+  up. All points dominate fixed filters (x64 downsampling: 48.7 / 38.1; x32: 78.6 / 91.0).
+- Evaluation noise: p3_raw seed 0 vs 1: cMAP 76.6 vs 77.0, action 91.8 vs 90.4. Attacker training
+  randomness is ~1 point, so BDQ's 20-40 point seed spread is the anonymizer, not the evaluation.
+- H19: BDQ's quantiser thresholds settle into different regimes depending on early adversary
+  dynamics; selecting the operating point needs a validation split, not the seed.
