@@ -1,0 +1,9 @@
+{
+ "name": "p1_raw_seq",
+ "dataset": "kth",
+ "split": "seq",
+ "seed": 0,
+ "anonymizer": {
+  "type": "raw"
+ }
+}
