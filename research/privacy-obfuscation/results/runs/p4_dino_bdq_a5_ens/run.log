@@ -1,0 +1,34 @@
+[16:27:02] run p4_dino_bdq_a5_ens @ fcb2f00: {"name": "p4_dino_bdq_a5_ens", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "bdq"}, "eval": {"action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false}, "anonymizer_from": "p2_bdq_a5_ens"}
+[16:27:04] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[16:27:05] loaded anonymizer from p2_bdq_a5_ens (missing 0, unexpected 0)
+[16:27:27] materialised anonymised dataset (22s)
+[16:27:30] strong eval: training person frame_dino_probe on anonymised data
+[16:28:00]   [person] epoch 1/12 loss 3.336 train_acc 5.9 (29s)
+[16:28:30]   [person] epoch 2/12 loss 3.230 train_acc 9.9 (31s)
+[16:29:00]   [person] epoch 3/12 loss 3.165 train_acc 11.1 (30s)
+[16:29:31]   [person] epoch 4/12 loss 3.077 train_acc 13.4 (31s)
+[16:30:01]   [person] epoch 5/12 loss 3.003 train_acc 14.0 (30s)
+[16:30:31]   [person] epoch 6/12 loss 2.931 train_acc 16.5 (31s)
+[16:31:01]   [person] epoch 7/12 loss 2.879 train_acc 17.2 (30s)
+[16:31:32]   [person] epoch 8/12 loss 2.842 train_acc 17.0 (31s)
+[16:32:02]   [person] epoch 9/12 loss 2.818 train_acc 18.4 (30s)
+[16:32:32]   [person] epoch 10/12 loss 2.783 train_acc 19.0 (30s)
+[16:33:03]   [person] epoch 11/12 loss 2.753 train_acc 20.6 (31s)
+[16:33:33]   [person] epoch 12/12 loss 2.757 train_acc 20.2 (30s)
+[16:34:25]   strong person/frame_dino_probe: 18.56
+[16:34:28] strong eval: training person frame_dino_ft on anonymised data
+[16:35:59]   [person] epoch 1/12 loss 3.295 train_acc 4.2 (91s)
+[16:37:31]   [person] epoch 2/12 loss 3.103 train_acc 9.3 (92s)
+[16:39:04]   [person] epoch 3/12 loss 2.756 train_acc 18.4 (93s)
+[16:40:37]   [person] epoch 4/12 loss 2.459 train_acc 27.8 (94s)
+[16:41:51]   [person] epoch 5/12 loss 2.298 train_acc 31.9 (74s)
+[16:43:23]   [person] epoch 6/12 loss 2.091 train_acc 37.8 (92s)
+[16:44:57]   [person] epoch 7/12 loss 1.984 train_acc 42.2 (94s)
+[16:46:30]   [person] epoch 8/12 loss 1.888 train_acc 44.8 (94s)
+[16:48:05]   [person] epoch 9/12 loss 1.799 train_acc 47.5 (94s)
+[16:49:39]   [person] epoch 10/12 loss 1.709 train_acc 50.8 (94s)
+[16:51:12]   [person] epoch 11/12 loss 1.705 train_acc 51.1 (94s)
+[16:52:46]   [person] epoch 12/12 loss 1.665 train_acc 52.7 (94s)
+[16:53:40]   strong person/frame_dino_ft: 35.12
+[16:53:40] DONE p4_dino_bdq_a5_ens: action None  privacy top1 (strong, best attacker) 35.12  (26.6 min)
+[16:53:41] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p4_dino_bdq_a5_ens
