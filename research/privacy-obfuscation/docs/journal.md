@@ -555,3 +555,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   alpha 7 ensemble is on the same curve as everything else.
 - p2_bdq_down4_a5_ens collapsed at epoch 3-4 (action 17, adversaries 3.5); the collapse guard keeps epoch 2.
 - VP-UCF101 dose for H27 extended: p3_diff_down32 (3x4 px), p3_diff_down64 (1x2 px) join p3_diff_down8/16.
+
+### 2026-10-27 21:35 UTC: dose x20; BDQ a7 warm collapses
+- p1_diff_down20 (6x8 px motion map): 95.3 / 82.4 (ResNet-50 64.0). Dose (action / identity): x8 95.5/88.3,
+  x16 94.8/84.6, x20 95.3/82.4, x32 93.6/63.9, x40 87.8/57.2, x64 69.9/11.0.
+- p2_bdq_a7_ens_warm: action collapsed at epoch 6 (17%); the guard kept an earlier epoch: 64.7 / 27.1, on the curve.
+- Attacker-budget check for the best low-utility point: p1_diff_down64_e24 trains every model 24 epochs instead
+  of 12. If identity rises well above 11, the result is attacker under-training rather than obfuscation.

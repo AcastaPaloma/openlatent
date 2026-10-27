@@ -1,0 +1,23 @@
+{
+ "name": "p1_diff_down64_e24",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "diff",
+    "gain": 4.0
+   },
+   {
+    "type": "down",
+    "factor": 64
+   }
+  ]
+ },
+ "eval": {
+  "epochs": 24
+ },
+ "note": "attackers and action model trained twice as long: is 11.0 identity an under-trained attacker?"
+}
