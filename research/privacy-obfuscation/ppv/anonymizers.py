@@ -169,13 +169,17 @@ class VAELatent(nn.Module):
         b, c, t, h, w = x.shape
         f = x.expand(-1, 3, -1, -1, -1) if c == 1 else x
         f = f.transpose(1, 2).reshape(b * t, 3, h, w) * 2 - 1
+        # the VAE works at 1/8 resolution: pad to a multiple of 8 (UCF101 frames are 112x150)
+        ph, pw = (-h) % 8, (-w) % 8
+        if ph or pw:
+            f = F.pad(f, (0, pw, 0, ph), mode="replicate")
         with torch.no_grad():
             z = self.vae.encode(f).latent_dist.mean * self.vae.config.scaling_factor
         z = z.view(b, t, *z.shape[1:]).transpose(1, 2)
         z = z + self.edit(z)
         z = z.transpose(1, 2).reshape(b * t, *z.shape[1:2], *z.shape[3:])
-        y = self.vae.decode(z / self.vae.config.scaling_factor).sample
-        y = ((y + 1) / 2).clamp(0, 1).view(b, t, 3, h, w).transpose(1, 2)
+        y = self.vae.decode(z / self.vae.config.scaling_factor).sample[:, :, :h, :w]
+        y = ((y + 1) / 2).clamp(0, 1).reshape(b, t, 3, h, w).transpose(1, 2)
         return y.mean(1, keepdim=True) if self.out_gray else y
 
 
