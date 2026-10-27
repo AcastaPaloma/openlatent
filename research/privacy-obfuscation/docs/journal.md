@@ -286,3 +286,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H17: any obfuscation that preserves the person's motion silhouette (blackout, BDQ at low alpha,
   frame differences) preserves gait identity; only methods that distort the silhouette's dynamics
   can push identity toward chance on KTH.
+
+### 2026-10-27 13:20 UTC: the VAE fooled its adversary, not a fresh attacker (H18)
+- p2_vae_a1_vadv (frozen SD-VAE + learned latent edit, trained against an R3D adversary): in-training
+  R3D accuracy ~4% (chance) over the final epochs, yet a fresh R3D trained on the released output
+  reaches 75.6%; the frame ResNet-50 attacker reaches 54.0; action 96.2.
+- The anonymizer learned to fool a short-trained, frequently-restarted adversary rather than to
+  remove identity. In-training adversary accuracy is not a privacy measure, and results that report
+  it (or a frozen attacker) overstate privacy.
+- H18: keeping the adversary near convergence (k adversary updates per anonymizer update, fewer
+  restarts) forces f to remove identity rather than exploit B's optimisation state. Testing b_steps=3
+  for the VAE ensemble and BDQ alpha 5 ensemble.
+- UCF101 blur16: 40.0 / 68.7 cMAP: utility collapses before attributes do.

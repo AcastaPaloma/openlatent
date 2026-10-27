@@ -1,0 +1,44 @@
+[12:06:56] run p3_blur16 @ a1d5c52: {"name": "p3_blur16", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "blur", "sigma": 16}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}}
+[12:06:56] VP-UCF101 split 1: 9537 train / 3783 test videos
+[12:12:32] materialised anonymised dataset (336s)
+[12:12:33] strong eval: training action r2p1d on anonymised data
+[12:15:08]   [action] epoch 1/10 loss 3.583 train_acc 19.5 (156s)
+[12:17:37]   [action] epoch 2/10 loss 2.298 train_acc 43.4 (149s)
+[12:19:59]   [action] epoch 3/10 loss 1.486 train_acc 63.6 (141s)
+[12:22:20]   [action] epoch 4/10 loss 0.944 train_acc 77.0 (141s)
+[12:24:42]   [action] epoch 5/10 loss 0.597 train_acc 86.3 (141s)
+[12:27:04]   [action] epoch 6/10 loss 0.377 train_acc 91.5 (143s)
+[12:29:26]   [action] epoch 7/10 loss 0.232 train_acc 95.2 (142s)
+[12:31:47]   [action] epoch 8/10 loss 0.163 train_acc 97.0 (142s)
+[12:34:10]   [action] epoch 9/10 loss 0.116 train_acc 98.1 (143s)
+[12:36:27]   [action] epoch 10/10 loss 0.104 train_acc 98.4 (137s)
+[12:37:39]   strong action/r2p1d: 39.97
+[12:38:49]   weak action/r2p1d: 1.06
+[12:38:50] strong eval: training attr frame_r50 on anonymised data
+[12:40:44]   [attr] epoch 1/10 loss 0.513 train_acc 76.7 (114s)
+[12:42:35]   [attr] epoch 2/10 loss 0.470 train_acc 78.8 (111s)
+[12:44:26]   [attr] epoch 3/10 loss 0.464 train_acc 78.9 (111s)
+[12:46:16]   [attr] epoch 4/10 loss 0.458 train_acc 79.1 (110s)
+[12:48:07]   [attr] epoch 5/10 loss 0.449 train_acc 79.5 (111s)
+[12:49:58]   [attr] epoch 6/10 loss 0.438 train_acc 79.9 (111s)
+[12:51:44]   [attr] epoch 7/10 loss 0.430 train_acc 80.1 (106s)
+[12:53:31]   [attr] epoch 8/10 loss 0.421 train_acc 80.4 (107s)
+[12:55:18]   [attr] epoch 9/10 loss 0.416 train_acc 80.7 (107s)
+[12:57:03]   [attr] epoch 10/10 loss 0.413 train_acc 80.7 (105s)
+[12:58:43]   strong attr/frame_r50: 67.34  (AP per attribute [95.6, 73.3, 93.2, 34.6, 40.0], F1 57.4)
+[13:00:21]   weak attr/frame_r50: 59.24
+[13:00:22] strong eval: training attr r3d on anonymised data
+[13:01:34]   [attr] epoch 1/10 loss 0.506 train_acc 76.3 (72s)
+[13:02:51]   [attr] epoch 2/10 loss 0.466 train_acc 78.8 (77s)
+[13:04:08]   [attr] epoch 3/10 loss 0.459 train_acc 79.1 (77s)
+[13:05:26]   [attr] epoch 4/10 loss 0.450 train_acc 79.3 (78s)
+[13:06:42]   [attr] epoch 5/10 loss 0.439 train_acc 79.8 (77s)
+[13:07:59]   [attr] epoch 6/10 loss 0.423 train_acc 80.7 (77s)
+[13:09:16]   [attr] epoch 7/10 loss 0.403 train_acc 81.5 (77s)
+[13:10:26]   [attr] epoch 8/10 loss 0.378 train_acc 82.8 (70s)
+[13:11:44]   [attr] epoch 9/10 loss 0.358 train_acc 83.7 (78s)
+[13:13:01]   [attr] epoch 10/10 loss 0.341 train_acc 84.4 (78s)
+[13:13:30]   strong attr/r3d: 68.74  (AP per attribute [96.2, 74.8, 93.9, 36.1, 42.7], F1 64.5)
+[13:13:57]   weak attr/r3d: 59.44
+[13:13:57] DONE p3_blur16: action 39.97  privacy cmap (strong, best attacker) 68.74  (67.0 min)
+[13:14:12] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p3_blur16

@@ -169,6 +169,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     opt_fT = torch.optim.AdamW([{"params": fparams, "lr": cfg.get("lr_f", 1e-4)},
                                 {"params": T.parameters(), "lr": cfg.get("lr_t", 1e-4)}], weight_decay=0.01)
     alpha, epochs, restart = cfg.get("alpha", 1.0), cfg["epochs"], cfg.get("restart_every", 0)
+    b_steps = cfg.get("b_steps", 1)
     max_ent = n_priv * math.log(2) if priv_kind == "multilabel" else math.log(n_priv)
     keep_margin, collapse_drop = cfg.get("keep_margin", 5.0), cfg.get("collapse_drop", 30.0)
     collapse_patience, min_action = cfg.get("collapse_patience", 3), cfg.get("min_action", 40.0)
@@ -197,13 +198,17 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             opt_fT.step()
             zd = z.detach()
             lbs = []
+            # b_steps adversary updates per f update keep B close to a converged attacker. With one
+            # step, f learned to fool a short-trained B: p2_vae_a1_vadv's in-training R3D sat at ~4%
+            # while a fresh R3D trained on its output reached 75.6%.
             for i, (B, opt_B) in enumerate(zip(Bs, opts_B)):
-                with torch.autocast("cuda", dtype=torch.bfloat16):
-                    pb2 = B(zd)
-                    lb = loss_fn(pb2, yp, priv_kind)
-                opt_B.zero_grad(set_to_none=True)
-                lb.backward()
-                opt_B.step()
+                for _ in range(b_steps):
+                    with torch.autocast("cuda", dtype=torch.bfloat16):
+                        pb2 = B(zd)
+                        lb = loss_fn(pb2, yp, priv_kind)
+                    opt_B.zero_grad(set_to_none=True)
+                    lb.backward()
+                    opt_B.step()
                 lbs.append(lb.item())
                 s["acc_b"][i] += n_correct(pb2.float(), yp, priv_kind)
             n = len(ya)

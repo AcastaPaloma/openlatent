@@ -63,3 +63,4 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p3_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | ilic | 58.9 | **70.3** | 64.7% | 69.4 / 70.3 | 1.7 | 61.2 | 95 |
 | p3_pix16 | ucf101_vp | `{type: pixelate, factor: 16}` | s1 | 55.2 | **70.9** | 68.0% | 69.0 / 70.9 | 1.6 | 60.9 | 65 |
 | p3_down16 | ucf101_vp | `{type: down, factor: 16}` | ilic | 53.7 | **70.3** | 64.9% | 68.5 / 70.3 | 2.2 | 61.0 | 53 |
+| p3_blur16 | ucf101_vp | `{type: blur, sigma: 16}` | s1 | 40.0 | **68.7** | 56.2% | 67.3 / 68.7 | 1.1 | 59.4 | 67 |
