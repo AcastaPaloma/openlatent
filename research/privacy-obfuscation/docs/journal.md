@@ -200,3 +200,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   70.3 (65%). As on KTH, utility drops much faster than privacy.
 - p2_unet_a1_ens (stopped early by the guard): 91.8 / 89.1 identity, no privacy.
 - Best KTH learned result in leakage terms: BDQ alpha 3, 44% of raw identity leakage at -8 action.
+
+### 2026-10-27 10:05 UTC: x64 downsampling calibrates against BDQ; frame difference leaks on UCF101
+- p1_down64 (KTH): action 48.7, identity 38.1 (32.1 / 38.1), leakage 36%. BDQ's supplementary
+  reports x64 at 56.21 / 58.35; ours is in the same regime (both lower), so our attackers aren't
+  unusually weak. It's the only fixed filter below 40% identity, and it halves action.
+- p1_bgmedian_scenario: 56.0 / 64.0 (64.0 / 62.0). On the scenario split, the scene alone still
+  identifies the subject 64% of the time.
+- p3_diff (UCF101): action 88.4, cMAP 76.0, leakage 97%. Frame differences on UCF101 keep nearly all
+  attribute information (camera motion and edges carry appearance), unlike KTH's static camera.
+- H15: BDQ's remaining 46% identity on KTH is gait, not scene (BDQ deletes static pixels). Test:
+  p2_bdq_a3_scenario. If it holds on the scenario split, it's person-specific motion.

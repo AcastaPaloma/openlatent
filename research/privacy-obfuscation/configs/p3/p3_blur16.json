@@ -1,0 +1,14 @@
+{
+ "name": "p3_blur16",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "blur",
+  "sigma": 16
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ }
+}
