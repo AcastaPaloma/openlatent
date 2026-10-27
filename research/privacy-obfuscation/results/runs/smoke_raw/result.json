@@ -1,0 +1,45 @@
+{
+ "name": "smoke_raw",
+ "config": {
+  "name": "smoke_raw",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  },
+  "eval": {
+   "epochs": 1,
+   "repeats": 1,
+   "action": [
+    "r2p1d"
+   ],
+   "privacy": [
+    "frame_r50",
+    "r3d"
+   ],
+   "clean_attacker": true
+  }
+ },
+ "git": "919b587",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "strong": {
+  "action/r2p1d": 97.32441306114197,
+  "person/frame_r50": 13.04347813129425,
+  "person/r3d": 81.43812417984009
+ },
+ "weak": {
+  "action/r2p1d": 96.32107019424438,
+  "person/frame_r50": 12.876254320144653,
+  "person/r3d": 84.61538553237915
+ },
+ "action_top1": 97.32441306114197,
+ "privacy_top1": 81.43812417984009,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 4.6899570306142175
+}

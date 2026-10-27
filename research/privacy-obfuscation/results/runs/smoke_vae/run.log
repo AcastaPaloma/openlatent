@@ -1,0 +1,3 @@
+[05:50:40] run smoke_vae @ 919b587: {"name": "smoke_vae", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "vae_latent"}, "adv": {"epochs": 1, "alpha": 1.0, "restart_every": 0, "batch": 4, "repeats": 1}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r18"], "clean_attacker": false}}
+[05:50:42] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[06:02:22]   [adv] epoch 1/1 action_acc 74.6 adv_acc 6.9 adv_entropy 3.18/3.22 (685s)

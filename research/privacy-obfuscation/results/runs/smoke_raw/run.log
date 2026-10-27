@@ -1,0 +1,22 @@
+[05:50:40] run smoke_raw @ 919b587: {"name": "smoke_raw", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "raw"}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r50", "r3d"], "clean_attacker": true}}
+[05:50:42] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:50:43] strong eval: training action r2p1d on anonymised data
+[05:51:07]   [action] epoch 1/1 loss 0.608 train_acc 78.9 (23s)
+[05:51:21]   strong action/r2p1d: 97.32
+[05:51:22] training clean action model r2p1d (cached at /home/ubuntu/work/cache/kth_ilic_action_r2p1d_e1.pt)
+[05:52:05]   [action] epoch 1/1 loss 0.584 train_acc 80.5 (42s)
+[05:52:17]   weak action/r2p1d: 96.32
+[05:52:19] strong eval: training person frame_r50 on anonymised data
+[05:52:48]   [person] epoch 1/1 loss 3.169 train_acc 9.4 (28s)
+[05:53:19]   strong person/frame_r50: 13.04
+[05:53:20] training clean person model frame_r50 (cached at /home/ubuntu/work/cache/kth_ilic_person_frame_r50_e1.pt)
+[05:53:44]   [person] epoch 1/1 loss 3.149 train_acc 10.3 (24s)
+[05:54:10]   weak person/frame_r50: 12.88
+[05:54:12] strong eval: training person r3d on anonymised data
+[05:54:38]   [person] epoch 1/1 loss 1.563 train_acc 67.9 (26s)
+[05:54:49]   strong person/r3d: 81.44
+[05:54:49] training clean person model r3d (cached at /home/ubuntu/work/cache/kth_ilic_person_r3d_e1.pt)
+[05:55:12]   [person] epoch 1/1 loss 1.586 train_acc 66.6 (23s)
+[05:55:22]   weak person/r3d: 84.62
+[05:55:22] DONE smoke_raw: action 97.32  privacy (strong, best attacker) 81.44  (4.7 min)
+[05:55:22] HF upload failed: RepositoryNotFoundError("404 Client Error. (Request ID: Root=1-6ae03cca-0db59c6d0d1008ce6ef83781;89d5676a-a1b2-4633-9afd-0db54e3b4369)\n\nRepository Not Found for url: https://huggingface.co/api/models/KuanKuanKuan/openlatent-privacy/preupload/main.\nPlease make sure you specified the correct `repo_id` and `repo_type`.\nIf you are trying to access a private or gated repo, make sure you are authenticated. For more details, see https://huggingface.co/docs/huggingface_hub/authentication\nNote: Creating a commit assumes that the repo already exists on the Huggingface Hub. Please use `create_repo` if it's not the case.")

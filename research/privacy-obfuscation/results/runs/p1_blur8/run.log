@@ -1,0 +1,8 @@
+[05:57:45] run p1_blur8 @ 8508827: {"name": "p1_blur8", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "blur", "sigma": 8}}
+[05:57:47] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:57:56] materialised anonymised dataset (8s)
+[05:57:56] strong eval: training action r2p1d on anonymised data
+[05:59:24]   [action] epoch 1/12 loss 0.819 train_acc 67.2 (87s)
+[06:00:48]   [action] epoch 2/12 loss 0.287 train_acc 89.2 (84s)
+[06:02:12]   [action] epoch 3/12 loss 0.196 train_acc 93.0 (84s)
+[06:03:36]   [action] epoch 4/12 loss 0.153 train_acc 94.6 (84s)

@@ -1,0 +1,5 @@
+[05:55:26] run smoke_bdq @ 919b587: {"name": "smoke_bdq", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "bdq"}, "adv": {"epochs": 1, "alpha": 1.0, "restart_every": 0, "batch": 8, "repeats": 1, "lr_f": 0.01}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r18"], "clean_attacker": false}}
+[05:55:28] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:57:35]   [adv] epoch 1/1 action_acc 79.0 adv_acc 4.9 adv_entropy 3.21/3.22 sigma 1.59 (125s)
+[05:57:53] materialised anonymised dataset (17s)
+[05:57:53] strong eval: training action r2p1d on anonymised data

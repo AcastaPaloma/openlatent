@@ -1,0 +1,4 @@
+[05:57:37] run p1_down2 @ 8508827: {"name": "p1_down2", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "down", "factor": 2}}
+[05:57:38] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:57:47] materialised anonymised dataset (9s)
+[05:57:48] strong eval: training action r2p1d on anonymised data

@@ -1,0 +1,6 @@
+[05:57:36] run p1_raw @ 8508827: {"name": "p1_raw", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "raw"}}
+[05:57:38] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:57:39] strong eval: training action r2p1d on anonymised data
+[05:59:45]   [action] epoch 1/12 loss 0.492 train_acc 82.9 (125s)
+[06:01:52]   [action] epoch 2/12 loss 0.132 train_acc 95.3 (127s)
+[06:03:54]   [action] epoch 3/12 loss 0.091 train_acc 97.2 (122s)

@@ -1,0 +1,8 @@
+[05:57:40] run p1_pix8 @ 8508827: {"name": "p1_pix8", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "pixelate", "factor": 8}}
+[05:57:42] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:57:48] materialised anonymised dataset (6s)
+[05:57:49] strong eval: training action r2p1d on anonymised data
+[05:59:17]   [action] epoch 1/12 loss 0.640 train_acc 76.8 (87s)
+[06:00:40]   [action] epoch 2/12 loss 0.199 train_acc 93.1 (84s)
+[06:02:04]   [action] epoch 3/12 loss 0.134 train_acc 95.4 (84s)
+[06:03:28]   [action] epoch 4/12 loss 0.106 train_acc 95.9 (84s)
