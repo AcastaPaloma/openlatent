@@ -25,6 +25,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p2_bdq_a3_scenario | kth | `{type: bdq}` | scenario | 55.8 | **24.7** | 21.6% | 16.8 / 24.7 | 30.5 | 4.0 | 132 |
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1_ens | kth | `{type: bdq}` | ilic | 94.1 | **65.2** | 64.1% | 37.3 / 65.2 | 37.5 | 4.0 | 113 |
+| p2_down4_bdq_a3 | kth | `{type: chain, stages: [{type: down, factor: 4}, {type: bdq}]}` | ilic | 93.1 | **65.1** | 63.9% | 31.9 / 65.1 | 49.5 | 4.8 | 103 |
 | p2_bdq_a3_ens | kth | `{type: bdq}` | ilic | 96.7 | **68.6** | 67.6% | 47.8 / 68.6 | 31.6 | 4.0 | 112 |
 | p2_bdq_a3_lr3e-3_s1 | kth | `{type: bdq}` | ilic | 94.5 | **68.7** | 67.8% | 31.6 / 68.7 | 32.6 | 5.7 | 92 |
 | p2_bdq_a3_lr3e-3_s2 | kth | `{type: bdq}` | ilic | 91.6 | **66.6** | 65.5% | 35.8 / 66.6 | 34.3 | 4.2 | 91 |
@@ -57,6 +58,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 100.0% | 99.5 / 99.5 | 62.2 | 34.6 | 36 |
 | p1_raw | kth | `{type: raw}` | ilic | 97.5 | **99.5** | 100.0% | 99.5 / 99.0 | 97.2 | 99.3 | 106 |
 | p1_personbox | kth | `{type: person_box, mode: black, every: 8, dilate: 6}` | ilic | 94.1 | **96.3** | 96.7% | 96.3 / 96.0 | 52.5 | 81.4 | 59 |
+| p5_sanity_shuffle | kth | `{type: raw}` | ilic | - | **2.8** | -1.2% | 2.8 / 1.8 | - | - | 47 |
 | p1_bgmedian_scenario | kth | `{type: bg_median}` | scenario | 56.0 | **64.0** | 62.8% | 64.0 / 62.0 | 27.3 | 19.3 | 69 |
 | p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 98.1% | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
 | p1_blur8_scenario | kth | `{type: blur, sigma: 8}` | scenario | 77.7 | **87.7** | 87.6% | 86.2 / 87.7 | 16.7 | 7.2 | 36 |
@@ -65,6 +67,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p1_bgmedian_byaction | kth | `{type: bg_median}` | ilic | 62.5 | **90.6** | 90.7% | 86.6 / 90.6 | 42.0 | 48.5 | 36 |
 | p1_bgmedian | kth | `{type: bg_median}` | ilic | 59.4 | **89.3** | 89.3% | 83.9 / 89.3 | 42.0 | 48.5 | 36 |
 | p4_dino_bdq_a5_ens | kth | `{type: bdq}` | ilic | - | **35.1** | 32.6% | - / - | - | - | 27 |
+| p4_dino_down64 | kth | `{type: down, factor: 64}` | ilic | - | **36.6** | 34.2% | - / - | - | - | 18 |
 | p4_dino_down16 | kth | `{type: down, factor: 16}` | ilic | - | **94.0** | 94.2% | - / - | - | - | 27 |
 | p4_dino_blur8 | kth | `{type: blur, sigma: 8}` | ilic | - | **97.3** | 97.7% | - / - | - | - | 27 |
 | p4_dino_raw | kth | `{type: raw}` | ilic | - | **99.3** | 99.8% | - / - | - | - | 26 |

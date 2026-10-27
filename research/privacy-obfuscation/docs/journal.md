@@ -381,3 +381,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p4_dino_bdq_a3_s3: DINOv2 13.0 on the 68.4 / 28.9 BDQ output (R3D: 28.9). On every BDQ output so far the video
   attacker, not DINO, is the binding one.
 - Next: p1_diff_down8 (frame difference, then x8 downsampling): does coarse motion keep action but drop gait identity?
+
+### 2026-10-27 17:50 UTC: leakage audit (the "obfuscation incomplete vs evaluation bug" question)
+- Evaluation sanity: with train identity labels shuffled (raw video), test identity is at chance for every
+  attacker: ResNet-50 2.84, R3D 1.84, DINOv2 fine-tune 2.34 (chance 4.0). Every run also asserts that train and
+  test share no video. No label or split leakage in the pipeline.
+- Pixel nearest neighbour (copy the identity of the most similar obfuscated train frame; no learning):
+  blur8 73.1% identity, neighbour from the same recording session in 58% of test clips; down64 6.2%;
+  BDQ alpha-5 ensemble 11.2%, same session 3%. Contrast-stretched panels (results/audit/) show why:
+  * blur keeps the room's lighting pattern, which matches the subject's other clips from the same session:
+    scene leakage that is real, not a bug (outcome 1, via a KTH property);
+  * BDQ removes the scene entirely and leaves a 3-level silhouette of the moving body; the learned video
+    attacker's 37% comes from silhouette shape and motion over time (gait), also real leakage;
+  * down64 is 1x2 pixels per frame; a brightness-only control (p5_sanity_mean) tests whether per-frame lighting
+    alone explains its 38%.
+- p2_down4_bdq_a3 (x4 downsampling before BDQ): 93.1 / 65.1 (31.9 / 65.1), on the BDQ curve. Removing spatial
+  detail first doesn't remove gait (H20 spatial part rejected). p4_dino_down64: 36.6 (R3D/ResNet: 38.1).

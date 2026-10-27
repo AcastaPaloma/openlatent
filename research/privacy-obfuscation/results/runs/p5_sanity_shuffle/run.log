@@ -1,0 +1,47 @@
+[17:00:23] run p5_sanity_shuffle @ 2b38010: {"name": "p5_sanity_shuffle", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "raw"}, "shuffle_train_privacy": true, "eval": {"action": [], "privacy": ["frame_r50", "r3d", "frame_dino_ft"], "clean_attacker": false}}
+[17:00:25] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[17:00:25] SANITY: train privacy labels shuffled
+[17:00:25] strong eval: training person frame_r50 on anonymised data
+[17:01:41]   [person] epoch 1/12 loss 3.221 train_acc 4.5 (74s)
+[17:02:47]   [person] epoch 2/12 loss 3.208 train_acc 5.1 (65s)
+[17:03:53]   [person] epoch 3/12 loss 3.169 train_acc 7.5 (67s)
+[17:05:00]   [person] epoch 4/12 loss 3.085 train_acc 10.3 (67s)
+[17:06:06]   [person] epoch 5/12 loss 2.960 train_acc 14.8 (67s)
+[17:07:13]   [person] epoch 6/12 loss 2.804 train_acc 19.2 (67s)
+[17:08:20]   [person] epoch 7/12 loss 2.671 train_acc 22.6 (67s)
+[17:09:26]   [person] epoch 8/12 loss 2.538 train_acc 26.6 (67s)
+[17:10:28]   [person] epoch 9/12 loss 2.432 train_acc 30.0 (62s)
+[17:11:32]   [person] epoch 10/12 loss 2.376 train_acc 32.3 (64s)
+[17:12:39]   [person] epoch 11/12 loss 2.324 train_acc 34.2 (67s)
+[17:13:45]   [person] epoch 12/12 loss 2.315 train_acc 35.1 (67s)
+[17:14:28]   strong person/frame_r50: 2.84
+[17:14:29] strong eval: training person r3d on anonymised data
+[17:15:41]   [person] epoch 1/12 loss 3.232 train_acc 6.5 (72s)
+[17:16:50]   [person] epoch 2/12 loss 3.070 train_acc 10.7 (68s)
+[17:17:58]   [person] epoch 3/12 loss 2.792 train_acc 18.3 (68s)
+[17:19:05]   [person] epoch 4/12 loss 2.353 train_acc 28.9 (68s)
+[17:20:13]   [person] epoch 5/12 loss 1.807 train_acc 45.4 (68s)
+[17:21:21]   [person] epoch 6/12 loss 1.199 train_acc 66.4 (68s)
+[17:22:29]   [person] epoch 7/12 loss 0.729 train_acc 80.9 (68s)
+[17:23:36]   [person] epoch 8/12 loss 0.453 train_acc 89.5 (68s)
+[17:24:44]   [person] epoch 9/12 loss 0.300 train_acc 94.2 (67s)
+[17:25:35]   [person] epoch 10/12 loss 0.221 train_acc 96.1 (51s)
+[17:26:34]   [person] epoch 11/12 loss 0.186 train_acc 97.6 (59s)
+[17:27:44]   [person] epoch 12/12 loss 0.170 train_acc 97.6 (69s)
+[17:28:00]   strong person/r3d: 1.84
+[17:28:03] strong eval: training person frame_dino_ft on anonymised data
+[17:29:38]   [person] epoch 1/12 loss 3.354 train_acc 3.9 (94s)
+[17:31:12]   [person] epoch 2/12 loss 3.255 train_acc 4.3 (93s)
+[17:32:45]   [person] epoch 3/12 loss 3.233 train_acc 4.9 (93s)
+[17:34:18]   [person] epoch 4/12 loss 3.213 train_acc 5.1 (93s)
+[17:35:52]   [person] epoch 5/12 loss 3.196 train_acc 5.3 (94s)
+[17:37:25]   [person] epoch 6/12 loss 3.166 train_acc 6.9 (93s)
+[17:38:58]   [person] epoch 7/12 loss 3.116 train_acc 8.0 (93s)
+[17:40:31]   [person] epoch 8/12 loss 3.023 train_acc 11.5 (93s)
+[17:42:05]   [person] epoch 9/12 loss 2.880 train_acc 14.4 (94s)
+[17:43:38]   [person] epoch 10/12 loss 2.650 train_acc 20.0 (93s)
+[17:45:12]   [person] epoch 11/12 loss 2.392 train_acc 27.7 (93s)
+[17:46:45]   [person] epoch 12/12 loss 2.261 train_acc 32.3 (93s)
+[17:47:39]   strong person/frame_dino_ft: 2.34
+[17:47:39] DONE p5_sanity_shuffle: action None  privacy top1 (strong, best attacker) 2.84  (47.3 min)
+[17:47:40] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p5_sanity_shuffle

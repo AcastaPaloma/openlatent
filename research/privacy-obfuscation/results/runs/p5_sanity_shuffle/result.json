@@ -1,0 +1,77 @@
+{
+ "name": "p5_sanity_shuffle",
+ "config": {
+  "name": "p5_sanity_shuffle",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  },
+  "shuffle_train_privacy": true,
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_r50",
+    "r3d",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  }
+ },
+ "git": "2b38010",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 2.842809446156025,
+  "person/r3d": 1.8394649028778076,
+  "person/frame_dino_ft": 2.341137081384659
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 2.842809446156025,
+   "by_action": {
+    "0": 6.060606241226196,
+    "1": 0.0,
+    "2": 1.0101010091602802,
+    "3": 0.0,
+    "4": 3.999999910593033,
+    "5": 5.999999865889549
+   }
+  },
+  "strong/person/r3d": {
+   "main": 1.8394649028778076,
+   "by_action": {
+    "0": 3.030303120613098,
+    "1": 0.0,
+    "2": 3.030303120613098,
+    "3": 2.9999999329447746,
+    "4": 0.9999999776482582,
+    "5": 0.9999999776482582
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 2.341137081384659,
+   "by_action": {
+    "0": 4.040404036641121,
+    "1": 1.9999999552965164,
+    "2": 5.050504952669144,
+    "3": 1.9999999552965164,
+    "4": 0.0,
+    "5": 0.9999999776482582
+   }
+  }
+ },
+ "action_top1": null,
+ "privacy_main": 2.842809446156025,
+ "privacy_top1": 2.842809446156025,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 47.2722113331159
+}
