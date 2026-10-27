@@ -17,8 +17,8 @@ fetch() {  # fetch URL DEST
   local url="$1" dest="$2"
   [ -f "$dest" ] && { echo "have $(basename "$dest")"; return 0; }
   local expected
-  expected=$(curl -ksIL --max-time 60 "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{n=$2} END{print n}')
-  curl -kfsSL --retry 8 --retry-delay 10 -C - -o "$dest.part" "$url"
+  expected=$(curl -sIL --max-time 60 "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{n=$2} END{print n}')
+  curl -fsSL --retry 8 --retry-delay 10 -C - -o "$dest.part" "$url"
   local actual; actual=$(stat -c%s "$dest.part")
   if [ -n "$expected" ] && [ "$actual" != "$expected" ]; then
     echo "size mismatch for $url: $actual vs $expected" >&2; rm -f "$dest.part"; return 1
