@@ -1,0 +1,9 @@
+{
+ "name": "p1_bgmedian_byaction",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bg_median"
+ }
+}

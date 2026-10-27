@@ -1,0 +1,56 @@
+{
+ "name": "p1_bgmedian",
+ "config": {
+  "name": "p1_bgmedian",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "bg_median"
+  }
+ },
+ "git": "6cc0ea5",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "action/r2p1d": 59.364551305770874,
+  "person/frame_r50": 83.94649028778076,
+  "person/r3d": 89.29765820503235
+ },
+ "weak": {
+  "action/r2p1d": 41.97324514389038,
+  "person/frame_r50": 48.49498271942139,
+  "person/r3d": 45.31772434711456
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 59.364551305770874
+  },
+  "weak/action/r2p1d": {
+   "main": 41.97324514389038
+  },
+  "strong/person/frame_r50": {
+   "main": 83.94649028778076
+  },
+  "weak/person/frame_r50": {
+   "main": 48.49498271942139
+  },
+  "strong/person/r3d": {
+   "main": 89.29765820503235
+  },
+  "weak/person/r3d": {
+   "main": 45.31772434711456
+  }
+ },
+ "action_top1": 59.364551305770874,
+ "privacy_main": 89.29765820503235,
+ "privacy_top1": 89.29765820503235,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 36.34270819028219
+}

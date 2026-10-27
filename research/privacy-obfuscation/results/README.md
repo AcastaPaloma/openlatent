@@ -10,6 +10,7 @@ Chance: action 16.7, identity 4.0. Sorted by action - privacy (strong).
 
 | run | dataset | anonymizer | split | action (strong) | identity (strong, best) | identity frame / video | action (weak) | identity (weak) | min |
 |---|---|---|---|---|---|---|---|---|---|
+| p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
 | p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
 | p1_pix16 | kth | `{type: pixelate, factor: 16}` | ilic | 93.5 | **93.1** | 90.8 / 93.1 | 16.7 | 9.9 | 35 |
@@ -18,8 +19,10 @@ Chance: action 16.7, identity 4.0. Sorted by action - privacy (strong).
 | p1_pix8 | kth | `{type: pixelate, factor: 8}` | ilic | 96.3 | **97.2** | 96.2 / 97.2 | 16.7 | 14.0 | 70 |
 | p1_raw_seq | kth | `{type: raw}` | seq | 99.2 | **100.0** | 100.0 / 100.0 | 99.0 | 100.0 | 73 |
 | p1_diff | kth | `{type: diff, gain: 4.0}` | ilic | 96.5 | **97.5** | 93.0 / 97.5 | 82.9 | 13.5 | 35 |
+| p1_down8 | kth | `{type: down, factor: 8}` | ilic | 96.2 | **97.2** | 97.2 / 94.6 | 19.1 | 10.9 | 36 |
 | p1_down4 | kth | `{type: down, factor: 4}` | ilic | 97.0 | **98.2** | 97.7 / 98.2 | 79.6 | 37.5 | 106 |
 | p1_pix4 | kth | `{type: pixelate, factor: 4}` | ilic | 97.7 | **99.0** | 98.2 / 99.0 | 58.0 | 23.2 | 70 |
 | p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 99.5 / 99.5 | 62.2 | 34.6 | 36 |
 | p1_raw | kth | `{type: raw}` | ilic | 97.5 | **99.5** | 99.5 / 99.0 | 97.2 | 99.3 | 106 |
 | p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
+| p1_bgmedian | kth | `{type: bg_median}` | ilic | 59.4 | **89.3** | 83.9 / 89.3 | 42.0 | 48.5 | 36 |

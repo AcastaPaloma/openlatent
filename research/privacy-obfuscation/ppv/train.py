@@ -108,7 +108,7 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
     Returns {"main": top-1 or cMAP (percent), ...details}."""
     kind = kind_of(task, priv_kind)
     model.to(DEV).eval()
-    agg, labels = None, None
+    agg, labels, actions = None, None, torch.zeros(n_rows, dtype=torch.long)
     for batch in dl:
         x = to_input(batch[0])
         with torch.autocast("cuda", dtype=torch.bfloat16):
@@ -120,6 +120,7 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
         probs = logits.sigmoid() if kind == "multilabel" else logits.softmax(1)
         agg.index_add_(0, batch[3], probs)
         labels[batch[3]] = y
+        actions[batch[3]] = batch[1]
     if kind == "multilabel":
         s, lab = agg.numpy(), labels.numpy()
         aps = [average_precision(s[:, j], lab[:, j]) for j in range(s.shape[1])]
@@ -128,7 +129,11 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
         f1 = (2 * tp / (pred.sum(0) + labels.sum(0)).clamp(min=1)).mean().item()
         return {"main": 100 * float(np.nanmean(aps)), "ap": [100 * a for a in aps], "f1": 100 * f1,
                 "prevalence": [100 * float(v) for v in lab.mean(0)]}
-    return {"main": 100.0 * (agg.argmax(1) == labels).float().mean().item()}
+    correct = (agg.argmax(1) == labels).float()
+    # per-action accuracy: separates e.g. identity from locomotion clips (person crosses the
+    # frame) from stationary ones (boxing, hand gestures), where scene and person mix differently
+    by_action = {int(a): 100.0 * correct[actions == a].mean().item() for a in actions.unique()}
+    return {"main": 100.0 * correct.mean().item(), "by_action": by_action}
 
 
 def privacy_entropy(logits, kind):

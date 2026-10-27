@@ -127,3 +127,23 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H10: the instability is f learning to output a near-constant video once the adversary is
   briefly fooled; T then has no signal either. Lower alpha (0.5, queued), a lower lr_f, or a
   reconstruction/utility floor term should stabilise it.
+
+### 2026-10-27 08:35 UTC: the scene alone identifies KTH "people" (H6 confirmed)
+| run | action | identity strong (frame / video) | weak |
+|---|---|---|---|
+| p1_bgmedian (per-video temporal median: moving people removed, scene kept) | 59.4 | 89.3 (83.9 / 89.3) | 42.0 / 48.5 |
+| p2_bdq_a1_vadv (learned BDQ vs R3D adversary) | 93.8 | 62.7 (29.8 / 62.7) | 39.1 / 5.5 |
+| p1_down8 | 96.2 | 97.2 (97.2 / 94.6) | 19.1 / 10.9 |
+- A frame showing only the background identifies the KTH subject 84-89% of the time: each
+  subject's videos share recording sessions, so the scene acts as an ID badge. Caveat: the
+  median keeps people who barely move (boxing, clapping, waving), so part of the 89% may still be
+  the person. Requeued with a per-action identity breakdown (p1_bgmedian_byaction) to separate
+  locomotion clips (person gone) from stationary ones.
+- Consequences: (1) no obfuscation that touches only the person (Ilic-style selective masking)
+  can go below ~84-89% identity on KTH under a strong attacker; (2) low KTH identity numbers in
+  the literature (BDQ 7.15%) are consistent with erasing the static scene (temporal differences
+  delete it), not only the person. KTH actor-ID is confounded by scene.
+- Training BDQ against the video adversary helps a little (69.9 -> 62.7) but leaves a lot.
+- H11: on KTH, identity = scene + gait. A credible privacy claim needs (a) a scene-only control as
+  the floor and (b) a benchmark where scene is not tied to identity: VP-UCF101 attributes
+  (phase 3), or KTH person crops (future).
