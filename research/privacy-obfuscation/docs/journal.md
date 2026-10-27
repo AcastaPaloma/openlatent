@@ -37,3 +37,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Supports H2 (provisional; the retrained attackers are the real test).
 - H4: anonymizers trained only against frame adversaries will show a large gap between frame
   and video attackers under the strong protocol. The video attacker number is the one to report.
+
+### 2026-10-27 07:12 UTC: p2_unet_a1 collapsed (killed)
+- Residual 3D U-Net, alpha 1, frame adversary. Training action accuracy held at 90-96% through
+  epoch 10, then fell to 58 / 17 / 16.5 / 15.7 (chance 16.7) at epochs 11-14, while the adversary
+  reached chance (3.6%, max entropy). The privacy term won the min-max game and f erased all content.
+  The final epoch was all the code kept, so the run would have reported near-chance utility. Killed.
+- Fix (train.py): keep the latest epoch whose action accuracy is within 5 points of the best so
+  far; stop when it falls 30 points below the best and restore the kept epoch. Applies to every
+  learned run started after this commit; p2_unet_a3 (VM4) started before it and is watched.
+- H5: entropy-maximisation games need explicit utility protection (best-epoch keeping, or an
+  alpha schedule that backs off when action accuracy drops); the reported trade-off of learned
+  anonymizers depends heavily on the stopping rule, which papers rarely report.
