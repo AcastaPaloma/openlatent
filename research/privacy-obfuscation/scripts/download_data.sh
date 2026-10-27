@@ -16,6 +16,7 @@ mkdir -p "$RAW"
 fetch() {  # fetch URL DEST
   local url="$1" dest="$2"
   [ -f "$dest" ] && { echo "have $(basename "$dest")"; return 0; }
+  mkdir -p "$(dirname "$dest")"
   local expected
   expected=$(curl -sIL --max-time 60 "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{n=$2} END{print n}')
   curl -fsSL --retry 8 --retry-delay 10 -C - -o "$dest.part" "$url"

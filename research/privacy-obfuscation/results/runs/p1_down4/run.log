@@ -4,3 +4,10 @@
 [05:58:18] strong eval: training action r2p1d on anonymised data
 [06:00:34]   [action] epoch 1/12 loss 0.531 train_acc 81.4 (135s)
 [06:02:39]   [action] epoch 2/12 loss 0.149 train_acc 94.8 (124s)
+[06:04:39]   [action] epoch 3/12 loss 0.103 train_acc 96.4 (121s)
+[06:06:43]   [action] epoch 4/12 loss 0.083 train_acc 97.0 (124s)
+[06:08:49]   [action] epoch 5/12 loss 0.062 train_acc 98.3 (127s)
+[06:10:56]   [action] epoch 6/12 loss 0.029 train_acc 99.2 (127s)
+[06:13:03]   [action] epoch 7/12 loss 0.020 train_acc 99.5 (127s)
+[06:15:10]   [action] epoch 8/12 loss 0.014 train_acc 99.7 (127s)
+[06:17:16]   [action] epoch 9/12 loss 0.008 train_acc 99.9 (127s)
