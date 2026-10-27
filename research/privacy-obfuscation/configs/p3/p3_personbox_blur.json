@@ -1,0 +1,17 @@
+{
+ "name": "p3_personbox_blur",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "person_box",
+  "mode": "blur",
+  "every": 8,
+  "dilate": 6,
+  "sigma": 8.0
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ }
+}
