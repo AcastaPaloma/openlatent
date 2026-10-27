@@ -187,7 +187,7 @@ def main(cfg_path):
             torch.cuda.empty_cache()
 
     result["strong"], result["weak"], result["details"] = strong, weak, details
-    result["action_top1"] = max(v for k, v in strong.items() if k.startswith("action/"))
+    result["action_top1"] = max([v for k, v in strong.items() if k.startswith("action/")], default=None)  # None: attack-only
     result["privacy_main"] = max(v for k, v in strong.items() if not k.startswith("action/"))
     if pk == "multiclass":
         result["privacy_top1"] = result["privacy_main"]
@@ -198,7 +198,7 @@ def main(cfg_path):
     with open(os.path.join(out, "result.json.tmp"), "w") as fh:
         json.dump(result, fh, indent=1)
     os.replace(os.path.join(out, "result.json.tmp"), os.path.join(out, "result.json"))
-    log(f"DONE {name}: action {result['action_top1']:.2f}  privacy {result['privacy_metric']} (strong, best attacker) "
+    log(f"DONE {name}: action {result['action_top1'] if result['action_top1'] is None else round(result['action_top1'], 2)}  privacy {result['privacy_metric']} (strong, best attacker) "
         f"{result['privacy_main']:.2f}  ({result['minutes']:.1f} min)")
     if tmp_dir:
         shutil.rmtree(tmp_dir, ignore_errors=True)
