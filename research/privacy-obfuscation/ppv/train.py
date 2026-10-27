@@ -145,15 +145,24 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
         min over f, T : CE(T(f(x)), action) - alpha * H(B(f(x)))      [push B to max entropy]
         min over B    : privacy loss of B(f(x))
     B is re-initialised every `restart_every` epochs so f cannot overfit to one adversary.
+    `adversary` may be a list (e.g. ["frame_r18", "r3d"]): every adversary trains on f's output and
+    f maximises their mean entropy, so it cannot hide appearance from a frame model while leaving
+    gait for a video model.
     """
     T = models.build(cfg.get("utility", "r2p1d"), n_actions).to(DEV).train()
-    new_B = lambda: models.build(cfg.get("adversary", "frame_r18"), n_priv).to(DEV).train()  # noqa: E731
-    B = new_B()
+    adv_names = cfg.get("adversary", "frame_r18")
+    adv_names = [adv_names] if isinstance(adv_names, str) else list(adv_names)
+
+    def new_advs():
+        Bs = [models.build(a, n_priv).to(DEV).train() for a in adv_names]
+        opts = [torch.optim.AdamW(B.parameters(), lr=cfg.get("lr_b", 2e-4), weight_decay=0.01) for B in Bs]
+        return Bs, opts
+
+    Bs, opts_B = new_advs()
     f.to(DEV).train()
     fparams = [p for p in f.parameters() if p.requires_grad]
     opt_fT = torch.optim.AdamW([{"params": fparams, "lr": cfg.get("lr_f", 1e-4)},
                                 {"params": T.parameters(), "lr": cfg.get("lr_t", 1e-4)}], weight_decay=0.01)
-    opt_B = torch.optim.AdamW(B.parameters(), lr=cfg.get("lr_b", 2e-4), weight_decay=0.01)
     alpha, epochs, restart = cfg.get("alpha", 1.0), cfg["epochs"], cfg.get("restart_every", 0)
     max_ent = n_priv * math.log(2) if priv_kind == "multilabel" else math.log(n_priv)
     keep_margin, collapse_drop = cfg.get("keep_margin", 5.0), cfg.get("collapse_drop", 30.0)
@@ -162,44 +171,50 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     hist = []
     for ep in range(epochs):
         if restart and ep and ep % restart == 0:
-            B = new_B()
-            opt_B = torch.optim.AdamW(B.parameters(), lr=cfg.get("lr_b", 2e-4), weight_decay=0.01)
+            Bs, opts_B = new_advs()
             log(f"  adversary restarted at epoch {ep}")
         t0 = time.time()
-        s = dict(la=0.0, ent=0.0, lb=0.0, acc_a=0.0, acc_b=0.0, n=0)
+        s = dict(la=0.0, ent=0.0, lb=0.0, acc_a=0.0, acc_b=[0.0] * len(Bs), n=0)
         for batch in dl:
             x, ya, yp = to_input(batch[0]), batch[1].to(DEV), batch[2].to(DEV)
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 z = f(x)
                 la_logits = T(z)
-                pb = B(z)
                 la = F.cross_entropy(la_logits.float(), ya)
-                ent = privacy_entropy(pb, priv_kind)
+                ent = torch.stack([privacy_entropy(B(z), priv_kind) for B in Bs]).mean()
                 loss = la - alpha * ent
             opt_fT.zero_grad(set_to_none=True)
             loss.backward()
             opt_fT.step()
-            with torch.autocast("cuda", dtype=torch.bfloat16):
-                pb2 = B(z.detach())
-                lb = loss_fn(pb2, yp, priv_kind)
-            opt_B.zero_grad(set_to_none=True)
-            lb.backward()
-            opt_B.step()
+            zd = z.detach()
+            lbs = []
+            for i, (B, opt_B) in enumerate(zip(Bs, opts_B)):
+                with torch.autocast("cuda", dtype=torch.bfloat16):
+                    pb2 = B(zd)
+                    lb = loss_fn(pb2, yp, priv_kind)
+                opt_B.zero_grad(set_to_none=True)
+                lb.backward()
+                opt_B.step()
+                lbs.append(lb.item())
+                s["acc_b"][i] += n_correct(pb2.float(), yp, priv_kind)
             n = len(ya)
             s["la"] += la.item() * n
             s["ent"] += ent.item() * n
-            s["lb"] += lb.item() * n
+            s["lb"] += sum(lbs) / len(lbs) * n
             s["acc_a"] += (la_logits.argmax(1) == ya).sum().item()
-            s["acc_b"] += n_correct(pb2.float(), yp, priv_kind)
             s["n"] += n
         n = s["n"]
+        accs = [100 * a / n for a in s["acc_b"]]
         row = dict(epoch=ep + 1, action_loss=s["la"] / n, adv_entropy=s["ent"] / n, adv_loss=s["lb"] / n,
-                   train_action_acc=100 * s["acc_a"] / n, train_adv_acc=100 * s["acc_b"] / n)
+                   train_action_acc=100 * s["acc_a"] / n, train_adv_acc=max(accs),
+                   train_adv_accs=dict(zip(adv_names, accs)))
         extra = ""
         if hasattr(f, "log_sigma"):
             row["sigma"] = f.log_sigma.exp().item()
             extra = f" sigma {row['sigma']:.2f}"
         hist.append(row)
+        if len(accs) > 1:
+            extra += " per-adversary " + " ".join(f"{k}={v:.1f}" for k, v in row["train_adv_accs"].items())
         log(f"  [adv] epoch {ep + 1}/{epochs} action_acc {row['train_action_acc']:.1f} adv_acc {row['train_adv_acc']:.1f} "
             f"adv_entropy {row['adv_entropy']:.2f}/{max_ent:.2f}{extra} ({time.time() - t0:.0f}s)")
         # The game can collapse: the privacy term wins and f erases everything, action included
