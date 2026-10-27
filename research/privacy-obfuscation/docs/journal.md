@@ -250,3 +250,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   filter (at ~35-38% identity, BDQ keeps 28 more action points than x64 downsampling).
 - The video attacker is 20 points above the frame attacker at every alpha. Training against a frame
   adversary leaves gait; this gap is what the ensemble runs are testing.
+
+### 2026-10-27 11:45 UTC: BDQ alpha 3 is seed-sensitive
+- p2_bdq_a3_lr3e-3_s1 (seed 1): action 94.5, identity 68.7 (31.6 / 68.7), vs seed 0: 89.1 / 46.2.
+  A 22-point identity gap between seeds of one config. The final blur sigma doesn't explain it
+  (seed 1 ended blurrier: 4.16 vs 2.69), so the learned quantisation thresholds and the adversarial
+  dynamics decide the outcome.
+- Consequence: no single-seed point on the curve can be claimed. Running seeds 2 (Colab) and 3,
+  plus alpha 5 seed 1. Report mean and range per config.
+- H16: the game has several end states for the same hyperparameters; selecting the anonymizer by a
+  held-out privacy check (rather than the last epoch) would be a fairer comparison point, but must
+  use data disjoint from the final test set.
