@@ -1,0 +1,1 @@
+sealed exam started after dev grid of 48 runs (arms A0-A5,A7,A8-A11,B1-B3) was complete; list fixed in docs/experiments/ct-preregistration.md

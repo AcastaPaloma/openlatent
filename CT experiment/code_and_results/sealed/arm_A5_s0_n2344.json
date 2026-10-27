@@ -1,0 +1,50 @@
+{
+ "arm": "A5",
+ "seed": 0,
+ "steps": 1500,
+ "n_scans": 2344,
+ "n_gallery": 169,
+ "n_query": 240,
+ "chance_top1": 0.005917159763313609,
+ "metadata_floor_top1": 0.041666666666666664,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.08333333333333333,
+   "top5": 0.2375,
+   "mrr": 0.16322497963024973
+  },
+  "knn_pca_white": {
+   "top1": 0.1625,
+   "top5": 0.2916666666666667,
+   "mrr": 0.2348584872669573
+  },
+  "pair_logistic": {
+   "top1": 0.025,
+   "top5": 0.15,
+   "mrr": 0.1029523279891458
+  },
+  "pair_mlp": {
+   "top1": 0.05,
+   "top5": 0.10833333333333334,
+   "mrr": 0.09778835919267684
+  },
+  "siamese_contrastive": {
+   "top1": 0.05,
+   "top5": 0.15,
+   "mrr": 0.11364908887006624
+  }
+ },
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.1625,
+ "inversion_top1": 0.05,
+ "inversion_top5": 0.1375,
+ "best_top1_ci95": [
+  0.11451541296699615,
+  0.2086919398907104
+ ],
+ "utility_auc_mean": 0.5945570263024448,
+ "utility_C": 0.03,
+ "sex_auc": 0.7651241658461875,
+ "seconds": 140.55067038536072,
+ "config_hash": "040b0739"
+}
