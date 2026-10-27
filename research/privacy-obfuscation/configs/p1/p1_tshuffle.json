@@ -1,0 +1,9 @@
+{
+ "name": "p1_tshuffle",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "tshuffle"
+ }
+}

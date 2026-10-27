@@ -67,6 +67,9 @@ class Fixed(nn.Module):
             return x
         if k == "const":  # sanity control: every frame black, so no information survives
             return torch.zeros_like(x)
+        if k == "tshuffle":  # scramble frame order inside each clip/window: removes motion rhythm (gait), keeps frames
+            g = torch.Generator(device="cpu").manual_seed(p.get("seed", 0))
+            return x[:, :, torch.randperm(x.shape[2], generator=g).to(x.device)]
         if k == "mean":  # brightness-only control: each frame becomes its own mean intensity (1 number per frame)
             return x.mean(dim=(-2, -1), keepdim=True).expand_as(x)
         if k == "blur":
@@ -250,7 +253,7 @@ def build(cfg, in_ch=1):
     kind = cfg.pop("type")
     if kind == "chain":
         return Chain(cfg["stages"], in_ch)
-    if kind in ("raw", "bg_median", "fg_only", "hold", "const", "mean", "blur", "down", "pixelate", "diff", "bdq_fixed"):
+    if kind in ("raw", "bg_median", "fg_only", "hold", "const", "mean", "tshuffle", "blur", "down", "pixelate", "diff", "bdq_fixed"):
         return Fixed(kind, **cfg)
     if kind == "person_box":
         return PersonBox(**cfg)

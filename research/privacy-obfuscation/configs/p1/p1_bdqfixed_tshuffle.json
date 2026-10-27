@@ -1,0 +1,19 @@
+{
+ "name": "p1_bdqfixed_tshuffle",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq_fixed",
+    "sigma": 2.0,
+    "levels": 8
+   },
+   {
+    "type": "tshuffle"
+   }
+  ]
+ }
+}
