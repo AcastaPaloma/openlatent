@@ -162,3 +162,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H12: the useful design axis is the output constraint (frozen generative decoder, few-parameter
   transform) rather than adversarial strength; unconstrained generators need a utility-preserving
   term to be usable.
+
+### 2026-10-27 09:05 UTC: sub-quantisation utility (p2_unet_a3)
+- p2_unet_a3 (alpha 3, guard restored epoch 2): co-trained T read 74.2% action from f's float
+  output at epoch 2, but a fresh action model trained on the released uint8 output scored 16.7
+  (chance), identity 4.0 (chance). f had encoded action in amplitudes below one 8-bit step;
+  rounding to uint8 erased it.
+- This is a real failure mode for adversarial anonymizers: training-time utility can be
+  steganographic and vanish on release. Fix: the training loop now rounds f's output to 1/255
+  with a straight-through gradient, so T sees exactly what will be released. Applies to runs
+  started after this commit.
+- H13: part of the U-Net's "collapse" is this effect (utility moves into sub-LSB detail while
+  the adversary loses the visible content); with quantisation-aware training it may stabilise.

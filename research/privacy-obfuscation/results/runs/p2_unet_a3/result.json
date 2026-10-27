@@ -1,0 +1,113 @@
+{
+ "name": "p2_unet_a3",
+ "config": {
+  "name": "p2_unet_a3",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "unet3d"
+  },
+  "adv": {
+   "epochs": 15,
+   "alpha": 3.0,
+   "restart_every": 3,
+   "batch": 8,
+   "repeats": 2,
+   "utility": "r2p1d",
+   "adversary": "frame_r18",
+   "lr_f": 0.0001
+  }
+ },
+ "git": "6cc0ea5",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.573731767121769,
+   "adv_entropy": 3.1698971608919755,
+   "adv_loss": 3.0573098473250866,
+   "train_action_acc": 78.37611607142857,
+   "train_adv_acc": 10.881696428571429,
+   "kept": false
+  },
+  {
+   "epoch": 2,
+   "action_loss": 0.620904051515806,
+   "adv_entropy": 3.082331924566201,
+   "adv_loss": 2.9614430091210773,
+   "train_action_acc": 74.24665178571429,
+   "train_adv_acc": 11.9140625,
+   "kept": true
+  },
+  {
+   "epoch": 3,
+   "action_loss": 1.8139025635485138,
+   "adv_entropy": 3.2056094498506615,
+   "adv_loss": 3.2365723699331284,
+   "train_action_acc": 17.271205357142858,
+   "train_adv_acc": 3.822544642857143,
+   "kept": false
+  },
+  {
+   "epoch": 4,
+   "action_loss": 1.8094328647213322,
+   "adv_entropy": 3.2152851969003677,
+   "adv_loss": 3.2262654634458676,
+   "train_action_acc": 16.545758928571427,
+   "train_adv_acc": 3.3761160714285716,
+   "kept": false
+  },
+  {
+   "epoch": 5,
+   "action_loss": 1.8047340549528599,
+   "adv_entropy": 3.2181890037442957,
+   "adv_loss": 3.2214951855795726,
+   "train_action_acc": 16.964285714285715,
+   "train_adv_acc": 3.7109375,
+   "kept": false
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 16.722407937049866,
+  "person/frame_r50": 4.013377800583839,
+  "person/r3d": 4.013377800583839
+ },
+ "weak": {
+  "action/r2p1d": 16.722407937049866,
+  "person/frame_r50": 4.013377800583839,
+  "person/r3d": 4.013377800583839
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 16.722407937049866
+  },
+  "weak/action/r2p1d": {
+   "main": 16.722407937049866
+  },
+  "strong/person/frame_r50": {
+   "main": 4.013377800583839
+  },
+  "weak/person/frame_r50": {
+   "main": 4.013377800583839
+  },
+  "strong/person/r3d": {
+   "main": 4.013377800583839
+  },
+  "weak/person/r3d": {
+   "main": 4.013377800583839
+  }
+ },
+ "action_top1": 16.722407937049866,
+ "privacy_main": 4.013377800583839,
+ "privacy_top1": 4.013377800583839,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 69.90131168762842
+}

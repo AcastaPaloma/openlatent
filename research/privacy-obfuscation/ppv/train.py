@@ -184,6 +184,10 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             x, ya, yp = to_input(batch[0]), batch[1].to(DEV), batch[2].to(DEV)
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 z = f(x)
+                # Released videos are 8-bit. Round to 1/255 here (straight-through gradient) so f
+                # can't hide utility below one quantisation step: p2_unet_a3's epoch-2 output let the
+                # co-trained T reach 74% action, but a fresh model on the uint8 output got 16.7%.
+                z = z + (torch.round(z.float().clamp(0, 1) * 255) / 255 - z).detach()
                 la_logits = T(z)
                 la = F.cross_entropy(la_logits.float(), ya)
                 ent = torch.stack([privacy_entropy(B(z), priv_kind) for B in Bs]).mean()

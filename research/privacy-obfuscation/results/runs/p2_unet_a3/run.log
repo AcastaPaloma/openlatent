@@ -1,2 +1,58 @@
-[06:17:54] run p2_unet_a3 @ a9d0807: {"name": "p2_unet_a3", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "unet3d"}, "adv": {"epochs": 15, "alpha": 3.0, "restart_every": 3, "batch": 8, "repeats": 2, "utility": "r2p1d", "adversary": "frame_r18", "lr_f": 0.0001}}
-[06:17:55] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[07:50:03] run p2_unet_a3 @ 6cc0ea5: {"name": "p2_unet_a3", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "unet3d"}, "adv": {"epochs": 15, "alpha": 3.0, "restart_every": 3, "batch": 8, "repeats": 2, "utility": "r2p1d", "adversary": "frame_r18", "lr_f": 0.0001}}
+[07:50:04] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[07:55:44]   [adv] epoch 1/15 action_acc 78.4 adv_acc 10.9 adv_entropy 3.17/3.22 (337s)
+[08:01:08]   [adv] epoch 2/15 action_acc 74.2 adv_acc 11.9 adv_entropy 3.08/3.22 (325s)
+[08:06:37]   [adv] epoch 3/15 action_acc 17.3 adv_acc 3.8 adv_entropy 3.21/3.22 (328s)
+[08:06:37]   adversary restarted at epoch 3
+[08:12:06]   [adv] epoch 4/15 action_acc 16.5 adv_acc 3.4 adv_entropy 3.22/3.22 (328s)
+[08:17:35]   [adv] epoch 5/15 action_acc 17.0 adv_acc 3.7 adv_entropy 3.22/3.22 (329s)
+[08:17:35]   collapse: action 17.0 vs best 78.4 for 3 epochs; stopping, keeping epoch 2
+[08:17:35]   restored anonymizer from epoch 2
+[08:21:10] materialised anonymised dataset (215s)
+[08:21:11] strong eval: training action r2p1d on anonymised data
+[08:22:42]   [action] epoch 1/12 loss 1.816 train_acc 16.3 (91s)
+[08:24:08]   [action] epoch 2/12 loss 1.804 train_acc 17.5 (86s)
+[08:25:34]   [action] epoch 3/12 loss 1.800 train_acc 16.2 (86s)
+[08:27:00]   [action] epoch 4/12 loss 1.796 train_acc 17.1 (86s)
+[08:28:25]   [action] epoch 5/12 loss 1.794 train_acc 16.0 (86s)
+[08:29:51]   [action] epoch 6/12 loss 1.796 train_acc 15.5 (86s)
+[08:31:17]   [action] epoch 7/12 loss 1.795 train_acc 16.7 (86s)
+[08:32:43]   [action] epoch 8/12 loss 1.795 train_acc 15.8 (86s)
+[08:34:09]   [action] epoch 9/12 loss 1.793 train_acc 16.3 (86s)
+[08:35:34]   [action] epoch 10/12 loss 1.793 train_acc 16.9 (86s)
+[08:37:00]   [action] epoch 11/12 loss 1.792 train_acc 15.9 (86s)
+[08:38:26]   [action] epoch 12/12 loss 1.792 train_acc 16.7 (86s)
+[08:38:41]   strong action/r2p1d: 16.72
+[08:38:54]   weak action/r2p1d: 16.72
+[08:38:55] strong eval: training person frame_r50 on anonymised data
+[08:39:47]   [person] epoch 1/12 loss 3.221 train_acc 3.8 (51s)
+[08:40:35]   [person] epoch 2/12 loss 3.221 train_acc 3.8 (49s)
+[08:41:24]   [person] epoch 3/12 loss 3.220 train_acc 3.7 (49s)
+[08:42:13]   [person] epoch 4/12 loss 3.220 train_acc 3.8 (49s)
+[08:43:01]   [person] epoch 5/12 loss 3.220 train_acc 3.4 (49s)
+[08:43:50]   [person] epoch 6/12 loss 3.220 train_acc 3.3 (49s)
+[08:44:39]   [person] epoch 7/12 loss 3.220 train_acc 3.6 (49s)
+[08:45:28]   [person] epoch 8/12 loss 3.219 train_acc 3.7 (49s)
+[08:46:16]   [person] epoch 9/12 loss 3.219 train_acc 4.1 (49s)
+[08:47:05]   [person] epoch 10/12 loss 3.219 train_acc 4.0 (48s)
+[08:47:53]   [person] epoch 11/12 loss 3.219 train_acc 3.6 (49s)
+[08:48:42]   [person] epoch 12/12 loss 3.219 train_acc 4.0 (49s)
+[08:49:13]   strong person/frame_r50: 4.01
+[08:49:41]   weak person/frame_r50: 4.01
+[08:49:42] strong eval: training person r3d on anonymised data
+[08:50:34]   [person] epoch 1/12 loss 3.252 train_acc 4.0 (52s)
+[08:51:23]   [person] epoch 2/12 loss 3.242 train_acc 3.7 (49s)
+[08:52:12]   [person] epoch 3/12 loss 3.243 train_acc 3.4 (49s)
+[08:53:01]   [person] epoch 4/12 loss 3.237 train_acc 3.8 (49s)
+[08:53:50]   [person] epoch 5/12 loss 3.236 train_acc 3.6 (49s)
+[08:54:39]   [person] epoch 6/12 loss 3.234 train_acc 4.0 (49s)
+[08:55:28]   [person] epoch 7/12 loss 3.228 train_acc 3.7 (49s)
+[08:56:17]   [person] epoch 8/12 loss 3.226 train_acc 3.9 (49s)
+[08:57:06]   [person] epoch 9/12 loss 3.224 train_acc 3.3 (49s)
+[08:57:55]   [person] epoch 10/12 loss 3.222 train_acc 3.5 (49s)
+[08:58:44]   [person] epoch 11/12 loss 3.220 train_acc 3.2 (49s)
+[08:59:33]   [person] epoch 12/12 loss 3.219 train_acc 4.0 (49s)
+[08:59:46]   strong person/r3d: 4.01
+[08:59:57]   weak person/r3d: 4.01
+[08:59:57] DONE p2_unet_a3: action 16.72  privacy top1 (strong, best attacker) 4.01  (69.9 min)
+[08:59:58] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p2_unet_a3
