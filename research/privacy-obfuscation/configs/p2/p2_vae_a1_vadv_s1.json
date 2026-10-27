@@ -1,0 +1,19 @@
+{
+ "name": "p2_vae_a1_vadv_s1",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 1,
+ "anonymizer": {
+  "type": "vae_latent"
+ },
+ "adv": {
+  "epochs": 15,
+  "alpha": 1.0,
+  "restart_every": 3,
+  "batch": 4,
+  "repeats": 2,
+  "utility": "r2p1d",
+  "adversary": "r3d",
+  "lr_f": 0.0001
+ }
+}

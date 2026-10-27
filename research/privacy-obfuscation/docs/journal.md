@@ -261,3 +261,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H16: the game has several end states for the same hyperparameters; selecting the anonymizer by a
   held-out privacy check (rather than the last epoch) would be a fairer comparison point, but must
   use data disjoint from the final test set.
+
+### 2026-10-27 12:05 UTC: ensemble BDQ and UCF101 BDQ
+- p2_bdq_a3_ens (KTH, frame+video adversaries): 96.7 / 68.6 (47.8 / 68.6), the same identity as
+  frame-only alpha 3 seed 1 (68.7). The ensemble keeps a bit more action but doesn't lower video
+  identity for BDQ.
+- p3_bdq_a1 (UCF101): action 87.8, cMAP 75.2 (92% leakage). BDQ fails on UCF101: its learned sigma
+  shrank to ~0.4 (action pulls toward detail) and camera motion keeps appearance in differences.
+  BDQ is a static-camera method.
+- Next: VAE latent edit replicate (p2_vae_a1_vadv seed 1) queued ahead of the seed-0 result.
