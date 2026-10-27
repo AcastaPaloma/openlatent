@@ -1,0 +1,32 @@
+[15:33:50] run p4_dino_raw @ 70c1f2c: {"name": "p4_dino_raw", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "raw"}, "eval": {"action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false}}
+[15:33:51] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[15:33:55] strong eval: training person frame_dino_probe on anonymised data
+[15:34:25]   [person] epoch 1/12 loss 1.426 train_acc 65.7 (29s)
+[15:34:55]   [person] epoch 2/12 loss 0.199 train_acc 98.0 (30s)
+[15:35:24]   [person] epoch 3/12 loss 0.095 train_acc 99.0 (29s)
+[15:35:54]   [person] epoch 4/12 loss 0.062 train_acc 99.5 (30s)
+[15:36:23]   [person] epoch 5/12 loss 0.044 train_acc 99.8 (29s)
+[15:36:53]   [person] epoch 6/12 loss 0.033 train_acc 99.8 (30s)
+[15:37:22]   [person] epoch 7/12 loss 0.026 train_acc 99.9 (29s)
+[15:37:52]   [person] epoch 8/12 loss 0.026 train_acc 99.9 (30s)
+[15:38:21]   [person] epoch 9/12 loss 0.021 train_acc 100.0 (29s)
+[15:38:51]   [person] epoch 10/12 loss 0.021 train_acc 99.9 (30s)
+[15:39:21]   [person] epoch 11/12 loss 0.019 train_acc 99.9 (29s)
+[15:39:50]   [person] epoch 12/12 loss 0.020 train_acc 100.0 (30s)
+[15:40:44]   strong person/frame_dino_probe: 99.33
+[15:40:47] strong eval: training person frame_dino_ft on anonymised data
+[15:42:20]   [person] epoch 1/12 loss 0.766 train_acc 80.9 (92s)
+[15:43:51]   [person] epoch 2/12 loss 0.014 train_acc 99.7 (92s)
+[15:45:24]   [person] epoch 3/12 loss 0.036 train_acc 99.1 (92s)
+[15:46:56]   [person] epoch 4/12 loss 0.018 train_acc 99.6 (92s)
+[15:48:09]   [person] epoch 5/12 loss 0.004 train_acc 99.9 (73s)
+[15:49:43]   [person] epoch 6/12 loss 0.001 train_acc 100.0 (94s)
+[15:51:16]   [person] epoch 7/12 loss 0.001 train_acc 100.0 (93s)
+[15:52:50]   [person] epoch 8/12 loss 0.000 train_acc 100.0 (94s)
+[15:54:24]   [person] epoch 9/12 loss 0.001 train_acc 100.0 (94s)
+[15:55:58]   [person] epoch 10/12 loss 0.001 train_acc 100.0 (94s)
+[15:57:32]   [person] epoch 11/12 loss 0.000 train_acc 100.0 (94s)
+[15:59:05]   [person] epoch 12/12 loss 0.000 train_acc 100.0 (94s)
+[15:59:59]   strong person/frame_dino_ft: 99.16
+[15:59:59] DONE p4_dino_raw: action None  privacy top1 (strong, best attacker) 99.33  (26.2 min)
+[16:00:00] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p4_dino_raw

@@ -337,3 +337,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   motion timing) and p2_down4_bdq_a3 (x4 downsampling chained before learned BDQ, removing body-shape
   detail before motion is quantised). H20: gait identity needs finer spatial or temporal detail than
   action recognition, so one of these moves the curve.
+
+### 2026-10-27 16:00 UTC: DINOv2 attackers; BDQ on the scenario split
+| run | action | privacy strong | leakage |
+|---|---|---|---|
+| p4_dino_raw (DINOv2 probe / fine-tune, raw KTH) | - | 99.3 / 99.2 | 100% |
+| p4_dino_down16 (DINOv2 probe / fine-tune) | - | 87.8 / 94.0 | 94% |
+| p2_bdq_a3_scenario (BDQ alpha 3, scenario split) | 55.8 | 24.7 (16.8 / 24.7) | 22% |
+| p2_bdq_a5_ens_s1 (seed 1) | 86.5 | 48.0 (18.2 / 48.0) | 46% |
+| p3_personbox_blur (UCF101) | 75.9 | 73.6 cMAP | 84% |
+- DINOv2 fine-tuned is at least as strong as our ResNet/R3D attackers (x16 downsampling: 94.0 vs
+  92.6); even a frozen linear probe reads 88%. DINO attacks on BDQ / VAE outputs are running.
+- BDQ on the scenario split (test = recording condition unseen for the subject): identity 24.7,
+  leakage 22%, the lowest of any run. Once the static scene is gone, identity transfers worse
+  across conditions. But action drops to 55.8 (raw on this split: 88.7). Mapping the curve:
+  alpha 1 and alpha-5 ensemble on this split queued.
+- Ensemble BDQ alpha 5 seed 1: 48.0 (seed 0: 37.0); the seed spread persists for the ensemble.

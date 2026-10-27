@@ -1,0 +1,63 @@
+{
+ "name": "p4_dino_raw",
+ "config": {
+  "name": "p4_dino_raw",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  },
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  }
+ },
+ "git": "70c1f2c",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 99.33110475540161,
+  "person/frame_dino_ft": 99.16387796401978
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 99.33110475540161,
+   "by_action": {
+    "0": 100.0,
+    "1": 100.0,
+    "2": 100.0,
+    "3": 100.0,
+    "4": 100.0,
+    "5": 95.99999785423279
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 99.16387796401978,
+   "by_action": {
+    "0": 100.0,
+    "1": 98.00000190734863,
+    "2": 96.96969985961914,
+    "3": 100.0,
+    "4": 100.0,
+    "5": 100.0
+   }
+  }
+ },
+ "action_top1": null,
+ "privacy_main": 99.33110475540161,
+ "privacy_top1": 99.33110475540161,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 26.16325353384018
+}
