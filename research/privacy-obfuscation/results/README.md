@@ -50,6 +50,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p1_down8 | kth | `{type: down, factor: 8}` | ilic | 96.2 | **97.2** | 97.5% | 97.2 / 94.6 | 19.1 | 10.9 | 36 |
 | p1_down4 | kth | `{type: down, factor: 4}` | ilic | 97.0 | **98.2** | 98.6% | 97.7 / 98.2 | 79.6 | 37.5 | 106 |
 | p2_vae_recon | kth | `{type: vae_latent}` | ilic | 97.5 | **98.7** | 99.1% | 98.7 / 98.0 | 97.3 | 99.3 | 74 |
+| p1_hold4 | kth | `{type: hold, k: 4}` | ilic | 97.7 | **99.0** | 99.5% | 98.8 / 99.0 | 95.2 | 99.5 | 54 |
 | p1_pix4 | kth | `{type: pixelate, factor: 4}` | ilic | 97.7 | **99.0** | 99.5% | 98.2 / 99.0 | 58.0 | 23.2 | 70 |
 | p1_down2 | kth | `{type: down, factor: 2}` | ilic | 97.0 | **98.5** | 98.9% | 98.0 / 98.5 | 96.3 | 78.6 | 35 |
 | p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 100.0% | 99.5 / 99.5 | 62.2 | 34.6 | 36 |

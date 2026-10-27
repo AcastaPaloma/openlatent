@@ -365,3 +365,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 ### 2026-10-27 16:35 UTC: DINOv2 vs blur
 - p4_dino_blur8: DINOv2 identity 97.3 on blur-8 KTH (ResNet/R3D: 95.0). DINO is the strongest attacker on every
   output so far (raw 99.3, x16 94.0, blur8 97.3): self-supervised features shrug off blur and downsampling.
+
+### 2026-10-27 16:50 UTC: temporal hold
+- p1_hold4 (every 4th frame repeated): 97.7 / 99.0 (98.8 / 99.0). Identity needs no fine motion timing; H20 (temporal
+  part) rejected. The spatial part is tested by p2_down4_bdq_a3.

@@ -1,0 +1,18 @@
+{
+ "name": "p4_dino_bdq_a3_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "anonymizer_from": "p2_bdq_a3_scenario",
+ "eval": {
+  "action": [],
+  "privacy": [
+   "frame_dino_probe",
+   "frame_dino_ft"
+  ],
+  "clean_attacker": false
+ }
+}
