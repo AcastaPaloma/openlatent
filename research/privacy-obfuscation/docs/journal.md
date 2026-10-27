@@ -147,3 +147,18 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H11: on KTH, identity = scene + gait. A credible privacy claim needs (a) a scene-only control as
   the floor and (b) a benchmark where scene is not tied to identity: VP-UCF101 attributes
   (phase 3), or KTH person crops (future).
+
+### 2026-10-27 08:50 UTC: residual U-Net fails in every setting; VAE latent edit looks stable (in training)
+- p2_unet_a1_vadv (U-Net vs R3D adversary): action 92.8, identity 92.3 (89.6 / 92.3): no privacy.
+  Across five runs the residual U-Net either collapses (alpha 1 seeds 0 and 1, alpha 3, alpha 3
+  vs video, alpha 1 ensemble at epoch 4) or keeps identity (alpha 1 epoch-4 checkpoint: 94.3
+  frame; vs video: 92.3). A free-form pixel generator finds the degenerate "erase everything"
+  solution before it finds an identity-only edit.
+- In contrast, in-training numbers for the frozen-VAE latent edit: vs R3D adversary (p2_vae_a1_vadv)
+  epoch 6 action 91.1 / adversary 8.8; vs frame adversary (p2_vae_a1) epoch 2 action 88.6 /
+  adversary 12.1. No collapse so far. Provisional support for H3: the frozen decoder constrains
+  outputs to natural images, so f can't take the degenerate path. Retrained attackers decide.
+- BDQ (8 parameters) is stable but limited: best is 62.7 identity (vs video adversary).
+- H12: the useful design axis is the output constraint (frozen generative decoder, few-parameter
+  transform) rather than adversarial strength; unconstrained generators need a utility-preserving
+  term to be usable.

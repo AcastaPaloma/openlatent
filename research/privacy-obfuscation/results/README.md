@@ -13,6 +13,7 @@ Chance: action 16.7, identity 4.0. Sorted by action - privacy (strong).
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
 | p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
+| p2_unet_a1_vadv | kth | `{type: unet3d}` | ilic | 92.8 | **92.3** | 89.6 / 92.3 | 25.8 | 5.9 | 54 |
 | p1_pix16 | kth | `{type: pixelate, factor: 16}` | ilic | 93.5 | **93.1** | 90.8 / 93.1 | 16.7 | 9.9 | 35 |
 | p1_blur4 | kth | `{type: blur, sigma: 4}` | ilic | 97.0 | **97.5** | 97.5 / 96.3 | 16.7 | 16.6 | 70 |
 | p1_blur8 | kth | `{type: blur, sigma: 8}` | ilic | 94.5 | **95.0** | 95.0 / 94.8 | 16.7 | 8.7 | 70 |
