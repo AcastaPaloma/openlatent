@@ -522,3 +522,18 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   motion energy. Tests: p1_diff_down20 and p1_diff_down40 (resolve the 16 -> 32 cliff), and learned BDQ followed
   by a fixed downsample, trained end to end (p2_bdq_down4_a5_ens, p2_bdq_down8_a5_ens): can BDQ learn a better
   coarse motion map than diff alone?
+
+### 2026-10-27 20:50 UTC: two numbers per frame beat every learned BDQ at low utility
+- p1_diff_down64 (frame difference, then x64 area downsample: each 120x160 frame becomes 1x2 pixels, i.e. the
+  motion energy of the left and right half): action 69.9, identity 11.0 (ResNet-50 6.2, R3D 11.0; chance 16.7 /
+  4.0). Per action: walking 91, running 87, jogging 71, handwaving 67, handclapping 56, boxing 47 (identity per
+  action 4-17). Learned BDQ at similar utility: 68.4 / 28.9 (a3 s3), 61.4 / 23.6 (a5 ens warm). This fixed,
+  two-number-per-frame signal is far off the BDQ curve, toward privacy.
+  Why: down64 alone (48.7 / 38.1) keeps per-frame brightness, which carries the ~22% session floor (p5_sanity_mean);
+  the frame difference removes static brightness first, so what remains is only how much motion and on which side.
+- p4_dino_bdq_a5 (DINOv2 on p2_bdq_a5_lr3e-3): probe 17.9 / fine-tune 31.4 vs R3D 35.3. DINO again below the video model.
+- H29: KTH action needs very little information (motion energy over time); learned obfuscators trained with a
+  2-adversary game do not find this low-information solution. Tests: p1_diff_down120 (one number per frame:
+  global motion energy), p1_diff_down48 (2x3 px), p1_diff_down64_s1 (attacker seed), p1_diff_down64_scenario.
+- Caveat for every KTH claim: 6 coarse actions with distinct motion speeds; VP-UCF101 (p3_diff_down8/16 queued)
+  tests whether this transfers to 101 actions.

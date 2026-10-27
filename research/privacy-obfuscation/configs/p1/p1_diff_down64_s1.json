@@ -1,0 +1,19 @@
+{
+ "name": "p1_diff_down64_s1",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 1,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "diff",
+    "gain": 4.0
+   },
+   {
+    "type": "down",
+    "factor": 64
+   }
+  ]
+ }
+}

@@ -64,6 +64,15 @@
    "kb": 866
   },
   {
+   "run": "p1_tshuffle",
+   "file": "p1_tshuffle.gif",
+   "split": "ilic",
+   "action": 95.48494815826416,
+   "privacy": 98.99665713310242,
+   "leakage": 99.47468350870392,
+   "kb": 1937
+  },
+  {
    "run": "p2_vae_recon",
    "file": "p2_vae_recon.gif",
    "split": "ilic",
@@ -226,6 +235,15 @@
    "kb": 188
   },
   {
+   "run": "p1_bdqfixed_tshuffle",
+   "file": "p1_bdqfixed_tshuffle.gif",
+   "split": "ilic",
+   "action": 94.98327970504761,
+   "privacy": 89.13043737411499,
+   "leakage": 89.14338220220138,
+   "kb": 160
+  },
+  {
    "run": "p1_diff_down8",
    "file": "p1_diff_down8.gif",
    "split": "ilic",
@@ -253,6 +271,15 @@
    "kb": 966
   },
   {
+   "run": "p2_vae_a1_vadv_b3_s1",
+   "file": "p2_vae_a1_vadv_b3_s1.gif",
+   "split": "ilic",
+   "action": 96.65551781654358,
+   "privacy": 86.95651888847351,
+   "leakage": 86.86698785466226,
+   "kb": 938
+  },
+  {
    "run": "p2_vae_a1",
    "file": "p2_vae_a1.gif",
    "split": "ilic",
@@ -262,6 +289,15 @@
    "kb": 893
   },
   {
+   "run": "p1_diff_down16",
+   "file": "p1_diff_down16.gif",
+   "split": "ilic",
+   "action": 94.81605291366577,
+   "privacy": 84.61538553237915,
+   "leakage": 84.41549633193576,
+   "kb": 505
+  },
+  {
    "run": "p2_vae_a1_ens",
    "file": "p2_vae_a1_ens.gif",
    "split": "ilic",
@@ -269,6 +305,15 @@
    "privacy": 82.6086938381195,
    "leakage": 82.31421164245097,
    "kb": 1103
+  },
+  {
+   "run": "p2_vae_a1_ens_b3",
+   "file": "p2_vae_a1_ens_b3.gif",
+   "split": "ilic",
+   "action": 96.98996543884277,
+   "privacy": 81.77257776260376,
+   "leakage": 81.43868207647968,
+   "kb": 836
   },
   {
    "run": "p2_unet_a05_ens",
@@ -287,6 +332,15 @@
    "privacy": 75.58528184890747,
    "leakage": 74.9597245914045,
    "kb": 938
+  },
+  {
+   "run": "p2_vae_a1_ens_warm",
+   "file": "p2_vae_a1_ens_warm.gif",
+   "split": "ilic",
+   "action": 93.1438148021698,
+   "privacy": 74.08027052879333,
+   "leakage": 73.38376887608278,
+   "kb": 1486
   },
   {
    "run": "p2_bdq_a1",
@@ -352,6 +406,15 @@
    "kb": 44
   },
   {
+   "run": "p1_diff_down32",
+   "file": "p1_diff_down32.gif",
+   "split": "ilic",
+   "action": 93.64548325538635,
+   "privacy": 63.879597187042236,
+   "leakage": 62.702248253471524,
+   "kb": 388
+  },
+  {
    "run": "p2_bdq_a7_ens",
    "file": "p2_bdq_a7_ens.gif",
    "split": "ilic",
@@ -370,6 +433,33 @@
    "kb": 34
   },
   {
+   "run": "p2_bdq_a1_scenario",
+   "file": "p2_bdq_a1_scenario.gif",
+   "split": "scenario",
+   "action": 79.16666865348816,
+   "privacy": 61.16666793823242,
+   "leakage": 59.86143483380832,
+   "kb": 45
+  },
+  {
+   "run": "p2_bdq_a5_ens_s2",
+   "file": "p2_bdq_a5_ens_s2.gif",
+   "split": "ilic",
+   "action": 92.97658801078796,
+   "privacy": 60.03344655036926,
+   "leakage": 58.67479477398982,
+   "kb": 33
+  },
+  {
+   "run": "p1_diff_down32_tshuffle",
+   "file": "p1_diff_down32_tshuffle.gif",
+   "split": "ilic",
+   "action": 89.96655344963074,
+   "privacy": 59.19732451438904,
+   "leakage": 57.799258966585036,
+   "kb": 339
+  },
+  {
    "run": "p2_bdq_a5_ens_b3",
    "file": "p2_bdq_a5_ens_b3.gif",
    "split": "ilic",
@@ -386,6 +476,15 @@
    "privacy": 56.521737575531006,
    "leakage": 54.99754812774983,
    "kb": 30
+  },
+  {
+   "run": "p2_bdq_a5_ens_scenario",
+   "file": "p2_bdq_a5_ens_scenario.gif",
+   "split": "scenario",
+   "action": 78.66666913032532,
+   "privacy": 54.00000214576721,
+   "leakage": 52.35694117021271,
+   "kb": 64
   },
   {
    "run": "p2_bdq_a5_ens_s1",
@@ -442,6 +541,24 @@
    "kb": 8
   },
   {
+   "run": "p2_bdq_a10_ens",
+   "file": "p2_bdq_a10_ens.gif",
+   "split": "ilic",
+   "action": 71.23745679855347,
+   "privacy": 31.27090334892273,
+   "leakage": 28.556420420453467,
+   "kb": 11
+  },
+  {
+   "run": "p2_bdq_a5_ens_warm_s1",
+   "file": "p2_bdq_a5_ens_warm_s1.gif",
+   "split": "ilic",
+   "action": 78.92976403236389,
+   "privacy": 30.267557501792908,
+   "leakage": 27.50577807571108,
+   "kb": 8
+  },
+  {
    "run": "p2_bdq_a3_lr3e-3_s3",
    "file": "p2_bdq_a3_lr3e-3_s3.gif",
    "split": "ilic",
@@ -480,6 +597,15 @@
   {
    "run": "p2_unet_a3",
    "file": "p2_unet_a3.gif",
+   "split": "ilic",
+   "action": 16.722407937049866,
+   "privacy": 4.013377800583839,
+   "leakage": 0.014008413761922451,
+   "kb": 0
+  },
+  {
+   "run": "p5_sanity_const",
+   "file": "p5_sanity_const.gif",
    "split": "ilic",
    "action": 16.722407937049866,
    "privacy": 4.013377800583839,
