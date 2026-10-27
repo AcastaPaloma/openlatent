@@ -480,3 +480,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   release path. Freed the GPU for BDQ.
 - The Colab watchdog is stopped; its backlog runs on Lambda instead: p2_bdq_a7_ens_warm, p2_bdq_a7_ens_s2
   (H23), p1_diff_down16 (H22), p2_bdq_a5_ens_s3 (seed spread).
+
+### 2026-10-27 19:35 UTC: a fixed motion map matches learned BDQ; BDQ on the scenario split
+- p1_diff_down32 (frame difference, then x32 downsample: a 4x5-pixel motion map, nothing learned): 93.6 / 63.9
+  (ResNet-50 52.8, R3D 63.9). That is on the learned BDQ curve at high utility (BDQ a7 ens 95.0 / 62.9,
+  a5 ens s2 93.0 / 60.0). Compare down32 alone 78.6 / 91.0 and diff alone 96.5 / 97.5: removing the static scene
+  (diff) and the body detail (x32) together does what neither does alone. Dose so far: diff->down8 95.5/88.3,
+  diff->down32 93.6/63.9; p1_diff_down16 is running.
+- p2_bdq_a5_ens_scenario (test sessions are scenarios never seen in training): 78.7 / 54.0 (ResNet-50 31.7).
+  Scenario-split references: raw 88.7 / 97.7, scene-only 56.0 / 64.0, blur8 77.7 / 87.7, BDQ a3 55.8 / 24.7.
+- H26: what learned BDQ buys over a fixed coarse motion map is small; the information that matters (motion
+  energy layout over time) is the same. Tests: p1_diff_down64 (dose), p1_diff_down32_scenario (split),
+  p1_diff_down32_tshuffle (H25 on the fixed motion map: does order-free motion keep action and lose gait?).
