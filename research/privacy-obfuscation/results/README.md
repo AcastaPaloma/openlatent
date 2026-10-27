@@ -13,8 +13,10 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 
 | run | dataset | anonymizer | split | action (strong) | privacy (strong, best) | leakage | privacy frame / video | action (weak) | privacy (weak) | min |
 |---|---|---|---|---|---|---|---|---|---|---|
+| p2_bdq_a5_ens | kth | `{type: bdq}` | ilic | 84.4 | **37.0** | 34.5% | 13.2 / 37.0 | 28.8 | 3.8 | 118 |
 | p2_bdq_a3_lr3e-3 | kth | `{type: bdq}` | ilic | 89.1 | **46.2** | 44.1% | 18.7 / 46.2 | 35.8 | 4.0 | 86 |
 | p2_bdq_a5_lr3e-3 | kth | `{type: bdq}` | ilic | 76.9 | **35.3** | 32.8% | 15.2 / 35.3 | 32.1 | 5.2 | 92 |
+| p2_bdq_a10_lr3e-3 | kth | `{type: bdq}` | ilic | 90.8 | **56.5** | 55.0% | 33.8 / 56.5 | 27.8 | 5.4 | 74 |
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1_ens | kth | `{type: bdq}` | ilic | 94.1 | **65.2** | 64.1% | 37.3 / 65.2 | 37.5 | 4.0 | 113 |
 | p2_bdq_a3_ens | kth | `{type: bdq}` | ilic | 96.7 | **68.6** | 67.6% | 47.8 / 68.6 | 31.6 | 4.0 | 112 |
@@ -42,6 +44,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p1_down2 | kth | `{type: down, factor: 2}` | ilic | 97.0 | **98.5** | 98.9% | 98.0 / 98.5 | 96.3 | 78.6 | 35 |
 | p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 100.0% | 99.5 / 99.5 | 62.2 | 34.6 | 36 |
 | p1_raw | kth | `{type: raw}` | ilic | 97.5 | **99.5** | 100.0% | 99.5 / 99.0 | 97.2 | 99.3 | 106 |
+| p1_personbox | kth | `{type: person_box, mode: black, every: 8, dilate: 6}` | ilic | 94.1 | **96.3** | 96.7% | 96.3 / 96.0 | 52.5 | 81.4 | 59 |
 | p1_bgmedian_scenario | kth | `{type: bg_median}` | scenario | 56.0 | **64.0** | 62.8% | 64.0 / 62.0 | 27.3 | 19.3 | 69 |
 | p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 98.1% | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
 | p1_blur8_scenario | kth | `{type: blur, sigma: 8}` | scenario | 77.7 | **87.7** | 87.6% | 86.2 / 87.7 | 16.7 | 7.2 | 36 |
@@ -49,6 +52,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p1_bgmedian_byaction | kth | `{type: bg_median}` | ilic | 62.5 | **90.6** | 90.7% | 86.6 / 90.6 | 42.0 | 48.5 | 36 |
 | p1_bgmedian | kth | `{type: bg_median}` | ilic | 59.4 | **89.3** | 89.3% | 83.9 / 89.3 | 42.0 | 48.5 | 36 |
 | p3_raw | ucf101_vp | `{type: raw}` | ilic | 91.8 | **76.6** | 100.0% | 76.6 / 75.4 | 91.0 | 77.1 | 116 |
+| p3_bdq_a3_ens | ucf101_vp | `{type: bdq}` | s1 | 87.8 | **74.9** | 90.4% | 74.6 / 74.9 | 1.3 | 63.4 | 167 |
 | p3_bdq_a1 | ucf101_vp | `{type: bdq}` | s1 | 87.8 | **75.2** | 92.4% | 75.0 / 75.2 | 1.7 | 64.6 | 132 |
 | p3_bdq_a3_lr3e-3 | ucf101_vp | `{type: bdq}` | s1 | 87.2 | **74.6** | 88.9% | 74.6 / 74.6 | 1.3 | 61.0 | 139 |
 | p3_diff | ucf101_vp | `{type: diff, gain: 4.0}` | ilic | 88.4 | **76.0** | 96.7% | 76.0 / 74.6 | 8.7 | 66.5 | 121 |

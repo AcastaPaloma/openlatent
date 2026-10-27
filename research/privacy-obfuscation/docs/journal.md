@@ -270,3 +270,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   shrank to ~0.4 (action pulls toward detail) and camera motion keeps appearance in differences.
   BDQ is a static-camera method.
 - Next: VAE latent edit replicate (p2_vae_a1_vadv seed 1) queued ahead of the seed-0 result.
+
+### 2026-10-27 12:50 UTC: ensemble BDQ alpha 5 is the best BDQ point; person-box blackout leaks on KTH
+| run | action | identity strong (frame / video) | leakage |
+|---|---|---|---|
+| p2_bdq_a5_ens (frame+video adversaries) | 84.4 | 37.0 (13.2 / 37.0) | 35% |
+| p2_bdq_a5_lr3e-3 (frame adversary) | 76.9 | 35.3 (15.2 / 35.3) | 33% |
+| p2_bdq_a10_lr3e-3 | 90.8 | 56.5 (33.8 / 56.5) | 55% |
+| p1_personbox (people blacked out, KTH) | 94.1 | 96.3 (96.3 / 96.0) | 97% |
+- At alpha 5 the ensemble buys 7.5 action points for the same identity. alpha 10 is worse than
+  alpha 5 (non-monotonic), consistent with BDQ's seed variance; seeds of alpha-5 ensemble queued.
+- Person-box blackout on KTH: action 94.1 (the black box's motion is the action), identity 96.3
+  (box silhouette/gait plus the untouched scene). The standard "blackening" baseline protects
+  nothing against a retrained attacker on KTH.
+- H17: any obfuscation that preserves the person's motion silhouette (blackout, BDQ at low alpha,
+  frame differences) preserves gait identity; only methods that distort the silhouette's dynamics
+  can push identity toward chance on KTH.
