@@ -1,0 +1,17 @@
+{
+ "name": "p5_sanity_const",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "const"
+ },
+ "eval": {
+  "privacy": [
+   "frame_r50",
+   "r3d",
+   "frame_dino_ft"
+  ],
+  "clean_attacker": false
+ }
+}

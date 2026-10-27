@@ -117,6 +117,15 @@ def main(cfg_path):
     log(f"run {name} @ {git_head()}: {json.dumps(cfg)}")
     D = load_dataset(cfg, log)
     rows_tr, rows_te, frames, stride = D["rows_tr"], D["rows_te"], D["frames"], D["stride"]
+    if cfg.get("shuffle_train_privacy"):
+        # sanity control: permute the privacy labels of the TRAIN rows only. A correct pipeline must then score at
+        # chance on test, because nothing links train labels to test identities any more.
+        import random
+        labels = [r["priv"] for r in rows_tr]
+        random.Random(cfg.get("seed", 0)).shuffle(labels)
+        rows_tr = [dict(r, priv=l) for r, l in zip(rows_tr, labels)]
+        log("SANITY: train privacy labels shuffled")
+    assert not {r["video"] for r in rows_tr} & {r["video"] for r in rows_te}, "train/test share videos"
     pk, pt = D["priv_kind"], D["priv_task"]
     result = dict(name=name, config=cfg, git=git_head(), dataset=cfg.get("dataset", "kth"), split=cfg.get("split", "ilic") if cfg.get("dataset", "kth") == "kth" else "s1",
                   n_train=len(rows_tr), n_test=len(rows_te), privacy_metric="top1" if pk == "multiclass" else "cmap")

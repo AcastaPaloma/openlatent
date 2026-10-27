@@ -65,6 +65,8 @@ class Fixed(nn.Module):
         h, w = x.shape[-2:]
         if k in ("raw", "bg_median", "fg_only"):  # whole-video controls, applied in run.py
             return x
+        if k == "const":  # sanity control: every frame black, so no information survives
+            return torch.zeros_like(x)
         if k == "blur":
             return blur2d(x, p["sigma"])
         if k in ("down", "pixelate"):
@@ -246,7 +248,7 @@ def build(cfg, in_ch=1):
     kind = cfg.pop("type")
     if kind == "chain":
         return Chain(cfg["stages"], in_ch)
-    if kind in ("raw", "bg_median", "fg_only", "hold", "blur", "down", "pixelate", "diff", "bdq_fixed"):
+    if kind in ("raw", "bg_median", "fg_only", "hold", "const", "blur", "down", "pixelate", "diff", "bdq_fixed"):
         return Fixed(kind, **cfg)
     if kind == "person_box":
         return PersonBox(**cfg)

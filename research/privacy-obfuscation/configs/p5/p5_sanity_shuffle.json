@@ -1,0 +1,19 @@
+{
+ "name": "p5_sanity_shuffle",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "raw"
+ },
+ "shuffle_train_privacy": true,
+ "eval": {
+  "action": [],
+  "privacy": [
+   "frame_r50",
+   "r3d",
+   "frame_dino_ft"
+  ],
+  "clean_attacker": false
+ }
+}
