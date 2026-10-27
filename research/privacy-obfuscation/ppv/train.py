@@ -157,7 +157,8 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     alpha, epochs, restart = cfg.get("alpha", 1.0), cfg["epochs"], cfg.get("restart_every", 0)
     max_ent = n_priv * math.log(2) if priv_kind == "multilabel" else math.log(n_priv)
     keep_margin, collapse_drop = cfg.get("keep_margin", 5.0), cfg.get("collapse_drop", 30.0)
-    best_act, kept, kept_epoch = 0.0, None, 0
+    collapse_patience = cfg.get("collapse_patience", 3)
+    best_act, kept, kept_epoch, collapsed = 0.0, None, 0, 0
     hist = []
     for ep in range(epochs):
         if restart and ep and ep % restart == 0:
@@ -204,13 +205,16 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
         # The game can collapse: the privacy term wins and f erases everything, action included
         # (seen in p2_unet_a1: action 96 -> 16 between epochs 10 and 14). Keep the latest epoch
         # whose action accuracy is within keep_margin of the best so far; stop on a collapse.
+        # A single bad epoch (e.g. right after an adversary restart) can recover, so stopping needs
+        # `collapse_patience` consecutive collapsed epochs.
         acc = row["train_action_acc"]
         best_act = max(best_act, acc)
         if acc >= best_act - keep_margin:
             kept = {k: v.detach().clone() for k, v in f.state_dict().items() if not k.startswith("vae.")}
             kept_epoch = ep + 1
-        elif acc < best_act - collapse_drop:
-            log(f"  collapse: action {acc:.1f} vs best {best_act:.1f}; stopping, keeping epoch {kept_epoch}")
+        collapsed = collapsed + 1 if acc < best_act - collapse_drop else 0
+        if collapsed >= collapse_patience:
+            log(f"  collapse: action {acc:.1f} vs best {best_act:.1f} for {collapsed} epochs; stopping, keeping epoch {kept_epoch}")
             break
     if kept is not None and kept_epoch != len(hist):
         f.load_state_dict(kept, strict=False)

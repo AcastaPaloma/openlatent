@@ -68,3 +68,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   far above chance on the Ilic split. Test: p1_bgmedian (queued) and p1_raw_scenario (running).
 - H7: if H6 holds, KTH identity is partly a session-recognition task, and claims of identity
   removal on KTH must report the background-only control as the floor to beat.
+
+### 2026-10-27 07:35 UTC: collapse guard too eager (p2_bdq_a3)
+- BDQ alpha 3, lr_f 1e-2: the learned blur sigma jumped 5.2 -> 7.3 at epoch 3, coinciding with an
+  adversary restart, and action fell 83.5 -> 47.7. The guard stopped training at epoch 3 and kept
+  epoch 2, so the run would describe an anonymizer barely trained. Killed; requeued as
+  p2_bdq_a3_lr3e-3 (gentler learnable-blur steps).
+- Guard now needs 3 consecutive collapsed epochs before stopping (best-epoch keeping unchanged).
+- H8: for BDQ, alpha mainly controls how fast sigma grows; a high alpha with a high lr drives
+  sigma past the point where action survives within 1-2 epochs.
