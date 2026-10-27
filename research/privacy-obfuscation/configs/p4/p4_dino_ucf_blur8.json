@@ -1,0 +1,20 @@
+{
+ "name": "p4_dino_ucf_blur8",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "blur",
+  "sigma": 8
+ },
+ "eval": {
+  "action": [],
+  "privacy": [
+   "frame_dino_probe",
+   "frame_dino_ft"
+  ],
+  "clean_attacker": false,
+  "epochs": 8,
+  "repeats": 1,
+  "batch": 16
+ }
+}

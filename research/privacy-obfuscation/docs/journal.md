@@ -353,3 +353,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   across conditions. But action drops to 55.8 (raw on this split: 88.7). Mapping the curve:
   alpha 1 and alpha-5 ensemble on this split queued.
 - Ensemble BDQ alpha 5 seed 1: 48.0 (seed 0: 37.0); the seed spread persists for the ensemble.
+
+### 2026-10-27 16:20 UTC: a stronger adversary doesn't move BDQ off its curve; VAE on UCF101
+- p2_bdq_a5_ens_b3 (3 adversary steps per f step): 90.3 / 58.0 (26.8 / 58.0), on the same
+  action-identity curve as the other BDQ seeds. BDQ's trade-off is a property of the BDQ family,
+  not of the adversary's training state.
+- p3_vae_recon (UCF101): 86.9 / 76.5 cMAP (99% leakage): the VAE round trip removes no attribute
+  information. p3_vae_a1 (frame adversary, b_steps=1): 66.0 / 70.2 (65%): no better than blur.
+- Next: DINOv2 attackers on VP-UCF101 attributes (raw, blur8).

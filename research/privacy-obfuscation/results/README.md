@@ -20,6 +20,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p2_bdq_a3_lr3e-3_s3 | kth | `{type: bdq}` | ilic | 68.4 | **28.9** | 26.1% | 11.4 / 28.9 | 28.9 | 5.0 | 92 |
 | p2_bdq_a5_ens_s1 | kth | `{type: bdq}` | ilic | 86.5 | **48.0** | 46.1% | 18.2 / 48.0 | 30.1 | 5.7 | 111 |
 | p2_bdq_a10_lr3e-3 | kth | `{type: bdq}` | ilic | 90.8 | **56.5** | 55.0% | 33.8 / 56.5 | 27.8 | 5.4 | 74 |
+| p2_bdq_a5_ens_b3 | kth | `{type: bdq}` | ilic | 90.3 | **58.0** | 56.6% | 26.8 / 58.0 | 29.9 | 5.2 | 171 |
 | p2_bdq_a3_scenario | kth | `{type: bdq}` | scenario | 55.8 | **24.7** | 21.6% | 16.8 / 24.7 | 30.5 | 4.0 | 132 |
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1_ens | kth | `{type: bdq}` | ilic | 94.1 | **65.2** | 64.1% | 37.3 / 65.2 | 37.5 | 4.0 | 113 |
@@ -68,11 +69,13 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p3_bdq_a1 | ucf101_vp | `{type: bdq}` | s1 | 87.8 | **75.2** | 92.4% | 75.0 / 75.2 | 1.7 | 64.6 | 132 |
 | p3_bdq_a3_lr3e-3 | ucf101_vp | `{type: bdq}` | s1 | 87.2 | **74.6** | 88.9% | 74.6 / 74.6 | 1.3 | 61.0 | 139 |
 | p3_diff | ucf101_vp | `{type: diff, gain: 4.0}` | ilic | 88.4 | **76.0** | 96.7% | 76.0 / 74.6 | 8.7 | 66.5 | 121 |
+| p3_vae_recon | ucf101_vp | `{type: vae_latent}` | s1 | 86.9 | **76.5** | 99.2% | 76.5 / 74.5 | 84.3 | 76.1 | 245 |
 | p3_down4 | ucf101_vp | `{type: down, factor: 4}` | ilic | 84.5 | **75.1** | 91.5% | 75.1 / 74.4 | 21.0 | 69.2 | 74 |
 | p3_blur4 | ucf101_vp | `{type: blur, sigma: 4}` | ilic | 79.9 | **73.5** | 83.0% | 72.1 / 73.5 | 3.0 | 64.2 | 66 |
 | p3_personbox_blur | ucf101_vp | `{type: person_box, mode: blur, every: 8, dilate: 6, sigma: 8.0}` | s1 | 75.9 | **73.6** | 83.6% | 73.6 / 72.5 | 57.9 | 66.9 | 201 |
 | p3_pix8 | ucf101_vp | `{type: pixelate, factor: 8}` | s1 | 72.6 | **72.1** | 74.8% | 71.7 / 72.1 | 2.6 | 62.6 | 65 |
 | p3_down8 | ucf101_vp | `{type: down, factor: 8}` | ilic | 72.2 | **72.1** | 75.0% | 71.9 / 72.1 | 3.1 | 64.3 | 106 |
+| p3_vae_a1 | ucf101_vp | `{type: vae_latent}` | s1 | 66.0 | **70.2** | 64.5% | 67.6 / 70.2 | 1.5 | 60.5 | 331 |
 | p3_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | ilic | 58.9 | **70.3** | 64.7% | 69.4 / 70.3 | 1.7 | 61.2 | 95 |
 | p3_pix16 | ucf101_vp | `{type: pixelate, factor: 16}` | s1 | 55.2 | **70.9** | 68.0% | 69.0 / 70.9 | 1.6 | 60.9 | 65 |
 | p3_down16 | ucf101_vp | `{type: down, factor: 16}` | ilic | 53.7 | **70.3** | 64.9% | 68.5 / 70.3 | 2.2 | 61.0 | 53 |
