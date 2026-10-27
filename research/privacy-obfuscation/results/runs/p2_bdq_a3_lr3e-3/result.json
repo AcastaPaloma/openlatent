@@ -1,0 +1,263 @@
+{
+ "name": "p2_bdq_a3_lr3e-3",
+ "config": {
+  "name": "p2_bdq_a3_lr3e-3",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "bdq"
+  },
+  "adv": {
+   "epochs": 15,
+   "alpha": 3.0,
+   "restart_every": 3,
+   "batch": 8,
+   "repeats": 2,
+   "utility": "r2p1d",
+   "adversary": "frame_r18",
+   "lr_f": 0.003
+  }
+ },
+ "git": "6fef20c",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.4401975136715919,
+   "adv_entropy": 3.1588420064321587,
+   "adv_loss": 3.088010387761252,
+   "train_action_acc": 84.29129464285714,
+   "train_adv_acc": 10.184151785714286,
+   "train_adv_accs": {
+    "frame_r18": 10.184151785714286
+   },
+   "sigma": 1.8994381427764893,
+   "kept": false
+  },
+  {
+   "epoch": 2,
+   "action_loss": 0.22592261282053577,
+   "adv_entropy": 2.92823303224785,
+   "adv_loss": 2.6190119771552935,
+   "train_action_acc": 91.88058035714286,
+   "train_adv_acc": 26.450892857142858,
+   "train_adv_accs": {
+    "frame_r18": 26.450892857142858
+   },
+   "sigma": 2.4574317932128906,
+   "kept": false
+  },
+  {
+   "epoch": 3,
+   "action_loss": 0.22199080356533937,
+   "adv_entropy": 2.699616003781557,
+   "adv_loss": 2.2804787321282283,
+   "train_action_acc": 92.49441964285714,
+   "train_adv_acc": 35.965401785714285,
+   "train_adv_accs": {
+    "frame_r18": 35.965401785714285
+   },
+   "sigma": 4.286771297454834,
+   "kept": false
+  },
+  {
+   "epoch": 4,
+   "action_loss": 0.1979868672507499,
+   "adv_entropy": 3.1918039603957107,
+   "adv_loss": 3.1627241309200014,
+   "train_action_acc": 93.02455357142857,
+   "train_adv_acc": 7.561383928571429,
+   "train_adv_accs": {
+    "frame_r18": 7.561383928571429
+   },
+   "sigma": 3.762830972671509,
+   "kept": false
+  },
+  {
+   "epoch": 5,
+   "action_loss": 0.15177419127056574,
+   "adv_entropy": 2.990677942122732,
+   "adv_loss": 2.7469648463385448,
+   "train_action_acc": 94.3359375,
+   "train_adv_acc": 21.233258928571427,
+   "train_adv_accs": {
+    "frame_r18": 21.233258928571427
+   },
+   "sigma": 3.997765064239502,
+   "kept": false
+  },
+  {
+   "epoch": 6,
+   "action_loss": 0.1938415465649866,
+   "adv_entropy": 2.8391247551356043,
+   "adv_loss": 2.5697790887206793,
+   "train_action_acc": 93.30357142857143,
+   "train_adv_acc": 24.832589285714285,
+   "train_adv_accs": {
+    "frame_r18": 24.832589285714285
+   },
+   "sigma": 4.512333393096924,
+   "kept": false
+  },
+  {
+   "epoch": 7,
+   "action_loss": 0.3592751304739587,
+   "adv_entropy": 3.185238770608391,
+   "adv_loss": 3.168058717357261,
+   "train_action_acc": 87.08147321428571,
+   "train_adv_acc": 6.724330357142857,
+   "train_adv_accs": {
+    "frame_r18": 6.724330357142857
+   },
+   "sigma": 4.260544300079346,
+   "kept": false
+  },
+  {
+   "epoch": 8,
+   "action_loss": 0.41126681676749804,
+   "adv_entropy": 3.064957301531519,
+   "adv_loss": 2.9353461680667743,
+   "train_action_acc": 83.31473214285714,
+   "train_adv_acc": 14.815848214285714,
+   "train_adv_accs": {
+    "frame_r18": 14.815848214285714
+   },
+   "sigma": 4.0704731941223145,
+   "kept": false
+  },
+  {
+   "epoch": 9,
+   "action_loss": 0.32516544905333183,
+   "adv_entropy": 2.9032340065709183,
+   "adv_loss": 2.671068025752902,
+   "train_action_acc": 86.71875,
+   "train_adv_acc": 21.930803571428573,
+   "train_adv_accs": {
+    "frame_r18": 21.930803571428573
+   },
+   "sigma": 3.8654444217681885,
+   "kept": false
+  },
+  {
+   "epoch": 10,
+   "action_loss": 0.26520685778710423,
+   "adv_entropy": 3.205080881714821,
+   "adv_loss": 3.2041616375957216,
+   "train_action_acc": 89.6484375,
+   "train_adv_acc": 4.603794642857143,
+   "train_adv_accs": {
+    "frame_r18": 4.603794642857143
+   },
+   "sigma": 3.4288737773895264,
+   "kept": false
+  },
+  {
+   "epoch": 11,
+   "action_loss": 0.22112494624577397,
+   "adv_entropy": 3.149466046797378,
+   "adv_loss": 3.1130528998162066,
+   "train_action_acc": 91.35044642857143,
+   "train_adv_acc": 8.035714285714286,
+   "train_adv_accs": {
+    "frame_r18": 8.035714285714286
+   },
+   "sigma": 3.5125174522399902,
+   "kept": false
+  },
+  {
+   "epoch": 12,
+   "action_loss": 0.19752018566630017,
+   "adv_entropy": 3.026515264596258,
+   "adv_loss": 2.88922921781029,
+   "train_action_acc": 92.91294642857143,
+   "train_adv_acc": 15.904017857142858,
+   "train_adv_accs": {
+    "frame_r18": 15.904017857142858
+   },
+   "sigma": 3.050806999206543,
+   "kept": false
+  },
+  {
+   "epoch": 13,
+   "action_loss": 0.12569499565922473,
+   "adv_entropy": 3.193897018475192,
+   "adv_loss": 3.1792112636779035,
+   "train_action_acc": 95.3125,
+   "train_adv_acc": 6.696428571428571,
+   "train_adv_accs": {
+    "frame_r18": 6.696428571428571
+   },
+   "sigma": 2.8578639030456543,
+   "kept": false
+  },
+  {
+   "epoch": 14,
+   "action_loss": 0.1059531300862935,
+   "adv_entropy": 3.066271179488727,
+   "adv_loss": 2.8988552732127055,
+   "train_action_acc": 96.20535714285714,
+   "train_adv_acc": 16.713169642857142,
+   "train_adv_accs": {
+    "frame_r18": 16.713169642857142
+   },
+   "sigma": 2.789736270904541,
+   "kept": false
+  },
+  {
+   "epoch": 15,
+   "action_loss": 0.12734272302285327,
+   "adv_entropy": 2.8732526786625385,
+   "adv_loss": 2.59193732802357,
+   "train_action_acc": 95.98214285714286,
+   "train_adv_acc": 26.004464285714285,
+   "train_adv_accs": {
+    "frame_r18": 26.004464285714285
+   },
+   "sigma": 2.6875545978546143,
+   "kept": true
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 89.13043737411499,
+  "person/frame_r50": 18.72909665107727,
+  "person/r3d": 46.15384638309479
+ },
+ "weak": {
+  "action/r2p1d": 35.78595221042633,
+  "person/frame_r50": 4.013377800583839,
+  "person/r3d": 3.8461539894342422
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 89.13043737411499
+  },
+  "weak/action/r2p1d": {
+   "main": 35.78595221042633
+  },
+  "strong/person/frame_r50": {
+   "main": 18.72909665107727
+  },
+  "weak/person/frame_r50": {
+   "main": 4.013377800583839
+  },
+  "strong/person/r3d": {
+   "main": 46.15384638309479
+  },
+  "weak/person/r3d": {
+   "main": 3.8461539894342422
+  }
+ },
+ "action_top1": 89.13043737411499,
+ "privacy_main": 46.15384638309479,
+ "privacy_top1": 46.15384638309479,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 85.89523062705993
+}

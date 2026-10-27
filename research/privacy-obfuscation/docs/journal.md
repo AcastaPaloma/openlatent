@@ -174,3 +174,18 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   started after this commit.
 - H13: part of the U-Net's "collapse" is this effect (utility moves into sub-LSB detail while
   the adversary loses the visible content); with quantisation-aware training it may stabilise.
+
+### 2026-10-27 09:35 UTC: BDQ moves along the curve; first UCF101 numbers
+| run | action | privacy strong (frame / video) |
+|---|---|---|
+| p2_bdq_a3_lr3e-3 (KTH, frame adversary, alpha 3) | 89.1 | 46.2 (18.7 / 46.2) |
+| p2_bdq_a1 (alpha 1) | 93.5 | 69.9 (31.3 / 69.9) |
+| p2_unet_a05_ens (KTH, U-Net alpha 0.5, frame+video adversaries) | 94.1 | 78.9 (44.5 / 78.9) |
+| p3_down8 (UCF101, cMAP over 5 attributes) | 72.2 | 72.1 (71.9 / 72.1) |
+| p3_blur8 (UCF101) | 58.9 | 70.3 (69.4 / 70.3) |
+- BDQ alpha 3 (gentler lr) trades 4 action points for 24 identity points vs alpha 1: the first
+  learned run to move clearly along the utility-privacy curve. Video attacker still bounds it.
+- U-Net alpha 0.5 with the ensemble didn't collapse but keeps 78.9% identity.
+- UCF101: blur/downsampling cost 25-40 action points but keep attribute cMAP near 70 (raw pending).
+- H14: BDQ's curve continues with alpha (5 queued, with an alpha-3 seed replicate); an alpha-3
+  ensemble (Colab c15) should lower the video-attacker number further.

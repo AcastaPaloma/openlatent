@@ -118,7 +118,7 @@ def main(cfg_path):
     D = load_dataset(cfg, log)
     rows_tr, rows_te, frames, stride = D["rows_tr"], D["rows_te"], D["frames"], D["stride"]
     pk, pt = D["priv_kind"], D["priv_task"]
-    result = dict(name=name, config=cfg, git=git_head(), dataset=cfg.get("dataset", "kth"), split=cfg.get("split", "ilic"),
+    result = dict(name=name, config=cfg, git=git_head(), dataset=cfg.get("dataset", "kth"), split=cfg.get("split", "ilic") if cfg.get("dataset", "kth") == "kth" else "s1",
                   n_train=len(rows_tr), n_test=len(rows_te), privacy_metric="top1" if pk == "multiclass" else "cmap")
 
     f = anonymizers.build(cfg["anonymizer"], in_ch=D["in_ch"])
