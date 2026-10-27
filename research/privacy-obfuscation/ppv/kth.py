@@ -15,8 +15,8 @@ import subprocess
 import zipfile
 
 import numpy as np
-import torch
-from torch.utils.data import Dataset
+
+from .clips import Clips, worker_init  # noqa: F401  (re-exported for older imports)
 
 ACTIONS = ["boxing", "handclapping", "handwaving", "jogging", "running", "walking"]
 H, W = 120, 160
@@ -86,6 +86,7 @@ def load_meta(root):
             r[k] = int(r[k])
         r["action_id"] = ACTIONS.index(r["action"])
         r["person_id"] = r["person"] - 1
+        r["priv"] = r["person_id"]
     return rows
 
 
@@ -116,43 +117,3 @@ def split(rows, how):
 
 def load_frames(root, videos, frames_dir="frames"):
     return {v: np.load(os.path.join(root, frames_dir, f"{v}.npy")) for v in sorted(set(videos))}
-
-
-class Clips(Dataset):
-    """T-frame clips (stride s) from subsequences. Train: one random clip per row per pass
-    (repeated `repeats` times). Test: `n_test` evenly spaced clips per row, scored jointly.
-
-    Returns uint8 clip (T, H, W[, C]), action id, person id, row index.
-    """
-
-    def __init__(self, rows, frames, train, T=16, stride=2, repeats=1, n_test=3, seed=0):
-        self.rows, self.frames, self.train = rows, frames, train
-        self.T, self.stride, self.repeats, self.n_test = T, stride, repeats, n_test
-        self.rng = np.random.default_rng(seed)
-
-    def __len__(self):
-        return len(self.rows) * (self.repeats if self.train else self.n_test)
-
-    def __getitem__(self, i):
-        if self.train:
-            ri = i % len(self.rows)
-        else:
-            ri, k = divmod(i, self.n_test)
-        r = self.rows[ri]
-        span = (self.T - 1) * self.stride + 1
-        a, b = r["start"] - 1, r["end"] - 1
-        stride = self.stride if b - a + 1 >= span else 1
-        span = (self.T - 1) * stride + 1
-        last = max(a, b - span + 1)
-        if self.train:
-            s = int(self.rng.integers(a, last + 1))
-        else:
-            s = int(round(a + (last - a) * (k + 0.5) / self.n_test))
-        idx = np.clip(np.arange(s, s + span, stride), 0, len(self.frames[r["video"]]) - 1)
-        clip = torch.from_numpy(np.ascontiguousarray(self.frames[r["video"]][idx]))
-        return clip, r["action_id"], r["person_id"], ri
-
-
-def worker_init(wid):
-    ds = torch.utils.data.get_worker_info().dataset
-    ds.rng = np.random.default_rng(torch.initial_seed() % 2**32)
