@@ -26,3 +26,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   edit removes identity directions.
 
 ## Log
+
+### 2026-10-27 06:50 UTC: first in-training signal (provisional)
+- BDQ (learned blur, temporal difference, quantisation) trained against a *frame* adversary
+  (Colab, p2_bdq_a1): the in-training adversary sits at ~21% identity by epoch 11, with action at 98%.
+- The same BDQ trained against a *video* adversary (R3D-18, p2_bdq_a1_vadv): the adversary is
+  still at 65% by epoch 8, and its entropy is only 1.76/3.22 nats. Motion-only output keeps
+  identity that a spatio-temporal model reads (gait, body proportions) even while the anonymizer
+  is optimised against that same model.
+- Supports H2 (provisional; the retrained attackers are the real test).
+- H4: anonymizers trained only against frame adversaries will show a large gap between frame
+  and video attackers under the strong protocol. The video attacker number is the one to report.
