@@ -183,11 +183,53 @@ class VAELatent(nn.Module):
         return y.mean(1, keepdim=True) if self.out_gray else y
 
 
+class PersonBox(nn.Module):
+    """Detect people per frame (torchvision Faster R-CNN MobileNetV3-320, COCO) and black out
+    (fill=0) or blur their boxes: the person-removal baseline used by VITA/SPAct ("blackening").
+    Fixed; no learned parameters of its own."""
+    learned = False
+
+    def __init__(self, score=0.5, mode="black", sigma=8.0, every=1, dilate=4):
+        super().__init__()
+        from torchvision.models.detection import (FasterRCNN_MobileNet_V3_Large_320_FPN_Weights,
+                                                  fasterrcnn_mobilenet_v3_large_320_fpn)
+        self.det = fasterrcnn_mobilenet_v3_large_320_fpn(weights=FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1).eval()
+        self.det.requires_grad_(False)
+        self.score, self.mode, self.sigma = score, mode, sigma
+        self.every, self.dilate = every, dilate  # detect on every `every`-th frame; grow boxes by `dilate` px
+
+    def train(self, mode=True):
+        super().train(mode)
+        self.det.eval()
+        return self
+
+    @torch.no_grad()
+    def forward(self, x):
+        b, c, t, h, w = x.shape
+        frames = x.transpose(1, 2).reshape(b * t, c, h, w)
+        rgb = frames.expand(-1, 3, -1, -1) if c == 1 else frames
+        mask = torch.zeros(b * t, 1, h, w, device=x.device, dtype=x.dtype)
+        idx = [k for k in range(b * t) if (k % t) % self.every == 0]  # keyframes within each clip
+        d = self.dilate
+        for i in range(0, len(idx), 256):
+            chunk = idx[i:i + 256]
+            for k, det in zip(chunk, self.det(list(rgb[chunk].float()))):
+                keep = (det["labels"] == 1) & (det["scores"] >= self.score)
+                last = min(k + self.every, (k // t + 1) * t)  # boxes cover the frames up to the next keyframe
+                for x0, y0, x1, y1 in det["boxes"][keep].round().long().tolist():
+                    mask[k:last, :, max(0, y0 - d):y1 + d, max(0, x0 - d):x1 + d] = 1
+        fill = torch.zeros_like(frames) if self.mode == "black" else blur2d(frames.view(b, t, c, h, w).transpose(1, 2), self.sigma).transpose(1, 2).reshape(b * t, c, h, w)
+        out = frames * (1 - mask) + fill * mask
+        return out.view(b, t, c, h, w).transpose(1, 2)
+
+
 def build(cfg, in_ch=1):
     cfg = dict(cfg)
     kind = cfg.pop("type")
     if kind in ("raw", "bg_median", "fg_only", "blur", "down", "pixelate", "diff", "bdq_fixed"):
         return Fixed(kind, **cfg)
+    if kind == "person_box":
+        return PersonBox(**cfg)
     if kind == "bdq":
         return BDQ(**cfg)
     if kind == "unet3d":

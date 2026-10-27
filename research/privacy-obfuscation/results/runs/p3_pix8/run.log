@@ -1,0 +1,44 @@
+[09:55:34] run p3_pix8 @ b3283cb: {"name": "p3_pix8", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "pixelate", "factor": 8}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}}
+[09:55:34] VP-UCF101 split 1: 9537 train / 3783 test videos
+[09:57:24] materialised anonymised dataset (110s)
+[09:57:25] strong eval: training action r2p1d on anonymised data
+[09:59:56]   [action] epoch 1/10 loss 2.918 train_acc 36.4 (151s)
+[10:02:21]   [action] epoch 2/10 loss 1.051 train_acc 75.0 (145s)
+[10:04:46]   [action] epoch 3/10 loss 0.514 train_acc 87.3 (145s)
+[10:07:11]   [action] epoch 4/10 loss 0.315 train_acc 92.5 (145s)
+[10:09:37]   [action] epoch 5/10 loss 0.176 train_acc 95.9 (145s)
+[10:12:02]   [action] epoch 6/10 loss 0.100 train_acc 97.8 (145s)
+[10:14:27]   [action] epoch 7/10 loss 0.061 train_acc 98.9 (145s)
+[10:16:53]   [action] epoch 8/10 loss 0.042 train_acc 99.3 (145s)
+[10:19:18]   [action] epoch 9/10 loss 0.027 train_acc 99.6 (145s)
+[10:21:43]   [action] epoch 10/10 loss 0.023 train_acc 99.7 (145s)
+[10:22:55]   strong action/r2p1d: 72.61
+[10:24:05]   weak action/r2p1d: 2.59
+[10:24:06] strong eval: training attr frame_r50 on anonymised data
+[10:26:03]   [attr] epoch 1/10 loss 0.504 train_acc 77.2 (116s)
+[10:27:55]   [attr] epoch 2/10 loss 0.445 train_acc 79.7 (112s)
+[10:29:47]   [attr] epoch 3/10 loss 0.427 train_acc 80.3 (112s)
+[10:31:39]   [attr] epoch 4/10 loss 0.411 train_acc 80.9 (112s)
+[10:33:31]   [attr] epoch 5/10 loss 0.394 train_acc 81.8 (112s)
+[10:35:23]   [attr] epoch 6/10 loss 0.377 train_acc 82.5 (112s)
+[10:37:15]   [attr] epoch 7/10 loss 0.363 train_acc 83.4 (112s)
+[10:39:07]   [attr] epoch 8/10 loss 0.353 train_acc 83.8 (112s)
+[10:40:59]   [attr] epoch 9/10 loss 0.347 train_acc 84.1 (112s)
+[10:42:50]   [attr] epoch 10/10 loss 0.344 train_acc 84.3 (112s)
+[10:44:33]   strong attr/frame_r50: 71.71  (AP per attribute [96.7, 79.6, 95.3, 40.4, 46.5], F1 65.5)
+[10:46:16]   weak attr/frame_r50: 62.58
+[10:46:17] strong eval: training attr r3d on anonymised data
+[10:47:41]   [attr] epoch 1/10 loss 0.484 train_acc 77.0 (84s)
+[10:49:01]   [attr] epoch 2/10 loss 0.430 train_acc 80.3 (81s)
+[10:50:22]   [attr] epoch 3/10 loss 0.412 train_acc 81.2 (81s)
+[10:51:43]   [attr] epoch 4/10 loss 0.395 train_acc 82.0 (81s)
+[10:53:04]   [attr] epoch 5/10 loss 0.374 train_acc 83.0 (81s)
+[10:54:25]   [attr] epoch 6/10 loss 0.342 train_acc 84.5 (81s)
+[10:55:45]   [attr] epoch 7/10 loss 0.306 train_acc 86.2 (81s)
+[10:57:06]   [attr] epoch 8/10 loss 0.268 train_acc 88.3 (81s)
+[10:58:27]   [attr] epoch 9/10 loss 0.240 train_acc 89.7 (81s)
+[10:59:48]   [attr] epoch 10/10 loss 0.220 train_acc 90.8 (81s)
+[11:00:18]   strong attr/r3d: 72.07  (AP per attribute [96.3, 79.3, 94.8, 40.8, 49.2], F1 68.2)
+[11:00:46]   weak attr/r3d: 59.98
+[11:00:46] DONE p3_pix8: action 72.61  privacy cmap (strong, best attacker) 72.07  (65.2 min)
+[11:01:01] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p3_pix8

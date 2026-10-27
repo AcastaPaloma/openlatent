@@ -34,6 +34,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p1_diff | kth | `{type: diff, gain: 4.0}` | ilic | 96.5 | **97.5** | 97.9% | 93.0 / 97.5 | 82.9 | 13.5 | 35 |
 | p1_down8 | kth | `{type: down, factor: 8}` | ilic | 96.2 | **97.2** | 97.5% | 97.2 / 94.6 | 19.1 | 10.9 | 36 |
 | p1_down4 | kth | `{type: down, factor: 4}` | ilic | 97.0 | **98.2** | 98.6% | 97.7 / 98.2 | 79.6 | 37.5 | 106 |
+| p2_vae_recon | kth | `{type: vae_latent}` | ilic | 97.5 | **98.7** | 99.1% | 98.7 / 98.0 | 97.3 | 99.3 | 74 |
 | p1_pix4 | kth | `{type: pixelate, factor: 4}` | ilic | 97.7 | **99.0** | 99.5% | 98.2 / 99.0 | 58.0 | 23.2 | 70 |
 | p1_down2 | kth | `{type: down, factor: 2}` | ilic | 97.0 | **98.5** | 98.9% | 98.0 / 98.5 | 96.3 | 78.6 | 35 |
 | p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 100.0% | 99.5 / 99.5 | 62.2 | 34.6 | 36 |
@@ -47,6 +48,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p3_diff | ucf101_vp | `{type: diff, gain: 4.0}` | ilic | 88.4 | **76.0** | 96.7% | 76.0 / 74.6 | 8.7 | 66.5 | 121 |
 | p3_down4 | ucf101_vp | `{type: down, factor: 4}` | ilic | 84.5 | **75.1** | 91.5% | 75.1 / 74.4 | 21.0 | 69.2 | 74 |
 | p3_blur4 | ucf101_vp | `{type: blur, sigma: 4}` | ilic | 79.9 | **73.5** | 83.0% | 72.1 / 73.5 | 3.0 | 64.2 | 66 |
+| p3_pix8 | ucf101_vp | `{type: pixelate, factor: 8}` | s1 | 72.6 | **72.1** | 74.8% | 71.7 / 72.1 | 2.6 | 62.6 | 65 |
 | p3_down8 | ucf101_vp | `{type: down, factor: 8}` | ilic | 72.2 | **72.1** | 75.0% | 71.9 / 72.1 | 3.1 | 64.3 | 106 |
 | p3_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | ilic | 58.9 | **70.3** | 64.7% | 69.4 / 70.3 | 1.7 | 61.2 | 95 |
 | p3_down16 | ucf101_vp | `{type: down, factor: 16}` | ilic | 53.7 | **70.3** | 64.9% | 68.5 / 70.3 | 2.2 | 61.0 | 53 |

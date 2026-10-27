@@ -1,0 +1,12 @@
+{
+ "name": "p1_personbox",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "person_box",
+  "mode": "black",
+  "every": 8,
+  "dilate": 6
+ }
+}
