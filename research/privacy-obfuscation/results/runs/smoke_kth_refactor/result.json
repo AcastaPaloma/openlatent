@@ -1,0 +1,76 @@
+{
+ "name": "smoke_kth_refactor",
+ "config": {
+  "name": "smoke_kth_refactor",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "unet3d"
+  },
+  "adv": {
+   "epochs": 1,
+   "alpha": 1.0,
+   "restart_every": 0,
+   "batch": 8,
+   "repeats": 1
+  },
+  "eval": {
+   "epochs": 1,
+   "repeats": 1,
+   "action": [
+    "r2p1d"
+   ],
+   "privacy": [
+    "frame_r18"
+   ],
+   "clean_attacker": true
+  }
+ },
+ "git": "3648480",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.49425149757215486,
+   "adv_entropy": 3.1780178834285056,
+   "adv_loss": 3.055724393044199,
+   "train_action_acc": 83.14732142857143,
+   "train_adv_acc": 14.0625
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 96.32107019424438,
+  "person/frame_r18": 20.066890120506287
+ },
+ "weak": {
+  "action/r2p1d": 14.046822488307953,
+  "person/frame_r18": 4.013377800583839
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 96.32107019424438
+  },
+  "weak/action/r2p1d": {
+   "main": 14.046822488307953
+  },
+  "strong/person/frame_r18": {
+   "main": 20.066890120506287
+  },
+  "weak/person/frame_r18": {
+   "main": 4.013377800583839
+  }
+ },
+ "action_top1": 96.32107019424438,
+ "privacy_main": 20.066890120506287,
+ "privacy_top1": 20.066890120506287,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 14.464228920141856
+}

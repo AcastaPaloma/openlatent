@@ -1,2 +1,18 @@
 [06:37:02] run smoke_kth_refactor @ 3648480: {"name": "smoke_kth_refactor", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "unet3d"}, "adv": {"epochs": 1, "alpha": 1.0, "restart_every": 0, "batch": 8, "repeats": 1}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r18"], "clean_attacker": true}}
 [06:37:07] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[06:41:28]   [adv] epoch 1/1 action_acc 83.1 adv_acc 14.1 adv_entropy 3.18/3.22 (256s)
+[06:47:22] materialised anonymised dataset (354s)
+[06:47:23] strong eval: training action r2p1d on anonymised data
+[06:48:35]   [action] epoch 1/1 loss 0.658 train_acc 77.4 (71s)
+[06:48:57]   strong action/r2p1d: 96.32
+[06:48:58] training clean action model r2p1d (cached at /home/ubuntu/work/cache/kth_ilic_action_r2p1d_e1.pt)
+[06:50:01]   [action] epoch 1/1 loss 0.600 train_acc 79.4 (62s)
+[06:50:18]   weak action/r2p1d: 14.05
+[06:50:18] strong eval: training person frame_r18 on anonymised data
+[06:50:37]   [person] epoch 1/1 loss 3.127 train_acc 9.8 (19s)
+[06:50:58]   strong person/frame_r18: 20.07
+[06:50:58] training clean person model frame_r18 (cached at /home/ubuntu/work/cache/kth_ilic_person_frame_r18_e1.pt)
+[06:51:13]   [person] epoch 1/1 loss 3.124 train_acc 14.1 (14s)
+[06:51:30]   weak person/frame_r18: 4.01
+[06:51:30] DONE smoke_kth_refactor: action 96.32  privacy top1 (strong, best attacker) 20.07  (14.5 min)
+[06:51:31] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/smoke_kth_refactor
