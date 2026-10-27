@@ -106,7 +106,7 @@ def main():
 
     index_path = os.path.join(out_dir, "index.json")
     index = {e["run"]: e for e in json.load(open(index_path))["runs"]} if os.path.exists(index_path) else {}
-    clip_info = [dict(video=r["video"], action=r["action"]) for r in picks]
+    clip_info = [dict(video=r["video"], action=r.get("action") or r["video"].split("/")[0]) for r in picks]
     for r in finished_runs(args.dataset):
         if args.only and r["name"] not in args.only.split(","):
             continue

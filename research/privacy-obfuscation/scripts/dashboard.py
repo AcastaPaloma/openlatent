@@ -117,10 +117,16 @@ def main():
 
     figures = [dict(url=f"{RAW}/results/figures/{os.path.basename(f)}", name=os.path.basename(f))
                for f in sorted(glob.glob(os.path.join(ROOT, "results", "figures", "*.png")))]
+    gifs = {}
+    for p in sorted(glob.glob(os.path.join(ROOT, "results", "gifs", "*", "index.json"))):
+        ds = os.path.basename(os.path.dirname(p))
+        idx = json.load(open(p))
+        gifs[ds] = dict(clips=idx.get("clips", []),
+                        runs=[dict(e, url=f"{RAW}/results/gifs/{ds}/{e['file']}") for e in idx.get("runs", [])])
     journal = open(os.path.join(ROOT, "docs", "journal.md")).read()
 
     out = dict(generated=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), raw_base=RAW,
-               reference=dict(raw=raw_priv, floor=floor), runs=runs, tree=tree, live=live, figures=figures, journal=journal)
+               reference=dict(raw=raw_priv, floor=floor), runs=runs, tree=tree, live=live, figures=figures, gifs=gifs, journal=journal)
     path = os.path.join(ROOT, "results", "dashboard.json")
     with open(path + ".tmp", "w") as f:
         json.dump(out, f, separators=(",", ":"))
