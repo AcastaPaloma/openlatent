@@ -21,6 +21,8 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
+from .clips import LazyFrames
+
 ATTRS = ["face", "skin_color", "gender", "nudity", "relationship"]
 H, W = 112, 150
 N_VIDEOS = 13320
@@ -93,5 +95,5 @@ def load(root):
     rows = json.load(open(os.path.join(root, "meta.json")))
     tr = [r for r in rows if r["split1"] == "train"]
     te = [r for r in rows if r["split1"] == "test"]
-    frames = {r["video"]: np.load(os.path.join(root, "frames", r["video"] + ".npy"), mmap_mode="r") for r in rows}
+    frames = LazyFrames({r["video"]: os.path.join(root, "frames", r["video"] + ".npy") for r in rows})
     return tr, te, frames

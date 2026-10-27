@@ -5,9 +5,29 @@ in that video's frame array), action_id, priv (int class id, or a list of 0/1 at
 plus a {video: uint8 array (T, H, W[, C])} mapping; arrays may be np.memmap.
 """
 
+from collections.abc import Mapping
+
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+
+
+class LazyFrames(Mapping):
+    """{video: frame array} backed by .npy files, memory-mapped on each access. Holding one
+    np.memmap per video keeps a file descriptor open per video (13k for UCF101); opening on
+    access releases each mapping once the caller drops it."""
+
+    def __init__(self, paths):
+        self.paths = dict(paths)
+
+    def __getitem__(self, video):
+        return np.load(self.paths[video], mmap_mode="r")
+
+    def __iter__(self):
+        return iter(self.paths)
+
+    def __len__(self):
+        return len(self.paths)
 
 
 class Clips(Dataset):

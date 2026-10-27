@@ -27,6 +27,8 @@ import time
 
 os.environ.setdefault("USE_TF", "0")  # Lambda images ship TensorFlow; keep it out of transformers
 
+import resource
+
 import torch
 
 from . import anonymizers, kth, models, train, ucf101
@@ -105,6 +107,8 @@ def main(cfg_path):
         logf.write(line + "\n")
         logf.flush()
 
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)  # large datasets map many files
+    resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
     torch.manual_seed(cfg.get("seed", 0))
     torch.backends.cudnn.benchmark = True
     ev = {**DEFAULT_EVAL, **cfg.get("eval", {})}

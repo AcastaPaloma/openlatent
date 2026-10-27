@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from . import models
-from .clips import Clips, worker_init
+from .clips import Clips, LazyFrames, worker_init
 
 DEV = "cuda"
 
@@ -210,8 +210,9 @@ def materialize(f, frames, window=32, ctx=2, batch=8, out_dir=None):
     With `out_dir`, each video is written to <out_dir>/<video>.npy and memory-mapped back
     (for datasets too large to hold a second copy in RAM)."""
     f.to(DEV).eval()
-    out = {}
-    for v, arr in frames.items():
+    out, paths = {}, {}
+    for v in frames:
+        arr = frames[v]
         n = len(arr)
         starts = list(range(0, n, window))
         chunks, keep = [], []
@@ -240,5 +241,5 @@ def materialize(f, frames, window=32, ctx=2, batch=8, out_dir=None):
             path = os.path.join(out_dir, v + ".npy")
             os.makedirs(os.path.dirname(path), exist_ok=True)
             np.save(path, full)
-            out[v] = np.load(path, mmap_mode="r")
-    return out
+            paths[v] = path
+    return out if out_dir is None else LazyFrames(paths)
