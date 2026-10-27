@@ -1,0 +1,50 @@
+[07:08:00] run p1_blur2 @ bbac69e: {"name": "p1_blur2", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "blur", "sigma": 2}}
+[07:08:02] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[07:08:08] materialised anonymised dataset (6s)
+[07:08:09] strong eval: training action r2p1d on anonymised data
+[07:09:36]   [action] epoch 1/12 loss 0.517 train_acc 82.3 (88s)
+[07:10:59]   [action] epoch 2/12 loss 0.141 train_acc 94.9 (83s)
+[07:12:21]   [action] epoch 3/12 loss 0.090 train_acc 96.8 (83s)
+[07:13:43]   [action] epoch 4/12 loss 0.080 train_acc 97.3 (82s)
+[07:15:06]   [action] epoch 5/12 loss 0.048 train_acc 98.4 (82s)
+[07:16:28]   [action] epoch 6/12 loss 0.028 train_acc 99.1 (82s)
+[07:17:51]   [action] epoch 7/12 loss 0.019 train_acc 99.4 (82s)
+[07:19:13]   [action] epoch 8/12 loss 0.011 train_acc 99.8 (83s)
+[07:20:36]   [action] epoch 9/12 loss 0.006 train_acc 99.8 (82s)
+[07:21:58]   [action] epoch 10/12 loss 0.005 train_acc 99.9 (82s)
+[07:23:20]   [action] epoch 11/12 loss 0.004 train_acc 99.9 (83s)
+[07:24:42]   [action] epoch 12/12 loss 0.005 train_acc 99.9 (81s)
+[07:24:53]   strong action/r2p1d: 97.66
+[07:25:01]   weak action/r2p1d: 62.21
+[07:25:01] strong eval: training person frame_r50 on anonymised data
+[07:25:50]   [person] epoch 1/12 loss 2.597 train_acc 29.9 (48s)
+[07:26:34]   [person] epoch 2/12 loss 0.738 train_acc 84.0 (44s)
+[07:27:18]   [person] epoch 3/12 loss 0.168 train_acc 97.6 (44s)
+[07:28:02]   [person] epoch 4/12 loss 0.077 train_acc 98.9 (44s)
+[07:28:46]   [person] epoch 5/12 loss 0.042 train_acc 99.4 (44s)
+[07:29:30]   [person] epoch 6/12 loss 0.026 train_acc 99.7 (44s)
+[07:30:14]   [person] epoch 7/12 loss 0.023 train_acc 99.6 (44s)
+[07:30:58]   [person] epoch 8/12 loss 0.016 train_acc 99.9 (44s)
+[07:31:42]   [person] epoch 9/12 loss 0.016 train_acc 99.8 (44s)
+[07:32:26]   [person] epoch 10/12 loss 0.010 train_acc 99.9 (44s)
+[07:33:10]   [person] epoch 11/12 loss 0.010 train_acc 99.9 (44s)
+[07:33:52]   [person] epoch 12/12 loss 0.009 train_acc 100.0 (42s)
+[07:34:16]   strong person/frame_r50: 99.50
+[07:34:40]   weak person/frame_r50: 34.62
+[07:34:40] strong eval: training person r3d on anonymised data
+[07:35:27]   [person] epoch 1/12 loss 1.048 train_acc 75.8 (47s)
+[07:36:12]   [person] epoch 2/12 loss 0.062 train_acc 99.4 (44s)
+[07:36:56]   [person] epoch 3/12 loss 0.033 train_acc 99.6 (44s)
+[07:37:40]   [person] epoch 4/12 loss 0.033 train_acc 99.6 (44s)
+[07:38:24]   [person] epoch 5/12 loss 0.016 train_acc 99.8 (44s)
+[07:39:09]   [person] epoch 6/12 loss 0.004 train_acc 100.0 (44s)
+[07:39:53]   [person] epoch 7/12 loss 0.005 train_acc 99.9 (44s)
+[07:40:37]   [person] epoch 8/12 loss 0.003 train_acc 100.0 (44s)
+[07:41:21]   [person] epoch 9/12 loss 0.002 train_acc 100.0 (44s)
+[07:42:06]   [person] epoch 10/12 loss 0.002 train_acc 100.0 (44s)
+[07:42:50]   [person] epoch 11/12 loss 0.002 train_acc 100.0 (44s)
+[07:43:24]   [person] epoch 12/12 loss 0.002 train_acc 100.0 (34s)
+[07:43:31]   strong person/r3d: 99.50
+[07:43:35]   weak person/r3d: 12.04
+[07:43:35] DONE p1_blur2: action 97.66  privacy top1 (strong, best attacker) 99.50  (35.6 min)
+[07:43:36] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p1_blur2

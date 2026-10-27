@@ -1,0 +1,58 @@
+{
+ "name": "p1_bdqfixed_s2_l8",
+ "config": {
+  "name": "p1_bdqfixed_s2_l8",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "bdq_fixed",
+   "sigma": 2.0,
+   "levels": 8
+  }
+ },
+ "git": "bbac69e",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "action/r2p1d": 96.82274460792542,
+  "person/frame_r50": 68.22742223739624,
+  "person/r3d": 87.79264092445374
+ },
+ "weak": {
+  "action/r2p1d": 18.896320462226868,
+  "person/frame_r50": 4.013377800583839,
+  "person/r3d": 4.013377800583839
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 96.82274460792542
+  },
+  "weak/action/r2p1d": {
+   "main": 18.896320462226868
+  },
+  "strong/person/frame_r50": {
+   "main": 68.22742223739624
+  },
+  "weak/person/frame_r50": {
+   "main": 4.013377800583839
+  },
+  "strong/person/r3d": {
+   "main": 87.79264092445374
+  },
+  "weak/person/r3d": {
+   "main": 4.013377800583839
+  }
+ },
+ "action_top1": 96.82274460792542,
+ "privacy_main": 87.79264092445374,
+ "privacy_top1": 87.79264092445374,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 35.80199780464172
+}

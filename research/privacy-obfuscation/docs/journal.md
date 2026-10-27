@@ -86,3 +86,24 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   split) separates person from place.
 - Action is 9 points lower on this split than on Ilic's (88.7 vs ~97): scale variation (d2) is
   harder for action than for identity.
+
+### 2026-10-27 07:50 UTC: rest of phase-1 fixed baselines, and two U-Net collapses
+| anonymizer | action | identity strong (frame / video) | action weak | identity weak |
+|---|---|---|---|---|
+| raw | 97.5 | 99.5 (99.5 / 99.0) | 97.2 | 99.3 |
+| blur sigma 2 | 97.7 | 99.5 (99.5 / 99.5) | 62.2 | 34.6 |
+| downsample 4 | 97.0 | 98.2 (97.7 / 98.2) | 79.6 | 37.5 |
+| pixelate 16 | 93.5 | 93.1 (90.8 / 93.1) | 16.7 | 9.9 |
+| frame difference | 96.5 | 97.5 (93.0 / 97.5) | 82.9 | 13.5 |
+| fixed BDQ (sigma 2, 8 levels) | 96.8 | 87.8 (68.2 / 87.8) | 18.9 | 4.0 |
+- H2 confirmed for fixed motion representations: frame differences alone keep 97.5% identity,
+  and fixed BDQ keeps 87.8%. Motion carries identity (gait, body shape).
+- H4 confirmed in the fixed case: on fixed BDQ the video attacker is 20 points above the frame
+  attacker. On every motion-only output the video attacker is the one that bounds privacy.
+- Fixed BDQ under the weak protocol reads 4.0% identity (chance), while the strong protocol reads
+  87.8%: the starkest weak/strong gap so far.
+- p2_unet_a3 and p2_unet_a3_vadv started before the collapse guard and both collapsed around
+  epoch 13 (p2_unet_a3: epoch 10 had action 94.7 / adversary 5.3, then 17.0 at epoch 13). Both
+  killed and requeued on VM2/VM3 with the guard.
+- H9: training against a frame adversary alone leaves gait identity; an ensemble adversary
+  (frame + video) is needed. Implementing (adversary list, mean entropy).

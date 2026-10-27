@@ -1,0 +1,34 @@
+{
+ "name": "p1_down4",
+ "config": {
+  "name": "p1_down4",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "down",
+   "factor": 4
+  }
+ },
+ "git": "62e3e5f",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "strong": {
+  "action/r2p1d": 96.98996543884277,
+  "person/frame_r50": 97.65886068344116,
+  "person/r3d": 98.16053509712219
+ },
+ "weak": {
+  "action/r2p1d": 79.59865927696228,
+  "person/frame_r50": 37.45819330215454,
+  "person/r3d": 13.545151054859161
+ },
+ "action_top1": 96.98996543884277,
+ "privacy_top1": 98.16053509712219,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 106.17162668307623
+}

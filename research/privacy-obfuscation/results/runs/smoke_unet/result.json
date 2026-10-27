@@ -1,0 +1,68 @@
+{
+ "name": "smoke_unet",
+ "config": {
+  "name": "smoke_unet",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "unet3d"
+  },
+  "adv": {
+   "epochs": 1,
+   "alpha": 1.0,
+   "restart_every": 0,
+   "batch": 8,
+   "repeats": 1
+  },
+  "eval": {
+   "epochs": 1,
+   "repeats": 1,
+   "action": [
+    "r2p1d"
+   ],
+   "privacy": [
+    "frame_r18"
+   ],
+   "clean_attacker": false
+  }
+ },
+ "git": "678a976",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.5427459245547652,
+   "adv_entropy": 3.160291779254164,
+   "adv_loss": 3.0454563413347517,
+   "train_action_acc": 81.19419642857143,
+   "train_adv_acc": 12.053571428571429,
+   "kept": true
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 97.32441306114197,
+  "person/frame_r18": 29.264214634895325
+ },
+ "weak": {},
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 97.32441306114197
+  },
+  "strong/person/frame_r18": {
+   "main": 29.264214634895325
+  }
+ },
+ "action_top1": 97.32441306114197,
+ "privacy_main": 29.264214634895325,
+ "privacy_top1": 29.264214634895325,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 11.287564551830291
+}

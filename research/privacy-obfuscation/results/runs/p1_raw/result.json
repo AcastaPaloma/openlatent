@@ -1,0 +1,33 @@
+{
+ "name": "p1_raw",
+ "config": {
+  "name": "p1_raw",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  }
+ },
+ "git": "8508827",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "strong": {
+  "action/r2p1d": 97.4916398525238,
+  "person/frame_r50": 99.49832558631897,
+  "person/r3d": 98.99665713310242
+ },
+ "weak": {
+  "action/r2p1d": 97.15719223022461,
+  "person/frame_r50": 99.33110475540161,
+  "person/r3d": 99.33110475540161
+ },
+ "action_top1": 97.4916398525238,
+ "privacy_top1": 99.49832558631897,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 106.21670924425125
+}
