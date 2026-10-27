@@ -1,0 +1,165 @@
+{
+ "name": "p2_vae_a1_vadv",
+ "config": {
+  "name": "p2_vae_a1_vadv",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "vae_latent"
+  },
+  "adv": {
+   "epochs": 15,
+   "alpha": 1.0,
+   "restart_every": 3,
+   "batch": 4,
+   "repeats": 2,
+   "utility": "r2p1d",
+   "adversary": "r3d",
+   "lr_f": 0.0001
+  }
+ },
+ "git": "1868990",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.6983998379021484,
+   "adv_entropy": 2.7015395650107945,
+   "adv_loss": 2.6327805084043314,
+   "train_action_acc": 74.13504464285714,
+   "train_adv_acc": 22.126116071428573
+  },
+  {
+   "epoch": 2,
+   "action_loss": 0.41810229398834053,
+   "adv_entropy": 2.486474850614156,
+   "adv_loss": 2.32677310618705,
+   "train_action_acc": 85.37946428571429,
+   "train_adv_acc": 31.25
+  },
+  {
+   "epoch": 3,
+   "action_loss": 0.36709119844350163,
+   "adv_entropy": 2.4898725245147943,
+   "adv_loss": 2.4211863963864744,
+   "train_action_acc": 86.41183035714286,
+   "train_adv_acc": 29.799107142857142
+  },
+  {
+   "epoch": 4,
+   "action_loss": 0.2968060794223025,
+   "adv_entropy": 3.0147954233522927,
+   "adv_loss": 3.0963206735572646,
+   "train_action_acc": 88.81138392857143,
+   "train_adv_acc": 10.295758928571429
+  },
+  {
+   "epoch": 5,
+   "action_loss": 0.25631720099175126,
+   "adv_entropy": 3.069272661049451,
+   "adv_loss": 3.100636330566236,
+   "train_action_acc": 91.07142857142857,
+   "train_adv_acc": 8.761160714285714
+  },
+  {
+   "epoch": 6,
+   "action_loss": 0.2355511827505065,
+   "adv_entropy": 3.100130752527288,
+   "adv_loss": 3.139601768659694,
+   "train_action_acc": 91.46205357142857,
+   "train_adv_acc": 7.645089285714286
+  },
+  {
+   "epoch": 7,
+   "action_loss": 0.15956455610830744,
+   "adv_entropy": 3.1804002158875977,
+   "adv_loss": 3.2588333724332705,
+   "train_action_acc": 94.36383928571429,
+   "train_adv_acc": 4.073660714285714
+  },
+  {
+   "epoch": 8,
+   "action_loss": 0.1575348968770933,
+   "adv_entropy": 3.1672806601439203,
+   "adv_loss": 3.248593350340213,
+   "train_action_acc": 94.05691964285714,
+   "train_adv_acc": 4.073660714285714
+  },
+  {
+   "epoch": 9,
+   "action_loss": 0.1383578458953707,
+   "adv_entropy": 3.1810531658785686,
+   "adv_loss": 3.249054217444999,
+   "train_action_acc": 95.59151785714286,
+   "train_adv_acc": 3.599330357142857
+  },
+  {
+   "epoch": 10,
+   "action_loss": 0.13081973280402184,
+   "adv_entropy": 3.130994572171143,
+   "adv_loss": 3.2154124344566037,
+   "train_action_acc": 95.73102678571429,
+   "train_adv_acc": 6.0546875
+  },
+  {
+   "epoch": 11,
+   "action_loss": 0.14119917108694477,
+   "adv_entropy": 3.12320323448096,
+   "adv_loss": 3.2015471051314046,
+   "train_action_acc": 95.28459821428571,
+   "train_adv_acc": 5.998883928571429
+  },
+  {
+   "epoch": 12,
+   "action_loss": 0.1322743076669732,
+   "adv_entropy": 3.0886634939483235,
+   "adv_loss": 3.1541401570928946,
+   "train_action_acc": 95.45200892857143,
+   "train_adv_acc": 7.142857142857143
+  },
+  {
+   "epoch": 13,
+   "action_loss": 0.09140889610158151,
+   "adv_entropy": 3.1712019834667444,
+   "adv_loss": 3.266954363722886,
+   "train_action_acc": 96.73549107142857,
+   "train_adv_acc": 4.185267857142857
+  },
+  {
+   "epoch": 14,
+   "action_loss": 0.0926405138159875,
+   "adv_entropy": 3.1740702111274004,
+   "adv_loss": 3.2458524645439217,
+   "train_action_acc": 97.18191964285714,
+   "train_adv_acc": 4.380580357142857
+  },
+  {
+   "epoch": 15,
+   "action_loss": 0.0800692105100487,
+   "adv_entropy": 3.1763440056570937,
+   "adv_loss": 3.252848339400121,
+   "train_action_acc": 97.265625,
+   "train_adv_acc": 4.073660714285714
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 96.15384340286255,
+  "person/frame_r50": 54.01337742805481,
+  "person/r3d": 75.58528184890747
+ },
+ "weak": {
+  "action/r2p1d": 16.722407937049866,
+  "person/frame_r50": 4.013377800583839,
+  "person/r3d": 3.8461539894342422
+ },
+ "action_top1": 96.15384340286255,
+ "privacy_top1": 75.58528184890747,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 407.777454996109
+}
