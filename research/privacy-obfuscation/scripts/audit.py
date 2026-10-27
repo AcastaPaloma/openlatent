@@ -89,6 +89,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.expanduser("~/work/audit"))
     ap.add_argument("--split", default="ilic")
+    ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--only", default=None, help="comma-separated technique names to run (default: all)")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     root = os.path.expanduser("~/work/data/kth")
@@ -113,8 +115,10 @@ def main():
     show = sorted(rng.choice(len(te), 4, replace=False))
     results = {}
     for name, cfg, src in TECHNIQUES:
+        if args.only and name not in args.only.split(","):
+            continue
         f = build(cfg, src)
-        im_tr, im_te = centre_frames(f, tr, frames), centre_frames(f, te, frames)
+        im_tr, im_te = centre_frames(f, tr, frames, args.batch), centre_frames(f, te, frames, args.batch)
         sim = thumbs(im_te) @ thumbs(im_tr).T
         nn = sim.argmax(1)
         same_session = [(tr[j]["person"], tr[j]["scenario"]) == (te[i]["person"], te[i]["scenario"]) for i, j in enumerate(nn.tolist())]
@@ -145,7 +149,8 @@ def main():
         del f
         torch.cuda.empty_cache()
     report["techniques"] = results
-    json.dump(report, open(os.path.join(args.out, f"audit_{args.split}.json"), "w"), indent=1)
+    tag = f"_{args.only.replace(',', '_')}" if args.only else ""
+    json.dump(report, open(os.path.join(args.out, f"audit_{args.split}{tag}.json"), "w"), indent=1)
     print("wrote", args.out)
 
 
