@@ -306,3 +306,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Two fixes queued: b_steps=3 (more B updates per f update) and b_warmup=-1 (after every restart,
   train the fresh B for a full epoch on frozen f before f resumes, so f always faces a converged
   attacker, matching the evaluation).
+
+### 2026-10-27 13:55 UTC: BDQ alpha 3 across three seeds
+- Seeds 0 / 1 / 2: identity 46.2 / 68.7 / 66.6 (action 89.1 / 94.5 / 91.6). Seed 0 was the outlier;
+  alpha 3 sits around 60% identity on average. Report means with ranges from now on.

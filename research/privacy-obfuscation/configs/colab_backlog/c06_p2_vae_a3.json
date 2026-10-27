@@ -1,5 +1,5 @@
 {
- "name": "p2_vae_a3",
+ "name": "p2_vae_a3_ens_warm",
  "dataset": "kth",
  "split": "ilic",
  "seed": 0,
@@ -7,13 +7,18 @@
   "type": "vae_latent"
  },
  "adv": {
-  "epochs": 15,
+  "epochs": 8,
   "alpha": 3.0,
-  "restart_every": 3,
+  "restart_every": 4,
   "batch": 4,
   "repeats": 2,
   "utility": "r2p1d",
-  "adversary": "frame_r18",
-  "lr_f": 0.0001
+  "adversary": [
+   "frame_r18",
+   "r3d"
+  ],
+  "lr_f": 0.0001,
+  "b_warmup": -1,
+  "b_steps": 2
  }
 }
