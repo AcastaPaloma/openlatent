@@ -471,3 +471,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Every learned method looks perfect (at chance) to a frozen attacker. VP-UCF101: median gap 9.4 cMAP points
   (attribute cMAP has a 58.7 blind floor, so the scale is compressed).
 - Takeaway: the frozen protocol measures domain shift, not privacy. Only the retrained numbers are reported as results.
+
+### 2026-10-27 19:20 UTC: VAE b3, kill of the VP-UCF101 VAE warm-up run, Colab backlog moved to Lambda
+- p2_vae_a1_ens_b3 (KTH VAE edit, 3 adversary steps per f step): 97.0 / 81.8 (ResNet-50 58.7, R3D 81.8);
+  frozen attackers 4.0. Fifth VAE configuration at 75-90% retrained identity: supports H24.
+- Killed p3_vae_a1_ens_warm after 1 of 3 adversarial epochs (~1 h/epoch, 39.8 action at epoch 1): another VAE
+  variant (H24), and it started before the materialize() fix, so its evaluation would have used the leaky
+  release path. Freed the GPU for BDQ.
+- The Colab watchdog is stopped; its backlog runs on Lambda instead: p2_bdq_a7_ens_warm, p2_bdq_a7_ens_s2
+  (H23), p1_diff_down16 (H22), p2_bdq_a5_ens_s3 (seed spread).
