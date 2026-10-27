@@ -1,0 +1,23 @@
+{
+ "name": "p3_bdq_a1",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "adv": {
+  "epochs": 8,
+  "alpha": 1.0,
+  "restart_every": 3,
+  "batch": 8,
+  "repeats": 1,
+  "utility": "r2p1d",
+  "adversary": "frame_r18",
+  "lr_f": 0.01
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ }
+}

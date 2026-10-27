@@ -1,0 +1,14 @@
+{
+ "name": "p3_diff",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "diff",
+  "gain": 4.0
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ }
+}

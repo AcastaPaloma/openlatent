@@ -83,12 +83,12 @@ def load_dataset(cfg, log):
         frames = kth.load_frames(root, [r["video"] for r in rows])
         log(f"kth split={split}: {len(rows_tr)} train / {len(rows_te)} test subsequences, {len(frames)} videos")
         return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=len(kth.ACTIONS), n_priv=25,
-                    priv_kind="multiclass", priv_task="person", tag=f"kth_{split}", stride=cfg.get("clip_stride", 2), big=False)
+                    priv_kind="multiclass", priv_task="person", tag=f"kth_{split}", stride=cfg.get("clip_stride", 2), big=False, in_ch=1)
     if ds == "ucf101_vp":
         rows_tr, rows_te, frames = ucf101.load(os.path.join(WORK, "data", "ucf101"))
         log(f"VP-UCF101 split 1: {len(rows_tr)} train / {len(rows_te)} test videos")
         return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=101, n_priv=len(ucf101.ATTRS),
-                    priv_kind="multilabel", priv_task="attr", tag="ucf101_vp_s1", stride=cfg.get("clip_stride", 1), big=True)
+                    priv_kind="multilabel", priv_task="attr", tag="ucf101_vp_s1", stride=cfg.get("clip_stride", 1), big=True, in_ch=3)
     raise ValueError(ds)
 
 
@@ -116,7 +116,7 @@ def main(cfg_path):
     result = dict(name=name, config=cfg, git=git_head(), dataset=cfg.get("dataset", "kth"), split=cfg.get("split", "ilic"),
                   n_train=len(rows_tr), n_test=len(rows_te), privacy_metric="top1" if pk == "multiclass" else "cmap")
 
-    f = anonymizers.build(cfg["anonymizer"])
+    f = anonymizers.build(cfg["anonymizer"], in_ch=D["in_ch"])
     if getattr(f, "learned", False):
         adv = cfg["adv"]
         dl = train.loader(rows_tr, frames, True, adv.get("batch", 8), repeats=adv.get("repeats", 2), seed=cfg.get("seed", 0), stride=stride)

@@ -189,5 +189,6 @@ def build(cfg, in_ch=1):
     if kind == "unet3d":
         return UNet3d(cin=in_ch, **cfg)
     if kind == "vae_latent":
+        cfg.setdefault("out_gray", in_ch == 1)  # keep the dataset's channel count
         return VAELatent(**cfg)
     raise ValueError(kind)
