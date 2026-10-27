@@ -592,3 +592,24 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   highly prevalent (AP floor = prevalence); skin colour is the attribute that actually moves.
 - H32: on the scenario split, BDQ dominates fixed maps. Tests: p2_bdq_a5_ens_warm_scenario (best Ilic config),
   p1_diff_down16_scenario (does a finer motion map keep action under new conditions?).
+
+### 2026-10-27 23:40 UTC: a fixed motion map traces the learned BDQ curve (H26 supported)
+- Fixed motion maps vs learned BDQ, Ilic split (action / identity):
+  diff->down32 93.6 / 63.9  vs  BDQ a7 ens 95.0 / 62.9
+  diff->down48 83.6 / 37.0  vs  BDQ a5 ens 84.4 / 37.0   (identical)
+  diff->down64 69.9 / 11.0  vs  BDQ a3 s3 68.4 / 28.9    (fixed is better)
+  Scenario split: diff->down16 81.0 / 50.7 vs BDQ a5 ens 78.7 / 54.0 and BDQ a1 79.2 / 61.2.
+  Learned BDQ, with every adversary variant tried, lands on the curve a parameter-free motion map traces. On KTH
+  the learning does not buy a better trade-off; it buys a point on the same curve.
+  H32 (BDQ dominates on the scenario split) not supported at the one matched point so far.
+- H30 rejected: 16 frames at stride 4 (~2.5 s) don't help the attacker: diff->down32 93.6 / 57.0 (stride 2: 63.9),
+  diff->down64 71.6 / 11.4 (stride 2: 11.0).
+- p1_diff_down64_tshuffle: 64.2 / 11.9 (ordered 69.9 / 11.0): with only two numbers per frame, order carries
+  ~6 points of action and no identity.
+- p2_bdq_down8_a5_ens (BDQ then x8, end to end): 82.8 / 35.6, on the curve.
+- p2_vae_a1_vadv_b3_scenario: 83.0 / 65.0. VAE again.
+- p3_diff_down8 (VP-UCF101): 73.4 / 72.5 (plain down8 72.2 / 72.1). On VP-UCF101 the motion map is no better than
+  plain downsampling: the attributes (face, skin, gender) are appearance and leak through any coarse frame.
+- H33: the KTH action/identity trade-off is set by the data (how much of the motion layout identity shares with
+  action), not by the obfuscation family. Next: fill the fixed-map curve on the scenario split (down8, down48) and
+  replicate the BDQ-matching point (p1_diff_down48_s1); p1_diff_down24 fills the gap between x20 and x32.
