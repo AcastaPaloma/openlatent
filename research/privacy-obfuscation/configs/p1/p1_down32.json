@@ -1,0 +1,10 @@
+{
+ "name": "p1_down32",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "down",
+  "factor": 32
+ }
+}

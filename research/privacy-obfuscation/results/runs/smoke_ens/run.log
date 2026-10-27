@@ -1,0 +1,14 @@
+[07:50:48] run smoke_ens @ 90454f7: {"name": "smoke_ens", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "unet3d"}, "adv": {"epochs": 2, "alpha": 1.0, "restart_every": 1, "batch": 8, "repeats": 1, "adversary": ["frame_r18", "r3d"]}, "eval": {"epochs": 1, "repeats": 1, "action": ["r2p1d"], "privacy": ["frame_r18"], "clean_attacker": false}}
+[07:50:50] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[07:56:20]   [adv] epoch 1/2 action_acc 81.5 adv_acc 57.1 adv_entropy 2.69/3.22 per-adversary frame_r18=7.5 r3d=57.1 (327s)
+[07:56:22]   adversary restarted at epoch 1
+[08:01:24]   [adv] epoch 2/2 action_acc 86.0 adv_acc 40.2 adv_entropy 2.85/3.22 per-adversary frame_r18=4.4 r3d=40.2 (302s)
+[08:06:29] materialised anonymised dataset (305s)
+[08:06:30] strong eval: training action r2p1d on anonymised data
+[08:07:40]   [action] epoch 1/1 loss 0.890 train_acc 64.8 (69s)
+[08:08:02]   strong action/r2p1d: 82.94
+[08:08:03] strong eval: training person frame_r18 on anonymised data
+[08:08:22]   [person] epoch 1/1 loss 3.168 train_acc 9.0 (19s)
+[08:08:42]   strong person/frame_r18: 12.54
+[08:08:42] DONE smoke_ens: action 82.94  privacy top1 (strong, best attacker) 12.54  (17.9 min)
+[08:08:43] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/smoke_ens

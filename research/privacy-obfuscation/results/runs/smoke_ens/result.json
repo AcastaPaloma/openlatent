@@ -1,0 +1,89 @@
+{
+ "name": "smoke_ens",
+ "config": {
+  "name": "smoke_ens",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "unet3d"
+  },
+  "adv": {
+   "epochs": 2,
+   "alpha": 1.0,
+   "restart_every": 1,
+   "batch": 8,
+   "repeats": 1,
+   "adversary": [
+    "frame_r18",
+    "r3d"
+   ]
+  },
+  "eval": {
+   "epochs": 1,
+   "repeats": 1,
+   "action": [
+    "r2p1d"
+   ],
+   "privacy": [
+    "frame_r18"
+   ],
+   "clean_attacker": false
+  }
+ },
+ "git": "90454f7",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.5189135173069579,
+   "adv_entropy": 2.694859365267413,
+   "adv_loss": 2.3798438035217777,
+   "train_action_acc": 81.52901785714286,
+   "train_adv_acc": 57.142857142857146,
+   "train_adv_accs": {
+    "frame_r18": 7.477678571428571,
+    "r3d": 57.142857142857146
+   },
+   "kept": false
+  },
+  {
+   "epoch": 2,
+   "action_loss": 0.39030754667640266,
+   "adv_entropy": 2.849851196365697,
+   "adv_loss": 2.6454893965274096,
+   "train_action_acc": 85.99330357142857,
+   "train_adv_acc": 40.234375,
+   "train_adv_accs": {
+    "frame_r18": 4.408482142857143,
+    "r3d": 40.234375
+   },
+   "kept": true
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 82.9431414604187,
+  "person/frame_r18": 12.541806697845459
+ },
+ "weak": {},
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 82.9431414604187
+  },
+  "strong/person/frame_r18": {
+   "main": 12.541806697845459
+  }
+ },
+ "action_top1": 82.9431414604187,
+ "privacy_main": 12.541806697845459,
+ "privacy_top1": 12.541806697845459,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 17.896325631936392
+}
