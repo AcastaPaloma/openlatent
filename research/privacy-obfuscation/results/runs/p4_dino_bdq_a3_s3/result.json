@@ -1,0 +1,64 @@
+{
+ "name": "p4_dino_bdq_a3_s3",
+ "config": {
+  "name": "p4_dino_bdq_a3_s3",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "bdq"
+  },
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  },
+  "anonymizer_from": "p2_bdq_a3_lr3e-3_s3"
+ },
+ "git": "5a9ecbe",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 13.04347813129425,
+  "person/frame_dino_ft": 7.023411244153976
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 13.04347813129425,
+   "by_action": {
+    "0": 7.070706784725189,
+    "1": 3.999999910593033,
+    "2": 11.11111119389534,
+    "3": 20.000000298023224,
+    "4": 18.99999976158142,
+    "5": 17.000000178813934
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 7.023411244153976,
+   "by_action": {
+    "0": 6.060606241226196,
+    "1": 3.999999910593033,
+    "2": 8.080808073282242,
+    "3": 7.000000029802322,
+    "4": 5.999999865889549,
+    "5": 10.999999940395355
+   }
+  }
+ },
+ "action_top1": null,
+ "privacy_main": 13.04347813129425,
+ "privacy_top1": 13.04347813129425,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 18.42355078458786
+}
