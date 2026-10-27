@@ -1,0 +1,9 @@
+{
+ "name": "p1_bgmedian_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bg_median"
+ }
+}
