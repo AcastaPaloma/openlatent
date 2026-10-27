@@ -59,6 +59,36 @@ class FrameNet(nn.Module):
         return self.net(f).view(b, t, -1).mean(1)
 
 
+class DinoFrame(nn.Module):
+    """DINOv2 ViT-B/14 (timm, LVD-142M) per frame; clip logits = mean over frames. DINOv2 features are
+    strong for re-identification, so this is the strongest appearance attacker we use.
+    frozen=True: linear probe on frozen features (head lr x5); frozen=False: full fine-tune (lr x0.1)."""
+
+    def __init__(self, num_classes, frozen=True, size=(224, 294)):
+        super().__init__()
+        self.backbone = timm.create_model("vit_base_patch14_dinov2.lvd142m", pretrained=True, num_classes=0,
+                                          dynamic_img_size=True)
+        self.head = nn.Linear(self.backbone.num_features, num_classes)
+        self.frozen, self.size = frozen, size
+        self.lr_scale = 5.0 if frozen else 0.1
+        if frozen:
+            self.backbone.requires_grad_(False)
+
+    def train(self, mode=True):
+        super().train(mode)
+        if self.frozen:
+            self.backbone.eval()
+        return self
+
+    def forward(self, x):
+        b, c, t, h, w = x.shape
+        f = normalize(x, IMNET_MEAN, IMNET_STD).transpose(1, 2).reshape(b * t, 3, h, w)
+        f = F.interpolate(f, size=self.size, mode="bilinear", align_corners=False)
+        with torch.set_grad_enabled(torch.is_grad_enabled() and not self.frozen):
+            feats = self.backbone(f)
+        return self.head(feats.float()).view(b, t, -1).mean(1)
+
+
 def build(name, num_classes):
     if name in ("r2p1d", "r3d"):
         return VideoNet(name, num_classes)
@@ -66,4 +96,8 @@ def build(name, num_classes):
         return FrameNet("resnet50.a1_in1k", num_classes)
     if name == "frame_r18":
         return FrameNet("resnet18.a1_in1k", num_classes)
+    if name == "frame_dino_probe":
+        return DinoFrame(num_classes, frozen=True)
+    if name == "frame_dino_ft":
+        return DinoFrame(num_classes, frozen=False)
     raise ValueError(name)

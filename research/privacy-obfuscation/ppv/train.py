@@ -69,7 +69,8 @@ def frame_subsample(x, k):
 def train_classifier(model, dl, task, epochs, lr=2e-4, wd=0.05, frames_per_clip=None, priv_kind="multiclass", log=print):
     kind = kind_of(task, priv_kind)
     model.to(DEV).train()
-    opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=wd)
+    lr = lr * getattr(model, "lr_scale", 1.0)  # e.g. DINOv2: probe x5, fine-tune x0.1
+    opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=wd)
     sched = cosine(opt, epochs * len(dl), warmup=len(dl) // 2)
     for ep in range(epochs):
         t0, tot, correct, n = time.time(), 0.0, 0.0, 0

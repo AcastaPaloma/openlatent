@@ -122,7 +122,13 @@ def main(cfg_path):
                   n_train=len(rows_tr), n_test=len(rows_te), privacy_metric="top1" if pk == "multiclass" else "cmap")
 
     f = anonymizers.build(cfg["anonymizer"], in_ch=D["in_ch"])
-    if getattr(f, "learned", False) and cfg.get("adv"):  # a learned f without "adv" runs untrained (e.g. plain VAE reconstruction)
+    if cfg.get("anonymizer_from"):
+        # attack-only: reuse a trained anonymizer (its anonymizer.pt from the HF checkpoint repo), skip training
+        from huggingface_hub import hf_hub_download
+        path = hf_hub_download(HF_REPO, f"runs/{cfg['anonymizer_from']}/anonymizer.pt")
+        missing, unexpected = f.load_state_dict(torch.load(path, map_location="cpu"), strict=False)
+        log(f"loaded anonymizer from {cfg['anonymizer_from']} (missing {len([k for k in missing if not k.startswith('vae.')])}, unexpected {len(unexpected)})")
+    elif getattr(f, "learned", False) and cfg.get("adv"):  # a learned f without "adv" runs untrained (e.g. plain VAE reconstruction)
         adv = cfg["adv"]
         dl = train.loader(rows_tr, frames, True, adv.get("batch", 8), repeats=adv.get("repeats", 2), seed=cfg.get("seed", 0), stride=stride)
         f, hist = train.train_anonymizer(f, dl, adv, D["n_act"], D["n_priv"], priv_kind=pk, log=log)
