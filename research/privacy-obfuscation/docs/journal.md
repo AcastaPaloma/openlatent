@@ -49,3 +49,22 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H5: entropy-maximisation games need explicit utility protection (best-epoch keeping, or an
   alpha schedule that backs off when action accuracy drops); the reported trade-off of learned
   anonymizers depends heavily on the stopping rule, which papers rarely report.
+
+### 2026-10-27 07:20 UTC: first fixed baselines (KTH, Ilic split)
+| anonymizer | action (strong) | identity strong (frame / video) | action weak | identity weak |
+|---|---|---|---|---|
+| blur sigma 4 | 97.0 | 97.5 (97.5 / 96.3) | 16.7 | 16.6 |
+| blur sigma 8 | 94.5 | 95.0 (95.0 / 94.8) | 16.7 | 8.7 |
+| pixelate 4 | 97.7 | 99.0 (98.2 / 99.0) | 58.0 | 23.2 |
+| pixelate 8 | 96.3 | 97.2 (96.2 / 97.2) | 16.7 | 14.0 |
+- H1 confirmed in the strongest form: under the strong protocol, blur and pixelation remove
+  essentially no identity (95-99%; chance 4%) and cost at most 3 action points.
+- The weak protocol (Ilic et al.) reports 9-23% identity for the same outputs, overstating privacy
+  by 75-90 points. Raw-trained models fail on the shifted inputs, which looks like privacy but isn't.
+  This is the clearest explanation of the Ilic gap: a frozen attacker measures distribution shift.
+- Concern: identity stays at 95% under sigma-8 blur. On KTH each person's videos share recording
+  sessions, so the attacker may be classifying the scene/session rather than the person.
+- H6: a scene-only input (per-video temporal median, people removed) still identifies the "person"
+  far above chance on the Ilic split. Test: p1_bgmedian (queued) and p1_raw_scenario (running).
+- H7: if H6 holds, KTH identity is partly a session-recognition task, and claims of identity
+  removal on KTH must report the background-only control as the floor to beat.

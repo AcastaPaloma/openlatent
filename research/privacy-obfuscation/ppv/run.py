@@ -29,6 +29,7 @@ os.environ.setdefault("USE_TF", "0")  # Lambda images ship TensorFlow; keep it o
 
 import resource
 
+import numpy as np
 import torch
 
 from . import anonymizers, kth, models, train, ucf101
@@ -131,6 +132,11 @@ def main(cfg_path):
     tmp_dir = None
     if cfg["anonymizer"]["type"] == "raw":
         anon = frames
+    elif cfg["anonymizer"]["type"] == "bg_median":
+        # scene-only control: every frame becomes the video's per-pixel temporal median, which
+        # removes people who move and keeps the background. Identity read from this output comes
+        # from the scene / recording session, not the person.
+        anon = {v: np.repeat(np.median(frames[v], 0).astype(np.uint8)[None], len(frames[v]), 0) for v in frames}
     else:
         t0 = time.time()
         if D["big"]:

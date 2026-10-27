@@ -1,0 +1,34 @@
+{
+ "name": "p1_pix8",
+ "config": {
+  "name": "p1_pix8",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "pixelate",
+   "factor": 8
+  }
+ },
+ "git": "8508827",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "strong": {
+  "action/r2p1d": 96.32107019424438,
+  "person/frame_r50": 96.15384340286255,
+  "person/r3d": 97.15719223022461
+ },
+ "weak": {
+  "action/r2p1d": 16.722407937049866,
+  "person/frame_r50": 8.862876147031784,
+  "person/r3d": 14.046822488307953
+ },
+ "action_top1": 96.32107019424438,
+ "privacy_top1": 97.15719223022461,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 70.17233056624731
+}
