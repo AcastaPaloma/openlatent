@@ -595,6 +595,15 @@
    "kb": 14
   },
   {
+   "run": "p1_diff_down64",
+   "file": "p1_diff_down64.gif",
+   "split": "ilic",
+   "action": 69.89966630935669,
+   "privacy": 11.036789417266846,
+   "leakage": 7.368495074718809,
+   "kb": 127
+  },
+  {
    "run": "p2_unet_a3",
    "file": "p2_unet_a3.gif",
    "split": "ilic",
