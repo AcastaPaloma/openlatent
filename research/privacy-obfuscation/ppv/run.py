@@ -135,7 +135,9 @@ def main(cfg_path):
         t0 = time.time()
         if D["big"]:
             tmp_dir = os.path.join(WORK, "tmp", name)
-        anon = train.materialize(f, frames, out_dir=tmp_dir)
+        # the VAE decodes every frame at full resolution; 2 windows (68 frames) per call fit in memory
+        mb = cfg.get("materialize_batch", 2 if cfg["anonymizer"]["type"] == "vae_latent" else 32)
+        anon = train.materialize(f, frames, out_dir=tmp_dir, batch=mb)
         log(f"materialised anonymised dataset ({time.time() - t0:.0f}s)")
     f.cpu()
     del f

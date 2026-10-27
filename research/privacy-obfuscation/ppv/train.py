@@ -220,44 +220,66 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     return f, hist
 
 
-@torch.no_grad()
-def materialize(f, frames, window=32, ctx=2, batch=8, out_dir=None):
-    """Apply f to every frame of every video; returns {video: uint8 (T, H, W[, 3])}.
-    Windows carry `ctx` frames of left context so temporal ops (differences, 3D convs)
-    see real neighbours at window boundaries; only the window's own frames are kept.
-    With `out_dir`, each video is written to <out_dir>/<video>.npy and memory-mapped back
-    (for datasets too large to hold a second copy in RAM)."""
-    f.to(DEV).eval()
-    out, paths = {}, {}
+def _windows(frames, window, ctx):
+    """(video, n_windows, index, segment, (offset, length)) for every window of every video.
+    Each segment carries `ctx` frames of left context and is padded to window + ctx frames."""
     for v in frames:
         arr = frames[v]
         n = len(arr)
-        starts = list(range(0, n, window))
-        chunks, keep = [], []
-        for s in starts:
-            a = max(0, s - ctx)
-            e = min(n, s + window)
+        n_win = (n + window - 1) // window
+        for wi, s in enumerate(range(0, n, window)):
+            a, e = max(0, s - ctx), min(n, s + window)
             seg = np.asarray(arr[a:e])
             if len(seg) < window + ctx:  # pad by repeating the last frame
                 seg = np.concatenate([seg, np.repeat(seg[-1:], window + ctx - len(seg), 0)])
-            chunks.append(seg)
-            keep.append((s - a, min(window, n - s)))
-        res = []
-        for i in range(0, len(chunks), batch):
-            x = to_input(torch.from_numpy(np.stack(chunks[i:i + batch])))
-            with torch.autocast("cuda", dtype=torch.bfloat16):
-                y = f(x).float()
-            y = (y.clamp(0, 1) * 255).round().to(torch.uint8).cpu()
-            for j, yj in enumerate(y):
-                off, length = keep[i + j]
-                yj = yj[:, off:off + length]  # (C, L, H, W)
-                res.append(yj[0].numpy() if yj.shape[0] == 1 else yj.permute(1, 2, 3, 0).numpy())
-        full = np.concatenate(res)
+            yield v, n_win, wi, seg, (s - a, min(window, n - s))
+
+
+@torch.no_grad()
+def materialize(f, frames, window=32, ctx=2, batch=32, out_dir=None):
+    """Apply f to every frame of every video; returns {video: uint8 (T, H, W[, 3])}.
+    Windows carry `ctx` frames of left context so temporal ops (differences, 3D convs)
+    see real neighbours at window boundaries; only the window's own frames are kept.
+    Batches mix windows from different videos (UCF101 videos are 2-4 windows long), and
+    with `out_dir` each finished video is written to <out_dir>/<video>.npy by a writer thread
+    and returned memory-mapped on access (datasets too large for a second copy in RAM)."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    f.to(DEV).eval()
+    out, paths, parts, writes = {}, {}, {}, []
+    writer = ThreadPoolExecutor(4)
+
+    def finish(v):
+        full = np.concatenate([parts[v][i] for i in range(len(parts[v]))])
+        del parts[v]
         if out_dir is None:
             out[v] = full
         else:
             path = os.path.join(out_dir, v + ".npy")
             os.makedirs(os.path.dirname(path), exist_ok=True)
-            np.save(path, full)
+            writes.append(writer.submit(np.save, path, full))
             paths[v] = path
+
+    def run(pending):
+        x = to_input(torch.from_numpy(np.stack([p[3] for p in pending])))
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            y = f(x).float()
+        y = (y.clamp(0, 1) * 255).round().to(torch.uint8).cpu()
+        for (v, n_win, wi, _, (off, length)), yj in zip(pending, y):
+            yj = yj[:, off:off + length]  # (C, L, H, W)
+            parts.setdefault(v, {})[wi] = yj[0].numpy() if yj.shape[0] == 1 else yj.permute(1, 2, 3, 0).numpy()
+            if len(parts[v]) == n_win:
+                finish(v)
+
+    pending = []
+    for item in _windows(frames, window, ctx):
+        pending.append(item)
+        if len(pending) == batch:
+            run(pending)
+            pending = []
+    if pending:
+        run(pending)
+    for w in writes:
+        w.result()
+    writer.shutdown()
     return out if out_dir is None else LazyFrames(paths)
