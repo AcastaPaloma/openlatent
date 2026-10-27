@@ -34,7 +34,8 @@ for name in "$@"; do
       for a in boxing handclapping handwaving jogging running walking; do
         fetch "https://www.csc.kth.se/cvap/actions/$a.zip" "$RAW/kth/$a.zip" &
       done
-      wait ;;
+      wait
+      fetch "https://www.csc.kth.se/cvap/actions/00sequences.txt" "$RAW/kth/00sequences.txt" ;;
     hmdb51)
       fetch "https://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/hmdb51_org.rar" "$RAW/hmdb51/hmdb51_org.rar"
       fetch "https://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/test_train_splits.rar" "$RAW/hmdb51/test_train_splits.rar" ;;
