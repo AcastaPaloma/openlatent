@@ -505,3 +505,20 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   VP-UCF101 too, where BDQ failed (87.8 / 75.2). Tests: p3_diff_down8, p3_diff_down16.
 - Attacker noise floor: p1_diff_down32_s1 repeats the fixed-filter run with a different attacker seed (the
   obfuscation is identical), measuring how much the identity number moves from attacker training alone.
+
+### 2026-10-27 20:35 UTC: temporal order is not the leak (H25 rejected); motion-map dose; BDQ a10
+- Shuffling frames within each window (fresh attackers on the shuffled release):
+  fixed BDQ 96.8 / 87.8 -> 95.0 / 89.1; diff->down32 93.6 / 63.9 -> 90.0 / 59.2;
+  best learned BDQ (a5 ens warm) 61.4 / 23.6 -> 56.0 / 18.9. Identity barely moves, and where it does, action
+  drops as much. H25 rejected: the remaining identity is not in frame order. It is in the per-frame silhouette
+  shapes as a set, which is exactly the premise of set-based gait recognition (GaitSet treats a walk as an
+  unordered set of silhouettes).
+- Motion-map dose (frame difference then xN downsample, action / identity): x8 95.5 / 88.3, x16 94.8 / 84.6,
+  x32 93.6 / 63.9 (x64 running). The drop is between x16 (8x10 px) and x32 (4x5 px): identity needs the body
+  outline to span more than ~2 pixels.
+- p2_bdq_a10_ens: 71.2 / 31.3 (ResNet-50 14.2), on the BDQ curve. p2_bdq_a1_scenario: 79.2 / 61.2.
+- p2_vae_a1_vadv_b3_s1: 96.7 / 87.0. Seventh VAE configuration in the 74-90% band.
+- H28: identity survives as body-shape statistics, so what helps is destroying per-frame shape while keeping
+  motion energy. Tests: p1_diff_down20 and p1_diff_down40 (resolve the 16 -> 32 cliff), and learned BDQ followed
+  by a fixed downsample, trained end to end (p2_bdq_down4_a5_ens, p2_bdq_down8_a5_ens): can BDQ learn a better
+  coarse motion map than diff alone?
