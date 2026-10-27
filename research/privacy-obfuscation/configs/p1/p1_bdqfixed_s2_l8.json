@@ -1,0 +1,11 @@
+{
+ "name": "p1_bdqfixed_s2_l8",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq_fixed",
+  "sigma": 2.0,
+  "levels": 8
+ }
+}

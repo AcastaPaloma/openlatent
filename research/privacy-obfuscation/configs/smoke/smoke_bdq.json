@@ -1,0 +1,28 @@
+{
+ "name": "smoke_bdq",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "adv": {
+  "epochs": 1,
+  "alpha": 1.0,
+  "restart_every": 0,
+  "batch": 8,
+  "repeats": 1,
+  "lr_f": 0.01
+ },
+ "eval": {
+  "epochs": 1,
+  "repeats": 1,
+  "action": [
+   "r2p1d"
+  ],
+  "privacy": [
+   "frame_r18"
+  ],
+  "clean_attacker": false
+ }
+}

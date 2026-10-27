@@ -1,0 +1,10 @@
+{
+ "name": "p1_diff",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "diff",
+  "gain": 4.0
+ }
+}

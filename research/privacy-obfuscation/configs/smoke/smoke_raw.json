@@ -1,0 +1,21 @@
+{
+ "name": "smoke_raw",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "raw"
+ },
+ "eval": {
+  "epochs": 1,
+  "repeats": 1,
+  "action": [
+   "r2p1d"
+  ],
+  "privacy": [
+   "frame_r50",
+   "r3d"
+  ],
+  "clean_attacker": true
+ }
+}

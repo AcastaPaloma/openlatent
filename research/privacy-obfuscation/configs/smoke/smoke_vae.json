@@ -1,0 +1,27 @@
+{
+ "name": "smoke_vae",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "vae_latent"
+ },
+ "adv": {
+  "epochs": 1,
+  "alpha": 1.0,
+  "restart_every": 0,
+  "batch": 4,
+  "repeats": 1
+ },
+ "eval": {
+  "epochs": 1,
+  "repeats": 1,
+  "action": [
+   "r2p1d"
+  ],
+  "privacy": [
+   "frame_r18"
+  ],
+  "clean_attacker": false
+ }
+}

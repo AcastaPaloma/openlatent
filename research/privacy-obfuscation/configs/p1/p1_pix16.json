@@ -1,0 +1,10 @@
+{
+ "name": "p1_pix16",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pixelate",
+  "factor": 16
+ }
+}
