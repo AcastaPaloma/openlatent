@@ -189,3 +189,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - UCF101: blur/downsampling cost 25-40 action points but keep attribute cMAP near 70 (raw pending).
 - H14: BDQ's curve continues with alpha (5 queued, with an alpha-3 seed replicate); an alpha-3
   ensemble (Colab c15) should lower the video-attacker number further.
+
+### 2026-10-27 09:50 UTC: VP-UCF101 calibrated against STPrivacy; leakage metric
+- p3_raw: action 91.8, attribute cMAP 76.6, which matches STPrivacy's reported raw 76.62
+  on VP-UCF101. Our phase-3 setup reproduces the benchmark's starting point.
+- A constant predictor scores cMAP 58.7 (attribute prevalences: face 91.6, skin color 61.1,
+  gender 89.8, nudity 25.1, relationship 25.7). The meaningful range is 76.6 -> 58.7, not -> 0.
+  Results now report leakage = (privacy - floor) / (raw - floor).
+- Fixed filters on UCF101: down4 84.5 / 75.1 (91% leakage), down8 72.2 / 72.1 (75%), blur8 58.9 /
+  70.3 (65%). As on KTH, utility drops much faster than privacy.
+- p2_unet_a1_ens (stopped early by the guard): 91.8 / 89.1 identity, no privacy.
+- Best KTH learned result in leakage terms: BDQ alpha 3, 44% of raw identity leakage at -8 action.

@@ -8,29 +8,35 @@ data; privacy is the best of the identity attackers (frame ResNet-50, R3D-18 vid
 Weak = raw-trained models tested on anonymised data (Ilic et al. protocol).
 Chance: action 16.7, identity 4.0. Sorted by action - privacy (strong).
 
-| run | dataset | anonymizer | split | action (strong) | identity (strong, best) | identity frame / video | action (weak) | identity (weak) | min |
-|---|---|---|---|---|---|---|---|---|---|
-| p2_bdq_a3_lr3e-3 | kth | `{type: bdq}` | ilic | 89.1 | **46.2** | 18.7 / 46.2 | 35.8 | 4.0 | 86 |
-| p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
-| p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
-| p2_unet_a05_ens | kth | `{type: unet3d}` | ilic | 94.1 | **78.9** | 44.5 / 78.9 | 47.2 | 4.2 | 84 |
-| p2_unet_a3 | kth | `{type: unet3d}` | ilic | 16.7 | **4.0** | 4.0 / 4.0 | 16.7 | 4.0 | 70 |
-| p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
-| p2_unet_a1_vadv | kth | `{type: unet3d}` | ilic | 92.8 | **92.3** | 89.6 / 92.3 | 25.8 | 5.9 | 54 |
-| p1_pix16 | kth | `{type: pixelate, factor: 16}` | ilic | 93.5 | **93.1** | 90.8 / 93.1 | 16.7 | 9.9 | 35 |
-| p2_unet_a1_s1 | kth | `{type: unet3d}` | ilic | 96.0 | **96.2** | 94.3 / 96.2 | 17.4 | 6.7 | 72 |
-| p1_blur4 | kth | `{type: blur, sigma: 4}` | ilic | 97.0 | **97.5** | 97.5 / 96.3 | 16.7 | 16.6 | 70 |
-| p1_blur8 | kth | `{type: blur, sigma: 8}` | ilic | 94.5 | **95.0** | 95.0 / 94.8 | 16.7 | 8.7 | 70 |
-| p1_pix8 | kth | `{type: pixelate, factor: 8}` | ilic | 96.3 | **97.2** | 96.2 / 97.2 | 16.7 | 14.0 | 70 |
-| p1_raw_seq | kth | `{type: raw}` | seq | 99.2 | **100.0** | 100.0 / 100.0 | 99.0 | 100.0 | 73 |
-| p1_diff | kth | `{type: diff, gain: 4.0}` | ilic | 96.5 | **97.5** | 93.0 / 97.5 | 82.9 | 13.5 | 35 |
-| p1_down8 | kth | `{type: down, factor: 8}` | ilic | 96.2 | **97.2** | 97.2 / 94.6 | 19.1 | 10.9 | 36 |
-| p1_down4 | kth | `{type: down, factor: 4}` | ilic | 97.0 | **98.2** | 97.7 / 98.2 | 79.6 | 37.5 | 106 |
-| p1_pix4 | kth | `{type: pixelate, factor: 4}` | ilic | 97.7 | **99.0** | 98.2 / 99.0 | 58.0 | 23.2 | 70 |
-| p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 99.5 / 99.5 | 62.2 | 34.6 | 36 |
-| p1_raw | kth | `{type: raw}` | ilic | 97.5 | **99.5** | 99.5 / 99.0 | 97.2 | 99.3 | 106 |
-| p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
-| p1_down32 | kth | `{type: down, factor: 32}` | ilic | 78.6 | **91.0** | 91.0 / 89.0 | 16.7 | 10.7 | 37 |
-| p1_bgmedian | kth | `{type: bg_median}` | ilic | 59.4 | **89.3** | 83.9 / 89.3 | 42.0 | 48.5 | 36 |
-| p3_down8 | ucf101_vp | `{type: down, factor: 8}` | ilic | 72.2 | **72.1** | 71.9 / 72.1 | 3.1 | 64.3 | 106 |
-| p3_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | ilic | 58.9 | **70.3** | 69.4 / 70.3 | 1.7 | 61.2 | 95 |
+Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind guess
+(floor: KTH 4.0 = chance; VP-UCF101 58.7 = cMAP of a constant predictor).
+
+| run | dataset | anonymizer | split | action (strong) | privacy (strong, best) | leakage | privacy frame / video | action (weak) | privacy (weak) | min |
+|---|---|---|---|---|---|---|---|---|---|---|
+| p2_bdq_a3_lr3e-3 | kth | `{type: bdq}` | ilic | 89.1 | **46.2** | 44.1% | 18.7 / 46.2 | 35.8 | 4.0 | 86 |
+| p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
+| p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 69.0% | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
+| p2_unet_a05_ens | kth | `{type: unet3d}` | ilic | 94.1 | **78.9** | 78.5% | 44.5 / 78.9 | 47.2 | 4.2 | 84 |
+| p2_unet_a3 | kth | `{type: unet3d}` | ilic | 16.7 | **4.0** | 0.0% | 4.0 / 4.0 | 16.7 | 4.0 | 70 |
+| p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 87.7% | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
+| p2_unet_a1_ens | kth | `{type: unet3d}` | ilic | 91.8 | **89.1** | 89.1% | 88.8 / 89.1 | 69.6 | 9.7 | 74 |
+| p2_unet_a1_vadv | kth | `{type: unet3d}` | ilic | 92.8 | **92.3** | 92.5% | 89.6 / 92.3 | 25.8 | 5.9 | 54 |
+| p1_pix16 | kth | `{type: pixelate, factor: 16}` | ilic | 93.5 | **93.1** | 93.3% | 90.8 / 93.1 | 16.7 | 9.9 | 35 |
+| p2_unet_a1_s1 | kth | `{type: unet3d}` | ilic | 96.0 | **96.2** | 96.5% | 94.3 / 96.2 | 17.4 | 6.7 | 72 |
+| p1_blur4 | kth | `{type: blur, sigma: 4}` | ilic | 97.0 | **97.5** | 97.9% | 97.5 / 96.3 | 16.7 | 16.6 | 70 |
+| p1_blur8 | kth | `{type: blur, sigma: 8}` | ilic | 94.5 | **95.0** | 95.3% | 95.0 / 94.8 | 16.7 | 8.7 | 70 |
+| p1_pix8 | kth | `{type: pixelate, factor: 8}` | ilic | 96.3 | **97.2** | 97.5% | 96.2 / 97.2 | 16.7 | 14.0 | 70 |
+| p1_raw_seq | kth | `{type: raw}` | seq | 99.2 | **100.0** | 100.5% | 100.0 / 100.0 | 99.0 | 100.0 | 73 |
+| p1_diff | kth | `{type: diff, gain: 4.0}` | ilic | 96.5 | **97.5** | 97.9% | 93.0 / 97.5 | 82.9 | 13.5 | 35 |
+| p1_down8 | kth | `{type: down, factor: 8}` | ilic | 96.2 | **97.2** | 97.5% | 97.2 / 94.6 | 19.1 | 10.9 | 36 |
+| p1_down4 | kth | `{type: down, factor: 4}` | ilic | 97.0 | **98.2** | 98.6% | 97.7 / 98.2 | 79.6 | 37.5 | 106 |
+| p1_pix4 | kth | `{type: pixelate, factor: 4}` | ilic | 97.7 | **99.0** | 99.5% | 98.2 / 99.0 | 58.0 | 23.2 | 70 |
+| p1_blur2 | kth | `{type: blur, sigma: 2}` | ilic | 97.7 | **99.5** | 100.0% | 99.5 / 99.5 | 62.2 | 34.6 | 36 |
+| p1_raw | kth | `{type: raw}` | ilic | 97.5 | **99.5** | 100.0% | 99.5 / 99.0 | 97.2 | 99.3 | 106 |
+| p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 98.1% | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
+| p1_down32 | kth | `{type: down, factor: 32}` | ilic | 78.6 | **91.0** | 91.1% | 91.0 / 89.0 | 16.7 | 10.7 | 37 |
+| p1_bgmedian | kth | `{type: bg_median}` | ilic | 59.4 | **89.3** | 89.3% | 83.9 / 89.3 | 42.0 | 48.5 | 36 |
+| p3_raw | ucf101_vp | `{type: raw}` | ilic | 91.8 | **76.6** | 100.0% | 76.6 / 75.4 | 91.0 | 77.1 | 116 |
+| p3_down4 | ucf101_vp | `{type: down, factor: 4}` | ilic | 84.5 | **75.1** | 91.5% | 75.1 / 74.4 | 21.0 | 69.2 | 74 |
+| p3_down8 | ucf101_vp | `{type: down, factor: 8}` | ilic | 72.2 | **72.1** | 75.0% | 71.9 / 72.1 | 3.1 | 64.3 | 106 |
+| p3_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | ilic | 58.9 | **70.3** | 64.7% | 69.4 / 70.3 | 1.7 | 61.2 | 95 |
