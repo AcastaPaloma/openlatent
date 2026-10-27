@@ -10,6 +10,7 @@ Chance: action 16.7, identity 4.0. Sorted by action - privacy (strong).
 
 | run | dataset | anonymizer | split | action (strong) | identity (strong, best) | identity frame / video | action (weak) | identity (weak) | min |
 |---|---|---|---|---|---|---|---|---|---|
+| p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
 | p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
 | p1_pix16 | kth | `{type: pixelate, factor: 16}` | ilic | 93.5 | **93.1** | 90.8 / 93.1 | 16.7 | 9.9 | 35 |
 | p1_blur4 | kth | `{type: blur, sigma: 4}` | ilic | 97.0 | **97.5** | 97.5 / 96.3 | 16.7 | 16.6 | 70 |

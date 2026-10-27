@@ -119,3 +119,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Raw on the seq split: 99.2 / 100.0, so same-video splits make identity trivial; Ilic's split
   (99.5) is barely harder. KTH identity is saturated for raw video under every split.
 - Next: ensemble-adversary runs (frame + video) for U-Net (alpha 1, 0.5), BDQ and the VAE latent edit.
+
+### 2026-10-27 08:13 UTC: U-Net alpha 1 collapses at both seeds
+- p2_unet_a1_s1 (seed 1, with the guard) collapsed at epochs 5-7 (action 93.4 -> 17.2); the guard
+  stopped and kept epoch 4. Seed 0 collapsed at epoch 11. The residual 3D U-Net in the entropy
+  game is unstable at alpha >= 1 on KTH whatever the seed; only the collapse epoch varies.
+- H10: the instability is f learning to output a near-constant video once the adversary is
+  briefly fooled; T then has no signal either. Lower alpha (0.5, queued), a lower lr_f, or a
+  reconstruction/utility floor term should stabilise it.
