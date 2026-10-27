@@ -1,0 +1,65 @@
+{
+ "name": "smoke_dino",
+ "config": {
+  "name": "smoke_dino",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  },
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false,
+   "epochs": 1,
+   "repeats": 1
+  }
+ },
+ "git": "eb819a0",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 69.89966630935669,
+  "person/frame_dino_ft": 91.30434989929199
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 69.89966630935669,
+   "by_action": {
+    "0": 75.75757503509521,
+    "1": 66.00000262260437,
+    "2": 77.77777910232544,
+    "3": 62.99999952316284,
+    "4": 70.99999785423279,
+    "5": 66.00000262260437
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 91.30434989929199,
+   "by_action": {
+    "0": 92.92929172515869,
+    "1": 92.00000166893005,
+    "2": 91.91918969154358,
+    "3": 86.00000143051147,
+    "4": 91.00000262260437,
+    "5": 93.99999976158142
+   }
+  }
+ },
+ "action_top1": null,
+ "privacy_main": 91.30434989929199,
+ "privacy_top1": 91.30434989929199,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 3.0244809985160828
+}

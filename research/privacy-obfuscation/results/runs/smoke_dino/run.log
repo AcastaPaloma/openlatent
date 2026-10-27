@@ -1,0 +1,10 @@
+[15:10:46] run smoke_dino @ eb819a0: {"name": "smoke_dino", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "raw"}, "eval": {"action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false, "epochs": 1, "repeats": 1}}
+[15:10:48] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[15:10:53] strong eval: training person frame_dino_probe on anonymised data
+[15:11:10]   [person] epoch 1/1 loss 2.196 train_acc 47.7 (16s)
+[15:12:04]   strong person/frame_dino_probe: 69.90
+[15:12:07] strong eval: training person frame_dino_ft on anonymised data
+[15:12:55]   [person] epoch 1/1 loss 1.261 train_acc 68.4 (48s)
+[15:13:48]   strong person/frame_dino_ft: 91.30
+[15:13:48] DONE smoke_dino: action None  privacy top1 (strong, best attacker) 91.30  (3.0 min)
+[15:13:48] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/smoke_dino
