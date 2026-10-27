@@ -4,3 +4,6 @@ __pycache__/
 .pytest_cache/
 /data/
 /runs/
+
+# local-only notes (LaTeX write-ups)
+research/privacy-obfuscation/private/
