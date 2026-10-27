@@ -1,5 +1,5 @@
 {
- "name": "p2_vae_a1_ens_scenario",
+ "name": "p2_vae_a1_ens_b3_scenario",
  "dataset": "kth",
  "split": "scenario",
  "seed": 0,
@@ -9,7 +9,7 @@
  "adv": {
   "epochs": 8,
   "alpha": 1.0,
-  "restart_every": 3,
+  "restart_every": 4,
   "batch": 4,
   "repeats": 2,
   "utility": "r2p1d",
@@ -17,6 +17,7 @@
    "frame_r18",
    "r3d"
   ],
-  "lr_f": 0.0001
+  "lr_f": 0.0001,
+  "b_steps": 3
  }
 }
