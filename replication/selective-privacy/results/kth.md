@@ -4,15 +4,16 @@
 |---|---|---|---|---|
 | Paper, original frames | 90.15 | 91.87 | 0.49 | 13 / 5 |
 | Paper, ours | 88.67 | 5.46 | 0.92 | 13 / 5 |
-| This run, original frames | 88.52 | 88.67 | 0.50 | 9 / 5 |
-| This run, obfuscated, default matcher | 88.22 | 78.27 | 0.55 | 9 / 5 |
-| This run, obfuscated, use_targeted=true | 87.63 | 45.47 | 0.71 | 9 / 5 |
+| This run, original frames | 88.47 | 88.67 | 0.50 | 10 / 5 |
+| This run, obfuscated, default matcher | 88.33 | 78.27 | 0.55 | 10 / 5 |
+| This run, obfuscated, use_targeted=true | 87.80 | 45.47 | 0.71 | 10 / 5 |
 
 ### Action models
 
 | Model | Original frames | Obfuscated, default matcher | Obfuscated, use_targeted=True |
 |---|---|---|---|
 | `c2d_r50` | 83.33 | 85.33 | 82.67 |
+| `csn_r101` | 88.00 | 89.33 | 89.33 |
 | `i3d_r50` | 83.33 | 80.00 | 82.00 |
 | `mvit_base_16x4` | 86.00 | 84.67 | 88.00 |
 | `r2plus1d_r50` | 89.33 | 88.00 | 86.67 |
@@ -22,8 +23,8 @@
 | `x3d_m` | 90.67 | 90.67 | 90.00 |
 | `x3d_s` | 91.33 | 90.00 | 87.33 |
 
-Still training: `csn_r101`. Not run: `e2s_x3d_{s,m,l}` (need training-split
-optical flow and upstream's separate E2S trainer).
+Not run: `e2s_x3d_{s,m,l}` (need training-split optical flow and upstream's separate E2S
+trainer), so the action average covers 10 of the paper's 13 models.
 
 ### Privacy models
 
