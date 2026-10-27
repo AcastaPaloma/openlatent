@@ -93,11 +93,19 @@ def split(rows, how):
     """Train/test split of subsequence rows. Every split keeps all 25 people and all 6
     actions on both sides, because identity is classified over the same 25 people.
 
+    ilic     : Ilic et al. (CVPR 2024) video-level split, splits/kth_ilic.csv (copied from
+               f-ilic/SelectivePrivacyPreservation data/splits/kth/metadata.csv): per person and
+               action, one scenario is test; their val videos are folded into train. 450/150 videos.
     seq      : subsequence 4 of each video is test, 1-3 train (same clothes/scene on both sides)
     scenario : scenario d2 (scale variation) is test, d1/d3/d4 train (harder for identity:
                different recording conditions at test time)
     """
-    if how == "seq":
+    if how == "ilic":
+        path = os.path.join(os.path.dirname(__file__), "..", "splits", "kth_ilic.csv")
+        with open(path) as f:
+            sets = {r["video"].replace("_uncomp", ""): r["set"] for r in csv.DictReader(f)}
+        test = lambda r: sets.get(r["video"]) == "test"  # noqa: E731
+    elif how == "seq":
         test = lambda r: r["seq"] == 4  # noqa: E731
     elif how == "scenario":
         test = lambda r: r["scenario"] == 2  # noqa: E731

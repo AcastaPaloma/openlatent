@@ -84,7 +84,7 @@ def main(cfg_path):
     torch.manual_seed(cfg.get("seed", 0))
     torch.backends.cudnn.benchmark = True
     ev = {**DEFAULT_EVAL, **cfg.get("eval", {})}
-    split = cfg.get("split", "seq")
+    split = cfg.get("split", "ilic")
     t_start = time.time()
     log(f"run {name} @ {git_head()}: {json.dumps(cfg)}")
 
