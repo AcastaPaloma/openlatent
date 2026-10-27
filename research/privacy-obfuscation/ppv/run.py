@@ -135,12 +135,14 @@ def main(cfg_path):
         # attack-only: reuse a trained anonymizer (its anonymizer.pt from the HF checkpoint repo), skip training
         from huggingface_hub import hf_hub_download
         path = hf_hub_download(HF_REPO, f"runs/{cfg['anonymizer_from']}/anonymizer.pt")
+        sd = torch.load(path, map_location="cpu")
         target = f
-        if isinstance(f, anonymizers.Chain):  # a single-stage checkpoint goes into the chain's (only) learned stage
+        if isinstance(f, anonymizers.Chain) and not any(k.startswith("stages.") for k in sd):
+            # a single-stage checkpoint goes into the chain's (only) learned stage; a chain checkpoint loads as is
             learned = [m for m in f.stages if getattr(m, "learned", False)]
             assert len(learned) == 1, "anonymizer_from with a chain needs exactly one learned stage"
             target = learned[0]
-        missing, unexpected = target.load_state_dict(torch.load(path, map_location="cpu"), strict=False)
+        missing, unexpected = target.load_state_dict(sd, strict=False)
         assert not [k for k in missing if not k.startswith("vae.")] and not unexpected, (missing, unexpected)
         log(f"loaded anonymizer from {cfg['anonymizer_from']} (missing {len([k for k in missing if not k.startswith('vae.')])}, unexpected {len(unexpected)})")
     elif getattr(f, "learned", False) and cfg.get("adv"):  # a learned f without "adv" runs untrained (e.g. plain VAE reconstruction)

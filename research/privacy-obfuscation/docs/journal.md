@@ -613,3 +613,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H33: the KTH action/identity trade-off is set by the data (how much of the motion layout identity shares with
   action), not by the obfuscation family. Next: fill the fixed-map curve on the scenario split (down8, down48) and
   replicate the BDQ-matching point (p1_diff_down48_s1); p1_diff_down24 fills the gap between x20 and x32.
+
+### 2026-10-27 23:50 UTC: learned BDQ before a 1x2 px pool beats the fixed curve (H31 supported, to replicate)
+- p2_bdq_down64_a1_ens (BDQ then x64 area downsample, trained end to end against frame_r18 + r3d, alpha 1):
+  82.1 / 12.5 (ResNet-50 7.2, R3D 12.5). The fixed diff->down64 at the same identity gives 69.9 / 11.0, so the
+  learned blur/threshold stage before the 1x2 px pool buys ~12 action points at equal privacy: the first point off
+  the fixed-map/BDQ curve. With two numbers per frame the learned stage can choose *which* motion feeds each number.
+  Checks queued: seed (p2_bdq_down64_a1_ens_s1), scenario split (p2_bdq_down64_a1_ens_scenario), stronger privacy
+  weight (p2_bdq_down64_a3_ens), 24-epoch attackers on the frozen output (p6_bdq_down64_a1_ens_e24; run.py now
+  loads a whole-chain checkpoint as is).
+- p6_vae_a1_ctx8 (VP-UCF101 VAE re-evaluated on the fixed release path): 66.1 / 69.9 vs 66.0 / 70.2 with the old
+  path. The ~1% near-raw edge frames moved cMAP by 0.3: the earlier number was contaminated but not materially.
+- p3_diff_down32 (VP-UCF101): 42.9 / 68.9. Motion maps on VP-UCF101 follow plain downsampling (H27 not supported).
