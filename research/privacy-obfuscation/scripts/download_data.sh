@@ -7,7 +7,7 @@
 #   hmdb51 : HMDB51 videos + official splits (~2 GB), Brown/Serre lab
 #   ucf101 : UCF101 videos + official splits (~6.5 GB), UCF CRCV
 #
-# Usage: download_data.sh kth|hmdb51|ucf101 [...]
+# Usage: download_data.sh kth|hmdb51|ucf101|ucf101_hf|vp_annotations [...]
 set -euo pipefail
 
 RAW=~/work/data/raw
@@ -42,6 +42,17 @@ for name in "$@"; do
     ucf101)
       fetch "https://www.crcv.ucf.edu/data/UCF101/UCF101.rar" "$RAW/ucf101/UCF101.rar"
       fetch "https://www.crcv.ucf.edu/data/UCF101/UCF101TrainTestSplits-RecognitionTask.zip" "$RAW/ucf101/splits.zip" ;;
+    ucf101_hf)
+      # The official CRCV host refuses connections (2026-10-27); this HF mirror ships the same
+      # UCF-101 videos plus the official split archive. prepare checks the video count (13,320).
+      base=https://huggingface.co/datasets/quchenyuan/UCF101-ZIP/resolve/main
+      fetch "$base/UCF-101.zip" "$RAW/ucf101/UCF-101.zip"
+      fetch "$base/UCF101TrainTestSplits-RecognitionTask.zip" "$RAW/ucf101/splits.zip" ;;
+    vp_annotations)
+      # STPrivacy (Li et al., ICCV 2023) video-level privacy attributes for UCF101 / HMDB51
+      base=https://raw.githubusercontent.com/ming1993li/stprivacy/main/annotations
+      fetch "$base/ucf101_privacy_attribute_label.pickle" "$RAW/vp_annotations/ucf101_privacy_attribute_label.pickle"
+      fetch "$base/hmdb51_privacy_attribute_label.pickle" "$RAW/vp_annotations/hmdb51_privacy_attribute_label.pickle" ;;
     *) echo "unknown dataset $name" >&2; exit 2 ;;
   esac
 done
