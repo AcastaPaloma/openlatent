@@ -18,7 +18,8 @@ if ! command -v ffmpeg >/dev/null || ! command -v unrar >/dev/null; then
 fi
 
 python3 -m pip install -q --upgrade pip
-python3 -m pip install -q timm==1.0.15 av==14.4.0 decord==0.6.0 diffusers==0.33.1 \
+# video decoding goes through the ffmpeg CLI, so no PyAV/decord (no py3.10 wheels for recent PyAV)
+python3 -m pip install -q timm==1.0.15 diffusers==0.33.1 \
   transformers==4.51.3 accelerate==1.6.0 huggingface_hub==0.30.2 einops==0.8.1 \
   pandas scikit-learn tensorboard opencv-python-headless==4.11.0.86 pyyaml
 
