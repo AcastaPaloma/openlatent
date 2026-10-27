@@ -13,8 +13,9 @@ BRANCH="${BRANCH:-privacy-research}"
 REPO=https://github.com/AcastaPaloma/openlatent
 
 if ! command -v ffmpeg >/dev/null || ! command -v unrar >/dev/null; then
-  sudo apt-get update -qq
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg unrar p7zip-full tmux rsync >/dev/null
+  SUDO=$(command -v sudo || true)  # Colab runs as root without sudo on some images
+  $SUDO apt-get update -qq
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg unrar p7zip-full tmux rsync >/dev/null
 fi
 
 python3 -m pip install -q --upgrade pip

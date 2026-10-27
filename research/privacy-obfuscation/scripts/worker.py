@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import time
 
-Q = os.path.expanduser("~/work/queue")
+Q = os.environ.get("PPV_QUEUE", os.path.expanduser("~/work/queue"))  # Colab: a Drive folder
 LOGS = os.path.expanduser("~/work/logs")
 REPO = os.path.expanduser("~/openlatent")
 CODE = os.path.join(REPO, "research", "privacy-obfuscation")

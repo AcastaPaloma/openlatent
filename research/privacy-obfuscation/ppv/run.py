@@ -20,9 +20,12 @@ Evaluation protocols (both reported):
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
+
+os.environ.setdefault("USE_TF", "0")  # Lambda images ship TensorFlow; keep it out of transformers
 
 import torch
 
@@ -144,6 +147,12 @@ def main(cfg_path):
     os.replace(os.path.join(out, "result.json.tmp"), os.path.join(out, "result.json"))
     log(f"DONE {name}: action {result['action_top1']:.2f}  privacy (strong, best attacker) {result['privacy_top1']:.2f}  "
         f"({result['minutes']:.1f} min)")
+    if os.environ.get("PPV_MIRROR"):  # Colab workers: copy results to Drive for the controller
+        dst = os.path.join(os.environ["PPV_MIRROR"], name)
+        os.makedirs(dst, exist_ok=True)
+        for fn in ("result.json", "run.log", "anonymizer.pt"):
+            if os.path.exists(os.path.join(out, fn)):
+                shutil.copy(os.path.join(out, fn), dst)
     upload(out, name, log)
 
 
