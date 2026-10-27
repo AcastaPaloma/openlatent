@@ -122,7 +122,7 @@ def main(cfg_path):
                   n_train=len(rows_tr), n_test=len(rows_te), privacy_metric="top1" if pk == "multiclass" else "cmap")
 
     f = anonymizers.build(cfg["anonymizer"], in_ch=D["in_ch"])
-    if getattr(f, "learned", False):
+    if getattr(f, "learned", False) and cfg.get("adv"):  # a learned f without "adv" runs untrained (e.g. plain VAE reconstruction)
         adv = cfg["adv"]
         dl = train.loader(rows_tr, frames, True, adv.get("batch", 8), repeats=adv.get("repeats", 2), seed=cfg.get("seed", 0), stride=stride)
         f, hist = train.train_anonymizer(f, dl, adv, D["n_act"], D["n_priv"], priv_kind=pk, log=log)

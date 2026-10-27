@@ -1,0 +1,131 @@
+{
+ "name": "p2_unet_a1_s1",
+ "config": {
+  "name": "p2_unet_a1_s1",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 1,
+  "anonymizer": {
+   "type": "unet3d"
+  },
+  "adv": {
+   "epochs": 15,
+   "alpha": 1.0,
+   "restart_every": 3,
+   "batch": 8,
+   "repeats": 2,
+   "utility": "r2p1d",
+   "adversary": "frame_r18",
+   "lr_f": 0.0001
+  }
+ },
+ "git": "7ede700",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 0.4298689577761771,
+   "adv_entropy": 3.096617847148861,
+   "adv_loss": 2.8797775703881467,
+   "train_action_acc": 85.10044642857143,
+   "train_adv_acc": 17.410714285714285,
+   "kept": false
+  },
+  {
+   "epoch": 2,
+   "action_loss": 0.345275232181718,
+   "adv_entropy": 2.811206682452134,
+   "adv_loss": 2.436532009659069,
+   "train_action_acc": 87.5,
+   "train_adv_acc": 28.90625,
+   "kept": false
+  },
+  {
+   "epoch": 3,
+   "action_loss": 0.4957501615364371,
+   "adv_entropy": 2.687141772891794,
+   "adv_loss": 2.3098880467670306,
+   "train_action_acc": 80.94308035714286,
+   "train_adv_acc": 33.091517857142854,
+   "kept": false
+  },
+  {
+   "epoch": 4,
+   "action_loss": 0.17020603180156155,
+   "adv_entropy": 3.11035207765443,
+   "adv_loss": 2.968686705189092,
+   "train_action_acc": 93.41517857142857,
+   "train_adv_acc": 12.751116071428571,
+   "kept": true
+  },
+  {
+   "epoch": 5,
+   "action_loss": 0.9989522738126523,
+   "adv_entropy": 3.117208356303828,
+   "adv_loss": 3.037716713334833,
+   "train_action_acc": 55.691964285714285,
+   "train_adv_acc": 10.435267857142858,
+   "kept": false
+  },
+  {
+   "epoch": 6,
+   "action_loss": 1.8116822516811746,
+   "adv_entropy": 3.2141904357288564,
+   "adv_loss": 3.2269012401146546,
+   "train_action_acc": 16.378348214285715,
+   "train_adv_acc": 3.6551339285714284,
+   "kept": false
+  },
+  {
+   "epoch": 7,
+   "action_loss": 1.804856279598815,
+   "adv_entropy": 3.214246337435075,
+   "adv_loss": 3.225838187017611,
+   "train_action_acc": 17.159598214285715,
+   "train_adv_acc": 4.1015625,
+   "kept": false
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 95.98662257194519,
+  "person/frame_r50": 94.31437849998474,
+  "person/r3d": 96.15384340286255
+ },
+ "weak": {
+  "action/r2p1d": 17.391304671764374,
+  "person/frame_r50": 6.688962876796722,
+  "person/r3d": 3.6789298057556152
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 95.98662257194519
+  },
+  "weak/action/r2p1d": {
+   "main": 17.391304671764374
+  },
+  "strong/person/frame_r50": {
+   "main": 94.31437849998474
+  },
+  "weak/person/frame_r50": {
+   "main": 6.688962876796722
+  },
+  "strong/person/r3d": {
+   "main": 96.15384340286255
+  },
+  "weak/person/r3d": {
+   "main": 3.6789298057556152
+  }
+ },
+ "action_top1": 95.98662257194519,
+ "privacy_main": 96.15384340286255,
+ "privacy_top1": 96.15384340286255,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 72.04010101159413
+}

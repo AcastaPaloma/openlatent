@@ -1,0 +1,9 @@
+{
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "name": "p2_vae_recon",
+ "anonymizer": {
+  "type": "vae_latent"
+ }
+}
