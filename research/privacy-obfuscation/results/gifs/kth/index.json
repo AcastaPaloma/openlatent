@@ -289,6 +289,15 @@
    "kb": 938
   },
   {
+   "run": "p2_bdq_a1",
+   "file": "p2_bdq_a1.gif",
+   "split": "ilic",
+   "action": 93.478262424469,
+   "privacy": 69.89966630935669,
+   "leakage": 69.00609608049236,
+   "kb": 30
+  },
+  {
    "run": "p2_bdq_a3_lr3e-3_s1",
    "file": "p2_bdq_a3_lr3e-3_s1.gif",
    "split": "ilic",
@@ -296,6 +305,24 @@
    "privacy": 68.72909665107727,
    "leakage": 67.78034719841237,
    "kb": 43
+  },
+  {
+   "run": "p2_bdq_a3_ens",
+   "file": "p2_bdq_a3_ens.gif",
+   "split": "ilic",
+   "action": 96.65551781654358,
+   "privacy": 68.56187582015991,
+   "leakage": 67.6052437817915,
+   "kb": 61
+  },
+  {
+   "run": "p2_bdq_a3_lr3e-3_s2",
+   "file": "p2_bdq_a3_lr3e-3_s2.gif",
+   "split": "ilic",
+   "action": 91.63879752159119,
+   "privacy": 66.55518412590027,
+   "leakage": 65.50395909230673,
+   "kb": 33
   },
   {
    "run": "p2_bdq_a1_ens",
@@ -377,6 +404,15 @@
    "privacy": 47.993311285972595,
    "leakage": 46.06710224066489,
    "kb": 20
+  },
+  {
+   "run": "p2_bdq_a3_lr3e-3",
+   "file": "p2_bdq_a3_lr3e-3.gif",
+   "split": "ilic",
+   "action": 89.13043737411499,
+   "privacy": 46.15384638309479,
+   "leakage": 44.14092720923446,
+   "kb": 14
   },
   {
    "run": "p1_down64",
