@@ -1,0 +1,33 @@
+[16:00:04] run p4_dino_blur8 @ 0c2cf68: {"name": "p4_dino_blur8", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "blur", "sigma": 8}, "eval": {"action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false}}
+[16:00:06] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[16:00:23] materialised anonymised dataset (17s)
+[16:00:26] strong eval: training person frame_dino_probe on anonymised data
+[16:00:57]   [person] epoch 1/12 loss 1.911 train_acc 48.7 (31s)
+[16:01:28]   [person] epoch 2/12 loss 0.624 train_acc 86.0 (31s)
+[16:01:59]   [person] epoch 3/12 loss 0.380 train_acc 92.3 (30s)
+[16:02:30]   [person] epoch 4/12 loss 0.276 train_acc 95.3 (31s)
+[16:03:01]   [person] epoch 5/12 loss 0.206 train_acc 96.9 (31s)
+[16:03:31]   [person] epoch 6/12 loss 0.177 train_acc 97.3 (31s)
+[16:04:02]   [person] epoch 7/12 loss 0.148 train_acc 98.2 (30s)
+[16:04:33]   [person] epoch 8/12 loss 0.130 train_acc 98.6 (31s)
+[16:05:04]   [person] epoch 9/12 loss 0.123 train_acc 98.6 (31s)
+[16:05:35]   [person] epoch 10/12 loss 0.114 train_acc 98.9 (31s)
+[16:06:05]   [person] epoch 11/12 loss 0.112 train_acc 98.9 (30s)
+[16:06:36]   [person] epoch 12/12 loss 0.110 train_acc 98.9 (31s)
+[16:07:31]   strong person/frame_dino_probe: 91.81
+[16:07:34] strong eval: training person frame_dino_ft on anonymised data
+[16:09:09]   [person] epoch 1/12 loss 1.072 train_acc 69.8 (94s)
+[16:10:43]   [person] epoch 2/12 loss 0.176 train_acc 94.8 (94s)
+[16:12:16]   [person] epoch 3/12 loss 0.079 train_acc 97.8 (93s)
+[16:13:44]   [person] epoch 4/12 loss 0.024 train_acc 99.3 (88s)
+[16:15:16]   [person] epoch 5/12 loss 0.044 train_acc 98.5 (92s)
+[16:16:49]   [person] epoch 6/12 loss 0.007 train_acc 99.8 (93s)
+[16:18:21]   [person] epoch 7/12 loss 0.002 train_acc 100.0 (93s)
+[16:19:53]   [person] epoch 8/12 loss 0.001 train_acc 100.0 (92s)
+[16:21:26]   [person] epoch 9/12 loss 0.001 train_acc 100.0 (93s)
+[16:22:59]   [person] epoch 10/12 loss 0.001 train_acc 100.0 (93s)
+[16:24:31]   [person] epoch 11/12 loss 0.001 train_acc 100.0 (92s)
+[16:26:04]   [person] epoch 12/12 loss 0.001 train_acc 100.0 (93s)
+[16:26:57]   strong person/frame_dino_ft: 97.32
+[16:26:57] DONE p4_dino_blur8: action None  privacy top1 (strong, best attacker) 97.32  (26.9 min)
+[16:26:57] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p4_dino_blur8

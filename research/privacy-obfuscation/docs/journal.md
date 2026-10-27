@@ -361,3 +361,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p3_vae_recon (UCF101): 86.9 / 76.5 cMAP (99% leakage): the VAE round trip removes no attribute
   information. p3_vae_a1 (frame adversary, b_steps=1): 66.0 / 70.2 (65%): no better than blur.
 - Next: DINOv2 attackers on VP-UCF101 attributes (raw, blur8).
+
+### 2026-10-27 16:35 UTC: DINOv2 vs blur
+- p4_dino_blur8: DINOv2 identity 97.3 on blur-8 KTH (ResNet/R3D: 95.0). DINO is the strongest attacker on every
+  output so far (raw 99.3, x16 94.0, blur8 97.3): self-supervised features shrug off blur and downsampling.
