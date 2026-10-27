@@ -1,0 +1,23 @@
+{
+ "name": "p3_diff_down16",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "diff",
+    "gain": 4.0
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ }
+}

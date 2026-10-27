@@ -492,3 +492,16 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H26: what learned BDQ buys over a fixed coarse motion map is small; the information that matters (motion
   energy layout over time) is the same. Tests: p1_diff_down64 (dose), p1_diff_down32_scenario (split),
   p1_diff_down32_tshuffle (H25 on the fixed motion map: does order-free motion keep action and lose gait?).
+
+### 2026-10-27 19:55 UTC: VAE warm-up, DINOv2 on VP-UCF101
+- p2_vae_a1_ens_warm (KTH VAE edit, adversaries warmed up one epoch after each restart): 93.1 / 74.1
+  (ResNet-50 51.2, R3D 74.1). Sixth VAE configuration at 74-90% retrained identity (H24 holds).
+- p4_dino_ucf_raw: DINOv2 probe / fine-tune cMAP 78.9 / 78.9 (ResNet-50 76.6, R3D 75.4); p4_dino_ucf_blur8:
+  70.7 / 71.4 (ResNet-50 69.4, R3D 70.3). DINOv2 is the strongest VP-UCF101 attribute attacker by 1-2 cMAP
+  points; the floor is 58.7, so blur8 still leaks ~63% of the raw-minus-floor gap to DINO.
+- The two VP-UCF101 VAE re-evaluations (ctx8) are materialising at ~55 videos/min (13.3k videos, ~4 h each),
+  the 48-frame windows cost 40% more VAE decoding than before.
+- H27: the fixed motion map (diff -> coarse downsample) that matched BDQ on KTH removes appearance attributes on
+  VP-UCF101 too, where BDQ failed (87.8 / 75.2). Tests: p3_diff_down8, p3_diff_down16.
+- Attacker noise floor: p1_diff_down32_s1 repeats the fixed-filter run with a different attacker seed (the
+  obfuscation is identical), measuring how much the identity number moves from attacker training alone.

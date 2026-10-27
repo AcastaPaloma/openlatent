@@ -1,0 +1,25 @@
+[18:48:45] run p4_dino_ucf_blur8 @ 94828c4: {"name": "p4_dino_ucf_blur8", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "blur", "sigma": 8}, "eval": {"action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false, "epochs": 8, "repeats": 1, "batch": 16}}
+[18:48:45] VP-UCF101 split 1: 9537 train / 3783 test videos
+[18:54:28] materialised anonymised dataset (343s)
+[18:54:33] strong eval: training attr frame_dino_probe on anonymised data
+[18:55:29]   [attr] epoch 1/8 loss 0.487 train_acc 77.1 (56s)
+[18:56:24]   [attr] epoch 2/8 loss 0.452 train_acc 79.5 (55s)
+[18:57:19]   [attr] epoch 3/8 loss 0.441 train_acc 79.6 (55s)
+[18:58:15]   [attr] epoch 4/8 loss 0.431 train_acc 80.3 (55s)
+[18:59:10]   [attr] epoch 5/8 loss 0.426 train_acc 80.5 (55s)
+[19:00:05]   [attr] epoch 6/8 loss 0.419 train_acc 80.9 (55s)
+[19:01:00]   [attr] epoch 7/8 loss 0.415 train_acc 81.0 (55s)
+[19:01:55]   [attr] epoch 8/8 loss 0.412 train_acc 81.2 (55s)
+[19:05:28]   strong attr/frame_dino_probe: 70.73  (AP per attribute [96.1, 78.8, 95.4, 38.1, 45.1], F1 60.7)
+[19:05:31] strong eval: training attr frame_dino_ft on anonymised data
+[19:08:22]   [attr] epoch 1/8 loss 0.480 train_acc 78.1 (171s)
+[19:11:14]   [attr] epoch 2/8 loss 0.451 train_acc 79.4 (172s)
+[19:14:06]   [attr] epoch 3/8 loss 0.429 train_acc 80.4 (172s)
+[19:16:58]   [attr] epoch 4/8 loss 0.404 train_acc 81.6 (172s)
+[19:19:49]   [attr] epoch 5/8 loss 0.375 train_acc 83.0 (172s)
+[19:22:41]   [attr] epoch 6/8 loss 0.340 train_acc 84.6 (172s)
+[19:25:33]   [attr] epoch 7/8 loss 0.301 train_acc 86.5 (172s)
+[19:28:25]   [attr] epoch 8/8 loss 0.269 train_acc 88.1 (172s)
+[19:31:56]   strong attr/frame_dino_ft: 71.37  (AP per attribute [96.9, 79.5, 95.3, 38.2, 46.9], F1 67.5)
+[19:31:56] DONE p4_dino_ucf_blur8: action None  privacy cmap (strong, best attacker) 71.37  (43.2 min)
+[19:32:11] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p4_dino_ucf_blur8

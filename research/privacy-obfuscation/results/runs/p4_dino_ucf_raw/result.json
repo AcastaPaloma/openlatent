@@ -1,0 +1,75 @@
+{
+ "name": "p4_dino_ucf_raw",
+ "config": {
+  "name": "p4_dino_ucf_raw",
+  "dataset": "ucf101_vp",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  },
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false,
+   "epochs": 8,
+   "repeats": 1,
+   "batch": 16
+  }
+ },
+ "git": "e222c24",
+ "dataset": "ucf101_vp",
+ "split": "s1",
+ "n_train": 9537,
+ "n_test": 3783,
+ "privacy_metric": "cmap",
+ "strong": {
+  "attr/frame_dino_probe": 78.86941240714013,
+  "attr/frame_dino_ft": 78.9066743220585
+ },
+ "weak": {},
+ "details": {
+  "strong/attr/frame_dino_probe": {
+   "main": 78.86941240714013,
+   "ap": [
+    97.28357323790983,
+    85.18348593933126,
+    96.25243042721931,
+    54.40859818624798,
+    61.21897424499232
+   ],
+   "f1": 72.91816473007202,
+   "prevalence": [
+    91.64683818817139,
+    61.06264591217041,
+    89.82289433479309,
+    25.08591115474701,
+    25.720328092575073
+   ]
+  },
+  "strong/attr/frame_dino_ft": {
+   "main": 78.9066743220585,
+   "ap": [
+    97.17949900004015,
+    85.63850850995837,
+    96.65520504341472,
+    53.508441381519056,
+    61.55171767536021
+   ],
+   "f1": 74.48982000350952,
+   "prevalence": [
+    91.64683818817139,
+    61.06264591217041,
+    89.82289433479309,
+    25.08591115474701,
+    25.720328092575073
+   ]
+  }
+ },
+ "action_top1": null,
+ "privacy_main": 78.9066743220585,
+ "privacy_cmap": 78.9066743220585,
+ "minutes": 34.524166174729665
+}
