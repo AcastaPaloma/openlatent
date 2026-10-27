@@ -24,6 +24,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 69.0% | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
 | p2_vae_a1_vadv | kth | `{type: vae_latent}` | ilic | 96.2 | **75.6** | 75.0% | 54.0 / 75.6 | 16.7 | 4.0 | 408 |
 | p2_unet_a05_ens | kth | `{type: unet3d}` | ilic | 94.1 | **78.9** | 78.5% | 44.5 / 78.9 | 47.2 | 4.2 | 84 |
+| p2_vae_a1_ens | kth | `{type: vae_latent}` | ilic | 97.3 | **82.6** | 82.3% | 58.2 / 82.6 | 16.7 | 4.0 | 274 |
 | p2_unet_a3 | kth | `{type: unet3d}` | ilic | 16.7 | **4.0** | 0.0% | 4.0 / 4.0 | 16.7 | 4.0 | 70 |
 | p1_down64 | kth | `{type: down, factor: 64}` | ilic | 48.7 | **38.1** | 35.7% | 32.1 / 38.1 | 16.7 | 8.4 | 34 |
 | p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 87.7% | 68.2 / 87.8 | 18.9 | 4.0 | 36 |

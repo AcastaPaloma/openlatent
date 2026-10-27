@@ -298,3 +298,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   restarts) forces f to remove identity rather than exploit B's optimisation state. Testing b_steps=3
   for the VAE ensemble and BDQ alpha 5 ensemble.
 - UCF101 blur16: 40.0 / 68.7 cMAP: utility collapses before attributes do.
+
+### 2026-10-27 13:50 UTC: the ensemble VAE fooled both adversaries too
+- p2_vae_a1_ens (VAE latent edit vs frame + video adversaries): action 97.3, identity 82.6
+  (58.2 / 82.6), though both in-training adversaries were at chance (4-5%). H18 holds for the
+  ensemble: f fools adversaries that are re-initialised every 3 epochs and trained one step per f step.
+- Two fixes queued: b_steps=3 (more B updates per f update) and b_warmup=-1 (after every restart,
+  train the fresh B for a full epoch on frozen f before f resumes, so f always faces a converged
+  attacker, matching the evaluation).

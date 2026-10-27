@@ -169,16 +169,41 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     opt_fT = torch.optim.AdamW([{"params": fparams, "lr": cfg.get("lr_f", 1e-4)},
                                 {"params": T.parameters(), "lr": cfg.get("lr_t", 1e-4)}], weight_decay=0.01)
     alpha, epochs, restart = cfg.get("alpha", 1.0), cfg["epochs"], cfg.get("restart_every", 0)
-    b_steps = cfg.get("b_steps", 1)
+    b_steps, b_warmup = cfg.get("b_steps", 1), cfg.get("b_warmup", 0)
     max_ent = n_priv * math.log(2) if priv_kind == "multilabel" else math.log(n_priv)
     keep_margin, collapse_drop = cfg.get("keep_margin", 5.0), cfg.get("collapse_drop", 30.0)
     collapse_patience, min_action = cfg.get("collapse_patience", 3), cfg.get("min_action", 40.0)
     best_act, kept, kept_epoch, collapsed = 0.0, None, 0, 0
     hist = []
+    def warm_up_adversaries():
+        """Train the adversaries on f's current (frozen, 8-bit) output for `b_warmup` batches (-1 = one
+        epoch), so f always faces a converged attacker, as the evaluation's fresh attackers are."""
+        n_batches = len(dl) if b_warmup < 0 else b_warmup
+        f.eval()
+        for bi, batch in enumerate(dl):
+            if bi >= n_batches:
+                break
+            x, yp = to_input(batch[0]), batch[2].to(DEV)
+            with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+                zd = f(x)
+                zd = torch.round(zd.float().clamp(0, 1) * 255) / 255
+            for B, opt_B in zip(Bs, opts_B):
+                with torch.autocast("cuda", dtype=torch.bfloat16):
+                    lb = loss_fn(B(zd), yp, priv_kind)
+                opt_B.zero_grad(set_to_none=True)
+                lb.backward()
+                opt_B.step()
+        f.train()
+        log(f"  adversaries warmed up for {min(n_batches, len(dl))} batches on frozen f")
+
+    if b_warmup:
+        warm_up_adversaries()
     for ep in range(epochs):
         if restart and ep and ep % restart == 0:
             Bs, opts_B = new_advs()
             log(f"  adversary restarted at epoch {ep}")
+            if b_warmup:
+                warm_up_adversaries()
         t0 = time.time()
         s = dict(la=0.0, ent=0.0, lb=0.0, acc_a=0.0, acc_b=[0.0] * len(Bs), n=0)
         for batch in dl:
