@@ -211,3 +211,20 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   attribute information (camera motion and edges carry appearance), unlike KTH's static camera.
 - H15: BDQ's remaining 46% identity on KTH is gait, not scene (BDQ deletes static pixels). Test:
   p2_bdq_a3_scenario. If it holds on the scenario split, it's person-specific motion.
+
+### 2026-10-27 10:20 UTC: KTH identity is redundant: scene alone and person alone both identify
+| run | action | identity strong (frame / video) |
+|---|---|---|
+| p1_fgonly (person kept, scene blacked out) | 97.3 | 93.5 (92.3 / 93.5) |
+| p1_bgmedian_byaction (scene only) | 62.5 | 90.6 (86.6 / 90.6) |
+| p2_bdq_a1_ens (BDQ vs frame+video adversaries) | 94.1 | 65.2 (37.3 / 65.2) |
+| p3_down16 (UCF101) | 53.7 | 70.3 cMAP |
+- Per-action breakdown of the scene-only run: on locomotion clips (jogging / running / walking) the
+  action model fails (24 / 32 / 48%), so the person really is gone, yet identity is 84-88 (frame)
+  and 76-100 (video). The scene alone identifies the KTH subject. H6 confirmed without the caveat.
+- Person-only output (scene erased) still gives 93.5%. KTH identity is carried redundantly by the
+  scene and by the person; an anonymizer must remove both to show privacy on KTH.
+- Ensemble adversaries at alpha 1 for BDQ: 65.2, between the frame-only (69.9) and video-only (62.7)
+  versions. The ensemble is not stronger than the video adversary alone for BDQ.
+- Direction: VP-UCF101 becomes the main benchmark. Its attributes are appearance (face, skin,
+  gender) while action is largely motion, so separation is plausible. Adding UCF101 to VM1/VM3.
