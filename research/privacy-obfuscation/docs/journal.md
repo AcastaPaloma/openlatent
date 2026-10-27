@@ -577,3 +577,18 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H31: a learned stage before coarse pooling should be able to choose *which* motion to keep. Tests:
   p2_bdq_down32_a3_ens, p2_bdq_down64_a1_ens (BDQ then fixed downsample, end to end).
   p1_diff_down64_tshuffle: with two numbers per frame, does action still need temporal order?
+
+### 2026-10-27 22:20 UTC: the 1x2 px motion map does not generalise; first VP-UCF101 motion map
+- p1_diff_down64_scenario (test scenario unseen in training): action 23.3 (chance 16.7), identity 8.8.
+  On the Ilic split the same filter gave 69.9 / 11.0. Two numbers of motion energy per frame carry action only
+  within familiar recording conditions (camera distance and zoom differ between KTH scenarios, so the motion
+  energy of a walk in d2 looks like a different action in d1). The low-utility "win" is split-specific.
+  Scenario-split reference points (action / identity): raw 88.7/97.7, blur8 77.7/87.7, scene-only 56.0/64.0,
+  BDQ a1 79.2/61.2, BDQ a5 ens 78.7/54.0, BDQ a3 55.8/24.7, diff->down32 58.0/42.7, diff->down64 23.3/8.8.
+  Learned BDQ holds up better across conditions than the fixed coarse maps.
+- p3_diff_down16 (VP-UCF101): 63.7 / 71.0 cMAP (ResNet-50 69.9). Plain down16 53.7 / 70.3, blur8 58.9 / 70.3,
+  raw 91.8 / 76.6, floor 58.7. Per-attribute AP (ResNet-50): face 96.5, skin 77.9, gender 94.5, nudity 38.5,
+  relationship 47.6 (raw 97.5 / 85.2 / 96.3 / 49.2 / 54.8). Face and gender AP stay near raw because they are
+  highly prevalent (AP floor = prevalence); skin colour is the attribute that actually moves.
+- H32: on the scenario split, BDQ dominates fixed maps. Tests: p2_bdq_a5_ens_warm_scenario (best Ilic config),
+  p1_diff_down16_scenario (does a finer motion map keep action under new conditions?).

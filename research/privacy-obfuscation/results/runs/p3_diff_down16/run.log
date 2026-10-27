@@ -1,0 +1,44 @@
+[21:15:26] run p3_diff_down16 @ fe6dbbe: {"name": "p3_diff_down16", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "diff", "gain": 4.0}, {"type": "down", "factor": 16}]}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}}
+[21:15:26] VP-UCF101 split 1: 9537 train / 3783 test videos
+[21:18:03] materialised anonymised dataset (157s)
+[21:18:04] strong eval: training action r2p1d on anonymised data
+[21:19:11]   [action] epoch 1/10 loss 3.635 train_acc 18.1 (67s)
+[21:20:17]   [action] epoch 2/10 loss 2.260 train_acc 42.8 (66s)
+[21:21:59]   [action] epoch 3/10 loss 1.627 train_acc 58.0 (102s)
+[21:24:19]   [action] epoch 4/10 loss 1.178 train_acc 69.5 (140s)
+[21:26:40]   [action] epoch 5/10 loss 0.869 train_acc 77.3 (140s)
+[21:29:00]   [action] epoch 6/10 loss 0.626 train_acc 84.7 (140s)
+[21:31:20]   [action] epoch 7/10 loss 0.438 train_acc 89.4 (140s)
+[21:33:40]   [action] epoch 8/10 loss 0.345 train_acc 92.2 (140s)
+[21:36:00]   [action] epoch 9/10 loss 0.271 train_acc 94.4 (140s)
+[21:38:20]   [action] epoch 10/10 loss 0.243 train_acc 95.1 (140s)
+[21:39:33]   strong action/r2p1d: 63.68
+[21:40:44]   weak action/r2p1d: 1.88
+[21:40:45] strong eval: training attr frame_r50 on anonymised data
+[21:42:37]   [attr] epoch 1/10 loss 0.508 train_acc 76.8 (112s)
+[21:43:58]   [attr] epoch 2/10 loss 0.464 train_acc 78.8 (81s)
+[21:45:12]   [attr] epoch 3/10 loss 0.459 train_acc 78.9 (73s)
+[21:46:50]   [attr] epoch 4/10 loss 0.454 train_acc 79.1 (98s)
+[21:48:36]   [attr] epoch 5/10 loss 0.448 train_acc 79.4 (106s)
+[21:50:22]   [attr] epoch 6/10 loss 0.443 train_acc 79.5 (106s)
+[21:52:09]   [attr] epoch 7/10 loss 0.439 train_acc 79.8 (106s)
+[21:53:55]   [attr] epoch 8/10 loss 0.433 train_acc 79.8 (106s)
+[21:55:41]   [attr] epoch 9/10 loss 0.432 train_acc 80.1 (106s)
+[21:57:28]   [attr] epoch 10/10 loss 0.431 train_acc 80.2 (106s)
+[21:59:07]   strong attr/frame_r50: 69.91  (AP per attribute [96.7, 77.9, 95.1, 35.5, 44.3], F1 56.7)
+[22:00:45]   weak attr/frame_r50: 61.73
+[22:00:46] strong eval: training attr r3d on anonymised data
+[22:02:05]   [attr] epoch 1/10 loss 0.500 train_acc 76.3 (79s)
+[22:03:22]   [attr] epoch 2/10 loss 0.462 train_acc 78.9 (76s)
+[22:04:41]   [attr] epoch 3/10 loss 0.454 train_acc 79.0 (80s)
+[22:05:57]   [attr] epoch 4/10 loss 0.448 train_acc 79.3 (76s)
+[22:07:11]   [attr] epoch 5/10 loss 0.440 train_acc 79.5 (74s)
+[22:08:26]   [attr] epoch 6/10 loss 0.428 train_acc 80.2 (75s)
+[22:09:41]   [attr] epoch 7/10 loss 0.415 train_acc 81.0 (75s)
+[22:10:55]   [attr] epoch 8/10 loss 0.399 train_acc 81.7 (75s)
+[22:12:10]   [attr] epoch 9/10 loss 0.383 train_acc 82.5 (75s)
+[22:13:24]   [attr] epoch 10/10 loss 0.371 train_acc 83.3 (74s)
+[22:13:51]   strong attr/r3d: 70.98  (AP per attribute [96.5, 77.9, 94.5, 38.5, 47.6], F1 64.0)
+[22:14:18]   weak attr/r3d: 60.25
+[22:14:18] DONE p3_diff_down16: action 63.68  privacy cmap (strong, best attacker) 70.98  (58.9 min)
+[22:14:33] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p3_diff_down16
