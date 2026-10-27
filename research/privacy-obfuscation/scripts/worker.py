@@ -60,6 +60,11 @@ def main():
                                     cwd=CODE, stdout=logfh, stderr=subprocess.STDOUT, start_new_session=True)
             procs[job] = (proc, logfh)
             print(f"{time.strftime('%H:%M:%S')} started {job} (pid {proc.pid})", flush=True)
+        # heartbeat: lets a controller that can't reach this VM (Colab) see it is alive
+        with open(os.path.join(Q, "heartbeat.json.tmp"), "w") as fh:
+            json.dump({"time": time.time(), "utc": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                       "host": os.uname().nodename, "running": sorted(procs)}, fh)
+        os.replace(os.path.join(Q, "heartbeat.json.tmp"), os.path.join(Q, "heartbeat.json"))
         time.sleep(15)
 
 
