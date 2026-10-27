@@ -1,0 +1,61 @@
+[17:47:44] run p5_sanity_const @ fe55299: {"name": "p5_sanity_const", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "const"}, "eval": {"privacy": ["frame_r50", "r3d", "frame_dino_ft"], "clean_attacker": false}}
+[17:47:46] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[17:47:53] materialised anonymised dataset (6s)
+[17:47:53] strong eval: training action r2p1d on anonymised data
+[17:50:06]   [action] epoch 1/12 loss 1.818 train_acc 16.5 (131s)
+[17:52:02]   [action] epoch 2/12 loss 1.810 train_acc 16.4 (117s)
+[17:54:04]   [action] epoch 3/12 loss 1.801 train_acc 17.3 (121s)
+[17:56:06]   [action] epoch 4/12 loss 1.798 train_acc 15.8 (122s)
+[17:58:07]   [action] epoch 5/12 loss 1.797 train_acc 16.1 (121s)
+[18:00:09]   [action] epoch 6/12 loss 1.794 train_acc 16.8 (122s)
+[18:02:10]   [action] epoch 7/12 loss 1.795 train_acc 16.6 (122s)
+[18:04:12]   [action] epoch 8/12 loss 1.795 train_acc 16.2 (122s)
+[18:06:09]   [action] epoch 9/12 loss 1.793 train_acc 16.4 (117s)
+[18:08:11]   [action] epoch 10/12 loss 1.793 train_acc 15.8 (121s)
+[18:10:12]   [action] epoch 11/12 loss 1.792 train_acc 16.5 (121s)
+[18:12:13]   [action] epoch 12/12 loss 1.792 train_acc 16.2 (121s)
+[18:12:36]   strong action/r2p1d: 16.72
+[18:12:37] strong eval: training person frame_r50 on anonymised data
+[18:13:52]   [person] epoch 1/12 loss 3.222 train_acc 3.8 (74s)
+[18:15:00]   [person] epoch 2/12 loss 3.222 train_acc 3.2 (68s)
+[18:16:09]   [person] epoch 3/12 loss 3.222 train_acc 3.2 (68s)
+[18:17:17]   [person] epoch 4/12 loss 3.220 train_acc 3.7 (68s)
+[18:18:26]   [person] epoch 5/12 loss 3.220 train_acc 3.7 (69s)
+[18:19:23]   [person] epoch 6/12 loss 3.220 train_acc 3.8 (57s)
+[18:20:27]   [person] epoch 7/12 loss 3.219 train_acc 3.8 (64s)
+[18:21:32]   [person] epoch 8/12 loss 3.220 train_acc 3.3 (65s)
+[18:22:39]   [person] epoch 9/12 loss 3.219 train_acc 3.6 (66s)
+[18:23:44]   [person] epoch 10/12 loss 3.219 train_acc 4.1 (66s)
+[18:24:50]   [person] epoch 11/12 loss 3.219 train_acc 3.9 (66s)
+[18:25:56]   [person] epoch 12/12 loss 3.219 train_acc 4.0 (66s)
+[18:26:39]   strong person/frame_r50: 4.01
+[18:26:39] strong eval: training person r3d on anonymised data
+[18:27:53]   [person] epoch 1/12 loss 3.253 train_acc 3.9 (73s)
+[18:29:02]   [person] epoch 2/12 loss 3.244 train_acc 3.3 (69s)
+[18:30:11]   [person] epoch 3/12 loss 3.241 train_acc 3.5 (69s)
+[18:31:19]   [person] epoch 4/12 loss 3.240 train_acc 3.4 (69s)
+[18:32:29]   [person] epoch 5/12 loss 3.235 train_acc 3.7 (70s)
+[18:33:38]   [person] epoch 6/12 loss 3.230 train_acc 3.5 (69s)
+[18:34:47]   [person] epoch 7/12 loss 3.229 train_acc 3.6 (69s)
+[18:35:53]   [person] epoch 8/12 loss 3.227 train_acc 3.6 (66s)
+[18:36:59]   [person] epoch 9/12 loss 3.224 train_acc 2.8 (66s)
+[18:38:09]   [person] epoch 10/12 loss 3.222 train_acc 3.3 (70s)
+[18:39:18]   [person] epoch 11/12 loss 3.220 train_acc 3.2 (69s)
+[18:40:27]   [person] epoch 12/12 loss 3.219 train_acc 3.3 (69s)
+[18:40:45]   strong person/r3d: 3.85
+[18:40:48] strong eval: training person frame_dino_ft on anonymised data
+[18:42:22]   [person] epoch 1/12 loss 3.324 train_acc 4.0 (94s)
+[18:43:57]   [person] epoch 2/12 loss 3.265 train_acc 4.7 (95s)
+[18:45:30]   [person] epoch 3/12 loss 3.253 train_acc 4.1 (93s)
+[18:46:42]   [person] epoch 4/12 loss 3.248 train_acc 4.1 (71s)
+[18:48:16]   [person] epoch 5/12 loss 3.248 train_acc 3.7 (95s)
+[18:49:52]   [person] epoch 6/12 loss 3.240 train_acc 3.7 (95s)
+[18:51:26]   [person] epoch 7/12 loss 3.235 train_acc 3.8 (95s)
+[18:53:01]   [person] epoch 8/12 loss 3.232 train_acc 3.6 (94s)
+[18:54:36]   [person] epoch 9/12 loss 3.229 train_acc 3.9 (95s)
+[18:56:11]   [person] epoch 10/12 loss 3.226 train_acc 3.3 (95s)
+[18:57:45]   [person] epoch 11/12 loss 3.222 train_acc 3.8 (94s)
+[18:59:20]   [person] epoch 12/12 loss 3.220 train_acc 4.0 (95s)
+[19:00:15]   strong person/frame_dino_ft: 4.01
+[19:00:15] DONE p5_sanity_const: action 16.72  privacy top1 (strong, best attacker) 4.01  (72.5 min)
+[19:00:16] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p5_sanity_const

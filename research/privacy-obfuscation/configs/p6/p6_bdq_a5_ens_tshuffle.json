@@ -1,0 +1,19 @@
+{
+ "name": "p6_bdq_a5_ens_tshuffle",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "tshuffle"
+   }
+  ]
+ },
+ "anonymizer_from": "p2_bdq_a5_ens",
+ "note": "frozen p2_bdq_a5_ens output with frames shuffled within each window: does identity (gait) drop while action (per-frame pose) survives?"
+}

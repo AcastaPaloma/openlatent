@@ -448,3 +448,17 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   variants once the running ones finish, and spend the GPUs on BDQ alpha/seed sweeps and gait removal instead.
 - Queue note: p6_vae_a1_ens_ctx8 first landed on a VM without UCF101 data; moved to 129.213.82.145.
 - Colab backlog refilled: c22 p2_bdq_a7_ens_s2, c23 p2_bdq_a7_ens_warm, c24 p1_diff_down16, c25 p2_bdq_a5_ens_s3.
+
+### 2026-10-27 19:05 UTC: temporal shuffle, more BDQ seeds, all-black control
+- p5_sanity_const (all-zero frames): action 16.7 (chance 16.7), identity ResNet-50 4.0 / R3D 3.8 / DINOv2 4.0
+  (chance 4.0). With no signal every model sits exactly at chance: the evaluation can't manufacture accuracy.
+- p1_tshuffle (frames randomly permuted within each window): action 95.5, identity 99.0 (R3D 98.0). KTH actions
+  are readable from per-frame pose, without temporal order; identity is untouched (appearance).
+- p2_bdq_a5_ens_s2: 93.0 / 60.0 (ResNet-50 25.4). Seeds of the same config: 84.4/37.0, 86.5/48.0, 93.0/60.0. The
+  seed moves the run along the curve, not off it; single-seed comparisons between BDQ variants are noise-level.
+- p2_bdq_a5_ens_warm_s1: 78.9 / 30.3 (seed 0: 61.4 / 23.6), again on the curve.
+- H25: on the best BDQ output the remaining identity is gait (silhouette dynamics), while action is readable from
+  frame-level pose (tshuffle result). Shuffling frames after BDQ should then cut identity much more than action.
+  Test without retraining: p6_bdq_a5_ens_tshuffle and p6_bdq_a5_ens_warm_tshuffle (frozen checkpoints, chain
+  [bdq, tshuffle], fresh attackers). run.py now loads a single-stage checkpoint into a chain's learned stage and
+  refuses silently-missing keys.
