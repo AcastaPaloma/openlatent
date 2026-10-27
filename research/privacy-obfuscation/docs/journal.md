@@ -435,3 +435,16 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H22: gait survives x8 downsampling of motion; p1_diff_down32 tests whether x32 (4x5 motion map) finally drops
   identity faster than action.
 - H23: the alpha-7 ensemble gain is real if it holds over seeds and alpha 10: p2_bdq_a7_ens_s1, p2_bdq_a10_ens.
+
+### 2026-10-27 18:55 UTC: converged-adversary VAE seed; DINO on the scenario-split BDQ
+- p2_vae_a1_ens_b3_s1 (Colab; VAE latent edit, 2-adversary ensemble, 3 adversary steps per f step): 96.8 / 89.5
+  (ResNet-50 60.9, R3D 89.5), while the in-training adversary ended at 5.3. Same failure as every VAE run: f fools
+  the adversaries it trains against, but a fresh R3D trained to convergence on the output recovers ~90% identity.
+  More adversary steps don't close this gap (H-VAE: the edit hides identity in a way only a short-trained
+  adversary misses, e.g. a fixed pattern the fresh attacker learns to ignore).
+- p4_dino_bdq_a3_scenario: DINOv2 probe / fine-tune 10.3 / 12.8 on the scenario-split BDQ (R3D 24.7). DINO stays
+  below the video attacker on every BDQ output: the binding leak is temporal (gait), not appearance.
+- H24: VAE latent edits are not learnable against a fixed-budget adversary; drop further VAE b-step/warm-up
+  variants once the running ones finish, and spend the GPUs on BDQ alpha/seed sweeps and gait removal instead.
+- Queue note: p6_vae_a1_ens_ctx8 first landed on a VM without UCF101 data; moved to 129.213.82.145.
+- Colab backlog refilled: c22 p2_bdq_a7_ens_s2, c23 p2_bdq_a7_ens_warm, c24 p1_diff_down16, c25 p2_bdq_a5_ens_s3.
