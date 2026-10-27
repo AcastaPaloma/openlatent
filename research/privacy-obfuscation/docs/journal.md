@@ -369,3 +369,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 ### 2026-10-27 16:50 UTC: temporal hold
 - p1_hold4 (every 4th frame repeated): 97.7 / 99.0 (98.8 / 99.0). Identity needs no fine motion timing; H20 (temporal
   part) rejected. The spatial part is tested by p2_down4_bdq_a3.
+
+### 2026-10-27 17:05 UTC: DINOv2 vs the best BDQ
+- p4_dino_bdq_a5_ens: DINOv2 (probe / fine-tune) 18.6 / 35.1 on the BDQ ensemble alpha-5 output, vs R3D 37.0 and
+  ResNet-50 13.2 from the original run. DINO does not break BDQ: with appearance quantised away, an appearance
+  model gains nothing and the video (gait) attacker stays the binding one. The BDQ number holds up.
