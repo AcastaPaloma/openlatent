@@ -537,3 +537,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   global motion energy), p1_diff_down48 (2x3 px), p1_diff_down64_s1 (attacker seed), p1_diff_down64_scenario.
 - Caveat for every KTH claim: 6 coarse actions with distinct motion speeds; VP-UCF101 (p3_diff_down8/16 queued)
   tests whether this transfers to 101 actions.
+
+### 2026-10-27 21:05 UTC: attacker-seed noise is ~1 point; BDQ ensemble + shuffle
+- p1_diff_down32_s1 (same fixed filter, attackers trained with seed 1): 93.5 / 62.9 vs seed 0 93.6 / 63.9.
+  Attacker training noise is ~1 point; the 37-60 spread across BDQ seeds is the obfuscator's own training noise.
+- p2_bdq_a5_ens_b3_s1: 96.3 / 67.4 (seed 0: 90.3 / 58.0), on the BDQ curve.
+- p6_bdq_a5_ens_tshuffle: 76.3 / 29.9 vs unshuffled 84.4 / 37.0; same pattern as the other shuffle tests (H25 rejected).
+- H30: coarse motion maps hide identity only because each 16-frame clip (~1.2 s) holds about one gait cycle.
+  A longer view should let a video attacker read gait frequency and phase. Tests: p1_diff_down64_stride4,
+  p1_diff_down32_stride4 (16 frames at stride 4, ~2.5 s; action and identity models both get the longer view).

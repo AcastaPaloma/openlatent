@@ -1,0 +1,21 @@
+{
+ "name": "p1_diff_down64_stride4",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "diff",
+    "gain": 4.0
+   },
+   {
+    "type": "down",
+    "factor": 64
+   }
+  ]
+ },
+ "clip_stride": 4,
+ "note": "16-frame clips at stride 4 (~2.5 s, two or more gait cycles): does a longer view recover identity from coarse motion?"
+}

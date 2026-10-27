@@ -1,0 +1,51 @@
+[20:09:22] run p6_bdq_a5_ens_tshuffle @ 8b6db4b: {"name": "p6_bdq_a5_ens_tshuffle", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "bdq"}, {"type": "tshuffle"}]}, "anonymizer_from": "p2_bdq_a5_ens", "note": "frozen p2_bdq_a5_ens output with frames shuffled within each window: does identity (gait) drop while action (per-frame pose) survives?"}
+[20:09:24] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[20:09:24] loaded anonymizer from p2_bdq_a5_ens (missing 0, unexpected 0)
+[20:09:48] materialised anonymised dataset (24s)
+[20:09:49] strong eval: training action r2p1d on anonymised data
+[20:11:22]   [action] epoch 1/12 loss 0.995 train_acc 58.1 (93s)
+[20:12:49]   [action] epoch 2/12 loss 0.747 train_acc 69.4 (87s)
+[20:14:16]   [action] epoch 3/12 loss 0.635 train_acc 73.2 (87s)
+[20:15:42]   [action] epoch 4/12 loss 0.622 train_acc 74.0 (87s)
+[20:17:09]   [action] epoch 5/12 loss 0.539 train_acc 76.9 (87s)
+[20:18:36]   [action] epoch 6/12 loss 0.500 train_acc 79.4 (87s)
+[20:20:03]   [action] epoch 7/12 loss 0.447 train_acc 80.2 (87s)
+[20:21:30]   [action] epoch 8/12 loss 0.415 train_acc 82.3 (87s)
+[20:22:57]   [action] epoch 9/12 loss 0.380 train_acc 83.7 (87s)
+[20:24:24]   [action] epoch 10/12 loss 0.347 train_acc 85.0 (87s)
+[20:25:51]   [action] epoch 11/12 loss 0.325 train_acc 86.3 (87s)
+[20:27:18]   [action] epoch 12/12 loss 0.334 train_acc 85.3 (87s)
+[20:27:34]   strong action/r2p1d: 76.25
+[20:27:47]   weak action/r2p1d: 28.76
+[20:27:48] strong eval: training person frame_r50 on anonymised data
+[20:28:41]   [person] epoch 1/12 loss 3.218 train_acc 4.1 (53s)
+[20:29:30]   [person] epoch 2/12 loss 3.198 train_acc 4.6 (49s)
+[20:30:19]   [person] epoch 3/12 loss 3.160 train_acc 5.9 (49s)
+[20:31:07]   [person] epoch 4/12 loss 3.108 train_acc 6.9 (49s)
+[20:31:56]   [person] epoch 5/12 loss 3.039 train_acc 10.4 (49s)
+[20:32:45]   [person] epoch 6/12 loss 2.973 train_acc 12.7 (49s)
+[20:33:34]   [person] epoch 7/12 loss 2.910 train_acc 14.6 (49s)
+[20:34:23]   [person] epoch 8/12 loss 2.841 train_acc 16.5 (49s)
+[20:35:11]   [person] epoch 9/12 loss 2.796 train_acc 18.3 (49s)
+[20:36:00]   [person] epoch 10/12 loss 2.765 train_acc 18.6 (49s)
+[20:36:49]   [person] epoch 11/12 loss 2.743 train_acc 18.4 (49s)
+[20:37:38]   [person] epoch 12/12 loss 2.764 train_acc 19.2 (49s)
+[20:38:10]   strong person/frame_r50: 13.71
+[20:38:40]   weak person/frame_r50: 3.85
+[20:38:40] strong eval: training person r3d on anonymised data
+[20:39:30]   [person] epoch 1/12 loss 3.093 train_acc 10.1 (49s)
+[20:40:16]   [person] epoch 2/12 loss 2.533 train_acc 24.7 (47s)
+[20:41:03]   [person] epoch 3/12 loss 2.159 train_acc 36.3 (47s)
+[20:41:50]   [person] epoch 4/12 loss 1.852 train_acc 45.9 (47s)
+[20:42:36]   [person] epoch 5/12 loss 1.606 train_acc 54.0 (47s)
+[20:43:23]   [person] epoch 6/12 loss 1.359 train_acc 61.4 (47s)
+[20:44:10]   [person] epoch 7/12 loss 1.221 train_acc 65.4 (47s)
+[20:44:57]   [person] epoch 8/12 loss 1.111 train_acc 68.6 (47s)
+[20:45:43]   [person] epoch 9/12 loss 1.007 train_acc 71.3 (47s)
+[20:46:30]   [person] epoch 10/12 loss 0.945 train_acc 74.3 (47s)
+[20:47:17]   [person] epoch 11/12 loss 0.900 train_acc 75.5 (47s)
+[20:48:03]   [person] epoch 12/12 loss 0.895 train_acc 75.3 (47s)
+[20:48:16]   strong person/r3d: 29.93
+[20:48:28]   weak person/r3d: 4.01
+[20:48:28] DONE p6_bdq_a5_ens_tshuffle: action 76.25  privacy top1 (strong, best attacker) 29.93  (39.1 min)
+[20:48:31] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p6_bdq_a5_ens_tshuffle
