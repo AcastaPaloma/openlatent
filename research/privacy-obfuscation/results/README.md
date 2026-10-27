@@ -22,6 +22,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p2_bdq_a5_ens_warm | kth | `{type: bdq}` | ilic | 61.4 | **23.6** | 20.5% | 11.4 / 23.6 | 28.6 | 5.4 | 185 |
 | p2_bdq_a10_lr3e-3 | kth | `{type: bdq}` | ilic | 90.8 | **56.5** | 55.0% | 33.8 / 56.5 | 27.8 | 5.4 | 74 |
 | p2_bdq_a5_ens_b3 | kth | `{type: bdq}` | ilic | 90.3 | **58.0** | 56.6% | 26.8 / 58.0 | 29.9 | 5.2 | 171 |
+| p2_bdq_a7_ens | kth | `{type: bdq}` | ilic | 95.0 | **62.9** | 61.7% | 33.1 / 62.9 | 27.6 | 4.7 | 122 |
 | p2_bdq_a3_scenario | kth | `{type: bdq}` | scenario | 55.8 | **24.7** | 21.6% | 16.8 / 24.7 | 30.5 | 4.0 | 132 |
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
 | p2_bdq_a1_ens | kth | `{type: bdq}` | ilic | 94.1 | **65.2** | 64.1% | 37.3 / 65.2 | 37.5 | 4.0 | 113 |
@@ -34,10 +35,12 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p2_unet_a05_ens | kth | `{type: unet3d}` | ilic | 94.1 | **78.9** | 78.5% | 44.5 / 78.9 | 47.2 | 4.2 | 84 |
 | p2_vae_a1_ens | kth | `{type: vae_latent}` | ilic | 97.3 | **82.6** | 82.3% | 58.2 / 82.6 | 16.7 | 4.0 | 274 |
 | p2_vae_a05_ens | kth | `{type: vae_latent}` | ilic | 95.7 | **81.3** | 80.9% | 50.5 / 81.3 | 16.7 | 4.0 | 246 |
+| p5_sanity_mean | kth | `{type: mean}` | ilic | 36.6 | **22.4** | 19.3% | 18.7 / 22.4 | - | - | 53 |
 | p2_unet_a3 | kth | `{type: unet3d}` | ilic | 16.7 | **4.0** | 0.0% | 4.0 / 4.0 | 16.7 | 4.0 | 70 |
 | p2_vae_a1 | kth | `{type: vae_latent}` | ilic | 97.2 | **85.1** | 84.9% | 61.9 / 85.1 | 16.7 | 4.0 | 396 |
 | p1_down64 | kth | `{type: down, factor: 64}` | ilic | 48.7 | **38.1** | 35.7% | 32.1 / 38.1 | 16.7 | 8.4 | 34 |
 | p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 87.7% | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
+| p1_diff_down8 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 8}]}` | ilic | 95.5 | **88.3** | 88.3% | 73.6 / 88.3 | 16.7 | 5.9 | 39 |
 | p1_fgonly | kth | `{type: fg_only, thresh: 20}` | ilic | 97.3 | **93.5** | 93.7% | 92.3 / 93.5 | 81.6 | 10.5 | 36 |
 | p2_unet_a1_ens | kth | `{type: unet3d}` | ilic | 91.8 | **89.1** | 89.1% | 88.8 / 89.1 | 69.6 | 9.7 | 74 |
 | p2_unet_a1_vadv | kth | `{type: unet3d}` | ilic | 92.8 | **92.3** | 92.5% | 89.6 / 92.3 | 25.8 | 5.9 | 54 |

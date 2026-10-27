@@ -419,3 +419,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   video start/end). Re-evaluating both checkpoints with fresh attackers: p6_vae_a1_ctx8, p6_vae_a1_ens_ctx8.
   p3_vae_a1_ens_warm (running on old code) gets the same re-evaluation when it finishes.
 - p5_sanity_const (all-black frames): action r2p1d trains at chance (train acc 16-17%, chance 16.7) as it should.
+
+### 2026-10-27 18:50 UTC: brightness-only control, diff then downsample, BDQ alpha 7
+- p5_sanity_mean (each frame replaced by its mean brightness, one number per frame): action 36.6, identity
+  22.4 (ResNet-50 18.7, R3D 22.4; chance 4.0). Global lighting alone, i.e. which recording session, carries
+  ~22% KTH identity. This is a floor: any obfuscation that keeps per-frame brightness can't go much below 22%
+  on KTH, and down64's 38.1 is about half brightness. Our best BDQ (23.6) sits at this floor.
+- p5_sanity_const (all-zero frames, in progress): action trains at chance, identity ResNet-50 4.01 (chance 4.0).
+- p1_diff_down8 (frame difference, then x8 downsample): 95.5 / 88.3 (ResNet-50 73.6, R3D 88.3). Coarse motion keeps
+  gait identity. The motion signal that carries action at 15x20 also carries identity.
+- p2_bdq_a7_ens: 95.0 / 62.9 (ResNet-50 33.1). Slightly above the BDQ curve (curve at action 95 is about 68):
+  a stronger privacy weight with the 2-adversary ensemble buys ~5 points without hurting action.
+- H21: KTH identity has a ~22% scene/lighting floor (brightness alone). Report leakage above this floor, and
+  test BDQ-style methods on the scenario split, where session cues can't transfer.
+- H22: gait survives x8 downsampling of motion; p1_diff_down32 tests whether x32 (4x5 motion map) finally drops
+  identity faster than action.
+- H23: the alpha-7 ensemble gain is real if it holds over seeds and alpha 10: p2_bdq_a7_ens_s1, p2_bdq_a10_ens.
