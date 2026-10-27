@@ -63,7 +63,7 @@ class Fixed(nn.Module):
     def forward(self, x):
         k, p = self.kind, self.p
         h, w = x.shape[-2:]
-        if k in ("raw", "bg_median"):  # bg_median is applied per whole video in run.py
+        if k in ("raw", "bg_median", "fg_only"):  # whole-video controls, applied in run.py
             return x
         if k == "blur":
             return blur2d(x, p["sigma"])
@@ -182,7 +182,7 @@ class VAELatent(nn.Module):
 def build(cfg, in_ch=1):
     cfg = dict(cfg)
     kind = cfg.pop("type")
-    if kind in ("raw", "bg_median", "blur", "down", "pixelate", "diff", "bdq_fixed"):
+    if kind in ("raw", "bg_median", "fg_only", "blur", "down", "pixelate", "diff", "bdq_fixed"):
         return Fixed(kind, **cfg)
     if kind == "bdq":
         return BDQ(**cfg)

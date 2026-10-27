@@ -1,0 +1,10 @@
+{
+ "name": "p1_fgonly",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "fg_only",
+  "thresh": 20
+ }
+}

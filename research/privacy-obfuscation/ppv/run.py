@@ -137,6 +137,15 @@ def main(cfg_path):
         # removes people who move and keeps the background. Identity read from this output comes
         # from the scene / recording session, not the person.
         anon = {v: np.repeat(np.median(frames[v], 0).astype(np.uint8)[None], len(frames[v]), 0) for v in frames}
+    elif cfg["anonymizer"]["type"] == "fg_only":
+        # person-only control (counterpart of bg_median): keep pixels that differ from the video's
+        # temporal median by more than `thresh` (the moving person), black out the static scene
+        thr = cfg["anonymizer"].get("thresh", 20)
+        anon = {}
+        for v in frames:
+            a = frames[v]
+            med = np.median(a, 0)
+            anon[v] = np.where(np.abs(a.astype(np.int16) - med) > thr, a, 0).astype(np.uint8)
     else:
         t0 = time.time()
         if D["big"]:
