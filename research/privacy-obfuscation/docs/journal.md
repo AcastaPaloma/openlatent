@@ -546,3 +546,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H30: coarse motion maps hide identity only because each 16-frame clip (~1.2 s) holds about one gait cycle.
   A longer view should let a video attacker read gait frequency and phase. Tests: p1_diff_down64_stride4,
   p1_diff_down32_stride4 (16 frames at stride 4, ~2.5 s; action and identity models both get the longer view).
+
+### 2026-10-27 21:20 UTC: motion-map dose filling in; BDQ a7 seed 2
+- p1_diff_down40 (3x4 px motion map): 87.8 / 57.2 (ResNet-50 47.3). Dose so far (action / identity):
+  x16 (7x10) 94.8 / 84.6, x20 (6x8) running, x32 (3x5) 93.6 / 63.9, x40 (3x4) 87.8 / 57.2, x48 (2x3) queued,
+  x64 (1x2) 69.9 / 11.0. Identity falls steeply below ~3x4 px while action degrades gradually.
+- p2_bdq_a7_ens_s2: 67.4 / 29.4 (seed 0: 95.0 / 62.9). The seed spread swallows the a7 gain: H23 not supported;
+  alpha 7 ensemble is on the same curve as everything else.
+- p2_bdq_down4_a5_ens collapsed at epoch 3-4 (action 17, adversaries 3.5); the collapse guard keeps epoch 2.
+- VP-UCF101 dose for H27 extended: p3_diff_down32 (3x4 px), p3_diff_down64 (1x2 px) join p3_diff_down8/16.
