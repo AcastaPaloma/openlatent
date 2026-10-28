@@ -1010,3 +1010,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 15:10 UTC: hardest test: DINOv2 on learned x16 15.5 (R3D 17.5); plain BDQ a5 ens 24.0 at scenario action 78.7; plain BDQ
   a5 ens warm 6.0 at 32.7. Queued scenario-split plain BDQ a7 ens and learned x16 a5 (higher-utility comparison), the
   hardest test on plain BDQ a1 scenario (79.2 action), and a guard-fixed Charades a3 seed.
+
+### 2026-10-28 15:20 UTC: new direction: keep only the task-relevant part of the frame (user's proposal)
+- Motivation: on UTD-MHAD (session colour 73%), Charades (people removed 91%, 1x2 px 39%) and KTH (scene-only 89-91%) the
+  background is the identity. Proposal: pick out what matters for the action (person AND task objects, e.g. a pool table),
+  remove the rest, optionally obfuscate inside, then composite.
+- Implementation (ppv/anonymizers.py TaskMask, type "taskmask"): frozen DINOv2 ViT-S/14 patch features per frame -> a small
+  head scores every patch -> the top `keep` fraction is kept (hard top-k, sigmoid straight-through), trained by the action
+  loss (alpha 0) or with the adversary (alpha 1). Optional `inner` obfuscator inside the mask (BDQ). Outside: `fill`
+  gray (foreground only), blur, or raw (composite onto the real background; expected to re-leak the scene, run to measure
+  exactly that). head "saliency" = unsupervised baseline (patches whose DINO features differ most from the frame mean).
+  Frozen DINO/VAE weights are never checkpointed (frozen_key). Smoke-tested (forward/backward, kept fraction = keep,
+  end-to-end UTD run).
+- Wave p11 (keep 25%): saliency, learned a0, learned a1 on UTD-MHAD, KTH, Charades; BDQ inside the mask (UTD, KTH);
+  raw-background composite (UTD); learned a1 on VP-UCF101 (attributes sit on the person, so expected not to help there).
+- H42: removing the background (gray fill) cuts identity on UTD-MHAD and Charades far more than any obfuscator so far;
+  the raw-background composite gives it all back; the learned head keeps task objects beyond the person.

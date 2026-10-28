@@ -1,0 +1,16 @@
+{
+ "name": "p11_ch_saliency_k25",
+ "dataset": "charades",
+ "seed": 0,
+ "anonymizer": {
+  "type": "taskmask",
+  "keep": 0.25,
+  "fill": "gray",
+  "head": "saliency"
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ }
+}

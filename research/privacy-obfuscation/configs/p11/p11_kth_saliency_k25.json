@@ -1,0 +1,12 @@
+{
+ "name": "p11_kth_saliency_k25",
+ "dataset": "kth",
+ "seed": 0,
+ "anonymizer": {
+  "type": "taskmask",
+  "keep": 0.25,
+  "fill": "gray",
+  "head": "saliency"
+ },
+ "split": "ilic"
+}
