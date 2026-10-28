@@ -146,9 +146,11 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
         if kind != task and (actions > 0).any():  # privacy attributes with one action per clip (VP-UCF101 / VP-HMDB51)
             # Attribute labels are largely implied by the action (an attacker that only knows the action class reaches
             # ~76-78 cMAP on VP-UCF101). The action-conditional cMAP asks what the video reveals beyond its action: AP of
-            # each attribute within each action class where it varies, averaged; its blind floor is the mean within-class
-            # prevalence over the same (class, attribute) cells.
+            # each attribute within each action class where it varies, averaged; its blind floor is the expected AP of
+            # random scores over the same (class, attribute) cells (Monte Carlo). With ~30 clips per cell this is several
+            # points above the within-class prevalence (VP-UCF101 61.3 vs 57.5, VP-HMDB51 61.9 vs 57.5).
             a_np = actions.numpy()
+            rng = np.random.default_rng(0)
             cond, floor = [], []
             for j in range(s.shape[1]):
                 cj, fj = [], []
@@ -157,7 +159,7 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
                     yj = lab[sel, j]
                     if 0 < yj.sum() < len(yj):
                         cj.append(average_precision(s[sel, j], yj))
-                        fj.append(float(yj.mean()))
+                        fj.append(float(np.mean([average_precision(rng.random(len(yj)), yj) for _ in range(200)])))
                 if cj:
                     cond.append(float(np.mean(cj)))
                     floor.append(float(np.mean(fj)))

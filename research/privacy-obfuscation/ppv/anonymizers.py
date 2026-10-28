@@ -72,6 +72,10 @@ class Fixed(nn.Module):
             return x[:, :, torch.randperm(x.shape[2], generator=g).to(x.device)]
         if k == "mean":  # brightness-only control: each frame becomes its own mean intensity (1 number per frame)
             return x.mean(dim=(-2, -1), keepdim=True).expand_as(x)
+        if k == "gray":  # drop colour (skin tone, clothing colour); luminance copied to every channel
+            if x.shape[1] != 3:
+                return x
+            return (x * x.new_tensor([0.299, 0.587, 0.114]).view(1, 3, 1, 1, 1)).sum(1, keepdim=True).expand_as(x)
         if k == "blur":
             return blur2d(x, p["sigma"])
         if k in ("down", "pixelate"):
@@ -200,7 +204,7 @@ class PersonBox(nn.Module):
     Fixed; no learned parameters of its own."""
     learned = False
 
-    def __init__(self, score=0.5, mode="black", sigma=8.0, every=1, dilate=4):
+    def __init__(self, score=0.5, mode="black", sigma=8.0, every=1, dilate=4, head=1.0):
         super().__init__()
         from torchvision.models.detection import (FasterRCNN_MobileNet_V3_Large_320_FPN_Weights,
                                                   fasterrcnn_mobilenet_v3_large_320_fpn)
@@ -208,6 +212,7 @@ class PersonBox(nn.Module):
         self.det.requires_grad_(False)
         self.score, self.mode, self.sigma = score, mode, sigma
         self.every, self.dilate = every, dilate  # detect on every `every`-th frame; grow boxes by `dilate` px
+        self.head = head  # cover only the top `head` fraction of each box (0.3 ~ head and shoulders; 1.0 = whole person)
 
     def train(self, mode=True):
         super().train(mode)
@@ -228,6 +233,7 @@ class PersonBox(nn.Module):
                 keep = (det["labels"] == 1) & (det["scores"] >= self.score)
                 last = min(k + self.every, (k // t + 1) * t)  # boxes cover the frames up to the next keyframe
                 for x0, y0, x1, y1 in det["boxes"][keep].round().long().tolist():
+                    y1 = y0 + max(1, round((y1 - y0) * self.head))
                     mask[k:last, :, max(0, y0 - d):y1 + d, max(0, x0 - d):x1 + d] = 1
         fill = torch.zeros_like(frames) if self.mode == "black" else blur2d(frames.view(b, t, c, h, w).transpose(1, 2), self.sigma).transpose(1, 2).reshape(b * t, c, h, w)
         out = frames * (1 - mask) + fill * mask
@@ -387,7 +393,7 @@ def build(cfg, in_ch=1):
     kind = cfg.pop("type")
     if kind == "chain":
         return Chain(cfg["stages"], in_ch)
-    if kind in ("raw", "bg_median", "fg_only", "hold", "const", "mean", "tshuffle", "blur", "down", "pixelate", "diff", "bdq_fixed"):
+    if kind in ("raw", "bg_median", "fg_only", "hold", "const", "mean", "tshuffle", "blur", "down", "pixelate", "diff", "bdq_fixed", "gray"):
         return Fixed(kind, **cfg)
     if kind == "person_box":
         return PersonBox(**cfg)

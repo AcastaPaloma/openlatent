@@ -1,0 +1,14 @@
+{
+ "name": "p13_hmdb_gray",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "gray"
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "note": "remove colour only (skin tone, clothing colour); reports action, attribute mAP and action-conditional cMAP"
+}

@@ -125,6 +125,18 @@ if "p7_raw" in R:
              + "; ".join(f"{lab} {R[n]['action_top1']:.1f} / {pv(R[n]):.1f}" for lab, n in
                          (("down16", "p7_down16"), ("diff->down16", "p7_diff_down16"), ("BDQ", "p7_bdq_a3_ens")) if n in R) + " |")
 
+L += ["", "### What the video reveals beyond its action (action-conditional cMAP, strong attackers)", "",
+      "AP of each attribute within each action class where it varies. Chance = expected AP of random scores on the same cells "
+      "(VP-UCF101 61.3, VP-HMDB51 61.9).", "",
+      "| method | VP-UCF101 | VP-HMDB51 |", "|---|---:|---:|"]
+cond = lambda n: f"{R[n]['privacy_cond']:.1f}" if n in R and R[n].get("privacy_cond") is not None else "-"  # noqa: E731
+for label, suffix in [("raw", "raw"), ("blur sigma 8", "blur8"), ("downsample x16", "down16"), ("diff->down16", "diff_down16"),
+                      ("BDQ a3", "bdq_a3_ens"), ("person boxes blacked out", "personbox"), ("pose (stick figures)", "pose")]:
+    if f"p12_ucf_{suffix}" in R or f"p12_hmdb_{suffix}" in R:
+        L.append(f"| {label} | {cond(f'p12_ucf_{suffix}')} | {cond(f'p12_hmdb_{suffix}')} |")
+if "p13_hmdb_personbox_blur16" in R:
+    L.append(f"| person boxes blurred (sigma 16) | - | {cond('p13_hmdb_personbox_blur16')} |")
+
 L += ["", "## Findings", "",
       "1. **The frozen-attacker protocol is the main reason published obfuscations look private.** Retrained attackers recover "
       "95-99% KTH identity through blur, pixelation and downsampling up to x16.",

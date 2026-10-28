@@ -1,0 +1,35 @@
+[17:06:26] run p12_hmdb_diff_down16 @ 0180950: {"name": "p12_hmdb_diff_down16", "dataset": "hmdb51_vp", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "diff", "gain": 4.0}, {"type": "down", "factor": 16}]}, "eval": {"epochs": 12, "repeats": 2, "batch": 16, "action": []}, "note": "attack-only re-evaluation for the action-conditional attribute cMAP (what the video reveals beyond its action)"}
+[17:06:26] VP-HMDB51 split 1: 3570 train / 1530 test videos
+[17:07:02] materialised anonymised dataset (36s)
+[17:07:02] strong eval: training attr frame_r50 on anonymised data
+[17:08:22]   [attr] epoch 1/12 loss 0.507 train_acc 78.8 (80s)
+[17:09:38]   [attr] epoch 2/12 loss 0.458 train_acc 79.6 (76s)
+[17:10:53]   [attr] epoch 3/12 loss 0.449 train_acc 79.8 (76s)
+[17:12:09]   [attr] epoch 4/12 loss 0.439 train_acc 80.1 (76s)
+[17:13:25]   [attr] epoch 5/12 loss 0.429 train_acc 80.6 (76s)
+[17:14:36]   [attr] epoch 6/12 loss 0.419 train_acc 81.0 (72s)
+[17:15:36]   [attr] epoch 7/12 loss 0.406 train_acc 81.5 (60s)
+[17:16:36]   [attr] epoch 8/12 loss 0.392 train_acc 82.2 (60s)
+[17:17:36]   [attr] epoch 9/12 loss 0.383 train_acc 82.6 (60s)
+[17:18:36]   [attr] epoch 10/12 loss 0.375 train_acc 83.1 (60s)
+[17:19:36]   [attr] epoch 11/12 loss 0.370 train_acc 83.2 (60s)
+[17:20:36]   [attr] epoch 12/12 loss 0.369 train_acc 83.4 (60s)
+[17:21:08]   strong attr/frame_r50: 69.33  (AP per attribute [94.9, 76.8, 94.8, 45.3, 34.7], F1 59.6)  action-conditional cMAP 65.95 (floor 57.5)
+[17:21:39]   weak attr/frame_r50: 61.43
+[17:21:40] strong eval: training attr r3d on anonymised data
+[17:22:25]   [attr] epoch 1/12 loss 0.488 train_acc 77.8 (45s)
+[17:23:08]   [attr] epoch 2/12 loss 0.440 train_acc 80.4 (43s)
+[17:23:51]   [attr] epoch 3/12 loss 0.415 train_acc 81.3 (43s)
+[17:24:35]   [attr] epoch 4/12 loss 0.375 train_acc 83.5 (44s)
+[17:25:33]   [attr] epoch 5/12 loss 0.316 train_acc 86.5 (58s)
+[17:26:31]   [attr] epoch 6/12 loss 0.239 train_acc 90.5 (58s)
+[17:27:28]   [attr] epoch 7/12 loss 0.168 train_acc 93.7 (58s)
+[17:28:27]   [attr] epoch 8/12 loss 0.113 train_acc 96.1 (58s)
+[17:29:24]   [attr] epoch 9/12 loss 0.084 train_acc 97.3 (58s)
+[17:30:23]   [attr] epoch 10/12 loss 0.064 train_acc 98.2 (58s)
+[17:31:21]   [attr] epoch 11/12 loss 0.055 train_acc 98.6 (58s)
+[17:32:19]   [attr] epoch 12/12 loss 0.050 train_acc 98.7 (58s)
+[17:32:32]   strong attr/r3d: 66.52  (AP per attribute [94.0, 72.1, 92.3, 41.0, 33.2], F1 63.5)  action-conditional cMAP 65.11 (floor 57.5)
+[17:32:45]   weak attr/r3d: 60.91
+[17:32:45] DONE p12_hmdb_diff_down16: action None  privacy cmap (strong, best attacker) 69.33  (26.3 min)
+[17:32:50] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_hmdb_diff_down16

@@ -1,0 +1,19 @@
+{
+ "name": "p13_ucf_headblur16",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "person_box",
+  "mode": "blur",
+  "sigma": 16.0,
+  "every": 8,
+  "dilate": 6,
+  "head": 0.33
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "note": "blur only the top third of each detected person box (head and shoulders); body, scene and objects stay raw; reports action, attribute mAP and action-conditional cMAP"
+}

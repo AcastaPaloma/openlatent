@@ -77,6 +77,17 @@ Floors: action mAP 4.4 (blind predictor), identity 3.6 (most frequent person). R
 | VP-UCF101 | 91.8 / 76.6 | 58.7 | down16 53.7 / 70.3; diff->down16 63.7 / 71.0; BDQ 87.8 / 74.9; VAE edit 66.1 / 69.9 |
 | VP-HMDB51 | 64.9 / 75.2 | 58.8 | down16 29.7 / 66.6; diff->down16 34.4 / 69.5; BDQ 63.1 / 72.7 |
 
+### What the video reveals beyond its action (action-conditional cMAP, strong attackers)
+
+AP of each attribute within each action class where it varies. Chance = expected AP of random scores on the same cells (VP-UCF101 61.3, VP-HMDB51 61.9).
+
+| method | VP-UCF101 | VP-HMDB51 |
+|---|---:|---:|
+| raw | - | 69.7 |
+| blur sigma 8 | - | 65.2 |
+| diff->down16 | - | 66.0 |
+| BDQ a3 | 65.2 | 70.4 |
+
 ## Findings
 
 1. **The frozen-attacker protocol is the main reason published obfuscations look private.** Retrained attackers recover 95-99% KTH identity through blur, pixelation and downsampling up to x16.

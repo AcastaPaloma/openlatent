@@ -10,4 +10,5 @@ for ip in $HOSTS; do
   list=$($SSH ubuntu@$ip 'cd ~/work/runs 2>/dev/null && for d in */; do [ -f "$d/result.json" ] && printf "%sresult.json\n%srun.log\n" "$d" "$d"; done' 2>/dev/null)
   [ -n "$list" ] && rsync -a -e "$SSH" --files-from=<(echo "$list") "ubuntu@$ip:work/runs/" "$DEST/" 2>/dev/null
 done
+python3 "$HERE/fix_cond_floor.py" "$DEST"
 python3 "$HERE/summarize.py" "$DEST" "$HERE/../results/README.md"

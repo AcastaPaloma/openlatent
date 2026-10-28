@@ -142,9 +142,10 @@
  },
  "action_top1": null,
  "privacy_cond": 65.18173511733883,
- "privacy_cond_floor": 57.52993301375976,
+ "privacy_cond_floor": 61.9,
  "action_metric": "top1",
  "privacy_main": 67.87464259055263,
  "privacy_cmap": 67.87464259055263,
- "minutes": 19.849399097760518
+ "minutes": 19.849399097760518,
+ "privacy_cond_floor_prevalence": 57.52993301375976
 }
