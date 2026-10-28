@@ -1,0 +1,29 @@
+{
+ "name": "p14_ucf_bdq_cond_a30",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "adv": {
+  "epochs": 8,
+  "alpha": 30.0,
+  "restart_every": 3,
+  "batch": 8,
+  "repeats": 1,
+  "utility": "r2p1d",
+  "adversary": [
+   "frame_r18",
+   "r3d"
+  ],
+  "lr_f": 0.003,
+  "cond_adv": true,
+  "min_action": 10.0
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "note": "BDQ against action-conditional adversaries: f pays only for attribute information beyond the action"
+}

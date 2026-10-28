@@ -35,6 +35,7 @@ PHASES = {
     "p11": "Phase 11: keep only the task-relevant region (DINOv2 task mask)",
     "p12": "Phase 12: action-conditional attribute re-evaluation and pose",
     "p13": "Phase 13: degrade only the person, keep scene objects raw",
+    "p14": "Phase 14: adversaries that know the action (hide only what the video reveals beyond it)",
 }
 
 
