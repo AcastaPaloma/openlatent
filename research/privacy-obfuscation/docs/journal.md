@@ -837,3 +837,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 07:05 UTC: p2_bdq_down32_a3_ens_s2: 92.6 / 39.5. BDQ->3x5 px over 4 runs (seeds 0-2 a3, a5): 91.8-93.0 action,
   37.5-40.8 identity (fixed map: 93.6 / 63.9). p7_diff_down8 (VP-HMDB51): 42.6 / 70.3. Queued stronger attacks on the
   frozen x32 output: 24-epoch attackers (p6_bdq_down32_a3_ens_e24) and a 2.5 s view (p6_bdq_down32_a3_ens_stride4).
+
+### 2026-10-28 07:40 UTC: highest-utility learned pool; a frame adversary suffices at x32
+- p2_bdq_down16_a3_ens (BDQ -> 7x10 px): 95.8 / 57.0 (ResNet-50 25.6). At ~95 action: fixed diff->down16 94.8 / 84.6,
+  plain BDQ a7 ens 95.0 / 62.9 and 95.2 / 66.7. The learned pool keeps raw-level action with 57% identity.
+- p2_bdq_down32_a3_r18 (frame_r18 adversary only): 90.6 / 40.6, the same as the frame+video ensemble (92-93 / 38-41).
+  At 3x5 px the appearance adversary alone carries the gain; the r3d-only ablation is running.
+- p7_bdq_down16_a0 (VP-HMDB51): 36.0 / 69.1 (adversarial 32.9 / 68.9).
+- Queued x16 seed 1, scenario split, alpha 5.
