@@ -644,3 +644,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   (official host down). First wave mirrors VP-UCF101 (configs/p7): raw, blur8, down8/16, pix8, diff, diff->down16,
   person box (black / blur), BDQ a3 ens.
 - Two more A100 VMs (150.136.92.19, 129.213.90.42) bootstrapping.
+
+### 2026-10-28 00:40 UTC: more datasets
+- VP-HMDB51 prepared (VM1 first): 3,570 train / 1,530 test labelled videos, exactly STPrivacy's split 1.
+- Charades added as a second identity benchmark: people filming scripted activities in their own homes, with a
+  per-video subject id. The official split has disjoint subjects, so ppv/charades.py re-splits closed-set like KTH
+  (90 subjects with >= 20 videos, 9,072 videos, 30% of each subject's videos to test). Utility is the 157-way
+  multilabel action task (mAP; train.ACTION_KIND = "multilabel"); privacy is subject top-1 (chance 1.1%).
+  Frames at 6.25 fps, 112x150 (16-frame clip = 2.6 s). Videos from AI2's public S3 (16.3 GB).
+  Like KTH, train and test share homes, so the scene is part of the identity signal, which is the real threat for
+  in-home footage.
+- Checked and not used: Weizmann (official host unreachable), NTU RGB+D (40 subjects; license agreement required,
+  only unofficial re-uploads online), CASIA-B / OU-MVLP gait (request-only), PA-HMDB51 (frame-level labels on 515
+  videos; VP-HMDB51 covers the same videos at video level).
+- Hypotheses for the new data: H34: on Charades, as on KTH, the scene carries most identity (homes are distinct),
+  so blur/downsampling will leak heavily under retrained attackers; H35: BDQ and fixed motion maps transfer to
+  VP-HMDB51 the way they did to VP-UCF101 (appearance attributes leak through coarse maps).
