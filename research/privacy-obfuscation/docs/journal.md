@@ -834,3 +834,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 06:50 UTC: p8_bdq_down16_a0 (Charades, BDQ -> 7x9 px, utility only): 8.0 / 72.5%. Unlike KTH, the bottleneck alone
   does not hide in-home identity (the room survives coarse pooling); the adversarial BDQ (24.2%) is needed.
   Queued p8_bdq_a3_r3d (video adversary only) and p8_bdq_a3_ens_e15 (50% longer adversarial training).
+- 07:05 UTC: p2_bdq_down32_a3_ens_s2: 92.6 / 39.5. BDQ->3x5 px over 4 runs (seeds 0-2 a3, a5): 91.8-93.0 action,
+  37.5-40.8 identity (fixed map: 93.6 / 63.9). p7_diff_down8 (VP-HMDB51): 42.6 / 70.3. Queued stronger attacks on the
+  frozen x32 output: 24-epoch attackers (p6_bdq_down32_a3_ens_e24) and a 2.5 s view (p6_bdq_down32_a3_ens_stride4).
