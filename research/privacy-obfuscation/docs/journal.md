@@ -924,3 +924,5 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   54.8%): at alpha 5 the Charades game reliably fails (keeps more action and identity), unlike KTH where alpha 5 was on
   the curve. p2_bdq_down24_a1_ens: 90.8 / 46.2. UTD-MHAD at 1x2 px: BDQ -> x64 a1 51.2 / 58.7, fixed diff -> x64 62.9 / 55.4
   (chance 12.5): the person-action signature survives two numbers per frame, and learning does not help here.
+- 11:35 UTC: UTD-MHAD fixed filters keep everything within-action: diff->down32 97.7 / 99.5, down16 99.1 / 100 (raw 100/100).
+  Cross-action versions queued (p10_utd_down16, p10_kth_down16) next to the raw and learned-pool ones.
