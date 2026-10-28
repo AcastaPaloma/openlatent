@@ -857,3 +857,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 08:05 UTC: p2_bdq_down32_a3_ens_scenario_s1: 62.2 / 32.2 (seed 0: 66.2 / 31.2), replicates on the scenario split.
   p2_bdq_down32_a3_r3d (video adversary only): 92.8 / 42.1; frame-only 90.6 / 40.6; both 92-93 / 38-41. At x32 either
   adversary alone gives the gain. Queued DINOv2 and 24-epoch attackers on the frozen x16 output (most appearance left).
+- 08:20 UTC: p8_bdq_a5_ens (Charades): 7.8 / 54.8% (a1 5.8 / 19.6, a3 6.0 / 24.2, a0 12.6 / 88.8). Not monotone in
+  alpha: on Charades the game's outcome varies a lot from run to run (as plain BDQ did across seeds on KTH). Seeds
+  for a1 and a3 are running/queued (p8_bdq_a1_ens_s1, _s2; p8_bdq_a3_ens_s1, _s2) before any Charades claim.
