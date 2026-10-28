@@ -242,6 +242,9 @@ class PersonBox(nn.Module):
 
 COCO_LIMBS = [(5, 7), (7, 9), (6, 8), (8, 10), (5, 6), (5, 11), (6, 12), (11, 12), (11, 13), (13, 15), (12, 14), (14, 16),
               (0, 1), (0, 2), (1, 3), (2, 4), (0, 5), (0, 6)]
+# Canonical skeleton: (parent, child, length as a fraction of the drawing scale), root first. 17 = mid-hip, 18 = mid-shoulder.
+CANON_TREE = [(17, 11, .12), (17, 12, .12), (11, 13, .25), (13, 15, .25), (12, 14, .25), (14, 16, .25), (17, 18, .30),
+              (18, 5, .12), (18, 6, .12), (5, 7, .17), (7, 9, .15), (6, 8, .17), (8, 10, .15), (18, 0, .12)]
 
 
 class Pose(nn.Module):
@@ -251,14 +254,33 @@ class Pose(nn.Module):
     Fixed; no learned parameters of its own."""
     learned = False
 
-    def __init__(self, every=4, score=0.7, kp_score=2.0, det_size=320, width=1, max_people=None):
+    def __init__(self, every=4, score=0.7, kp_score=2.0, det_size=320, width=1, max_people=None, canonical=None):
         super().__init__()
         from torchvision.models.detection import KeypointRCNN_ResNet50_FPN_Weights, keypointrcnn_resnet50_fpn
         self.det = keypointrcnn_resnet50_fpn(weights=KeypointRCNN_ResNet50_FPN_Weights.COCO_V1, min_size=det_size, max_size=int(det_size * 1.6)).eval()
         self.det.requires_grad_(False)
         self.every, self.score, self.kp_score, self.width = every, score, kp_score, width
         self.max_people = max_people  # draw only the most confident people (1 removes how many people are in view)
-        self.register_buffer("limbs", torch.tensor(COCO_LIMBS), persistent=False)
+        # canonical=s: redraw every person with template limb lengths at a fixed size (s x frame height), keeping joint angles
+        # and the mid-hip position: removes height and body proportions, leaves posture, motion and trajectory
+        self.canonical = canonical
+        self.register_buffer("limbs", torch.tensor([(a, b) for a, b, _ in CANON_TREE] if canonical else COCO_LIMBS), persistent=False)
+
+    def canonicalize(self, kp, h):
+        """(17, 3) keypoints -> (19, 3) canonical skeleton (x, y, confidence); unreliable joints get confidence 0."""
+        ok = kp[:, 2] > self.kp_score
+        out = torch.zeros(19, 3, device=kp.device)
+        if not (ok[11] and ok[12]):
+            return out
+        src = torch.cat([kp[:, :2], ((kp[11, :2] + kp[12, :2]) / 2)[None], ((kp[5, :2] + kp[6, :2]) / 2)[None]])
+        good = torch.cat([ok, ok[[11]] & ok[[12]], ok[[5]] & ok[[6]]])
+        out[17, :2], out[17, 2] = src[17], 1e9
+        for a, b, length in CANON_TREE:
+            d = src[b] - src[a]
+            if good[a] and good[b] and out[a, 2] > 0 and d.norm() > 0:
+                out[b, :2] = out[a, :2] + d / d.norm() * length * self.canonical * h
+                out[b, 2] = 1e9
+        return out
 
     def train(self, mode=True):
         super().train(mode)
@@ -270,6 +292,8 @@ class Pose(nn.Module):
         canvas = torch.zeros(h * w, device=device)
         t = torch.linspace(0, 1, 32, device=device)
         for kp in people:
+            if self.canonical:
+                kp = self.canonicalize(kp, h)
             a, b = kp[self.limbs[:, 0]], kp[self.limbs[:, 1]]  # (L, 3)
             ok = (a[:, 2] > self.kp_score) & (b[:, 2] > self.kp_score)
             if not ok.any():
