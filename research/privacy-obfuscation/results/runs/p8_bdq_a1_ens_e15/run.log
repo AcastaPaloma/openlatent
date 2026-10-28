@@ -1,0 +1,62 @@
+[10:52:33] run p8_bdq_a1_ens_e15 @ 5d1b3ef: {"name": "p8_bdq_a1_ens_e15", "dataset": "charades", "seed": 0, "anonymizer": {"type": "bdq"}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}, "adv": {"epochs": 15, "alpha": 1.0, "restart_every": 3, "batch": 4, "repeats": 1, "utility": "r2p1d", "adversary": ["frame_r18", "r3d"], "lr_f": 0.003, "min_action": 10.0, "note_min_action": "40% floor was tuned for KTH (6 classes); 51/101/157-class tasks learn slower"}}
+[10:52:34] Charades identity split: 6352 train / 2720 test videos, 90 subjects
+[11:01:30]   [adv] epoch 1/15 action_acc 95.5 adv_acc 8.3 adv_entropy 3.98/4.50 sigma 3.55 per-adversary frame_r18=6.0 r3d=8.3 (533s)
+[11:08:22]   [adv] epoch 2/15 action_acc 95.8 adv_acc 12.9 adv_entropy 3.73/4.50 sigma 4.20 per-adversary frame_r18=9.7 r3d=12.9 (412s)
+[11:15:49]   [adv] epoch 3/15 action_acc 95.8 adv_acc 13.1 adv_entropy 3.68/4.50 sigma 6.06 per-adversary frame_r18=11.8 r3d=13.1 (447s)
+[11:15:50]   adversary restarted at epoch 3
+[11:25:01]   [adv] epoch 4/15 action_acc 95.8 adv_acc 4.7 adv_entropy 4.14/4.50 sigma 6.32 per-adversary frame_r18=4.7 r3d=3.7 (552s)
+[11:34:10]   [adv] epoch 5/15 action_acc 95.8 adv_acc 4.9 adv_entropy 4.09/4.50 sigma 6.57 per-adversary frame_r18=4.9 r3d=4.7 (548s)
+[11:43:16]   [adv] epoch 6/15 action_acc 95.8 adv_acc 6.3 adv_entropy 4.04/4.50 sigma 7.22 per-adversary frame_r18=6.3 r3d=5.1 (547s)
+[11:43:17]   adversary restarted at epoch 6
+[11:52:07]   [adv] epoch 7/15 action_acc 95.8 adv_acc 4.3 adv_entropy 4.19/4.50 sigma 7.87 per-adversary frame_r18=4.3 r3d=3.8 (530s)
+[12:01:18]   [adv] epoch 8/15 action_acc 95.8 adv_acc 5.2 adv_entropy 4.11/4.50 sigma 5.73 per-adversary frame_r18=5.2 r3d=4.0 (551s)
+[12:09:58]   [adv] epoch 9/15 action_acc 95.8 adv_acc 6.9 adv_entropy 3.97/4.50 sigma 3.86 per-adversary frame_r18=6.9 r3d=4.9 (519s)
+[12:09:59]   adversary restarted at epoch 9
+[12:19:17]   [adv] epoch 10/15 action_acc 95.8 adv_acc 5.3 adv_entropy 4.08/4.50 sigma 5.43 per-adversary frame_r18=4.7 r3d=5.3 (558s)
+[12:28:35]   [adv] epoch 11/15 action_acc 95.8 adv_acc 5.8 adv_entropy 4.04/4.50 sigma 6.46 per-adversary frame_r18=5.8 r3d=5.6 (558s)
+[12:37:55]   [adv] epoch 12/15 action_acc 95.8 adv_acc 5.5 adv_entropy 4.08/4.50 sigma 7.78 per-adversary frame_r18=5.5 r3d=5.3 (560s)
+[12:37:56]   adversary restarted at epoch 12
+[12:47:16]   [adv] epoch 13/15 action_acc 95.8 adv_acc 3.0 adv_entropy 4.24/4.50 sigma 6.93 per-adversary frame_r18=2.9 r3d=3.0 (560s)
+[12:56:37]   [adv] epoch 14/15 action_acc 95.8 adv_acc 3.7 adv_entropy 4.21/4.50 sigma 7.51 per-adversary frame_r18=3.7 r3d=3.3 (561s)
+[13:05:57]   [adv] epoch 15/15 action_acc 95.8 adv_acc 3.6 adv_entropy 4.21/4.50 sigma 7.41 per-adversary frame_r18=3.6 r3d=3.4 (560s)
+[13:13:50] materialised anonymised dataset (473s)
+[13:13:51] strong eval: training action r2p1d on anonymised data
+[13:15:24]   [action] epoch 1/10 loss 0.236 train_acc 92.8 (93s)
+[13:16:55]   [action] epoch 2/10 loss 0.161 train_acc 95.8 (91s)
+[13:18:25]   [action] epoch 3/10 loss 0.161 train_acc 95.8 (91s)
+[13:19:56]   [action] epoch 4/10 loss 0.161 train_acc 95.8 (91s)
+[13:21:26]   [action] epoch 5/10 loss 0.161 train_acc 95.8 (91s)
+[13:22:57]   [action] epoch 6/10 loss 0.161 train_acc 95.8 (91s)
+[13:24:27]   [action] epoch 7/10 loss 0.161 train_acc 95.8 (90s)
+[13:25:58]   [action] epoch 8/10 loss 0.160 train_acc 95.8 (91s)
+[13:27:29]   [action] epoch 9/10 loss 0.160 train_acc 95.8 (91s)
+[13:28:59]   [action] epoch 10/10 loss 0.160 train_acc 95.8 (91s)
+[13:29:46]   strong action/r2p1d: 4.39  (AP per attribute [8.6, 8.7, 6.1, 4.4, 3.2, 2.7, 7.1, 1.1, 10.0, 11.9, 1.1, 8.9, 2.6, 0.6, 3.6, 13.1, 7.9, 2.9, 4.6, 3.8, 8.9, 5.0, 4.3, 4.4, 1.3, 3.1, 9.0, 4.5, 4.8, 2.5, 3.9, 1.0, 6.3, 8.0, 4.9, 4.8, 2.0, 2.3, 2.5, 1.7, 4.0, 3.2, 2.5, 2.6, 1.9, 0.3, 1.3, 3.0, 1.6, 1.4, 1.4, 4.6, 4.7, 2.6, 1.8, 1.8, 2.1, 2.0, 0.8, 16.7, 0.7, 13.7, 6.7, 8.0, 0.3, 5.6, 1.4, 5.2, 1.9, 2.7, 5.9, 2.6, 4.0, 3.1, 1.5, 2.6, 5.8, 2.7, 2.6, 3.1, 2.0, 6.6, 3.0, 1.4, 2.3, 1.0, 1.0, 2.6, 3.4, 0.5, 0.8, 0.6, 3.9, 4.7, 2.4, 0.6, 7.7, 17.4, 4.4, 1.4, 1.7, 0.3, 3.7, 0.6, 3.5, 2.7, 14.4, 12.9, 3.5, 6.3, 7.8, 0.7, 6.0, 9.0, 2.9, 5.2, 3.1, 2.0, 10.4, 6.5, 5.4, 1.6, 2.0, 7.9, 1.7, 5.1, 4.0, 6.7, 4.6, 1.8, 3.9, 0.6, 4.5, 1.7, 4.0, 3.7, 0.7, 3.4, 1.0, 2.6, 0.9, 7.5, 2.0, 2.5, 2.6, 4.2, 3.1, 3.6, 4.3, 8.3, 5.3, 11.9, 16.3, 7.7, 15.8, 4.9, 11.9], F1 0.0)
+[13:30:34]   weak action/r2p1d: 4.39
+[13:30:35] strong eval: training person frame_r50 on anonymised data
+[13:31:50]   [person] epoch 1/10 loss 4.317 train_acc 3.4 (75s)
+[13:32:54]   [person] epoch 2/10 loss 4.247 train_acc 3.7 (64s)
+[13:33:42]   [person] epoch 3/10 loss 4.245 train_acc 3.4 (48s)
+[13:34:30]   [person] epoch 4/10 loss 4.240 train_acc 3.4 (48s)
+[13:35:18]   [person] epoch 5/10 loss 4.239 train_acc 3.3 (48s)
+[13:36:05]   [person] epoch 6/10 loss 4.236 train_acc 3.1 (47s)
+[13:36:51]   [person] epoch 7/10 loss 4.233 train_acc 3.6 (46s)
+[13:37:36]   [person] epoch 8/10 loss 4.231 train_acc 3.4 (45s)
+[13:38:22]   [person] epoch 9/10 loss 4.228 train_acc 3.5 (45s)
+[13:39:07]   [person] epoch 10/10 loss 4.226 train_acc 3.2 (46s)
+[13:40:06]   strong person/frame_r50: 3.57
+[13:41:23]   weak person/frame_r50: 0.59
+[13:41:23] strong eval: training person r3d on anonymised data
+[13:42:18]   [person] epoch 1/10 loss 4.316 train_acc 3.3 (54s)
+[13:43:10]   [person] epoch 2/10 loss 4.264 train_acc 3.3 (52s)
+[13:44:02]   [person] epoch 3/10 loss 4.262 train_acc 3.0 (51s)
+[13:44:53]   [person] epoch 4/10 loss 4.255 train_acc 3.4 (51s)
+[13:45:46]   [person] epoch 5/10 loss 4.248 train_acc 3.7 (52s)
+[13:46:37]   [person] epoch 6/10 loss 4.242 train_acc 3.3 (51s)
+[13:47:29]   [person] epoch 7/10 loss 4.236 train_acc 3.5 (52s)
+[13:48:21]   [person] epoch 8/10 loss 4.232 train_acc 3.5 (51s)
+[13:49:12]   [person] epoch 9/10 loss 4.228 train_acc 3.7 (51s)
+[13:50:04]   [person] epoch 10/10 loss 4.226 train_acc 3.7 (52s)
+[13:50:41]   strong person/r3d: 3.64
+[13:51:19]   weak person/r3d: 1.32
+[13:51:19] DONE p8_bdq_a1_ens_e15: action 4.39  privacy top1 (strong, best attacker) 3.64  (178.8 min)

@@ -976,3 +976,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   on the scenario split, not unseen conditions + unseen actions as the 12:50 entry said. Added priv_split
   "xaction_heldout" (train rows of seen actions -> test rows of held-out actions, i.e. unseen scenario AND unseen actions)
   and queued it for raw, fixed x16, learned x32 and learned x64 (p10_*_scenario_xh).
+- 13:55 UTC: p10_kth_bdq_a7_ens (plain BDQ, cross-action): 43.2 (within 62.9); learned x16 at similar action: 38.5.
+  p2_bdq_down16_a5_ens_s1 94.0 / 58.7. p2_bdq_down32_a1_ens_scenario_s1 71.0 / 30.7 (seed 0 55.0 / 22.0).
+  p6_p8_bdq_a1_ens_e24 (24-epoch attackers on the frozen Charades a1 output): 5.9 / 23.4 (12 epochs: 19.6).
+  p8_bdq_a1_ens_e15 collapsed to the floors (4.4 / 3.6); it started before the guard fix.
+  Bug fixed: two jobs on one VM raced on the same frozen-attacker cache .tmp file (p10_kth_diff_down32_scenario_xh
+  failed); temp files are now per-process; requeued.

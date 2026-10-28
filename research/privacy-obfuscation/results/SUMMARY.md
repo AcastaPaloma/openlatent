@@ -19,10 +19,10 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | fixed motion map x64 (1x2 px) | 70.6 ± 0.6 | 11.5 ± 0.8 | 13.9 | 3 |
 | fixed motion map x120 (1 px) | 54.2 | 6.9 | – | 1 |
 | plain BDQ a5 ens (4 seeds) | 89.0 ± 3.7 | 50.0 ± 8.7 | – | 4 |
-| plain BDQ a7 ens (3 seeds) | 85.8 ± 13.0 | 53.0 ± 16.7 | – | 3 |
+| plain BDQ a7 ens (3 seeds) | 85.8 ± 13.0 | 53.0 ± 16.7 | 43.2 | 3 |
 | plain BDQ a5 ens + adversary warm-up | 70.2 ± 8.8 | 26.9 ± 3.3 | 14.4 | 2 |
 | VAE latent edit (best) | 96.2 | 75.6 | – | 1 |
-| **learned pool: BDQ -> x16** | 95.4 ± 0.9 | 57.5 ± 2.6 | 38.5 | 4 |
+| **learned pool: BDQ -> x16** | 95.1 ± 1.0 | 57.8 ± 2.3 | 38.5 | 5 |
 | **learned pool: BDQ -> x24** | 92.4 ± 1.2 | 49.9 ± 3.6 | 33.1 | 3 |
 | **learned pool: BDQ -> x32** | 91.9 ± 0.9 | 40.0 ± 6.0 | 23.5 ± 3.4 | 9 |
 | learned pool x32, no adversary (a0) | 89.5 | 53.2 | – | 1 |
