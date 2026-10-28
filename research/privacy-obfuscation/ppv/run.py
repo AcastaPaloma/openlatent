@@ -231,7 +231,8 @@ def main(cfg_path):
                                    frames_per_clip=ev["frames_per_clip"] if arch.startswith("frame") else None, priv_kind=pk, log=log)
             r = train.evaluate(m, dte, task, len(rte), priv_kind=pk)
             strong[key], details[f"strong/{key}"] = r["main"], r
-            log(f"  strong {key}: {r['main']:.2f}" + (f"  (AP per attribute {[round(a, 1) for a in r['ap']]}, F1 {r['f1']:.1f})" if "ap" in r else ""))
+            log(f"  strong {key}: {r['main']:.2f}" + (f"  (AP per attribute {[round(a, 1) for a in r['ap']]}, F1 {r['f1']:.1f})" if "ap" in r else "")
+                + (f"  action-conditional cMAP {r['cond_main']:.2f} (floor {r['cond_floor']:.1f})" if "cond_main" in r else ""))
             del m
             if ev["clean_attacker"]:
                 mc = clean_model(arch, task, n_cls, rtr, frames, ev, tag, pk, stride, log)
@@ -243,6 +244,10 @@ def main(cfg_path):
 
     result["strong"], result["weak"], result["details"] = strong, weak, details
     result["action_top1"] = max([v for k, v in strong.items() if k.startswith("action/")], default=None)  # None: attack-only
+    conds = [d["cond_main"] for k, d in details.items() if k.startswith("strong/") and "cond_main" in d]
+    if conds:  # best attacker on attributes beyond what the action implies (VP-UCF101 / VP-HMDB51)
+        result["privacy_cond"] = max(conds)
+        result["privacy_cond_floor"] = next(d["cond_floor"] for k, d in details.items() if "cond_floor" in d)
     result["action_metric"] = "map" if D.get("act_kind") == "multilabel" else "top1"  # Charades: mAP over 157 actions
     result["privacy_main"] = max(v for k, v in strong.items() if not k.startswith("action/"))
     if pk == "multiclass":

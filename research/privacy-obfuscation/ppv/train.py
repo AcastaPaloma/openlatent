@@ -141,8 +141,30 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
         pred = (agg / dl.dataset.n_test > 0.5).float()
         tp = (pred * labels).sum(0)
         f1 = (2 * tp / (pred.sum(0) + labels.sum(0)).clamp(min=1)).mean().item()
-        return {"main": 100 * float(np.nanmean(aps)), "ap": [100 * a for a in aps], "f1": 100 * f1,
-                "prevalence": [100 * float(v) for v in lab.mean(0)]}
+        out = {"main": 100 * float(np.nanmean(aps)), "ap": [100 * a for a in aps], "f1": 100 * f1,
+               "prevalence": [100 * float(v) for v in lab.mean(0)]}
+        if kind != task and (actions > 0).any():  # privacy attributes with one action per clip (VP-UCF101 / VP-HMDB51)
+            # Attribute labels are largely implied by the action (an attacker that only knows the action class reaches
+            # ~76-78 cMAP on VP-UCF101). The action-conditional cMAP asks what the video reveals beyond its action: AP of
+            # each attribute within each action class where it varies, averaged; its blind floor is the mean within-class
+            # prevalence over the same (class, attribute) cells.
+            a_np = actions.numpy()
+            cond, floor = [], []
+            for j in range(s.shape[1]):
+                cj, fj = [], []
+                for a in np.unique(a_np):
+                    sel = a_np == a
+                    yj = lab[sel, j]
+                    if 0 < yj.sum() < len(yj):
+                        cj.append(average_precision(s[sel, j], yj))
+                        fj.append(float(yj.mean()))
+                if cj:
+                    cond.append(float(np.mean(cj)))
+                    floor.append(float(np.mean(fj)))
+            if cond:
+                out.update(cond_main=100 * float(np.mean(cond)), cond_ap=[100 * c for c in cond],
+                           cond_floor=100 * float(np.mean(floor)))
+        return out
     correct = (agg.argmax(1) == labels).float()
     # per-action accuracy: separates e.g. identity from locomotion clips (person crosses the
     # frame) from stationary ones (boxing, hand gestures), where scene and person mix differently
