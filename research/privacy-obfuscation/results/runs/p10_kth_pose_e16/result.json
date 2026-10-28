@@ -1,0 +1,72 @@
+{
+ "name": "p10_kth_pose_e16",
+ "config": {
+  "name": "p10_kth_pose_e16",
+  "dataset": "kth",
+  "seed": 0,
+  "anonymizer": {
+   "type": "pose",
+   "every": 16,
+   "width": 2
+  },
+  "priv_split": "xaction",
+  "eval": {
+   "action": []
+  },
+  "split": "ilic",
+  "note": "stick figures redrawn only every 16th frame (held in between): removes fine motion timing, keeps posture"
+ },
+ "git": "49f924c",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 20.42606472969055,
+  "person/r3d": 29.072681069374084
+ },
+ "weak": {
+  "person/frame_r50": 4.260651767253876,
+  "person/r3d": 3.8847118616104126
+ },
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 20.42606472969055,
+   "by_action": {
+    "2": 32.16080367565155,
+    "5": 8.749999850988388
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 4.260651767253876,
+   "by_action": {
+    "2": 4.020100459456444,
+    "5": 4.500000178813934
+   }
+  },
+  "strong/person/r3d": {
+   "main": 29.072681069374084,
+   "by_action": {
+    "2": 39.949747920036316,
+    "5": 18.250000476837158
+   }
+  },
+  "weak/person/r3d": {
+   "main": 3.8847118616104126,
+   "by_action": {
+    "2": 3.7688441574573517,
+    "5": 3.999999910593033
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 29.072681069374084,
+ "privacy_top1": 29.072681069374084,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 18.032807838916778
+}

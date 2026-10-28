@@ -32,6 +32,8 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | **learned pool: BDQ -> x120 (1 px)** | 76.3 ± 0.6 | 8.4 ± 1.0 | 5.0 | 3 |
 | learned pool x120, no adversary (a0) | 76.5 ± 1.6 | 7.9 ± 0.7 | – | 2 |
 | 3D U-Net -> x64 (a0) | 66.1 | 9.9 | – | 1 |
+| pose: stick figures (Keypoint R-CNN) | 97.8 | 53.3 | 27.4 | 1 |
+| pose, redrawn every 16 frames | 93.3 | 38.1 | 29.1 | 1 |
 
 Chance: action 16.7, identity 4.0. Controls: brightness only (one number per frame) 22.4 identity; all-black 16.7 / 4.0; shuffled training labels: identity at chance for every attacker.
 
@@ -49,10 +51,14 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | fixed motion map x32 | 58.0 | 42.7 | 40.5 | 1 |
 | fixed motion map x64 | 23.3 | 9.5 | – | 1 |
 | plain BDQ a3 | 67.0 ± 7.5 | 41.1 ± 11.2 | – | 4 |
-| learned pool x16 | 74.9 ± 1.2 | 37.2 ± 0.2 | 17.5 | 2 |
-| learned pool x24 | 66.7 | 28.8 | – | 1 |
-| learned pool x32 | 61.1 ± 4.6 | 28.4 ± 4.6 | 12.0 | 3 |
-| learned pool x64 | 51.6 ± 0.7 | 12.8 ± 0.9 | 7.5 | 3 |
+| plain BDQ a7 (3 seeds) | 60.3 ± 5.8 | 31.4 ± 9.6 | 11.2 ± 4.1 | 3 |
+| learned pool x16 | 74.6 ± 1.1 | 37.6 ± 0.6 | 17.3 ± 0.6 | 3 |
+| learned pool x24 | 66.7 | 28.8 | 20.0 | 1 |
+| learned pool x32 | 62.4 ± 4.6 | 28.7 ± 4.0 | 12.0 ± 0.0 | 4 |
+| learned pool x48 | 56.8 | 26.0 | 16.0 | 1 |
+| learned pool x64 | 52.0 ± 0.8 | 13.3 ± 1.2 | 8.3 ± 0.8 | 4 |
+| learned pool x120 | 45.7 | 10.3 | 4.0 | 1 |
+| **pose: stick figures** | 90.8 | 38.0 | 21.5 | 1 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
 

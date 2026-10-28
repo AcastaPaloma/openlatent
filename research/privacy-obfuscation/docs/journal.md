@@ -1221,3 +1221,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   VP-UCF101 head-and-shoulders blur: 85.4 / 76.0 / 66.4 (raw 91.8 / 77.1 / 67.1): face region holds nothing beyond the action.
   Queued the barest structural control, one canonical skeleton per frame on HMDB (no appearance, proportions or count), and the
   canonical-pose hardest test on KTH.
+- 21:05 UTC: KTH pose ablations (Ilic; within actions / unseen actions):
+      stick figures                 97.8 action / 53.3 / 27.4
+      redrawn every 16 frames       93.3 / 38.1 / 29.1   (clips are 16 frames: one static posture per clip, no motion)
+      canonical skeleton            pending / 21.4 across actions
+  Motion timing carries within-action identity (53 -> 38) but not cross-action identity (27 -> 29); body proportions carry
+  some cross-action identity (27.4 -> 21.4 canonical). A single static posture per clip still gives 93.3 action.
+  KTH scenario split: stick figures 90.8 action / 38.0 identity / 21.5 hardest test, vs the learned pool x16 74.6 / 37.6 / 17.3
+  (3 seeds). Same identity, +16 action; pose beats raw video on action here (88.7) because it discards the unseen scenario.
+  This is the best KTH scenario trade-off found. Raw UCF attacker seed 1: 67.0 conditional (seed 0 67.1).
+  Added pose rows and the new seeds / x48 / x120 / BDQ a7 rows to SUMMARY.md tables.
+  Queued: seed replicates of KTH pose (Ilic, scenario), one posture per clip on the scenario split (+ hardest test),
+  canonical + one posture per clip (Ilic), and one posture per clip on VP-HMDB51.

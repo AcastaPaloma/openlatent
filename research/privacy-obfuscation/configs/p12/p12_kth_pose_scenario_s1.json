@@ -1,0 +1,12 @@
+{
+ "name": "p12_kth_pose_scenario_s1",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 1,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2
+ },
+ "note": "seed replicate (attackers and action model) of KTH pose on the scenario split"
+}

@@ -1,0 +1,16 @@
+{
+ "name": "p12_hmdb_pose_e16",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 16,
+  "width": 2
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16
+ },
+ "note": "one posture per clip on VP-HMDB51: is the beyond-action signal in motion or posture?"
+}

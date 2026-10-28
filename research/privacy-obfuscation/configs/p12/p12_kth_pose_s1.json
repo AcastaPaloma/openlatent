@@ -1,0 +1,12 @@
+{
+ "name": "p12_kth_pose_s1",
+ "dataset": "kth",
+ "seed": 1,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2
+ },
+ "split": "ilic",
+ "note": "seed replicate of KTH pose on the Ilic split"
+}

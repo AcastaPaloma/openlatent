@@ -1,0 +1,12 @@
+{
+ "name": "p12_kth_pose_e16_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 16,
+  "width": 2
+ },
+ "note": "one stick-figure posture per 16-frame clip, no motion, scenario split"
+}

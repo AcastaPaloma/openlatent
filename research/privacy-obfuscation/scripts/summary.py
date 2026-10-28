@@ -72,6 +72,9 @@ kth = [
     ("**learned pool: BDQ -> x120 (1 px)**", ["p2_bdq_down120_a1_ens", "p2_bdq_down120_a1_ens_s1", "p2_bdq_down120_a1_ens_s2"], ["p10_kth_bdq_down120_a1_ens"]),
     ("learned pool x120, no adversary (a0)", ["p2_bdq_down120_a0", "p2_bdq_down120_a0_s1"], []),
     ("3D U-Net -> x64 (a0)", ["p2_unet_down64_a0"], []),
+    ("pose: stick figures (Keypoint R-CNN)", ["p12_kth_pose"], ["p10_kth_pose"]),
+    ("pose, redrawn every 16 frames", ["p12_kth_pose_e16"], ["p10_kth_pose_e16"]),
+    ("pose, canonical skeleton (fixed size and proportions)", ["p12_kth_pose_canon"], ["p10_kth_pose_canon"]),
 ]
 for label, ns, xs in kth:
     g = agg(ns)
@@ -92,10 +95,19 @@ scen = [
     ("fixed motion map x32", ["p1_diff_down32_scenario"], ["p10_kth_diff_down32_scenario_xh"]),
     ("fixed motion map x64", ["p1_diff_down64_scenario"], []),
     ("plain BDQ a3", ["p2_bdq_a3_scenario", "p2_bdq_a3_scenario_s1", "p2_bdq_a3_scenario_s2", "p2_bdq_a3_scenario_s3"], []),
-    ("learned pool x16", ["p2_bdq_down16_a3_ens_scenario", "p2_bdq_down16_a3_ens_scenario_s1"], ["p10_kth_bdq_down16_a3_ens_scenario_xh"]),
-    ("learned pool x24", ["p2_bdq_down24_a3_ens_scenario"], []),
-    ("learned pool x32", ["p2_bdq_down32_a3_ens_scenario", "p2_bdq_down32_a3_ens_scenario_s1", "p2_bdq_down32_a1_ens_scenario"], ["p10_kth_bdq_down32_a3_ens_scenario_xh"]),
-    ("learned pool x64", ["p2_bdq_down64_a1_ens_scenario", "p2_bdq_down64_a1_ens_scenario_s1", "p2_bdq_down64_a0_scenario"], ["p10_kth_bdq_down64_a1_ens_scenario_xh"]),
+    ("plain BDQ a7 (3 seeds)", ["p2_bdq_a7_ens_scenario", "p2_bdq_a7_ens_scenario_s1", "p2_bdq_a7_ens_scenario_s2"],
+     ["p10_kth_bdq_a7_ens_scenario_xh", "p10_kth_bdq_a7_ens_scenario_s1_xh", "p10_kth_bdq_a7_ens_scenario_s2_xh"]),
+    ("learned pool x16", ["p2_bdq_down16_a3_ens_scenario", "p2_bdq_down16_a3_ens_scenario_s1", "p2_bdq_down16_a3_ens_scenario_s2"],
+     ["p10_kth_bdq_down16_a3_ens_scenario_xh", "p10_kth_bdq_down16_a3_ens_scenario_s1_xh", "p10_kth_bdq_down16_a3_ens_scenario_s2_xh"]),
+    ("learned pool x24", ["p2_bdq_down24_a3_ens_scenario"], ["p10_kth_bdq_down24_a3_ens_scenario_xh"]),
+    ("learned pool x32", ["p2_bdq_down32_a3_ens_scenario", "p2_bdq_down32_a3_ens_scenario_s1", "p2_bdq_down32_a3_ens_scenario_s2", "p2_bdq_down32_a1_ens_scenario"],
+     ["p10_kth_bdq_down32_a3_ens_scenario_xh", "p10_kth_bdq_down32_a3_ens_scenario_s1_xh"]),
+    ("learned pool x48", ["p2_bdq_down48_a3_ens_scenario"], ["p10_kth_bdq_down48_a3_ens_scenario_xh"]),
+    ("learned pool x64", ["p2_bdq_down64_a1_ens_scenario", "p2_bdq_down64_a1_ens_scenario_s1", "p2_bdq_down64_a1_ens_scenario_s2", "p2_bdq_down64_a0_scenario"],
+     ["p10_kth_bdq_down64_a1_ens_scenario_xh", "p10_kth_bdq_down64_a1_ens_scenario_s1_xh", "p10_kth_bdq_down64_a1_ens_scenario_s2_xh"]),
+    ("learned pool x120", ["p2_bdq_down120_a1_ens_scenario"], ["p10_kth_bdq_down120_a1_ens_scenario_xh"]),
+    ("**pose: stick figures**", ["p12_kth_pose_scenario"], ["p10_kth_pose_scenario_xh"]),
+    ("pose, canonical skeleton", ["p12_kth_pose_canon_scenario"], ["p10_kth_pose_canon_scenario_xh"]),
 ]
 for label, ns, xs in scen:
     g = agg(ns)
