@@ -961,3 +961,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   BDQ->x64 6.0 (within 12.5). UTD-MHAD BDQ->x32 cross-action 84.0 (within 95.3; session cue). p2_bdq_down32_a1_ens_s2
   93.0 / 39.3 (a1 seeds: 32.4, 41.6, 39.3). p2_bdq_down48_a3_ens_s1 87.5 / 24.7 (seed 0 87.3 / 25.3). p9_blur8 97.7 / 100.
 - Queued the hardest test: scenario split + cross-action identity (raw, fixed x16, learned x32, learned x64).
+- 13:05 UTC: cross-action identity, fixed motion maps: x16 88.2 (within 84.6), x32 65.9 (63.9), x48 35.7 (37.0), x64 13.9 (11.0).
+  Fixed maps leak the same identity across actions as within; learned pools drop to 26.9 / 17.0 / 6.0 / 4.9 at
+  x32 / x48 / x64 / 1 px. Queued x24 for both families and a second-seed x32 cross-action test.
