@@ -860,3 +860,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 08:20 UTC: p8_bdq_a5_ens (Charades): 7.8 / 54.8% (a1 5.8 / 19.6, a3 6.0 / 24.2, a0 12.6 / 88.8). Not monotone in
   alpha: on Charades the game's outcome varies a lot from run to run (as plain BDQ did across seeds on KTH). Seeds
   for a1 and a3 are running/queued (p8_bdq_a1_ens_s1, _s2; p8_bdq_a3_ens_s1, _s2) before any Charades claim.
+- 08:50 UTC: p2_bdq_down120_a1_ens_s2: 77.1 / 7.2 (BDQ -> one number per frame, 3 seeds: 75.8-77.1 / 7.2-9.5).
+  p8_bdq_a3_ens_s1 (Charades): 5.8 / 21.1% (seed 0: 6.0 / 24.2). Charades BDQ a3 replicates; a5's 54.8% looks like a
+  failed run of the game; p8_bdq_a5_ens_s1 queued to check. p2_bdq_down24_a3_ens_s1 queued.
