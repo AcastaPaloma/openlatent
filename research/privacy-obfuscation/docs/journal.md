@@ -730,3 +730,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   nothing at 1-2 numbers per frame. Tests: p2_bdq_down32_a0 (does the 93.0 / 40.8 point also hold without the
   adversary?), p2_unet_down64_a0 and p2_unet_down64_a1_ens (a 3D U-Net encoder before the 1x2 bottleneck: more
   action, or does a stronger encoder pack gait into the two numbers?).
+
+### 2026-10-28 03:30 UTC: BDQ->1x2 px holds across six variants; VP-UCF101 attributes don't move
+- BDQ -> 1x2 px, KTH Ilic (action / identity): a1 seed 0 82.1/12.5, seed 1 82.6/13.4, seed 2 76.9/9.9; a3 82.9/12.5;
+  a5 80.9/10.4; a0 (no adversary) 81.8/10.7; 24-epoch attackers 82.4/14.5. Mean ~81 / 12 (chance 16.7 / 4.0).
+- p3_bdq_down16_a3_ens (VP-UCF101, learned before a 7x9 px pool): 62.0 / 71.3 cMAP vs fixed diff->down16 63.7 / 71.0,
+  down16 53.7 / 70.3. p3_personbox_blur_down16: 48.6 / 70.4. On VP-UCF101 nothing moves the attributes far from
+  ~70 cMAP (floor 58.7, raw 76.6) except destroying action: the attributes are dominated by face/gender, which are
+  present in ~90% of videos and readable from coarse colour.
+- p7_blur8 (VP-HMDB51): 32.0 / 68.3 cMAP (raw pending).
+- Next H38 controls: p2_bdq_down64_a0_s1, p2_bdq_down64_a0_scenario, p2_bdq_down120_a0.
