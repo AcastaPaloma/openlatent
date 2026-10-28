@@ -1,0 +1,102 @@
+{
+ "name": "p10_utd_pose",
+ "config": {
+  "name": "p10_utd_pose",
+  "dataset": "utdmhad",
+  "seed": 0,
+  "anonymizer": {
+   "type": "pose",
+   "every": 4,
+   "width": 2
+  },
+  "priv_split": "xaction",
+  "eval": {
+   "epochs": 12,
+   "repeats": 4,
+   "batch": 16,
+   "action": []
+  },
+  "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"
+ },
+ "git": "1e2e25e",
+ "dataset": "utdmhad",
+ "split": "s1",
+ "n_train": 648,
+ "n_test": 213,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 90.59233665466309,
+  "person/r3d": 96.51567935943604
+ },
+ "weak": {
+  "person/frame_r50": 12.543554604053497,
+  "person/r3d": 9.756097197532654
+ },
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 90.59233665466309,
+   "by_action": {
+    "2": 100.0,
+    "5": 100.0,
+    "8": 100.0,
+    "11": 59.375,
+    "14": 96.875,
+    "17": 100.0,
+    "20": 84.375,
+    "23": 96.875,
+    "26": 77.4193525314331
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 12.543554604053497,
+   "by_action": {
+    "2": 12.5,
+    "5": 12.5,
+    "8": 12.5,
+    "11": 12.5,
+    "14": 12.5,
+    "17": 12.5,
+    "20": 12.5,
+    "23": 12.5,
+    "26": 12.903225421905518
+   }
+  },
+  "strong/person/r3d": {
+   "main": 96.51567935943604,
+   "by_action": {
+    "2": 100.0,
+    "5": 100.0,
+    "8": 100.0,
+    "11": 71.875,
+    "14": 100.0,
+    "17": 100.0,
+    "20": 96.875,
+    "23": 100.0,
+    "26": 100.0
+   }
+  },
+  "weak/person/r3d": {
+   "main": 9.756097197532654,
+   "by_action": {
+    "2": 9.375,
+    "5": 3.125,
+    "8": 3.125,
+    "11": 12.5,
+    "14": 6.25,
+    "17": 12.5,
+    "20": 9.375,
+    "23": 18.75,
+    "26": 12.903225421905518
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 96.51567935943604,
+ "privacy_top1": 96.51567935943604,
+ "chance": {
+  "action": 3.7037037037037037,
+  "person": 12.5
+ },
+ "minutes": 10.745715177059173
+}

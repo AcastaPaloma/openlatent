@@ -60,6 +60,7 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | learned pool x64 | 52.0 ± 0.8 | 13.3 ± 1.2 | 8.3 ± 0.8 | 4 |
 | learned pool x120 | 45.7 | 10.3 | 4.0 | 1 |
 | **pose: stick figures** | 90.8 | 38.0 | 21.5 | 1 |
+| pose, canonical skeleton | 90.5 | 44.2 | 16.5 | 1 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
 

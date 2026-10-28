@@ -1244,3 +1244,17 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Queued pose and canonical pose on UTD-MHAD (within and across actions): every obfuscator so far kept UTD identity at 84-100
   through the per-session colour cue (mean colour alone 72.8); stick figures remove colour and background entirely.
   Also canonical + one posture per clip on the KTH scenario split and its hardest test.
+- 22:15 UTC: pose results (a long gap between ticks left 6 VMs idle for a while; refilled now).
+  KTH Ilic (action / identity):  stick figures 97.8 / 53.3, seed 1 97.8 / 53.5  |  canonical 97.3 / 45.2  |  one posture per clip
+  93.3 / 38.1  |  canonical + one posture per clip 91.5 / 29.1. The last beats the learned x32 pool (~92 / ~40) and matches x48's
+  identity (~25) with +4 action.
+  KTH scenario (action / identity / hardest test): stick figures 90.8 / 38.0 / 21.5, seed 1 90.2 / 37.5  |  canonical 90.5 / 44.2
+  / 16.5  |  one posture 84.8 / 31.7 / 17.0  |  canonical + one posture 81.7 / 27.5 / 13.5. Learned x32 pool: 62.4 / 28.7 / 12.0.
+  Canonical + one posture gives ~19 more action at the same identity. Canonical alone raises scenario identity (44.2 vs 38.0):
+  fixing the drawing scale removes the zoom differences between scenarios, which helps attackers generalise across them.
+  UTD-MHAD: stick figures 98.1 / 100 (across actions 96.5), canonical 97.7 / 99.5 (86.4): with 8 people, body and motion
+  identify everyone even without the session colour cue. UTD is not a useful privacy benchmark for any obfuscator we have.
+  VP-HMDB51: canonical pose 29.1 action / 65.5 conditional (relationship +3.8, plain pose +10.3): person size (near vs far, big
+  vs small figures) carried most of the relationship signal. One posture per clip: 26.1 / 66.3.
+  Queued: seed replicates of canonical + one posture (Ilic, scenario), its cross-action test, every-8 variant (Ilic, scenario,
+  hardest), a 4x downsample after it (Ilic, scenario, hardest), 24-epoch attackers and DINOv2 attackers on it.

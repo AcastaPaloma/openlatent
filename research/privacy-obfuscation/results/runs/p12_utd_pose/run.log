@@ -1,0 +1,50 @@
+[21:22:19] run p12_utd_pose @ 1e2e25e: {"name": "p12_utd_pose", "dataset": "utdmhad", "seed": 0, "anonymizer": {"type": "pose", "every": 4, "width": 2}, "eval": {"epochs": 12, "repeats": 4, "batch": 16}, "note": "stick figures on UTD-MHAD: removes the session colour cue that every other obfuscator kept"}
+[21:22:19] UTD-MHAD: 648 train / 213 test videos, 8 subjects
+[21:27:17] materialised anonymised dataset (297s)
+[21:27:18] strong eval: training action r2p1d on anonymised data
+[21:27:42]   [action] epoch 1/12 loss 2.134 train_acc 38.0 (24s)
+[21:28:04]   [action] epoch 2/12 loss 0.984 train_acc 68.8 (22s)
+[21:28:26]   [action] epoch 3/12 loss 0.634 train_acc 80.6 (22s)
+[21:28:48]   [action] epoch 4/12 loss 0.430 train_acc 87.1 (22s)
+[21:29:10]   [action] epoch 5/12 loss 0.326 train_acc 90.0 (22s)
+[21:29:32]   [action] epoch 6/12 loss 0.198 train_acc 94.2 (22s)
+[21:29:54]   [action] epoch 7/12 loss 0.159 train_acc 95.1 (22s)
+[21:30:16]   [action] epoch 8/12 loss 0.103 train_acc 97.1 (22s)
+[21:30:38]   [action] epoch 9/12 loss 0.071 train_acc 98.3 (22s)
+[21:31:00]   [action] epoch 10/12 loss 0.059 train_acc 98.5 (22s)
+[21:31:22]   [action] epoch 11/12 loss 0.038 train_acc 99.3 (22s)
+[21:31:44]   [action] epoch 12/12 loss 0.036 train_acc 99.3 (22s)
+[21:31:49]   strong action/r2p1d: 98.12
+[21:31:54]   weak action/r2p1d: 8.45
+[21:31:55] strong eval: training person frame_r50 on anonymised data
+[21:32:13]   [person] epoch 1/12 loss 1.736 train_acc 39.4 (19s)
+[21:32:31]   [person] epoch 2/12 loss 0.505 train_acc 86.1 (17s)
+[21:32:48]   [person] epoch 3/12 loss 0.243 train_acc 93.1 (17s)
+[21:33:05]   [person] epoch 4/12 loss 0.132 train_acc 95.8 (17s)
+[21:33:23]   [person] epoch 5/12 loss 0.081 train_acc 98.0 (17s)
+[21:33:40]   [person] epoch 6/12 loss 0.064 train_acc 98.3 (17s)
+[21:33:57]   [person] epoch 7/12 loss 0.040 train_acc 99.2 (17s)
+[21:34:15]   [person] epoch 8/12 loss 0.032 train_acc 99.3 (17s)
+[21:34:32]   [person] epoch 9/12 loss 0.020 train_acc 99.7 (17s)
+[21:34:49]   [person] epoch 10/12 loss 0.018 train_acc 99.7 (17s)
+[21:35:07]   [person] epoch 11/12 loss 0.015 train_acc 99.8 (17s)
+[21:35:24]   [person] epoch 12/12 loss 0.017 train_acc 99.7 (17s)
+[21:35:30]   strong person/frame_r50: 100.00
+[21:35:35]   weak person/frame_r50: 12.21
+[21:35:36] strong eval: training person r3d on anonymised data
+[21:35:50]   [person] epoch 1/12 loss 0.705 train_acc 77.4 (14s)
+[21:36:02]   [person] epoch 2/12 loss 0.179 train_acc 94.9 (12s)
+[21:36:14]   [person] epoch 3/12 loss 0.098 train_acc 97.3 (12s)
+[21:36:27]   [person] epoch 4/12 loss 0.060 train_acc 98.2 (12s)
+[21:36:39]   [person] epoch 5/12 loss 0.030 train_acc 99.1 (12s)
+[21:36:51]   [person] epoch 6/12 loss 0.023 train_acc 99.4 (12s)
+[21:37:04]   [person] epoch 7/12 loss 0.012 train_acc 99.7 (12s)
+[21:37:16]   [person] epoch 8/12 loss 0.011 train_acc 99.8 (12s)
+[21:37:28]   [person] epoch 9/12 loss 0.004 train_acc 99.9 (12s)
+[21:37:41]   [person] epoch 10/12 loss 0.005 train_acc 99.9 (12s)
+[21:37:53]   [person] epoch 11/12 loss 0.003 train_acc 100.0 (12s)
+[21:38:05]   [person] epoch 12/12 loss 0.003 train_acc 100.0 (12s)
+[21:38:09]   strong person/r3d: 100.00
+[21:38:12]   weak person/r3d: 14.08
+[21:38:12] DONE p12_utd_pose: action 98.12  privacy top1 (strong, best attacker) 100.00  (15.9 min)
+[21:38:12] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_utd_pose

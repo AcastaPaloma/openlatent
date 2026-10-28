@@ -1,0 +1,50 @@
+[20:38:59] run p12_kth_pose_canon_scenario @ f5c1127: {"name": "p12_kth_pose_canon_scenario", "dataset": "kth", "split": "scenario", "seed": 0, "anonymizer": {"type": "pose", "every": 4, "width": 2, "canonical": 0.5}, "note": "stick figures on the scenario split (action + identity), comparable to the scenario learned pools"}
+[20:39:00] kth split=scenario: 1791 train / 600 test subsequences, 599 videos
+[21:13:15] materialised anonymised dataset (2053s)
+[21:13:16] strong eval: training action r2p1d on anonymised data
+[21:14:05]   [action] epoch 1/12 loss 0.419 train_acc 86.2 (50s)
+[21:14:53]   [action] epoch 2/12 loss 0.155 train_acc 94.3 (48s)
+[21:15:41]   [action] epoch 3/12 loss 0.120 train_acc 96.0 (48s)
+[21:16:29]   [action] epoch 4/12 loss 0.075 train_acc 97.5 (48s)
+[21:17:17]   [action] epoch 5/12 loss 0.052 train_acc 98.5 (48s)
+[21:18:04]   [action] epoch 6/12 loss 0.027 train_acc 99.2 (48s)
+[21:18:52]   [action] epoch 7/12 loss 0.016 train_acc 99.5 (48s)
+[21:19:39]   [action] epoch 8/12 loss 0.014 train_acc 99.6 (48s)
+[21:20:27]   [action] epoch 9/12 loss 0.013 train_acc 99.7 (48s)
+[21:21:15]   [action] epoch 10/12 loss 0.006 train_acc 99.9 (48s)
+[21:22:03]   [action] epoch 11/12 loss 0.005 train_acc 99.9 (48s)
+[21:22:50]   [action] epoch 12/12 loss 0.007 train_acc 99.8 (48s)
+[21:22:59]   strong action/r2p1d: 90.50
+[21:23:07]   weak action/r2p1d: 43.83
+[21:23:08] strong eval: training person frame_r50 on anonymised data
+[21:23:36]   [person] epoch 1/12 loss 3.219 train_acc 4.3 (28s)
+[21:24:02]   [person] epoch 2/12 loss 3.150 train_acc 7.3 (26s)
+[21:24:29]   [person] epoch 3/12 loss 2.898 train_acc 13.8 (26s)
+[21:24:55]   [person] epoch 4/12 loss 2.609 train_acc 22.8 (26s)
+[21:25:21]   [person] epoch 5/12 loss 2.364 train_acc 31.0 (26s)
+[21:25:47]   [person] epoch 6/12 loss 2.152 train_acc 38.7 (26s)
+[21:26:14]   [person] epoch 7/12 loss 1.990 train_acc 43.4 (27s)
+[21:26:40]   [person] epoch 8/12 loss 1.821 train_acc 49.3 (26s)
+[21:27:07]   [person] epoch 9/12 loss 1.684 train_acc 54.1 (26s)
+[21:27:33]   [person] epoch 10/12 loss 1.590 train_acc 57.2 (26s)
+[21:28:00]   [person] epoch 11/12 loss 1.539 train_acc 59.1 (26s)
+[21:28:26]   [person] epoch 12/12 loss 1.527 train_acc 60.3 (26s)
+[21:28:47]   strong person/frame_r50: 22.17
+[21:29:05]   weak person/frame_r50: 3.83
+[21:29:06] strong eval: training person r3d on anonymised data
+[21:29:33]   [person] epoch 1/12 loss 2.851 train_acc 17.4 (27s)
+[21:30:15]   [person] epoch 2/12 loss 1.964 train_acc 44.0 (42s)
+[21:31:01]   [person] epoch 3/12 loss 1.367 train_acc 61.0 (46s)
+[21:31:46]   [person] epoch 4/12 loss 0.927 train_acc 74.6 (45s)
+[21:32:30]   [person] epoch 5/12 loss 0.602 train_acc 84.1 (44s)
+[21:33:16]   [person] epoch 6/12 loss 0.403 train_acc 90.1 (46s)
+[21:34:00]   [person] epoch 7/12 loss 0.271 train_acc 93.1 (44s)
+[21:34:46]   [person] epoch 8/12 loss 0.163 train_acc 96.9 (46s)
+[21:35:30]   [person] epoch 9/12 loss 0.120 train_acc 97.7 (44s)
+[21:36:15]   [person] epoch 10/12 loss 0.074 train_acc 98.9 (46s)
+[21:36:59]   [person] epoch 11/12 loss 0.059 train_acc 99.2 (44s)
+[21:37:45]   [person] epoch 12/12 loss 0.058 train_acc 99.2 (46s)
+[21:37:57]   strong person/r3d: 44.17
+[21:38:08]   weak person/r3d: 3.33
+[21:38:08] DONE p12_kth_pose_canon_scenario: action 90.5  privacy top1 (strong, best attacker) 44.17  (59.2 min)
+[21:38:09] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_kth_pose_canon_scenario
