@@ -783,3 +783,5 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   cut identity sharply, and the trade-off is then set by how much action survives. Tests: p8_bdq_a1_ens (less
   privacy weight), p8_bdq_a0 (no adversary: is it the differencing alone?), p8_diff (running).
 - Replication of the best scenario-split point: p2_bdq_down64_a1_ens_scenario_s1.
+- 05:05 UTC: p3_personbox_blur_down8 (VP-UCF101): 59.3 / 71.4 cMAP (plain down8 72.2 / 72.1). Blurring the person
+  first costs action and buys nothing: the attributes leak through the coarse frame either way.

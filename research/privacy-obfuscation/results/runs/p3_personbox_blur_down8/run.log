@@ -1,0 +1,44 @@
+[01:45:57] run p3_personbox_blur_down8 @ b2ef369: {"name": "p3_personbox_blur_down8", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "person_box", "mode": "blur", "every": 8, "dilate": 6, "sigma": 8.0}, {"type": "down", "factor": 8}]}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}}
+[01:45:57] VP-UCF101 split 1: 9537 train / 3783 test videos
+[03:56:37] materialised anonymised dataset (7840s)
+[03:56:38] strong eval: training action r2p1d on anonymised data
+[03:58:54]   [action] epoch 1/10 loss 3.107 train_acc 31.2 (136s)
+[04:01:15]   [action] epoch 2/10 loss 1.363 train_acc 67.0 (140s)
+[04:03:34]   [action] epoch 3/10 loss 0.711 train_acc 82.6 (140s)
+[04:05:55]   [action] epoch 4/10 loss 0.406 train_acc 90.1 (140s)
+[04:08:14]   [action] epoch 5/10 loss 0.244 train_acc 94.2 (140s)
+[04:10:35]   [action] epoch 6/10 loss 0.132 train_acc 97.2 (140s)
+[04:12:55]   [action] epoch 7/10 loss 0.082 train_acc 98.3 (141s)
+[04:15:13]   [action] epoch 8/10 loss 0.053 train_acc 99.2 (138s)
+[04:17:33]   [action] epoch 9/10 loss 0.040 train_acc 99.4 (140s)
+[04:19:52]   [action] epoch 10/10 loss 0.031 train_acc 99.6 (139s)
+[04:21:02]   strong action/r2p1d: 59.34
+[04:22:09]   weak action/r2p1d: 3.60
+[04:22:10] strong eval: training attr frame_r50 on anonymised data
+[04:24:02]   [attr] epoch 1/10 loss 0.505 train_acc 76.9 (111s)
+[04:25:50]   [attr] epoch 2/10 loss 0.456 train_acc 79.3 (108s)
+[04:27:38]   [attr] epoch 3/10 loss 0.439 train_acc 79.9 (108s)
+[04:29:23]   [attr] epoch 4/10 loss 0.427 train_acc 80.5 (105s)
+[04:31:10]   [attr] epoch 5/10 loss 0.409 train_acc 81.1 (108s)
+[04:32:58]   [attr] epoch 6/10 loss 0.395 train_acc 81.8 (108s)
+[04:34:45]   [attr] epoch 7/10 loss 0.380 train_acc 82.4 (107s)
+[04:36:33]   [attr] epoch 8/10 loss 0.370 train_acc 83.1 (108s)
+[04:38:21]   [attr] epoch 9/10 loss 0.364 train_acc 83.3 (108s)
+[04:40:08]   [attr] epoch 10/10 loss 0.361 train_acc 83.4 (107s)
+[04:41:49]   strong attr/frame_r50: 70.16  (AP per attribute [96.4, 77.5, 95.3, 36.9, 44.7], F1 62.5)
+[04:43:28]   weak attr/frame_r50: 62.36
+[04:43:29] strong eval: training attr r3d on anonymised data
+[04:44:50]   [attr] epoch 1/10 loss 0.500 train_acc 75.7 (81s)
+[04:46:05]   [attr] epoch 2/10 loss 0.443 train_acc 79.7 (75s)
+[04:47:23]   [attr] epoch 3/10 loss 0.427 train_acc 80.5 (78s)
+[04:48:41]   [attr] epoch 4/10 loss 0.408 train_acc 81.4 (78s)
+[04:49:59]   [attr] epoch 5/10 loss 0.388 train_acc 82.4 (78s)
+[04:51:16]   [attr] epoch 6/10 loss 0.360 train_acc 83.8 (77s)
+[04:52:34]   [attr] epoch 7/10 loss 0.331 train_acc 85.2 (78s)
+[04:53:52]   [attr] epoch 8/10 loss 0.295 train_acc 86.9 (78s)
+[04:55:10]   [attr] epoch 9/10 loss 0.267 train_acc 88.4 (78s)
+[04:56:27]   [attr] epoch 10/10 loss 0.251 train_acc 89.1 (77s)
+[04:56:55]   strong attr/r3d: 71.43  (AP per attribute [96.5, 78.3, 95.1, 39.8, 47.3], F1 66.5)
+[04:57:22]   weak attr/r3d: 59.97
+[04:57:22] DONE p3_personbox_blur_down8: action 59.34  privacy cmap (strong, best attacker) 71.43  (191.4 min)
+[04:57:38] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p3_personbox_blur_down8
