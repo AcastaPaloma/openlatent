@@ -964,3 +964,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 13:05 UTC: cross-action identity, fixed motion maps: x16 88.2 (within 84.6), x32 65.9 (63.9), x48 35.7 (37.0), x64 13.9 (11.0).
   Fixed maps leak the same identity across actions as within; learned pools drop to 26.9 / 17.0 / 6.0 / 4.9 at
   x32 / x48 / x64 / 1 px. Queued x24 for both families and a second-seed x32 cross-action test.
+- 13:20 UTC: p10_kth_bdq_down16_a3_ens (learned x16, cross-action): 38.5 (within 57.5) vs fixed x16 88.2: at the
+  highest-utility point the learned pool removes ~50 more points of identity that transfers across actions.
+  Queued cross-action on plain BDQ a7 ens (95 / 63 point) and a guard-check rerun of Charades BDQ a3 seed 0.

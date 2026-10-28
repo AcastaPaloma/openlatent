@@ -1,0 +1,29 @@
+{
+ "name": "p8_bdq_a3_ens_g",
+ "dataset": "charades",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "adv": {
+  "epochs": 10,
+  "alpha": 3.0,
+  "restart_every": 2,
+  "batch": 4,
+  "repeats": 1,
+  "utility": "r2p1d",
+  "adversary": [
+   "frame_r18",
+   "r3d"
+  ],
+  "lr_f": 0.003,
+  "min_action": 0.0,
+  "note_min_action": "40% floor was tuned for KTH (6 classes); 51/101/157-class tasks learn slower"
+ },
+ "note": "seed 0 rerun with the multilabel collapse guard: a good run should come out unchanged (5.8-6.0 / 21-24)"
+}
