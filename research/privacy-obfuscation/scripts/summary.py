@@ -77,9 +77,10 @@ kth = [
     ("pose, canonical skeleton (fixed size and proportions)", ["p12_kth_pose_canon"], ["p10_kth_pose_canon"]),
     ("**pose, canonical skeleton, one posture per clip**", ["p12_kth_pose_canon_e16", "p12_kth_pose_canon_e16_s1"], ["p10_kth_pose_canon_e16"]),
     ("pose, canonical, one posture per 8 frames", ["p12_kth_pose_canon_e8"], []),
-    ("pose, canonical, one posture per clip, then x4 downsample", ["p12_kth_pose_canon_e16_down4"], ["p10_kth_pose_canon_e16_down4"]),
-    ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8"], []),
-    ("pose, canonical, one posture per clip, then x16", ["p12_kth_pose_canon_e16_down16"], []),
+    ("pose, canonical, one posture per clip, 24-epoch attackers", ["p12_kth_pose_canon_e16_e24"], []),
+    ("pose, canonical, one posture per clip, then x4 downsample", ["p12_kth_pose_canon_e16_down4", "p12_kth_pose_canon_e16_down4_s1"], ["p10_kth_pose_canon_e16_down4"]),
+    ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8"], ["p10_kth_pose_canon_e16_down8"]),
+    ("pose, canonical, one posture per clip, then x16", ["p12_kth_pose_canon_e16_down16"], ["p10_kth_pose_canon_e16_down16"]),
 ]
 for label, ns, xs in kth:
     g = agg(ns)
@@ -116,9 +117,9 @@ scen = [
     ("pose, one posture per clip", ["p12_kth_pose_e16_scenario"], ["p10_kth_pose_e16_scenario_xh"]),
     ("**pose, canonical, one posture per clip**", ["p12_kth_pose_canon_e16_scenario", "p12_kth_pose_canon_e16_scenario_s1"], ["p10_kth_pose_canon_e16_scenario_xh", "p10_kth_pose_canon_e16_scenario_xh_s1"]),
     ("pose, canonical, one posture per 8 frames", ["p12_kth_pose_canon_e8_scenario"], ["p10_kth_pose_canon_e8_scenario_xh"]),
-    ("pose, canonical, one posture per clip, then x4", ["p12_kth_pose_canon_e16_down4_scenario"], ["p10_kth_pose_canon_e16_down4_scenario_xh"]),
+    ("pose, canonical, one posture per clip, then x4", ["p12_kth_pose_canon_e16_down4_scenario", "p12_kth_pose_canon_e16_down4_scenario_s1"], ["p10_kth_pose_canon_e16_down4_scenario_xh"]),
     ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8_scenario"], ["p10_kth_pose_canon_e16_down8_scenario_xh"]),
-    ("pose, canonical, one posture per clip, then x16", ["p12_kth_pose_canon_e16_down16_scenario"], []),
+    ("pose, canonical, one posture per clip, then x16", ["p12_kth_pose_canon_e16_down16_scenario"], ["p10_kth_pose_canon_e16_down16_scenario_xh"]),
 ]
 for label, ns, xs in scen:
     g = agg(ns)

@@ -1280,3 +1280,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   x48 pool (~87.4 / ~25) by ~4 action; the learned x64 pool (~81 / 11.4) still holds the low-identity end.
   Queued x8 and x16 downsamples of the canonical figures (Ilic, scenario, hardest test) to trace the pose frontier toward x64's
   identity, plus the x4 version's cross-action test.
+- 23:20 UTC: robustness of canonical one-posture stick figures: 24-epoch attackers 25.1 (12-epoch 29.1: longer training only
+  overfits); hardest test seed 1 14.0 (seed 0 13.5); x4 downsample across actions 15.9 (no downsample 19.9).
+  One posture per 8 frames: Ilic 96.3 / 37.5, scenario 86.2 / 36.2 / 17.0: halfway between every 4 (97.3 / 45.2) and every 16
+  (91.5 / 29.1); posture refresh rate is a clean action-identity dial.
+  Queued: x8 / x16 cross-action and hardest tests, and seed replicates of the x4 version (Ilic, scenario).

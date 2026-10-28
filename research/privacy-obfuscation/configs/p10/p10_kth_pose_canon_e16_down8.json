@@ -1,0 +1,26 @@
+{
+ "name": "p10_kth_pose_canon_e16_down8",
+ "dataset": "kth",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "pose",
+    "every": 16,
+    "width": 2,
+    "canonical": 0.5
+   },
+   {
+    "type": "down",
+    "factor": 8
+   }
+  ]
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "action": []
+ },
+ "split": "ilic",
+ "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"
+}
