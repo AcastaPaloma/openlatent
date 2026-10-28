@@ -7,3 +7,4 @@ __pycache__/
 
 # local-only notes (LaTeX write-ups)
 research/privacy-obfuscation/private/
+research/privacy-obfuscation/results/runs/smoke_*/

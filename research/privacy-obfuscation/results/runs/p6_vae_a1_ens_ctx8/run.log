@@ -1,0 +1,45 @@
+[19:32:18] run p6_vae_a1_ens_ctx8 @ 0cf5ef7: {"name": "p6_vae_a1_ens_ctx8", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "vae_latent"}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}, "anonymizer_from": "p3_vae_a1_ens", "note": "re-release with 8-frame two-sided context (ctx=2 leaked near-raw edge frames); same checkpoint, fresh attackers"}
+[19:32:18] VP-UCF101 split 1: 9537 train / 3783 test videos
+[19:32:20] loaded anonymizer from p3_vae_a1_ens (missing 0, unexpected 0)
+[23:49:41] materialised anonymised dataset (15441s)
+[23:49:42] strong eval: training action r2p1d on anonymised data
+[23:52:06]   [action] epoch 1/10 loss 3.119 train_acc 29.5 (144s)
+[23:54:26]   [action] epoch 2/10 loss 1.320 train_acc 66.8 (140s)
+[23:56:45]   [action] epoch 3/10 loss 0.745 train_acc 81.2 (139s)
+[23:59:05]   [action] epoch 4/10 loss 0.439 train_acc 89.2 (140s)
+[00:01:22]   [action] epoch 5/10 loss 0.279 train_acc 93.2 (137s)
+[00:03:42]   [action] epoch 6/10 loss 0.176 train_acc 96.0 (140s)
+[00:06:01]   [action] epoch 7/10 loss 0.103 train_acc 97.8 (140s)
+[00:08:21]   [action] epoch 8/10 loss 0.063 train_acc 98.9 (140s)
+[00:10:41]   [action] epoch 9/10 loss 0.048 train_acc 99.1 (140s)
+[00:13:00]   [action] epoch 10/10 loss 0.042 train_acc 99.2 (139s)
+[00:14:10]   strong action/r2p1d: 77.43
+[00:15:17]   weak action/r2p1d: 2.70
+[00:15:18] strong eval: training attr frame_r50 on anonymised data
+[00:17:00]   [attr] epoch 1/10 loss 0.505 train_acc 76.5 (102s)
+[00:18:46]   [attr] epoch 2/10 loss 0.459 train_acc 79.2 (106s)
+[00:20:34]   [attr] epoch 3/10 loss 0.445 train_acc 79.7 (108s)
+[00:22:22]   [attr] epoch 4/10 loss 0.431 train_acc 80.2 (108s)
+[00:24:10]   [attr] epoch 5/10 loss 0.416 train_acc 80.7 (108s)
+[00:25:58]   [attr] epoch 6/10 loss 0.402 train_acc 81.4 (108s)
+[00:27:46]   [attr] epoch 7/10 loss 0.384 train_acc 82.3 (108s)
+[00:29:34]   [attr] epoch 8/10 loss 0.370 train_acc 82.9 (108s)
+[00:31:20]   [attr] epoch 9/10 loss 0.364 train_acc 83.3 (107s)
+[00:32:57]   [attr] epoch 10/10 loss 0.358 train_acc 83.5 (97s)
+[00:34:36]   strong attr/frame_r50: 69.67  (AP per attribute [95.7, 78.2, 94.8, 35.3, 44.3], F1 60.8)
+[00:36:14]   weak attr/frame_r50: 58.16
+[00:36:14] strong eval: training attr r3d on anonymised data
+[00:37:33]   [attr] epoch 1/10 loss 0.488 train_acc 76.4 (78s)
+[00:38:49]   [attr] epoch 2/10 loss 0.447 train_acc 79.4 (77s)
+[00:40:05]   [attr] epoch 3/10 loss 0.433 train_acc 80.1 (75s)
+[00:41:20]   [attr] epoch 4/10 loss 0.421 train_acc 80.7 (75s)
+[00:42:28]   [attr] epoch 5/10 loss 0.401 train_acc 81.6 (68s)
+[00:43:38]   [attr] epoch 6/10 loss 0.378 train_acc 82.8 (70s)
+[00:44:55]   [attr] epoch 7/10 loss 0.347 train_acc 84.3 (77s)
+[00:46:11]   [attr] epoch 8/10 loss 0.309 train_acc 86.3 (75s)
+[00:47:26]   [attr] epoch 9/10 loss 0.281 train_acc 87.7 (75s)
+[00:48:43]   [attr] epoch 10/10 loss 0.263 train_acc 88.7 (77s)
+[00:49:10]   strong attr/r3d: 71.82  (AP per attribute [96.4, 80.1, 95.2, 38.7, 48.7], F1 66.7)
+[00:49:35]   weak attr/r3d: 60.23
+[00:49:35] DONE p6_vae_a1_ens_ctx8: action 77.43  privacy cmap (strong, best attacker) 71.82  (317.3 min)
+[00:49:50] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p6_vae_a1_ens_ctx8

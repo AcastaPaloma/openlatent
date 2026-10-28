@@ -674,3 +674,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   VP-HMDB51 first wave (10 runs); Charades prepares itself on 129.213.90.42 and then queues a smoke run + 7 runs.
 - VP-HMDB51 jobs on VMs that were still preparing the data are held by a watcher that releases them only after
   the prep log says HMDB READY and meta.json exists.
+
+### 2026-10-28 00:55 UTC: scenario-split BDQ warm-up; a7 seed 1; corrected VP-UCF101 VAE ensemble
+- p2_bdq_a5_ens_warm_scenario: 32.7 / 12.5. On the scenario fixed-map curve, 32.7 action sits between
+  x48 (44.0 / 26.5) and x64 (23.3 / 8.8), i.e. ~17 identity by interpolation: BDQ is ~5 points better here,
+  smaller than the a3 advantage at 56 action (H32 holds, more weakly at low utility).
+- p2_bdq_a7_ens_s1: 95.2 / 66.7 (a7 ens seeds: 95.0/62.9, 67.4/29.4, 95.2/66.7).
+- p6_vae_a1_ens_ctx8 (VP-UCF101 VAE ensemble on the fixed release path): 77.4 / 71.8 vs 78.0 / 72.2 before the fix.
+  Both corrected VAE numbers moved by <0.5 cMAP; the edge-frame leak did not change any conclusion.
+- Queued p3_bdq_down16_a3_ens: learned BDQ before a 7x9 px pool on VP-UCF101 (does the KTH learned-before-pool
+  gain exist when the private attributes are appearance?).
