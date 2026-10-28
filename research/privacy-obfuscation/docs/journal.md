@@ -883,3 +883,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 09:25 UTC: p2_bdq_down32_a3_ens_s4: 89.8 / 55.2, an outlier. x32 a3 over seeds 0-4: action 89.8-93.0 (mean 91.9),
   identity 35.8, 37.5, 39.5, 40.8, 55.2 (mean 41.8, sd ~7). Still ~22 points below the fixed map (63.9) on average,
   but one in five runs of the game lands much worse: report mean +- sd, not the best seed.
+- 09:35 UTC: p2_bdq_down120_a0_s1: 74.9 / 8.5 (seed 0: 78.1 / 7.2). p2_bdq_down16_a3_ens_scenario: 73.7 / 37.3; scenario
+  learned pools x16 73.7/37.3, x32 66.2/31.2 and 62.2/32.2, x64 ~51/13 vs fixed maps x8 86.2/61.7, x16 81.0/50.7,
+  x24 69.0/50.3, x32 58.0/42.7. The learned pool sits below the fixed curve on the scenario split at every size tried.
