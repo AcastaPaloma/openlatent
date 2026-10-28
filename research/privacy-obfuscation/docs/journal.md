@@ -1081,3 +1081,5 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Hypotheses: (1) a mask that picks the task region keeps the person, so on its own it can't hide identity; its use is as a
   carrier for an inner obfuscator, which keeps scene objects (tables, pool cues) at full resolution while the person is degraded.
   (2) Test this directly: invert the mask's role, i.e. obfuscate inside the person box and keep task objects raw.
+  GIF check (results/gifs/charades/p11_ch_saliency_k25.gif): the saliency mask keeps the person plus the objects they handle
+  (pots, dishes, the counter) and grays the rest of the room, which is what the 91.3% identity predicts.
