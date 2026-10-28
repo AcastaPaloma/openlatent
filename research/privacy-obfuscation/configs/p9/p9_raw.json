@@ -1,0 +1,13 @@
+{
+ "name": "p9_raw",
+ "dataset": "utdmhad",
+ "seed": 0,
+ "anonymizer": {
+  "type": "raw"
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 4,
+  "batch": 16
+ }
+}

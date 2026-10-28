@@ -871,3 +871,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   BDQ -> 7x9 px a3 7.1/43.2. The useful region is a1-a3 (~6 / 20-24%).
 - Next: DINOv2 and 24-epoch attackers on the frozen Charades a1 output (p6_dino_p8_bdq_a1_ens, p6_p8_bdq_a1_ens_e24);
   x32 a1 on the scenario split and seed 2.
+
+### 2026-10-28 09:20 UTC: UTD-MHAD added (identity without a scene cue)
+- UTD-MHAD (8 subjects x 27 actions x 4 trials, one lab, one backdrop; RGB from the authors' page): trials 1-3
+  train / trial 4 test, 648 / 213 videos (3 corrupt videos in the release). Utility 27-way top-1, privacy 8-way top-1
+  (chance 12.5%). Unlike KTH (lighting/scenario) and Charades (the home), identity here must come from the person.
+  Prepared on 158.101.16.146, 129.151.4.50, 158.101.125.222 (129.213.89.64 cannot reach the host).
+- First wave (configs/p9): raw, blur8, down16, diff->down32, BDQ a3 ens, BDQ->x32 a3 ens, BDQ->x64 a1 ens.
+- H40: without a scene cue, fixed filters lose identity faster than on KTH, and the learned bottleneck keeps
+  its advantage (identity here is body/gait, which BDQ+pool already removes on KTH).
