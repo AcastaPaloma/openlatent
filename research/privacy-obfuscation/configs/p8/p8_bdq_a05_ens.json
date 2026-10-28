@@ -1,0 +1,28 @@
+{
+ "name": "p8_bdq_a05_ens",
+ "dataset": "charades",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "adv": {
+  "epochs": 10,
+  "alpha": 0.5,
+  "restart_every": 2,
+  "batch": 4,
+  "repeats": 1,
+  "utility": "r2p1d",
+  "adversary": [
+   "frame_r18",
+   "r3d"
+  ],
+  "lr_f": 0.003,
+  "min_action": 10.0,
+  "note_min_action": "40% floor was tuned for KTH (6 classes); 51/101/157-class tasks learn slower"
+ }
+}

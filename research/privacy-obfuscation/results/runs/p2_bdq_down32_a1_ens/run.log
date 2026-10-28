@@ -1,0 +1,69 @@
+[05:51:48] run p2_bdq_down32_a1_ens @ c1aa4dc: {"name": "p2_bdq_down32_a1_ens", "dataset": "kth", "split": "ilic", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "bdq"}, {"type": "down", "factor": 32}]}, "adv": {"epochs": 15, "alpha": 1.0, "restart_every": 3, "batch": 8, "repeats": 2, "utility": "r2p1d", "adversary": ["frame_r18", "r3d"], "lr_f": 0.003}}
+[05:51:49] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[05:57:13]   [adv] epoch 1/15 action_acc 69.8 adv_acc 13.2 adv_entropy 3.07/3.22 per-adversary frame_r18=7.4 r3d=13.2 (321s)
+[06:02:35]   [adv] epoch 2/15 action_acc 81.0 adv_acc 23.7 adv_entropy 2.87/3.22 per-adversary frame_r18=14.0 r3d=23.7 (322s)
+[06:07:56]   [adv] epoch 3/15 action_acc 84.6 adv_acc 28.1 adv_entropy 2.75/3.22 per-adversary frame_r18=17.4 r3d=28.1 (321s)
+[06:07:57]   adversary restarted at epoch 3
+[06:13:01]   [adv] epoch 4/15 action_acc 88.0 adv_acc 13.8 adv_entropy 3.07/3.22 per-adversary frame_r18=6.9 r3d=13.8 (304s)
+[06:18:08]   [adv] epoch 5/15 action_acc 85.3 adv_acc 20.5 adv_entropy 2.92/3.22 per-adversary frame_r18=11.5 r3d=20.5 (307s)
+[06:23:03]   [adv] epoch 6/15 action_acc 87.2 adv_acc 27.1 adv_entropy 2.78/3.22 per-adversary frame_r18=15.7 r3d=27.1 (294s)
+[06:23:04]   adversary restarted at epoch 6
+[06:28:10]   [adv] epoch 7/15 action_acc 88.6 adv_acc 12.4 adv_entropy 3.07/3.22 per-adversary frame_r18=6.7 r3d=12.4 (305s)
+[06:32:43]   [adv] epoch 8/15 action_acc 88.1 adv_acc 20.7 adv_entropy 2.91/3.22 per-adversary frame_r18=12.4 r3d=20.7 (274s)
+[06:38:01]   [adv] epoch 9/15 action_acc 91.0 adv_acc 27.1 adv_entropy 2.77/3.22 per-adversary frame_r18=16.0 r3d=27.1 (318s)
+[06:38:02]   adversary restarted at epoch 9
+[06:43:20]   [adv] epoch 10/15 action_acc 92.0 adv_acc 13.4 adv_entropy 3.06/3.22 per-adversary frame_r18=6.6 r3d=13.4 (317s)
+[06:48:37]   [adv] epoch 11/15 action_acc 91.2 adv_acc 21.1 adv_entropy 2.90/3.22 per-adversary frame_r18=13.5 r3d=21.1 (317s)
+[06:53:54]   [adv] epoch 12/15 action_acc 91.4 adv_acc 31.9 adv_entropy 2.73/3.22 per-adversary frame_r18=18.3 r3d=31.9 (316s)
+[06:53:55]   adversary restarted at epoch 12
+[06:59:14]   [adv] epoch 13/15 action_acc 92.5 adv_acc 13.5 adv_entropy 3.05/3.22 per-adversary frame_r18=7.2 r3d=13.5 (318s)
+[07:04:30]   [adv] epoch 14/15 action_acc 92.6 adv_acc 22.5 adv_entropy 2.87/3.22 per-adversary frame_r18=13.8 r3d=22.5 (316s)
+[07:09:47]   [adv] epoch 15/15 action_acc 91.7 adv_acc 29.5 adv_entropy 2.73/3.22 per-adversary frame_r18=16.9 r3d=29.5 (317s)
+[07:10:09] materialised anonymised dataset (23s)
+[07:10:10] strong eval: training action r2p1d on anonymised data
+[07:11:39]   [action] epoch 1/12 loss 0.776 train_acc 69.6 (89s)
+[07:13:02]   [action] epoch 2/12 loss 0.480 train_acc 81.1 (83s)
+[07:14:26]   [action] epoch 3/12 loss 0.391 train_acc 85.0 (84s)
+[07:15:49]   [action] epoch 4/12 loss 0.332 train_acc 86.7 (83s)
+[07:17:13]   [action] epoch 5/12 loss 0.288 train_acc 88.5 (84s)
+[07:18:28]   [action] epoch 6/12 loss 0.245 train_acc 90.0 (76s)
+[07:19:52]   [action] epoch 7/12 loss 0.209 train_acc 91.7 (83s)
+[07:21:15]   [action] epoch 8/12 loss 0.178 train_acc 93.1 (84s)
+[07:22:39]   [action] epoch 9/12 loss 0.132 train_acc 95.4 (84s)
+[07:24:03]   [action] epoch 10/12 loss 0.118 train_acc 95.5 (84s)
+[07:25:27]   [action] epoch 11/12 loss 0.113 train_acc 96.2 (85s)
+[07:26:51]   [action] epoch 12/12 loss 0.107 train_acc 96.0 (84s)
+[07:27:06]   strong action/r2p1d: 91.81
+[07:27:19]   weak action/r2p1d: 16.72
+[07:27:20] strong eval: training person frame_r50 on anonymised data
+[07:28:09]   [person] epoch 1/12 loss 3.220 train_acc 4.1 (49s)
+[07:28:56]   [person] epoch 2/12 loss 3.188 train_acc 5.9 (46s)
+[07:29:40]   [person] epoch 3/12 loss 3.078 train_acc 10.0 (45s)
+[07:30:27]   [person] epoch 4/12 loss 2.978 train_acc 12.5 (46s)
+[07:31:11]   [person] epoch 5/12 loss 2.899 train_acc 15.2 (45s)
+[07:31:57]   [person] epoch 6/12 loss 2.851 train_acc 15.8 (46s)
+[07:32:43]   [person] epoch 7/12 loss 2.802 train_acc 17.5 (46s)
+[07:33:28]   [person] epoch 8/12 loss 2.775 train_acc 17.4 (45s)
+[07:34:15]   [person] epoch 9/12 loss 2.733 train_acc 18.4 (46s)
+[07:34:53]   [person] epoch 10/12 loss 2.714 train_acc 19.6 (39s)
+[07:35:32]   [person] epoch 11/12 loss 2.705 train_acc 19.4 (39s)
+[07:36:16]   [person] epoch 12/12 loss 2.722 train_acc 19.7 (44s)
+[07:36:45]   strong person/frame_r50: 14.21
+[07:37:11]   weak person/frame_r50: 3.85
+[07:37:12] strong eval: training person r3d on anonymised data
+[07:37:58]   [person] epoch 1/12 loss 2.951 train_acc 14.9 (46s)
+[07:38:42]   [person] epoch 2/12 loss 2.433 train_acc 27.3 (44s)
+[07:39:26]   [person] epoch 3/12 loss 2.009 train_acc 40.9 (44s)
+[07:40:09]   [person] epoch 4/12 loss 1.713 train_acc 50.1 (44s)
+[07:40:53]   [person] epoch 5/12 loss 1.368 train_acc 59.7 (44s)
+[07:41:37]   [person] epoch 6/12 loss 1.113 train_acc 68.3 (44s)
+[07:42:20]   [person] epoch 7/12 loss 0.896 train_acc 74.7 (44s)
+[07:43:04]   [person] epoch 8/12 loss 0.727 train_acc 79.9 (44s)
+[07:43:47]   [person] epoch 9/12 loss 0.591 train_acc 84.7 (43s)
+[07:44:23]   [person] epoch 10/12 loss 0.506 train_acc 87.7 (36s)
+[07:45:03]   [person] epoch 11/12 loss 0.454 train_acc 89.6 (40s)
+[07:45:46]   [person] epoch 12/12 loss 0.416 train_acc 90.4 (43s)
+[07:45:59]   strong person/r3d: 32.44
+[07:46:10]   weak person/r3d: 4.35
+[07:46:10] DONE p2_bdq_down32_a1_ens: action 91.81  privacy top1 (strong, best attacker) 32.44  (114.4 min)
+[07:46:14] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p2_bdq_down32_a1_ens

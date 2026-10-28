@@ -845,3 +845,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   At 3x5 px the appearance adversary alone carries the gain; the r3d-only ablation is running.
 - p7_bdq_down16_a0 (VP-HMDB51): 36.0 / 69.1 (adversarial 32.9 / 68.9).
 - Queued x16 seed 1, scenario split, alpha 5.
+
+### 2026-10-28 07:55 UTC: the learned-pool curve; Charades alpha sweep
+- KTH Ilic, BDQ before a pool (a3 unless noted; action / identity): x16 95.8/57.0, x24 93.0/48.8, x32 92-93/38-41
+  (a1: 91.8/32.4), x48 83-87/28-41, x64 ~81/12, x120 ~77/8. A smooth curve well below the fixed motion maps
+  (x16 94.8/84.6, x32 93.6/63.9, x64 69.9/11.0, x120 54.2/6.9).
+- p2_bdq_down64_a1_ens_scenario_s1: 51.5 / 14.0 (seed 0: 50.8 / 12.7). Replicates on the scenario split.
+- Charades BDQ (action mAP / identity): a0 12.6/88.8, a1 5.8/19.6, a3 6.0/24.2; raw 15.8/93.5. The adversary is what
+  removes in-home identity, and it costs ~60% of action mAP. a5, a10, seeds and the r3d-only ablation are running.
+- Next: alpha 1 at x16/x24 and a seed at x32; Charades alpha 0.5 and an a1 seed.
