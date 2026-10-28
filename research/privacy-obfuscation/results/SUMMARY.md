@@ -24,7 +24,7 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | VAE latent edit (best) | 96.2 | 75.6 | – | 1 |
 | **learned pool: BDQ -> x16** | 95.1 ± 1.0 | 57.8 ± 2.3 | 38.5 | 5 |
 | **learned pool: BDQ -> x24** | 92.4 ± 1.2 | 49.9 ± 3.6 | 33.1 | 3 |
-| **learned pool: BDQ -> x32** | 91.9 ± 0.9 | 40.0 ± 6.0 | 23.5 ± 3.4 | 9 |
+| **learned pool: BDQ -> x32** | 91.9 ± 0.9 | 40.0 ± 6.0 | 22.4 ± 3.2 | 9 |
 | learned pool x32, no adversary (a0) | 89.5 | 53.2 | – | 1 |
 | **learned pool: BDQ -> x48** | 87.4 ± 0.1 | 25.0 ± 0.3 | 17.0 | 2 |
 | **learned pool: BDQ -> x64** | 80.9 ± 2.0 | 11.4 ± 1.5 | 6.0 | 6 |

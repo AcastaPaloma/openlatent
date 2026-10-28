@@ -1,0 +1,31 @@
+{
+ "name": "p2_bdq_down16_a3_ens_scenario_s2",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 2,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "adv": {
+  "epochs": 15,
+  "alpha": 3.0,
+  "restart_every": 3,
+  "batch": 8,
+  "repeats": 2,
+  "utility": "r2p1d",
+  "adversary": [
+   "frame_r18",
+   "r3d"
+  ],
+  "lr_f": 0.003
+ }
+}

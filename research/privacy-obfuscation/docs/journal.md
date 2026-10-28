@@ -989,3 +989,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   fixed x32 40.5, learned BDQ->x16 17.5, learned x32 12.0, learned x64 7.5. Under both shifts at once the learned pools
   leak about a third of what the fixed motion maps do, and raw video still identifies 97%.
 - Replications with second obfuscator seeds, a blur8 baseline and the x24 pair queued (p10_*_scenario*_xh).
+- 14:20 UTC: hardest test (unseen scenario + unseen actions), identity: blur8 88.0, fixed x16/x24/x32/x64 48.5/43.5/40.5/8.0,
+  learned x16 17.5 & 18.0 (seeds 0,1), x24 20.0, x32 12.0 & 12.0, x64 7.5 & 4.0, plain BDQ a3 5.5. Scenario-split action for the
+  same obfuscators: blur8 77.7, fixed 81.0/69.0/58.0/23.3, learned ~75/66.7/~64/~51, plain BDQ a3 55.8. At ~64-75 action the
+  learned pools leak 12-18% vs 40-48% for fixed maps; at the low end plain BDQ a3 (55.8/5.5) and learned x64 (~51/4-8) tie.
+  Cross-action (Ilic): learned x16 seed 1 46.6 (seed 0 38.5); x32 a1 20.2. p8_bdq_a1_ens_s3 collapsed (started pre-fix).
+- Queued: scenario-split learned pools x48 and x120 and third seeds of x16/x32/x64 (hardest-test attacks to follow).
