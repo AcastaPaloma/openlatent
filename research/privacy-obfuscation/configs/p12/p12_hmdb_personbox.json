@@ -1,0 +1,18 @@
+{
+ "name": "p12_hmdb_personbox",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "person_box",
+  "mode": "black",
+  "every": 8,
+  "dilate": 6
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16,
+  "action": []
+ },
+ "note": "attack-only re-evaluation for the action-conditional attribute cMAP (what the video reveals beyond its action)"
+}

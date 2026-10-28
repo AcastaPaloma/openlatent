@@ -1120,3 +1120,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   New p13 on VP-UCF101 / VP-HMDB51, all with action eval: grayscale (removes skin tone and clothing colour), blur of the top third
   of each detected person box (head and shoulders, sigma 16), and both. Hypothesis: the ~8 points of attribute signal beyond the
   action sit in face and skin colour, which these remove at little action cost, unlike whole-frame blur.
+- 18:05 UTC: VP-HMDB51 action-conditional cMAP (chance 61.9, raw 69.7): down16 64.7 (action p7 29.7), person boxes blurred sigma 16
+  66.0 with action 41.7 (raw 64.9). VP-UCF101 blur8: 63.8 (chance 61.3; action p3 58.9; raw pending). Blurring only the people keeps
+  more action than any whole-frame filter at the same conditional leakage (41.7 vs 34.4 for diff->down16 at 66.0), but still
+  costs a third of HMDB action: HMDB actions are about the body (chew, smile, wave), so the person can't be blurred for free there.
+  KTH saliency mask (keep 25%): 98.2 / 98.8, the same as the learned mask: selecting patches keeps the person.
+  Queued: p12_hmdb_personbox (black boxes, conditional score) and seed 2 of plain BDQ a7 scenario.
