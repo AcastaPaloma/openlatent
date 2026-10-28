@@ -1233,3 +1233,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Added pose rows and the new seeds / x48 / x120 / BDQ a7 rows to SUMMARY.md tables.
   Queued: seed replicates of KTH pose (Ilic, scenario), one posture per clip on the scenario split (+ hardest test),
   canonical + one posture per clip (Ilic), and one posture per clip on VP-HMDB51.
+- 21:20 UTC: hardest test on canonical stick figures (KTH scenario): 16.5 (frame 12.0) vs 21.5 for plain stick figures; fixing
+  limb lengths and size removes ~5 points on unseen scenario + unseen actions, landing at the learned x16 pool (17.3).
+  KTH pose GIFs added (results/gifs/kth/p12_kth_pose.gif, p12_kth_pose_e16.gif): limbs only, no background; an empty tile is a
+  walking clip before the person enters.

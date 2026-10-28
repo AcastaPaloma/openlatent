@@ -737,6 +737,24 @@
    "privacy": 4.013377800583839,
    "leakage": 0.014008413761922451,
    "kb": 0
+  },
+  {
+   "run": "p12_kth_pose",
+   "file": "p12_kth_pose.gif",
+   "split": "ilic",
+   "action": 97.826087474823,
+   "privacy": 53.34448218345642,
+   "leakage": 51.46768519117555,
+   "kb": 27
+  },
+  {
+   "run": "p12_kth_pose_e16",
+   "file": "p12_kth_pose_e16.gif",
+   "split": "ilic",
+   "action": 93.31103563308716,
+   "privacy": 38.12709152698517,
+   "leakage": 35.595517988639145,
+   "kb": 7
   }
  ]
 }
