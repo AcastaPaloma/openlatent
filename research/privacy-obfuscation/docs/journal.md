@@ -863,3 +863,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 08:50 UTC: p2_bdq_down120_a1_ens_s2: 77.1 / 7.2 (BDQ -> one number per frame, 3 seeds: 75.8-77.1 / 7.2-9.5).
   p8_bdq_a3_ens_s1 (Charades): 5.8 / 21.1% (seed 0: 6.0 / 24.2). Charades BDQ a3 replicates; a5's 54.8% looks like a
   failed run of the game; p8_bdq_a5_ens_s1 queued to check. p2_bdq_down24_a3_ens_s1 queued.
+
+### 2026-10-28 09:05 UTC: x32 robust to longer views; Charades alpha sweep complete
+- p2_bdq_down32_a3_ens_s3: 92.0 / 35.8 (5 runs at x32 a3/a5: 91.8-93.0 / 35.8-40.8).
+  p6_bdq_down32_a3_ens_stride4 (2.5 s view on the frozen x32 output): 92.3 / 35.5. Longer views don't help the attacker.
+- Charades BDQ (mAP / identity): a0 12.6/88.8, a1 5.8/19.6, a3 6.0/24.2 and 5.8/21.1, a5 7.8/54.8, a10 6.3/32.9;
+  BDQ -> 7x9 px a3 7.1/43.2. The useful region is a1-a3 (~6 / 20-24%).
+- Next: DINOv2 and 24-epoch attackers on the frozen Charades a1 output (p6_dino_p8_bdq_a1_ens, p6_p8_bdq_a1_ens_e24);
+  x32 a1 on the scenario split and seed 2.

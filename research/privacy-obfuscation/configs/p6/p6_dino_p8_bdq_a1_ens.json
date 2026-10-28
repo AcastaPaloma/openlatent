@@ -1,0 +1,21 @@
+{
+ "dataset": "charades",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "anonymizer_from": "p8_bdq_a1_ens",
+ "name": "p6_dino_p8_bdq_a1_ens",
+ "eval": {
+  "epochs": 8,
+  "repeats": 1,
+  "batch": 16,
+  "action": [],
+  "privacy": [
+   "frame_dino_probe",
+   "frame_dino_ft"
+  ],
+  "clean_attacker": false
+ },
+ "note": "DINOv2 on the frozen Charades BDQ a1 output (scene-heavy identity: the strongest appearance attacker)"
+}
