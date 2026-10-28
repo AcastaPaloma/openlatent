@@ -821,3 +821,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p7_bdq_down16_a3_ens (VP-HMDB51): 32.9 / 68.9 cMAP. No learned-before-pool gain on appearance attributes.
 - Seeds for the headline points so they can be reported as mean +- sd: p2_bdq_down32_a3_ens_s3/_s4,
   p2_bdq_down120_a1_ens_s2, p2_bdq_down120_a0_s1, p8_bdq_a3_ens_s2.
+
+### 2026-10-28 06:40 UTC: in Charades the home is the identity
+- p8_personbox (Charades, person boxes blacked out): action mAP 10.6, identity 90.6% (raw 93.5). Removing the
+  person removes almost no identity.
+- p8_down64 (Charades, 1x2 px RGB per frame): 5.5 / 38.8%. Two pixels of a home's colour and light still identify
+  the occupant 39% of the time (35x chance). Charades identity is the room; KTH identity was ~22% lighting floor
+  plus body/gait.
+- p2_bdq_down64_a0_s1: 80.9 / 12.0 (seed 0: 81.8 / 10.7). The utility-only bottleneck replicates.
+- Next: p8_bdq_a10_ens (how far can adversarial BDQ push in-home identity?), p2_bdq_down48_a3_ens (resolve the
+  mixed x48 results: 82.9/41.3 vs 87.3/27.9 at alpha 1).
