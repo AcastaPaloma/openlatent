@@ -334,6 +334,15 @@
    "kb": 57
   },
   {
+   "run": "p1_diff_down24",
+   "file": "p1_diff_down24.gif",
+   "split": "ilic",
+   "action": 94.31437849998474,
+   "privacy": 77.75919437408447,
+   "leakage": 77.23611269751014,
+   "kb": 412
+  },
+  {
    "run": "p2_vae_a1_vadv",
    "file": "p2_vae_a1_vadv.gif",
    "split": "ilic",
@@ -532,6 +541,24 @@
    "kb": 14
   },
   {
+   "run": "p2_bdq_down48_a1_ens",
+   "file": "p2_bdq_down48_a1_ens.gif",
+   "split": "ilic",
+   "action": 82.9431414604187,
+   "privacy": 41.30434691905975,
+   "leakage": 39.06282826429362,
+   "kb": 164
+  },
+  {
+   "run": "p2_bdq_down32_a3_ens",
+   "file": "p2_bdq_down32_a3_ens.gif",
+   "split": "ilic",
+   "action": 92.97658801078796,
+   "privacy": 40.80267548561096,
+   "leakage": 38.5375086522808,
+   "kb": 196
+  },
+  {
    "run": "p1_down64",
    "file": "p1_down64.gif",
    "split": "ilic",
@@ -556,6 +583,15 @@
    "action": 83.61204266548157,
    "privacy": 36.95652186870575,
    "leakage": 34.510052052082344,
+   "kb": 322
+  },
+  {
+   "run": "p1_diff_down48_s1",
+   "file": "p1_diff_down48_s1.gif",
+   "split": "ilic",
+   "action": 82.44147300720215,
+   "privacy": 36.28762662410736,
+   "leakage": 33.809625902731916,
    "kb": 322
   },
   {
@@ -631,6 +667,15 @@
    "kb": 14
   },
   {
+   "run": "p2_bdq_down64_a1_ens_s1",
+   "file": "p2_bdq_down64_a1_ens_s1.gif",
+   "split": "ilic",
+   "action": 82.6086938381195,
+   "privacy": 13.377925753593445,
+   "leakage": 9.819989718162054,
+   "kb": 71
+  },
+  {
    "run": "p2_bdq_down64_a1_ens",
    "file": "p2_bdq_down64_a1_ens.gif",
    "split": "ilic",
@@ -640,6 +685,15 @@
    "kb": 70
   },
   {
+   "run": "p2_bdq_down64_a3_ens",
+   "file": "p2_bdq_down64_a3_ens.gif",
+   "split": "ilic",
+   "action": 82.9431414604187,
+   "privacy": 12.541806697845459,
+   "leakage": 8.944457031474018,
+   "kb": 75
+  },
+  {
    "run": "p1_diff_down64",
    "file": "p1_diff_down64.gif",
    "split": "ilic",
@@ -647,6 +701,15 @@
    "privacy": 11.036789417266846,
    "leakage": 7.368495074718809,
    "kb": 127
+  },
+  {
+   "run": "p2_bdq_down120_a1_ens",
+   "file": "p2_bdq_down120_a1_ens.gif",
+   "split": "ilic",
+   "action": 75.91972947120667,
+   "privacy": 8.52842777967453,
+   "leakage": 4.741892333579584,
+   "kb": 18
   },
   {
    "run": "p1_diff_down120",
