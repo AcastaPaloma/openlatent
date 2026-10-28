@@ -982,3 +982,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   p8_bdq_a1_ens_e15 collapsed to the floors (4.4 / 3.6); it started before the guard fix.
   Bug fixed: two jobs on one VM raced on the same frozen-attacker cache .tmp file (p10_kth_diff_down32_scenario_xh
   failed); temp files are now per-process; requeued.
+
+### 2026-10-28 14:05 UTC: the hardest test (unseen scenario + unseen actions)
+- Attackers train on the seen scenarios' videos of 4 actions and are tested on the unseen scenario's videos of the other 2
+  (priv_split xaction_heldout; 1,193 train / 200 test rows). Identity top-1 (chance 4.0): raw 97.0, fixed diff->x16 48.5,
+  fixed x32 40.5, learned BDQ->x16 17.5, learned x32 12.0, learned x64 7.5. Under both shifts at once the learned pools
+  leak about a third of what the fixed motion maps do, and raw video still identifies 97%.
+- Replications with second obfuscator seeds, a blur8 baseline and the x24 pair queued (p10_*_scenario*_xh).

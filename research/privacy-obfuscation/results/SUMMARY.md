@@ -41,18 +41,18 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 
 | method | action | identity | identity, unseen scenario + unseen actions | runs |
 |---|---:|---:|---:|---:|
-| raw video | 88.7 | 97.7 | – | 1 |
+| raw video | 88.7 | 97.7 | 97.0 | 1 |
 | blur sigma 8 | 77.7 | 87.7 | – | 1 |
 | fixed motion map x8 | 86.2 | 61.7 | – | 1 |
-| fixed motion map x16 | 81.0 | 50.7 | – | 1 |
+| fixed motion map x16 | 81.0 | 50.7 | 48.5 | 1 |
 | fixed motion map x24 | 69.0 | 50.3 | – | 1 |
-| fixed motion map x32 | 58.0 | 42.7 | – | 1 |
+| fixed motion map x32 | 58.0 | 42.7 | 40.5 | 1 |
 | fixed motion map x64 | 23.3 | 9.5 | – | 1 |
 | plain BDQ a3 | 67.0 ± 7.5 | 41.1 ± 11.2 | – | 4 |
-| learned pool x16 | 74.9 ± 1.2 | 37.2 ± 0.2 | – | 2 |
+| learned pool x16 | 74.9 ± 1.2 | 37.2 ± 0.2 | 17.5 | 2 |
 | learned pool x24 | 66.7 | 28.8 | – | 1 |
-| learned pool x32 | 61.1 ± 4.6 | 28.4 ± 4.6 | – | 3 |
-| learned pool x64 | 51.6 ± 0.7 | 12.8 ± 0.9 | – | 3 |
+| learned pool x32 | 61.1 ± 4.6 | 28.4 ± 4.6 | 12.0 | 3 |
+| learned pool x64 | 51.6 ± 0.7 | 12.8 ± 0.9 | 7.5 | 3 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
 
