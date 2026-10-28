@@ -11,14 +11,16 @@ Privacy is the best attacker's score (frame ResNet-50 or video R3D-18; DINOv2 ru
 
 ![frozen vs retrained](figures/frozen_vs_retrained_kth.png)
 
-- 115 obfuscated runs. Median gap retrained - frozen: **46.7 points**.
-- In 104 of 115 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
+- 151 obfuscated runs. Median gap retrained - frozen: **40.6 points**.
+- In 138 of 151 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
 
 | run | split | obfuscation | frozen action | frozen privacy (frame / video) | **frozen best** | **retrained best** | retrained action |
 |---|---|---|---:|---:|---:|---:|---:|
 | p1_raw_seq | seq | `raw` | 99.0 | 100.0 / 100.0 | **100.0** | **100.0** | 99.2 |
+| p10_kth_raw | ilic | `raw` | - | 100.0 / 99.5 | **100.0** | **99.9** | - |
 | p1_blur2 | ilic | `blur (sigma 2)` | 62.2 | 34.6 / 12.0 | **34.6** | **99.5** | 97.7 |
 | p1_raw | ilic | `raw` | 97.2 | 99.3 / 99.3 | **99.3** | **99.5** | 97.5 |
+| p10_kth_down16 | ilic | `down (factor 16)` | - | 5.1 / 11.9 | **11.9** | **99.0** | - |
 | p1_hold4 | ilic | `hold (k 4)` | 95.2 | 99.5 / 97.8 | **99.5** | **99.0** | 97.7 |
 | p1_pix4 | ilic | `pixelate (factor 4)` | 58.0 | 21.2 / 23.2 | **23.2** | **99.0** | 97.7 |
 | p1_tshuffle | ilic | `tshuffle` | 71.7 | 99.2 / 98.3 | **99.2** | **99.0** | 95.5 |
@@ -63,6 +65,7 @@ Privacy is the best attacker's score (frame ResNet-50 or video R3D-18; DINOv2 ru
 | p2_bdq_a5_ens_b3_s1 | ilic | `bdq` | 42.0 | 4.2 / 4.0 | **4.2** | **67.4** | 96.3 |
 | p2_bdq_a7_ens_s1 | ilic | `bdq` | 44.0 | 4.0 / 3.8 | **4.0** | **66.7** | 95.2 |
 | p2_bdq_a3_lr3e-3_s2 | ilic | `bdq` | 34.3 | 4.2 / 4.2 | **4.2** | **66.6** | 91.6 |
+| p10_kth_diff_down32 | ilic | `diff (gain 4.0) -> down (factor 32)` | - | 3.5 / 2.5 | **3.5** | **65.9** | - |
 | p2_bdq_a1_ens | ilic | `bdq` | 37.5 | 4.0 / 4.0 | **4.0** | **65.2** | 94.1 |
 | p2_down4_bdq_a3 | ilic | `down (factor 4) -> bdq` | 49.5 | 4.8 / 3.3 | **4.8** | **65.1** | 93.1 |
 | p2_vae_a1_vadv_b3_scenario | scenario | `vae_latent` | 16.7 | 4.0 / 4.0 | **4.0** | **65.0** | 83.0 |
@@ -72,68 +75,102 @@ Privacy is the best attacker's score (frame ResNet-50 or video R3D-18; DINOv2 ru
 | p2_bdq_a7_ens | ilic | `bdq` | 27.6 | 4.7 / 4.3 | **4.7** | **62.9** | 95.0 |
 | p2_bdq_a1_vadv | ilic | `bdq` | 39.1 | 5.5 / 2.5 | **5.5** | **62.7** | 93.8 |
 | p1_diff_down8_scenario | scenario | `diff (gain 4.0) -> down (factor 8)` | 16.7 | 3.7 / 3.2 | **3.7** | **61.7** | 86.2 |
+| p2_bdq_down16_a3_ens_s1 | ilic | `bdq -> down (factor 16)` | 16.7 | 4.0 / 2.8 | **4.0** | **61.2** | 95.0 |
 | p2_bdq_a1_scenario | scenario | `bdq` | 55.5 | 4.0 / 4.0 | **4.0** | **61.2** | 79.2 |
 | p2_bdq_a5_ens_s2 | ilic | `bdq` | 22.4 | 3.8 / 5.2 | **5.2** | **60.0** | 93.0 |
 | p1_diff_down32_tshuffle | ilic | `diff (gain 4.0) -> down (factor 32) -> tshuffle` | 16.7 | 2.3 / 4.0 | **4.0** | **59.2** | 90.0 |
 | p2_bdq_a5_ens_b3 | ilic | `bdq` | 29.9 | 5.2 / 4.5 | **5.2** | **58.0** | 90.3 |
+| p2_bdq_down16_a1_ens | ilic | `bdq -> down (factor 16)` | 16.7 | 3.5 / 5.2 | **5.2** | **57.9** | 94.1 |
+| p6_bdq_down16_a3_ens_e24 | ilic | `bdq -> down (factor 16)` | 17.1 | 3.8 / 4.0 | **4.0** | **57.5** | 96.0 |
 | p1_diff_down40 | ilic | `diff (gain 4.0) -> down (factor 40)` | 16.7 | 2.2 / 4.0 | **4.0** | **57.2** | 87.8 |
 | p1_diff_down32_stride4 | ilic | `diff (gain 4.0) -> down (factor 32)` | 16.7 | 4.8 / 4.0 | **4.8** | **57.0** | 93.6 |
+| p2_bdq_down16_a3_ens | ilic | `bdq -> down (factor 16)` | 16.7 | 3.8 / 4.2 | **4.2** | **57.0** | 95.8 |
 | p2_bdq_a10_lr3e-3 | ilic | `bdq` | 27.8 | 5.2 / 5.4 | **5.4** | **56.5** | 90.8 |
 | p2_bdq_a3_scenario_s2 | scenario | `bdq` | 25.2 | 4.0 / 4.2 | **4.2** | **55.7** | 73.7 |
 | p2_bdq_a5_ens_s3 | ilic | `bdq` | 29.3 | 4.8 / 4.7 | **4.8** | **55.2** | 92.3 |
+| p2_bdq_down32_a3_ens_s4 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.3 | **4.3** | **55.2** | 89.8 |
+| p2_bdq_down24_a3_ens_s1 | ilic | `bdq -> down (factor 24)` | 16.7 | 4.0 / 4.7 | **4.7** | **54.8** | 93.5 |
+| p2_bdq_down16_a5_ens | ilic | `bdq -> down (factor 16)` | 16.7 | 4.5 / 4.5 | **4.5** | **54.0** | 96.5 |
 | p2_bdq_a5_ens_scenario | scenario | `bdq` | 45.2 | 4.3 / 4.8 | **4.8** | **54.0** | 78.7 |
 | p2_bdq_down32_a0 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 3.5 | **4.0** | **53.2** | 89.5 |
 | p2_bdq_down4_a5_ens | ilic | `bdq -> down (factor 4)` | 23.7 | 3.8 / 5.0 | **5.0** | **52.3** | 90.6 |
 | p1_diff_down16_scenario | scenario | `diff (gain 4.0) -> down (factor 16)` | 16.5 | 2.0 / 4.0 | **4.0** | **50.7** | 81.0 |
 | p1_diff_down24_scenario | scenario | `diff (gain 4.0) -> down (factor 24)` | 16.7 | 4.0 / 2.7 | **4.0** | **50.3** | 69.0 |
+| p2_bdq_down24_a3_ens | ilic | `bdq -> down (factor 24)` | 16.7 | 4.0 / 4.7 | **4.7** | **48.8** | 93.0 |
 | p2_bdq_a5_ens_s1 | ilic | `bdq` | 30.1 | 5.2 / 5.7 | **5.7** | **48.0** | 86.5 |
 | p2_bdq_a5_lr3e-3_s1 | ilic | `bdq` | 26.9 | 4.7 / 4.2 | **4.7** | **48.0** | 90.3 |
 | p2_bdq_a3_lr3e-3 | ilic | `bdq` | 35.8 | 4.0 / 3.8 | **4.0** | **46.2** | 89.1 |
+| p2_bdq_down24_a1_ens | ilic | `bdq -> down (factor 24)` | 16.7 | 5.5 / 4.2 | **5.5** | **46.2** | 90.8 |
 | p2_bdq_a3_scenario_s3 | scenario | `bdq` | 39.7 | 5.7 / 3.7 | **5.7** | **44.7** | 74.2 |
 | p1_diff_down32_scenario | scenario | `diff (gain 4.0) -> down (factor 32)` | 16.7 | 3.8 / 2.2 | **3.8** | **42.7** | 58.0 |
+| p6_bdq_down32_a3_ens_e24 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.0 | **4.0** | **42.5** | 92.1 |
+| p2_bdq_down32_a3_r3d | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.0 | **4.0** | **42.1** | 92.8 |
+| p2_bdq_down32_a1_ens_s1 | ilic | `bdq -> down (factor 32)` | 16.7 | 3.8 / 4.7 | **4.7** | **41.6** | 91.3 |
 | p2_bdq_down48_a1_ens | ilic | `bdq -> down (factor 48)` | 16.7 | 4.0 / 4.0 | **4.0** | **41.3** | 82.9 |
 | p2_bdq_down32_a3_ens | ilic | `bdq -> down (factor 32)` | 16.7 | 3.8 / 4.0 | **4.0** | **40.8** | 93.0 |
+| p2_bdq_down32_a3_r18 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.8 | **4.8** | **40.6** | 90.6 |
+| p2_bdq_down32_a3_ens_s2 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.2 / 4.0 | **4.2** | **39.5** | 92.6 |
 | p2_bdq_a3_scenario_s1 | scenario | `bdq` | 34.2 | 4.0 / 4.0 | **4.0** | **39.3** | 64.5 |
 | p2_bdq_down32_a5_ens | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.3 | **4.3** | **38.3** | 91.8 |
 | p1_down64 | ilic | `down (factor 64)` | 16.7 | 4.7 / 8.4 | **8.4** | **38.1** | 48.7 |
 | p2_bdq_down32_a3_ens_s1 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.0 | **4.0** | **37.5** | 92.1 |
+| p2_bdq_down16_a3_ens_scenario | scenario | `bdq -> down (factor 16)` | 16.7 | 4.0 / 5.0 | **5.0** | **37.3** | 73.7 |
+| p2_bdq_down16_a3_ens_scenario_s1 | scenario | `bdq -> down (factor 16)` | 16.7 | 4.3 / 4.2 | **4.3** | **37.0** | 76.2 |
 | p1_diff_down48 | ilic | `diff (gain 4.0) -> down (factor 48)` | 16.7 | 2.7 / 4.0 | **4.0** | **37.0** | 83.6 |
 | p2_bdq_a5_ens | ilic | `bdq` | 28.8 | 3.8 / 3.7 | **3.8** | **37.0** | 84.4 |
 | p1_diff_down48_s1 | ilic | `diff (gain 4.0) -> down (factor 48)` | 16.7 | 4.2 / 4.0 | **4.2** | **36.3** | 82.4 |
 | p2_bdq_down48_a0 | ilic | `bdq -> down (factor 48)` | 16.7 | 4.0 / 4.0 | **4.0** | **36.3** | 83.3 |
+| p2_bdq_down32_a3_ens_s3 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.0 | **4.0** | **35.8** | 92.0 |
 | p2_bdq_down8_a5_ens | ilic | `bdq -> down (factor 8)` | 16.7 | 4.0 / 2.8 | **4.0** | **35.6** | 82.8 |
+| p6_bdq_down32_a3_ens_stride4 | ilic | `bdq -> down (factor 32)` | 16.7 | 4.0 / 3.2 | **4.0** | **35.5** | 92.3 |
 | p2_bdq_a5_lr3e-3 | ilic | `bdq` | 32.1 | 5.2 / 4.7 | **5.2** | **35.3** | 76.9 |
+| p2_bdq_down32_a1_ens | ilic | `bdq -> down (factor 32)` | 16.7 | 3.8 / 4.3 | **4.3** | **32.4** | 91.8 |
+| p2_bdq_down32_a3_ens_scenario_s1 | scenario | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.3 | **4.3** | **32.2** | 62.2 |
 | p2_bdq_a10_ens | ilic | `bdq` | 31.3 | 4.3 / 4.7 | **4.7** | **31.3** | 71.2 |
+| p2_bdq_down32_a3_ens_scenario | scenario | `bdq -> down (factor 32)` | 16.7 | 4.0 / 4.0 | **4.0** | **31.2** | 66.2 |
 | p2_bdq_a5_ens_warm_s1 | ilic | `bdq` | 30.8 | 4.7 / 4.0 | **4.7** | **30.3** | 78.9 |
 | p6_bdq_a5_ens_tshuffle | ilic | `bdq -> tshuffle` | 28.8 | 3.8 / 4.0 | **4.0** | **29.9** | 76.3 |
 | p2_bdq_a7_ens_s2 | ilic | `bdq` | 30.8 | 4.5 / 3.7 | **4.5** | **29.4** | 67.4 |
 | p2_bdq_a3_lr3e-3_s3 | ilic | `bdq` | 28.9 | 5.0 / 4.7 | **5.0** | **28.9** | 68.4 |
 | p2_bdq_down48_a1_ens_s1 | ilic | `bdq -> down (factor 48)` | 16.7 | 4.0 / 4.0 | **4.0** | **27.9** | 87.3 |
 | p2_bdq_a7_ens_warm | ilic | `bdq` | 30.3 | 3.8 / 4.0 | **4.0** | **27.1** | 64.7 |
+| p10_kth_bdq_down32_a3_ens | ilic | `bdq -> down (factor 32)` | - | 4.0 / 4.0 | **4.0** | **26.9** | - |
 | p1_diff_down48_scenario | scenario | `diff (gain 4.0) -> down (factor 48)` | 16.7 | 4.0 / 4.0 | **4.0** | **26.5** | 44.0 |
+| p2_bdq_down48_a3_ens | ilic | `bdq -> down (factor 48)` | 16.7 | 4.0 / 4.3 | **4.3** | **25.3** | 87.3 |
 | p2_bdq_a3_scenario | scenario | `bdq` | 30.5 | 4.0 / 3.5 | **4.0** | **24.7** | 55.8 |
 | p2_bdq_a5_ens_warm | ilic | `bdq` | 28.6 | 5.4 / 4.0 | **5.4** | **23.6** | 61.4 |
+| p2_bdq_down32_a1_ens_scenario | scenario | `bdq -> down (factor 32)` | 16.7 | 5.0 / 3.3 | **5.0** | **22.0** | 55.0 |
 | p6_bdq_a5_ens_warm_tshuffle | ilic | `bdq -> tshuffle` | 27.6 | 4.3 / 4.0 | **4.3** | **18.9** | 56.0 |
 | p6_bdq_down64_a1_ens_e24 | ilic | `bdq -> down (factor 64)` | 16.7 | 4.3 / 4.0 | **4.3** | **14.5** | 82.4 |
+| p2_bdq_down64_a1_ens_scenario_s1 | scenario | `bdq -> down (factor 64)` | 14.5 | 4.3 / 4.0 | **4.3** | **14.0** | 51.5 |
 | p2_bdq_down64_a1_ens_s1 | ilic | `bdq -> down (factor 64)` | 16.7 | 4.2 / 4.0 | **4.2** | **13.4** | 82.6 |
 | p1_diff_down64_e24 | ilic | `diff (gain 4.0) -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **12.7** | 71.2 |
 | p2_bdq_down64_a1_ens_scenario | scenario | `bdq -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **12.7** | 50.8 |
 | p2_bdq_down64_a1_ens | ilic | `bdq -> down (factor 64)` | 16.7 | 4.0 / 4.8 | **4.8** | **12.5** | 82.1 |
 | p2_bdq_down64_a3_ens | ilic | `bdq -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **12.5** | 82.9 |
 | p2_bdq_a5_ens_warm_scenario | scenario | `bdq` | 17.8 | 4.3 / 4.0 | **4.3** | **12.5** | 32.7 |
+| p6_bdq_down64_a1_ens_stride4 | ilic | `bdq -> down (factor 64)` | 16.7 | 4.2 / 2.5 | **4.2** | **12.2** | 81.8 |
+| p2_bdq_down64_a0_s1 | ilic | `bdq -> down (factor 64)` | 16.7 | 4.8 / 4.0 | **4.8** | **12.0** | 80.9 |
 | p1_diff_down64_tshuffle | ilic | `diff (gain 4.0) -> down (factor 64) -> tshuffle` | 16.7 | 3.2 / 4.0 | **4.0** | **11.9** | 64.2 |
+| p2_bdq_down64_a0_scenario | scenario | `bdq -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **11.8** | 52.5 |
 | p1_diff_down64_stride4 | ilic | `diff (gain 4.0) -> down (factor 64)` | 16.7 | 1.8 / 4.2 | **4.2** | **11.4** | 71.6 |
 | p1_diff_down64 | ilic | `diff (gain 4.0) -> down (factor 64)` | 16.7 | 3.8 / 3.8 | **3.8** | **11.0** | 69.9 |
 | p1_diff_down64_s1 | ilic | `diff (gain 4.0) -> down (factor 64)` | 16.7 | 4.0 / 3.7 | **4.0** | **10.9** | 70.7 |
 | p2_bdq_down64_a0 | ilic | `bdq -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **10.7** | 81.8 |
 | p2_bdq_down64_a5_ens | ilic | `bdq -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **10.4** | 80.9 |
 | p2_bdq_down64_a1_ens_s2 | ilic | `bdq -> down (factor 64)` | 16.7 | 3.8 / 3.7 | **3.8** | **9.9** | 76.9 |
+| p2_unet_down64_a0 | ilic | `unet3d -> down (factor 64)` | 16.7 | 3.8 / 4.0 | **4.0** | **9.9** | 66.1 |
 | p2_bdq_down64_a1_ens_s3 | ilic | `bdq -> down (factor 64)` | 16.7 | 4.8 / 4.0 | **4.8** | **9.7** | 80.1 |
 | p2_bdq_down120_a1_ens_s1 | ilic | `bdq -> down (factor 120)` | 16.7 | 3.8 / 4.0 | **4.0** | **9.5** | 75.8 |
 | p1_diff_down64_scenario | scenario | `diff (gain 4.0) -> down (factor 64)` | 16.7 | 4.0 / 2.8 | **4.0** | **9.5** | 23.3 |
+| p2_bdq_down120_a0_s1 | ilic | `bdq -> down (factor 120)` | 16.7 | 4.0 / 5.0 | **5.0** | **8.5** | 74.9 |
 | p2_bdq_down120_a1_ens | ilic | `bdq -> down (factor 120)` | 16.7 | 4.8 / 4.0 | **4.8** | **8.5** | 75.9 |
+| p2_bdq_down120_a0 | ilic | `bdq -> down (factor 120)` | 16.7 | 4.0 / 4.8 | **4.8** | **7.2** | 78.1 |
+| p2_bdq_down120_a1_ens_s2 | ilic | `bdq -> down (factor 120)` | 16.7 | 2.8 / 3.7 | **3.7** | **7.2** | 77.1 |
 | p1_diff_down120 | ilic | `diff (gain 4.0) -> down (factor 120)` | 16.7 | 3.2 / 4.0 | **4.0** | **6.9** | 54.2 |
+| p10_kth_bdq_down64_a1_ens | ilic | `bdq -> down (factor 64)` | - | 4.0 / 4.0 | **4.0** | **6.0** | - |
 | p2_unet_a3 | ilic | `unet3d` | 16.7 | 4.0 / 4.0 | **4.0** | **4.0** | 16.7 |
+| p2_unet_down64_a1_ens | ilic | `unet3d -> down (factor 64)` | 16.7 | 4.0 / 4.0 | **4.0** | **4.0** | 16.7 |
 
 ## VP-UCF101 (attribute cMAP (%); blind floor 58.7)
 
@@ -177,32 +214,78 @@ Privacy is the best attacker's score (frame ResNet-50 or video R3D-18; DINOv2 ru
 
 ![frozen vs retrained](figures/frozen_vs_retrained_hmdb51_vp.png)
 
-- 9 obfuscated runs. Median gap retrained - frozen: **5.4 points**.
-- In 1 of 9 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
+- 12 obfuscated runs. Median gap retrained - frozen: **6.1 points**.
+- In 4 of 12 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
 
 | run | split | obfuscation | frozen action | frozen privacy (frame / video) | **frozen best** | **retrained best** | retrained action |
 |---|---|---|---:|---:|---:|---:|---:|
 | p7_raw | s1 | `raw` | 65.8 | 74.6 / 75.9 | **75.9** | **75.2** | 64.9 |
 | p7_diff | s1 | `diff (gain 4.0)` | 10.3 | 65.0 / 67.0 | **67.0** | **72.8** | 59.9 |
 | p7_bdq_a3_ens | s1 | `bdq` | 11.8 | 66.3 / 67.3 | **67.3** | **72.7** | 63.1 |
+| p7_diff_down8 | s1 | `diff (gain 4.0) -> down (factor 8)` | 2.6 | 61.4 / 61.5 | **61.5** | **70.3** | 42.6 |
 | p7_down8 | s1 | `down (factor 8)` | 3.3 | 65.0 / 61.8 | **65.0** | **70.3** | 45.6 |
 | p7_pix8 | s1 | `pixelate (factor 8)` | 4.1 | 62.2 / 59.9 | **62.2** | **69.5** | 44.5 |
 | p7_diff_down16 | s1 | `diff (gain 4.0) -> down (factor 16)` | 2.0 | 61.4 / 60.9 | **61.4** | **69.5** | 34.4 |
 | p7_personbox_blur | s1 | `person_box (mode blur, every 8, dilate 6, sigma 8.0)` | 28.8 | 64.4 / 66.6 | **66.6** | **69.3** | 45.4 |
+| p7_bdq_down16_a0 | s1 | `bdq -> down (factor 16)` | 1.9 | 60.4 / 60.7 | **60.7** | **69.1** | 36.0 |
+| p7_bdq_down16_a3_ens | s1 | `bdq -> down (factor 16)` | 2.1 | 61.2 / 61.1 | **61.2** | **68.9** | 32.9 |
 | p7_personbox | s1 | `person_box (mode black, every 8, dilate 6)` | 27.7 | 62.6 / 67.3 | **67.3** | **68.8** | 38.4 |
 | p7_blur8 | s1 | `blur (sigma 8)` | 1.7 | 62.2 / 60.4 | **62.2** | **68.3** | 32.0 |
 | p7_down16 | s1 | `down (factor 16)` | 2.2 | 62.8 / 59.7 | **62.8** | **66.6** | 29.7 |
 
-## Charades (identity top-1 (%); chance 1.1)
+## Charades (identity top-1 (%); majority-class 3.6)
 
 ![frozen vs retrained](figures/frozen_vs_retrained_charades.png)
 
-- 3 obfuscated runs. Median gap retrained - frozen: **74.1 points**.
-- In 3 of 3 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
+- 24 obfuscated runs. Median gap retrained - frozen: **43.9 points**.
+- In 23 of 24 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
 
 | run | split | obfuscation | frozen action | frozen privacy (frame / video) | **frozen best** | **retrained best** | retrained action |
 |---|---|---|---:|---:|---:|---:|---:|
 | p8_raw | s1 | `raw` | 16.2 | 89.1 / 94.0 | **94.0** | **93.5** | 15.8 |
+| p8_personbox | s1 | `person_box (mode black, every 8, dilate 6)` | 10.0 | 65.6 / 77.5 | **77.5** | **90.6** | 10.6 |
+| p8_diff | s1 | `diff (gain 4.0)` | 7.4 | 3.5 / 4.8 | **4.8** | **89.4** | 12.9 |
+| p8_bdq_a0 | s1 | `bdq` | 5.1 | 2.5 / 3.8 | **3.8** | **88.8** | 12.6 |
 | p8_blur8 | s1 | `blur (sigma 8)` | 4.7 | 7.4 / 8.2 | **8.2** | **86.9** | 9.0 |
 | p8_down16 | s1 | `down (factor 16)` | 4.8 | 6.8 / 10.9 | **10.9** | **85.0** | 8.4 |
+| p8_diff_down16 | s1 | `diff (gain 4.0) -> down (factor 16)` | 4.6 | 3.1 / 1.6 | **3.1** | **75.1** | 7.9 |
+| p8_bdq_down16_a0 | s1 | `bdq -> down (factor 16)` | 4.5 | 2.5 / 3.0 | **3.0** | **72.5** | 8.0 |
+| p8_bdq_a5_ens_s1 | s1 | `bdq` | 4.7 | 3.1 / 0.9 | **3.1** | **66.0** | 8.4 |
+| p8_diff_down32 | s1 | `diff (gain 4.0) -> down (factor 32)` | 4.6 | 2.2 / 0.6 | **2.2** | **58.4** | 6.8 |
+| p8_bdq_a3_r3d | s1 | `bdq` | 4.6 | 1.1 / 2.8 | **2.8** | **55.4** | 7.5 |
+| p8_bdq_a5_ens | s1 | `bdq` | 4.7 | 2.4 / 1.8 | **2.4** | **54.8** | 7.8 |
+| p8_bdq_down32_a0 | s1 | `bdq -> down (factor 32)` | 4.6 | 0.6 / 1.4 | **1.4** | **53.3** | 6.7 |
+| p8_bdq_a05_ens | s1 | `bdq` | 4.5 | 1.0 / 1.7 | **1.7** | **45.6** | 7.1 |
+| p8_bdq_down16_a3_ens | s1 | `bdq -> down (factor 16)` | 4.6 | 2.2 / 1.0 | **2.2** | **43.2** | 7.1 |
+| p8_down64 | s1 | `down (factor 64)` | 4.5 | 0.6 / 4.8 | **4.8** | **38.8** | 5.5 |
+| p8_bdq_a10_ens | s1 | `bdq` | 4.4 | 0.8 / 1.6 | **1.6** | **32.9** | 6.3 |
 | p8_bdq_a3_ens | s1 | `bdq` | 4.4 | 1.0 / 3.6 | **3.6** | **24.2** | 6.0 |
+| p8_bdq_a3_ens_s2 | s1 | `bdq` | 4.4 | 1.4 / 1.2 | **1.4** | **22.0** | 5.8 |
+| p8_bdq_a3_ens_s1 | s1 | `bdq` | 4.4 | 0.7 / 1.0 | **1.0** | **21.1** | 5.8 |
+| p8_bdq_a3_ens_e15 | s1 | `bdq` | 4.4 | 2.2 / 0.8 | **2.2** | **20.6** | 5.7 |
+| p8_bdq_a1_ens | s1 | `bdq` | 4.4 | 1.4 / 3.3 | **3.3** | **19.6** | 5.8 |
+| p8_bdq_a1_ens_s1 | s1 | `bdq` | 4.4 | 2.2 / 0.6 | **2.2** | **3.6** | 4.4 |
+| p8_bdq_a1_ens_s2 | s1 | `bdq` | 4.4 | 0.6 / 3.5 | **3.5** | **3.6** | 4.4 |
+| p8_bdq_a3_r18 | s1 | `bdq` | 4.4 | 0.6 / 0.6 | **0.6** | **3.6** | 4.4 |
+
+## UTD-MHAD (identity top-1 (%); chance 12.5)
+
+![frozen vs retrained](figures/frozen_vs_retrained_utdmhad.png)
+
+- 10 obfuscated runs. Median gap retrained - frozen: **83.6 points**.
+- In 10 of 10 runs the frozen attacker recovers less than a quarter of what the retrained one does (above the floor): under the frozen protocol they would look private.
+
+| run | split | obfuscation | frozen action | frozen privacy (frame / video) | **frozen best** | **retrained best** | retrained action |
+|---|---|---|---:|---:|---:|---:|---:|
+| p10_utd_down16 | s1 | `down (factor 16)` | - | 21.3 / 20.6 | **21.3** | **100.0** | - |
+| p10_utd_raw | s1 | `raw` | - | 100.0 / 100.0 | **100.0** | **100.0** | - |
+| p9_down16 | s1 | `down (factor 16)` | 3.8 | 13.1 / 12.7 | **13.1** | **100.0** | 99.1 |
+| p9_raw | s1 | `raw` | 99.5 | 100.0 / 100.0 | **100.0** | **100.0** | 100.0 |
+| p9_diff_down32 | s1 | `diff (gain 4.0) -> down (factor 32)` | 3.8 | 12.7 / 12.2 | **12.7** | **99.5** | 97.7 |
+| p9_down64 | s1 | `down (factor 64)` | 3.8 | 12.7 / 12.2 | **12.7** | **99.5** | 92.0 |
+| p9_bdq_down16_a3_ens | s1 | `bdq -> down (factor 16)` | 3.8 | 12.7 / 12.2 | **12.7** | **96.2** | 97.2 |
+| p10_utd_diff_down32 | s1 | `diff (gain 4.0) -> down (factor 32)` | - | 12.2 / 12.5 | **12.5** | **96.2** | - |
+| p9_bdq_down32_a3_ens | s1 | `bdq -> down (factor 32)` | 2.3 | 12.7 / 11.7 | **12.7** | **95.3** | 84.0 |
+| p9_mean | s1 | `mean` | 3.8 | 12.7 / 18.3 | **18.3** | **72.8** | 56.8 |
+| p9_bdq_down64_a1_ens | s1 | `bdq -> down (factor 64)` | 3.3 | 12.7 / 11.7 | **12.7** | **58.7** | 51.2 |
+| p9_diff_down64 | s1 | `diff (gain 4.0) -> down (factor 64)` | 3.8 | 12.7 / 12.2 | **12.7** | **55.4** | 62.9 |
