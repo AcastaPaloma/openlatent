@@ -1,0 +1,32 @@
+{
+ "name": "p2_bdq_down48_a0",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 48
+   }
+  ]
+ },
+ "adv": {
+  "epochs": 15,
+  "alpha": 0.0,
+  "restart_every": 3,
+  "batch": 8,
+  "repeats": 2,
+  "utility": "r2p1d",
+  "adversary": [
+   "frame_r18",
+   "r3d"
+  ],
+  "lr_f": 0.003
+ },
+ "note": "utility-only training (no privacy term): is the BDQ-before-pool gain adversarial or just a utility-optimal pool?"
+}

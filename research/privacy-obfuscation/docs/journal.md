@@ -660,3 +660,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Hypotheses for the new data: H34: on Charades, as on KTH, the scene carries most identity (homes are distinct),
   so blur/downsampling will leak heavily under retrained attackers; H35: BDQ and fixed motion maps transfer to
   VP-HMDB51 the way they did to VP-UCF101 (appearance attributes leak through coarse maps).
+
+### 2026-10-28 00:40 UTC: attacker budget does not change the 1x2 px result
+- p1_diff_down64_e24 (every model trained 24 epochs instead of 12): 71.2 / 12.7 (12 epochs: 69.9 / 11.0;
+  attacker seed 1: 70.7 / 10.9). The identity number is not an under-trained attacker.
+- H36: the BDQ-before-pool gain (82.1 / 12.5 vs fixed 69.9 / 11.0) may come from utility training alone (a
+  learned, action-optimal pool), not the adversarial game. Tests: p2_bdq_down64_a0, p2_bdq_down48_a0 (alpha 0).
