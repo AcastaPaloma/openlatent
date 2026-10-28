@@ -831,3 +831,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p2_bdq_down64_a0_s1: 80.9 / 12.0 (seed 0: 81.8 / 10.7). The utility-only bottleneck replicates.
 - Next: p8_bdq_a10_ens (how far can adversarial BDQ push in-home identity?), p2_bdq_down48_a3_ens (resolve the
   mixed x48 results: 82.9/41.3 vs 87.3/27.9 at alpha 1).
+- 06:50 UTC: p8_bdq_down16_a0 (Charades, BDQ -> 7x9 px, utility only): 8.0 / 72.5%. Unlike KTH, the bottleneck alone
+  does not hide in-home identity (the room survives coarse pooling); the adversarial BDQ (24.2%) is needed.
+  Queued p8_bdq_a3_r3d (video adversary only) and p8_bdq_a3_ens_e15 (50% longer adversarial training).
