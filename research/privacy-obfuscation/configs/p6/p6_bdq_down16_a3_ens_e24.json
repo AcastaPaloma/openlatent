@@ -1,0 +1,23 @@
+{
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "anonymizer_from": "p2_bdq_down16_a3_ens",
+ "name": "p6_bdq_down16_a3_ens_e24",
+ "eval": {
+  "epochs": 24
+ },
+ "note": "24-epoch attackers on the frozen BDQ->7x10 px output"
+}

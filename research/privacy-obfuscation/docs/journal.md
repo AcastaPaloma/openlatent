@@ -854,3 +854,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Charades BDQ (action mAP / identity): a0 12.6/88.8, a1 5.8/19.6, a3 6.0/24.2; raw 15.8/93.5. The adversary is what
   removes in-home identity, and it costs ~60% of action mAP. a5, a10, seeds and the r3d-only ablation are running.
 - Next: alpha 1 at x16/x24 and a seed at x32; Charades alpha 0.5 and an a1 seed.
+- 08:05 UTC: p2_bdq_down32_a3_ens_scenario_s1: 62.2 / 32.2 (seed 0: 66.2 / 31.2), replicates on the scenario split.
+  p2_bdq_down32_a3_r3d (video adversary only): 92.8 / 42.1; frame-only 90.6 / 40.6; both 92-93 / 38-41. At x32 either
+  adversary alone gives the gain. Queued DINOv2 and 24-epoch attackers on the frozen x16 output (most appearance left).
