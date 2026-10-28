@@ -1,0 +1,17 @@
+{
+ "name": "p12_ucf_pose_1p",
+ "dataset": "ucf101_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2,
+  "max_people": 1
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16
+ },
+ "note": "stick figure of the single most confident person per frame: tests whether 'relationship' leaks through people count"
+}

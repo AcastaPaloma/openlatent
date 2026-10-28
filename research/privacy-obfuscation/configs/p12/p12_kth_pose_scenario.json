@@ -1,0 +1,12 @@
+{
+ "name": "p12_kth_pose_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2
+ },
+ "note": "stick figures on the scenario split (action + identity), comparable to the scenario learned pools"
+}

@@ -1,0 +1,15 @@
+{
+ "name": "p12_ucf_raw_s1",
+ "dataset": "ucf101_vp",
+ "seed": 1,
+ "anonymizer": {
+  "type": "raw"
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16,
+  "action": []
+ },
+ "note": "attacker-seed replicate of the raw reference: noise level of the action-conditional cMAP"
+}

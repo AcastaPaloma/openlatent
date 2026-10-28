@@ -1189,3 +1189,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   learned x64 pool (51-53 action, 4-9.5 hardest).
   p10_kth_pose_scenario_xh failed: CUDA OOM, two Keypoint R-CNN jobs on one GPU with 64 frames per detector call. Pose now uses
   16 per call; requeued. Queued p12_hmdb_raw_s1 (attacker seed 1) to measure the conditional metric's seed noise.
+- 20:05 UTC: conditional-metric noise: raw VP-HMDB51 attacker seed 1 gives 70.0 vs 69.7 (attr mAP 75.8 vs 75.6); differences
+  of a point or more are signal. Mean colour per frame: 63.4 (chance 61.9): one number per frame carries ~1.5 of the ~8 points.
+  Black person boxes on HMDB: 66.3, relationship still +9.8 over chance (raw +10.7): removing people doesn't remove how many.
+  Charades p8_bdq_a1_ens_pw collapsed to the floors (4.4 / 3.6) while its in-game action recall read ~60%: pos_weight-inflated
+  recall hides a content-free output from the guard. The guard should use a held-out check, not in-game recall.
+  New dataset search: Weizmann actions (9 people, static scene) is the natural second KTH, but its official host times out from
+  the Mac and the VMs and no verified mirror exists; not used.
+  Queued: KTH pose on the scenario split (action + identity), VP-UCF101 single-person pose, raw UCF attacker seed 1.
