@@ -897,3 +897,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 10:20 UTC: p8_bdq_a3_r3d (Charades, video adversary only): 7.5 / 55.4% vs frame+video ensemble 5.8-6.0 / 21-24%.
   On Charades the frame (appearance) adversary is what removes the room; a video adversary alone leaves it
   (opposite of KTH, where either adversary sufficed at x32). Frame-only (p8_bdq_a3_r18) queued; p8_bdq_a1_ens_e15 queued.
+- 10:35 UTC: p8_bdq_a05_ens (Charades): 7.1 / 45.6%. Charades alpha curve (mAP / identity): a0 12.6/88.8, a0.5 7.1/45.6,
+  a1 5.8/19.6, a3 5.8-6.0/21-24 (3 seeds), a5 7.8/54.8 (seed 1 running), a10 6.3/32.9. Most identity goes between
+  a0.5 and a1; action mAP falls from 12.6 to ~6 as soon as the adversary is on. p8_bdq_a2_ens queued.
