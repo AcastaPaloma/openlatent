@@ -32,7 +32,7 @@ import resource
 import numpy as np
 import torch
 
-from . import anonymizers, kth, models, train, ucf101
+from . import anonymizers, hmdb51, kth, models, train, ucf101
 
 WORK = os.path.expanduser("~/work")
 HF_REPO = os.environ.get("PPV_HF_REPO", "KuanKuanKuan/openlatent-privacy")
@@ -92,6 +92,11 @@ def load_dataset(cfg, log):
         log(f"VP-UCF101 split 1: {len(rows_tr)} train / {len(rows_te)} test videos")
         return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=101, n_priv=len(ucf101.ATTRS),
                     priv_kind="multilabel", priv_task="attr", tag="ucf101_vp_s1", stride=cfg.get("clip_stride", 1), big=True, in_ch=3)
+    if ds == "hmdb51_vp":
+        rows_tr, rows_te, frames = hmdb51.load(os.path.join(WORK, "data", "hmdb51"))
+        log(f"VP-HMDB51 split 1: {len(rows_tr)} train / {len(rows_te)} test videos")
+        return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=51, n_priv=len(hmdb51.ATTRS),
+                    priv_kind="multilabel", priv_task="attr", tag="hmdb51_vp_s1", stride=cfg.get("clip_stride", 1), big=True, in_ch=3)
     raise ValueError(ds)
 
 

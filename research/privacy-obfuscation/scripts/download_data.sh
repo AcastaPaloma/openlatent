@@ -7,7 +7,7 @@
 #   hmdb51 : HMDB51 videos + official splits (~2 GB), Brown/Serre lab
 #   ucf101 : UCF101 videos + official splits (~6.5 GB), UCF CRCV
 #
-# Usage: download_data.sh kth|hmdb51|ucf101|ucf101_hf|vp_annotations [...]
+# Usage: download_data.sh kth|hmdb51|hmdb51_hf|ucf101|ucf101_hf|vp_annotations [...]
 set -euo pipefail
 
 RAW=~/work/data/raw
@@ -40,6 +40,12 @@ for name in "$@"; do
     hmdb51)
       fetch "https://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/hmdb51_org.rar" "$RAW/hmdb51/hmdb51_org.rar"
       fetch "https://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/test_train_splits.rar" "$RAW/hmdb51/test_train_splits.rar" ;;
+    hmdb51_hf)
+      # The Serre-lab host serves HTML instead of the archives (2026-10-27); this HF mirror ships the
+      # original hmdb51_org archive and the official split files. ppv/hmdb51.py checks the counts.
+      base=https://huggingface.co/datasets/MichiganNLP/hmdb/resolve/main
+      fetch "$base/hmdb51_org.zip" "$RAW/hmdb51/hmdb51_org.zip"
+      fetch "$base/test_train_splits.zip" "$RAW/hmdb51/test_train_splits.zip" ;;
     ucf101)
       fetch "https://www.crcv.ucf.edu/data/UCF101/UCF101.rar" "$RAW/ucf101/UCF101.rar"
       fetch "https://www.crcv.ucf.edu/data/UCF101/UCF101TrainTestSplits-RecognitionTask.zip" "$RAW/ucf101/splits.zip" ;;
