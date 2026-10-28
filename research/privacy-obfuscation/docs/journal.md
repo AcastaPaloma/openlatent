@@ -666,3 +666,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   attacker seed 1: 70.7 / 10.9). The identity number is not an under-trained attacker.
 - H36: the BDQ-before-pool gain (82.1 / 12.5 vs fixed 69.9 / 11.0) may come from utility training alone (a
   learned, action-optimal pool), not the adversarial game. Tests: p2_bdq_down64_a0, p2_bdq_down48_a0 (alpha 0).
+
+### 2026-10-28 00:50 UTC: wave queued for a 2-hour unattended window
+- Every VM has 2 running + 1-4 pending jobs (all configs built and run once on a VM before queueing):
+  BDQ->down64 seeds 1-3, alpha 0/3/5, 24-epoch attackers, scenario split; BDQ->down48 seed 1 and alpha 0;
+  BDQ->down32/120; scenario BDQ a3 seeds 1-3; diff->down24 scenario; UCF person-blur->down8/16;
+  VP-HMDB51 first wave (10 runs); Charades prepares itself on 129.213.90.42 and then queues a smoke run + 7 runs.
+- VP-HMDB51 jobs on VMs that were still preparing the data are held by a watcher that releases them only after
+  the prep log says HMDB READY and meta.json exists.
