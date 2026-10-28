@@ -1056,3 +1056,5 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Fix (train.py): the in-game action loss weights positives (pos_weight 20, configurable); attackers and evaluation keep
   plain BCE, so numbers stay comparable. Reruns: p8_bdq_a1_ens_pw, p8_bdq_a3_ens_pw, p8_bdq_a3_r18_pw,
   p11_ch_mask_k25_a1_pw. p10_kth_bdq_a1_scenario_xh (hardest test, plain BDQ a1, scenario action 79.2): 21.0.
+- 15:50 UTC: hardest test with 24-epoch attackers on learned x32: 15.0 (12 epochs: 12.0). p2_bdq_down120_a1_ens_scenario:
+  45.7 / 10.3. p8_bdq_a1_ens_s2_g (pre pos_weight): 5.8 / 22.2%.
