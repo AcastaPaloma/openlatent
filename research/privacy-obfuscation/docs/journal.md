@@ -740,3 +740,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   present in ~90% of videos and readable from coarse colour.
 - p7_blur8 (VP-HMDB51): 32.0 / 68.3 cMAP (raw pending).
 - Next H38 controls: p2_bdq_down64_a0_s1, p2_bdq_down64_a0_scenario, p2_bdq_down120_a0.
+
+### 2026-10-28 04:00 UTC: first Charades baseline; more learned-before-pool seeds
+- p8_raw (Charades, raw video): action mAP 15.8 (157 classes, chance 0.6); identity 93.5% top-1 over 90 people
+  (ResNet-50 89.3; chance 1.1). Footage from a person's own home identifies them almost perfectly (home + person).
+- p2_bdq_down48_a1_ens_s1: 87.3 / 27.9 (seed 0: 82.9 / 41.3; fixed diff->down48 83.6 / 37.0).
+- p2_bdq_down64_a1_ens_s3: 80.1 / 9.7. BDQ->1x2 px over seeds 0-3 and alphas 0-5: 76.9-82.9 action, 9.7-13.4 identity.
+- p7_diff_down16 (VP-HMDB51): 34.4 / 69.5 cMAP.
+- Queued p8_bdq_down16_a0 (Charades: utility-only learned stage before a 7x9 px pool, H38 on in-home identity) and
+  p2_bdq_down120_a0 (lost from an earlier submission; requeued).
