@@ -926,3 +926,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   (chance 12.5): the person-action signature survives two numbers per frame, and learning does not help here.
 - 11:35 UTC: UTD-MHAD fixed filters keep everything within-action: diff->down32 97.7 / 99.5, down16 99.1 / 100 (raw 100/100).
   Cross-action versions queued (p10_utd_down16, p10_kth_down16) next to the raw and learned-pool ones.
+
+### 2026-10-28 11:55 UTC: cross-action identity; UTD-MHAD correction
+- Cross-action identity (attackers trained on 4 KTH actions, tested on the other 2; attack-only on stored outputs):
+  BDQ -> x32 a3: 26.9 (within-action 40.8); fixed diff -> x32: 65.9 (within-action 63.9). The learned pool removes most
+  of the identity that transfers across actions; what it leaves within-action is largely person-action style.
+  The fixed motion map leaks the same identity across actions as within. H41 supported on KTH (raw, x16, x64 pending).
+- Correction (UTD-MHAD): p9_down64 (1x2 RGB px per frame) 92.0 / 99.5% identity; p10_utd_diff_down32 (cross-action)
+  94.8-96.2%. UTD-MHAD is NOT scene-free: each subject was recorded in a separate session, and global colour/lighting
+  (plus where the subject stands) identifies them almost perfectly. The 09:20 entry's premise was wrong. Queued
+  p9_mean (per-frame mean colour only) to measure this session cue directly.
+- p9_bdq_down16_a3_ens 97.2 / 96.2. p2_bdq_down32_a1_ens_scenario 55.0 / 22.0 (a3: 66.2/31.2, 62.2/32.2).
+  p6_bdq_down16_a3_ens_e24 (24-epoch attackers on x16): 96.0 / 57.5 (12 epochs: 57.0). Robust.
