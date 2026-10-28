@@ -1215,3 +1215,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   far below fixed maps at similar action (fixed x8 50.5). Plain BDQ a7 seed 1: 17.0 (seeds 0, 2: 8.0, 8.5): its weaker scenario
   result (45.0) carries over, so a7's 8% is seed-dependent, not a property of the setting.
   Queued KTH pose redrawn every 16 frames (within and cross-action): tests how much of pose identity is fine motion timing.
+- 20:50 UTC: VP-HMDB51 single-person pose (max_people=1): 35.5 action / 68.0 attr mAP / 66.3 conditional (all people: 38.3 /
+  70.8 / 67.6). Relationship vs chance: +8.3 (all people +10.3, raw +10.7). People count explains only ~2 of the ~10 points;
+  hypothesis (1) of 18:40 mostly rejected. A single body's posture and placement carry "relationship" (and skin colour +6).
+  VP-UCF101 head-and-shoulders blur: 85.4 / 76.0 / 66.4 (raw 91.8 / 77.1 / 67.1): face region holds nothing beyond the action.
+  Queued the barest structural control, one canonical skeleton per frame on HMDB (no appearance, proportions or count), and the
+  canonical-pose hardest test on KTH.
