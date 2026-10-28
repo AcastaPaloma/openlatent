@@ -1270,3 +1270,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   appearance; most likely HMDB source films (a shared actor, camera style, framing) correlate with the skin-colour label within
   an action class. The VP skin-colour label measures source, not something an appearance obfuscator can or should remove.
   Queued DINOv2 attackers on canonical one-posture stick figures, KTH scenario split.
+- 22:55 UTC: DINOv2 attackers on canonical one-posture stick figures (KTH Ilic): probe 23.1, fine-tune 25.8, below R3D's 29.1.
+  As with every obfuscator so far, the video attacker is the strongest; no hidden appearance cue for DINO to exploit.
+  Canonical one-posture + x4 downsample, hardest test: 13.0 (without the downsample 13.5): blurring the figure adds nothing.
+  Queued a seed replicate and 24-epoch attackers for the canonical one-posture hardest test.
