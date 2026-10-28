@@ -65,6 +65,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p7_diff_down8 | hmdb51_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 8}]}` | s1 | 42.6 | **70.3** | 70.4% | 70.3 / 67.3 | 2.6 | 61.5 | 50 |
 | p13_hmdb_personbox_blur16 | hmdb51_vp | `{type: person_box, mode: blur, sigma: 16.0, every: 8, dilate: 6}` | s1 | 41.7 | **69.4** | 65.0% | 69.4 / 69.4 | 34.2 | 66.1 | 51 |
 | p7_personbox | hmdb51_vp | `{type: person_box, mode: black, every: 8, dilate: 6}` | s1 | 38.4 | **68.8** | 60.9% | 67.7 / 68.8 | 27.7 | 67.3 | 130 |
+| p12_hmdb_pose | hmdb51_vp | `{type: pose, every: 4, width: 2}` | s1 | 38.3 | **70.8** | 73.4% | 70.8 / 69.6 | 2.9 | 59.7 | 133 |
 | p7_bdq_down16_a0 | hmdb51_vp | `{type: chain, stages: [{type: bdq}, {type: down, factor: 16}]}` | s1 | 36.0 | **69.1** | 62.7% | 69.1 / 67.0 | 1.9 | 60.7 | 132 |
 | p7_diff_down16 | hmdb51_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 16}]}` | s1 | 34.4 | **69.5** | 65.1% | 69.5 / 66.6 | 2.0 | 61.4 | 50 |
 | p7_bdq_down16_a3_ens | hmdb51_vp | `{type: chain, stages: [{type: bdq}, {type: down, factor: 16}]}` | s1 | 32.9 | **68.9** | 61.6% | 68.9 / 66.3 | 2.1 | 61.2 | 130 |
@@ -309,6 +310,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p10_kth_raw | kth | `{type: raw}` | ilic | - | **99.9** | 100.4% | 99.9 / 99.4 | - | 100.0 | 17 |
 | p10_kth_raw_scenario | kth | `{type: raw}` | scenario | - | **100.0** | 100.5% | 100.0 / 99.7 | - | 100.0 | 32 |
 | p3_raw | ucf101_vp | `{type: raw}` | ilic | 91.8 | **76.6** | 97.2% | 76.6 / 75.4 | 91.0 | 77.1 | 116 |
+| p13_ucf_gray | ucf101_vp | `{type: gray}` | s1 | 90.0 | **76.1** | 94.3% | 76.1 / 74.8 | 79.2 | 74.1 | 66 |
 | p3_raw_s1 | ucf101_vp | `{type: raw}` | s1 | 90.4 | **77.0** | 99.2% | 77.0 / 75.8 | 90.7 | 77.0 | 60 |
 | p3_bdq_a3_ens | ucf101_vp | `{type: bdq}` | s1 | 87.8 | **74.9** | 87.9% | 74.6 / 74.9 | 1.3 | 63.4 | 167 |
 | p3_bdq_a1 | ucf101_vp | `{type: bdq}` | s1 | 87.8 | **75.2** | 89.8% | 75.0 / 75.2 | 1.7 | 64.6 | 132 |

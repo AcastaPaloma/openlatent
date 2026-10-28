@@ -1158,3 +1158,16 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   VP-HMDB51 gray + head blur: 60.2 / 73.2 / 68.4 conditional (raw 64.9 / 75.6 / 69.7).
   In-game p14 readings: HMDB a10 epoch 5 action 74.6, gain over action-only 0.015; a30 epoch 4 action 65.2, gain 0.006.
   Queued p14_hmdb_bdq_cond_a3 to complete the alpha sweep (3, 10, 30).
+- 19:05 UTC: VP-HMDB51 pose (stick figures on black, GIF checked: results/gifs/hmdb51_vp/p12_hmdb_pose.gif): 38.3 action /
+  70.8 attr mAP / 67.6 conditional (raw 64.9 / 75.6 / 69.7, chance 61.9). Per attribute vs chance: face +5.4, skin colour +7.7,
+  gender +3.1, nudity +1.9, relationship +10.3. Stick figures carry no colour, yet skin colour beyond the action is as predictable
+  as from raw video (+8.1). So the beyond-action skin-colour signal is not appearance: it rides on structure the figures keep
+  (framing, how much body is visible, how many people, camera motion). HMDB's own clip tags record exactly these (visible body
+  part h/u/f, camera motion, number of people, viewpoint). Pose removes nudity (+1.9) but not relationship (+10.3): consistent
+  with relationship = more than one person in view. Check on source overlap: 113 of ~1500 HMDB source-video names appear in both
+  split-1 train and test (rough name parse), so same-source shortcuts exist but can't explain a +8 effect on their own.
+  VP-UCF101 grayscale: 90.0 / 76.1 / 66.1 (raw 91.8 / 77.1 / 67.1): colour removal hides nothing.
+  Hypothesis: on the VP benchmarks most of what survives beyond the action is scene structure, not identity-bearing appearance;
+  the honest attribute-privacy metric needs a control that keeps structure but no appearance (pose is that control).
+  Queued controls on both VP datasets: all-black frames (the conditional cMAP must land at chance: tests the metric) and
+  per-frame mean colour.

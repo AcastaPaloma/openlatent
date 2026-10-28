@@ -89,6 +89,7 @@ AP of each attribute within each action class where it varies. Chance = expected
 | diff->down16 | 63.5 | 66.0 |
 | BDQ a3 | 65.2 | 70.4 |
 | person boxes blacked out | 64.8 | - |
+| pose (stick figures) | - | 67.6 |
 | person boxes blurred (sigma 16) | - | 66.0 |
 
 ## Findings

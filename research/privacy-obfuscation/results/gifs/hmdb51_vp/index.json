@@ -1,0 +1,31 @@
+{
+ "clips": [
+  {
+   "video": "brush_hair/Brushing_Her_Hair__[_NEW_AUDIO_]_UPDATED!!!!_brush_hair_h_cm_np1_fr_goo_0",
+   "action": "brush_hair"
+  },
+  {
+   "video": "hit/Destruction_of_a_TV_hit_f_cm_np1_ri_bad_2",
+   "action": "hit"
+  },
+  {
+   "video": "shoot_bow/Fellowship_7_shoot_bow_h_nm_np1_fr_med_8",
+   "action": "shoot_bow"
+  },
+  {
+   "video": "wave/WeddingCrashers_wave_u_nm_np1_fr_goo_0",
+   "action": "wave"
+  }
+ ],
+ "runs": [
+  {
+   "run": "p12_hmdb_pose",
+   "file": "p12_hmdb_pose.gif",
+   "split": "s1",
+   "action": 38.30065429210663,
+   "privacy": 70.81619292366976,
+   "leakage": 71.35117895823724,
+   "kb": 12
+  }
+ ]
+}
