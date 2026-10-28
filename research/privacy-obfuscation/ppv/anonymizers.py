@@ -251,12 +251,13 @@ class Pose(nn.Module):
     Fixed; no learned parameters of its own."""
     learned = False
 
-    def __init__(self, every=4, score=0.7, kp_score=2.0, det_size=320, width=1):
+    def __init__(self, every=4, score=0.7, kp_score=2.0, det_size=320, width=1, max_people=None):
         super().__init__()
         from torchvision.models.detection import KeypointRCNN_ResNet50_FPN_Weights, keypointrcnn_resnet50_fpn
         self.det = keypointrcnn_resnet50_fpn(weights=KeypointRCNN_ResNet50_FPN_Weights.COCO_V1, min_size=det_size, max_size=int(det_size * 1.6)).eval()
         self.det.requires_grad_(False)
         self.every, self.score, self.kp_score, self.width = every, score, kp_score, width
+        self.max_people = max_people  # draw only the most confident people (1 removes how many people are in view)
         self.register_buffer("limbs", torch.tensor(COCO_LIMBS), persistent=False)
 
     def train(self, mode=True):
@@ -293,7 +294,7 @@ class Pose(nn.Module):
         for i in range(0, len(idx), 64):
             chunk = idx[i:i + 64]
             for k, det in zip(chunk, self.det(list(rgb[chunk].float()))):
-                keep = det["scores"] >= self.score
+                keep = (det["scores"] >= self.score).nonzero()[:, 0][:self.max_people]  # detections come sorted by score
                 # keypoints[..., 2] is a constant visibility flag; the per-keypoint confidence is keypoints_scores
                 kps = torch.cat([det["keypoints"][keep][..., :2], det["keypoints_scores"][keep][..., None]], -1)
                 canvas = self.draw(list(kps), h, w, x.device).to(x.dtype)
