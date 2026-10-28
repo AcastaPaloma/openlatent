@@ -1,0 +1,68 @@
+{
+ "name": "p4_dino_kth_pose_canon_e16_scenario",
+ "config": {
+  "name": "p4_dino_kth_pose_canon_e16_scenario",
+  "dataset": "kth",
+  "split": "scenario",
+  "seed": 0,
+  "anonymizer": {
+   "type": "pose",
+   "every": 16,
+   "width": 2,
+   "canonical": 0.5
+  },
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  },
+  "note": "DINOv2 attackers (probe and fine-tune) on canonical one-posture-per-clip stick figures"
+ },
+ "git": "bcdb184",
+ "dataset": "kth",
+ "split": "scenario",
+ "n_train": 1791,
+ "n_test": 600,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 28.66666615009308,
+  "person/frame_dino_ft": 29.16666567325592
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 28.66666615009308,
+   "by_action": {
+    "0": 43.99999976158142,
+    "1": 62.00000047683716,
+    "2": 43.99999976158142,
+    "3": 3.999999910593033,
+    "4": 10.000000149011612,
+    "5": 7.999999821186066
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 29.16666567325592,
+   "by_action": {
+    "0": 61.000001430511475,
+    "1": 50.0,
+    "2": 47.999998927116394,
+    "3": 2.9999999329447746,
+    "4": 7.000000029802322,
+    "5": 5.999999865889549
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 29.16666567325592,
+ "privacy_top1": 29.16666567325592,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 23.201898189385734
+}

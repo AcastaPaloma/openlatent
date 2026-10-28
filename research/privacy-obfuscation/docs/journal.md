@@ -1274,3 +1274,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   As with every obfuscator so far, the video attacker is the strongest; no hidden appearance cue for DINO to exploit.
   Canonical one-posture + x4 downsample, hardest test: 13.0 (without the downsample 13.5): blurring the figure adds nothing.
   Queued a seed replicate and 24-epoch attackers for the canonical one-posture hardest test.
+- 23:10 UTC: canonical one-posture stick figures replicate: Ilic seed 1 92.0 / 28.3 (seed 0 91.5 / 29.1); scenario seed 1
+  81.0 / 29.7 (81.7 / 27.5). Across actions (Ilic): 19.9. DINOv2 on the scenario version: probe 28.7, fine-tune 29.2 (R3D
+  27.5-29.7): no stronger attacker. Adding x4 downsample: Ilic 91.8 / 25.3, scenario 79.7 / 25.8. On Ilic that beats the learned
+  x48 pool (~87.4 / ~25) by ~4 action; the learned x64 pool (~81 / 11.4) still holds the low-identity end.
+  Queued x8 and x16 downsamples of the canonical figures (Ilic, scenario, hardest test) to trace the pose frontier toward x64's
+  identity, plus the x4 version's cross-action test.

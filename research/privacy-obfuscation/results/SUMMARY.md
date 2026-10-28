@@ -35,7 +35,8 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | pose: stick figures (Keypoint R-CNN, 2 seeds) | 97.8 ± 0.0 | 53.4 ± 0.1 | 27.4 | 2 |
 | pose, redrawn every 16 frames | 93.3 | 38.1 | 29.1 | 1 |
 | pose, canonical skeleton (fixed size and proportions) | 97.3 | 45.2 | 21.4 | 1 |
-| **pose, canonical skeleton, one posture per clip** | 91.5 | 29.1 | – | 1 |
+| **pose, canonical skeleton, one posture per clip** | 91.7 ± 0.3 | 28.7 ± 0.4 | 19.9 | 2 |
+| pose, canonical, one posture per clip, then x4 downsample | 91.8 | 25.3 | – | 1 |
 
 Chance: action 16.7, identity 4.0. Controls: brightness only (one number per frame) 22.4 identity; all-black 16.7 / 4.0; shuffled training labels: identity at chance for every attacker.
 
@@ -63,7 +64,8 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | pose: stick figures (2 seeds) | 90.5 ± 0.3 | 37.7 ± 0.2 | 21.5 | 2 |
 | pose, canonical skeleton | 90.5 | 44.2 | 16.5 | 1 |
 | pose, one posture per clip | 84.8 | 31.7 | 17.0 | 1 |
-| **pose, canonical, one posture per clip** | 81.7 | 27.5 | 13.5 | 1 |
+| **pose, canonical, one posture per clip** | 81.3 ± 0.3 | 28.6 ± 1.1 | 13.5 | 2 |
+| pose, canonical, one posture per clip, then x4 | 79.7 | 25.8 | 13.0 | 1 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
 
