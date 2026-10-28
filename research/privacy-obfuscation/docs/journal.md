@@ -955,3 +955,5 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Corrected Charades reading (mAP / identity, floors 4.4 / 3.6, raw 15.8 / 93.5): BDQ a3 seeds 5.8-6.0 / 21-24%,
   a1 seed 0 5.8 / 19.6%. Identity drops a lot, but action keeps only ~13% of its raw gap above the floor.
   Charades has no good trade-off yet.
+- 12:35 UTC: cross-action identity, learned pools on KTH: x32 26.9, x48 17.0, x64 6.0, x120 4.9 (chance 4.0; within-action
+  40.8 / 25.3 / 12.5 / 8.5). Fixed maps: x32 65.9 (x16, x48, x64 queued/running). p9_bdq_a3_ens (UTD-MHAD): 96.2 / 96.7.
