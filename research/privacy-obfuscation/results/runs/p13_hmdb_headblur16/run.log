@@ -1,0 +1,44 @@
+[17:43:29] run p13_hmdb_headblur16 @ 37206ad: {"name": "p13_hmdb_headblur16", "dataset": "hmdb51_vp", "seed": 0, "anonymizer": {"type": "person_box", "mode": "blur", "sigma": 16.0, "every": 8, "dilate": 6, "head": 0.33}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}, "note": "blur only the top third of each detected person box (head and shoulders); body, scene and objects stay raw; reports action, attribute mAP and action-conditional cMAP"}
+[17:43:29] VP-HMDB51 split 1: 3570 train / 1530 test videos
+[17:59:55] materialised anonymised dataset (985s)
+[17:59:56] strong eval: training action r2p1d on anonymised data
+[18:00:20]   [action] epoch 1/10 loss 2.675 train_acc 36.8 (24s)
+[18:00:43]   [action] epoch 2/10 loss 1.288 train_acc 67.6 (23s)
+[18:01:05]   [action] epoch 3/10 loss 0.825 train_acc 78.3 (23s)
+[18:01:28]   [action] epoch 4/10 loss 0.459 train_acc 88.7 (23s)
+[18:01:51]   [action] epoch 5/10 loss 0.270 train_acc 94.0 (23s)
+[18:02:13]   [action] epoch 6/10 loss 0.119 train_acc 98.0 (23s)
+[18:02:36]   [action] epoch 7/10 loss 0.074 train_acc 99.1 (23s)
+[18:02:59]   [action] epoch 8/10 loss 0.043 train_acc 99.7 (23s)
+[18:03:21]   [action] epoch 9/10 loss 0.040 train_acc 99.6 (23s)
+[18:03:44]   [action] epoch 10/10 loss 0.033 train_acc 99.8 (23s)
+[18:03:56]   strong action/r2p1d: 59.22
+[18:04:07]   weak action/r2p1d: 56.21
+[18:04:08] strong eval: training attr frame_r50 on anonymised data
+[18:04:26]   [attr] epoch 1/10 loss 0.514 train_acc 76.6 (19s)
+[18:04:44]   [attr] epoch 2/10 loss 0.417 train_acc 81.2 (18s)
+[18:05:02]   [attr] epoch 3/10 loss 0.388 train_acc 82.9 (18s)
+[18:05:20]   [attr] epoch 4/10 loss 0.356 train_acc 83.8 (18s)
+[18:05:37]   [attr] epoch 5/10 loss 0.331 train_acc 84.9 (18s)
+[18:05:55]   [attr] epoch 6/10 loss 0.303 train_acc 86.3 (18s)
+[18:06:13]   [attr] epoch 7/10 loss 0.282 train_acc 87.8 (18s)
+[18:06:31]   [attr] epoch 8/10 loss 0.268 train_acc 88.4 (18s)
+[18:06:48]   [attr] epoch 9/10 loss 0.260 train_acc 88.7 (18s)
+[18:07:06]   [attr] epoch 10/10 loss 0.256 train_acc 88.9 (18s)
+[18:07:25]   strong attr/frame_r50: 74.04  (AP per attribute [96.4, 81.6, 95.3, 55.9, 41.1], F1 69.3)  action-conditional cMAP 69.32 (floor 61.9)
+[18:07:44]   weak attr/frame_r50: 72.17
+[18:07:44] strong eval: training attr r3d on anonymised data
+[18:07:58]   [attr] epoch 1/10 loss 0.481 train_acc 77.0 (13s)
+[18:08:11]   [attr] epoch 2/10 loss 0.387 train_acc 82.8 (13s)
+[18:08:23]   [attr] epoch 3/10 loss 0.332 train_acc 85.6 (13s)
+[18:08:36]   [attr] epoch 4/10 loss 0.258 train_acc 89.1 (13s)
+[18:08:48]   [attr] epoch 5/10 loss 0.189 train_acc 92.4 (13s)
+[18:09:01]   [attr] epoch 6/10 loss 0.135 train_acc 94.9 (13s)
+[18:09:20]   [attr] epoch 7/10 loss 0.093 train_acc 97.1 (19s)
+[18:09:49]   [attr] epoch 8/10 loss 0.070 train_acc 98.1 (29s)
+[18:10:19]   [attr] epoch 9/10 loss 0.059 train_acc 98.5 (29s)
+[18:10:48]   [attr] epoch 10/10 loss 0.051 train_acc 98.8 (29s)
+[18:11:02]   strong attr/r3d: 72.98  (AP per attribute [95.0, 78.3, 95.3, 53.1, 43.2], F1 70.3)  action-conditional cMAP 68.00 (floor 61.9)
+[18:11:15]   weak attr/r3d: 71.85
+[18:11:15] DONE p13_hmdb_headblur16: action 59.22  privacy cmap (strong, best attacker) 74.04  (27.8 min)
+[18:11:18] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p13_hmdb_headblur16

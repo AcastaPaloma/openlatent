@@ -88,6 +88,7 @@ AP of each attribute within each action class where it varies. Chance = expected
 | downsample x16 | 63.5 | 64.7 |
 | diff->down16 | 63.5 | 66.0 |
 | BDQ a3 | 65.2 | 70.4 |
+| person boxes blacked out | 64.8 | - |
 | person boxes blurred (sigma 16) | - | 66.0 |
 
 ## Findings

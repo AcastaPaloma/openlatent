@@ -1137,3 +1137,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   The usual entropy objective asks f to hide attributes the action implies, i.e. to hide the action. Hypothesis: at matched
   action, p14 lowers the conditional cMAP more than p3/p7 BDQ. Smoke-tested on GPU; queued alpha 10 and 30 on UCF and HMDB.
   Also queued Charades BDQ a3 pos_weight seed 1 (seed 0's in-game reading: action recall 61, identity adversary 6.3%).
+- 18:40 UTC: VP-HMDB51 p13 (with action): grayscale 65.6 action / 69.6 conditional cMAP; head-and-shoulders blur 59.2 / 69.3
+  (raw 64.9 / 69.7, chance 61.9; whole-person blur 41.7 / 66.0). VP-UCF101 black person boxes: 64.8 (raw 67.1, chance 61.3).
+  New code's Monte Carlo floor reproduces the offline value (61.89). Neither colour nor the face carries what the video
+  reveals beyond its action. Per-attribute conditional AP minus per-attribute chance on raw video:
+      HMDB  face +4.4  skin colour +8.1  gender +1.9  nudity +14.2  relationship +10.7
+      UCF   face +3.2  skin colour +6.4  gender +2.0  nudity +7.2   relationship +10.1
+  Gender is at chance once the action is known; the leftover signal is mostly nudity (how much skin is visible), relationship
+  (more than one person in view) and skin tone (survives grayscale through luminance). Whole-person blur takes nudity to +2 and
+  relationship to +7.7 on HMDB; black boxes on UCF take nudity to +0.4 but leave relationship at +8.7.
+  Hypotheses: (1) relationship leaks through the count and layout of people, which survives any per-person obfuscation; only
+  removing person count (one box for all people, or pose with identities merged) can hide it. (2) The p14 conditional adversary
+  should concentrate on nudity and relationship, so its per-attribute numbers matter more than the mean.

@@ -1,0 +1,31 @@
+[16:22:12] run p12_ucf_personbox @ 4dba6a4: {"name": "p12_ucf_personbox", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "person_box", "mode": "black", "every": 8, "dilate": 6}, "eval": {"epochs": 10, "repeats": 1, "batch": 16, "action": []}, "note": "attack-only re-evaluation for the action-conditional attribute cMAP (what the video reveals beyond its action)"}
+[16:22:12] VP-UCF101 split 1: 9537 train / 3783 test videos
+[17:44:18] materialised anonymised dataset (4925s)
+[17:44:18] strong eval: training attr frame_r50 on anonymised data
+[17:45:47]   [attr] epoch 1/10 loss 0.496 train_acc 77.8 (88s)
+[17:47:24]   [attr] epoch 2/10 loss 0.434 train_acc 80.2 (97s)
+[17:49:07]   [attr] epoch 3/10 loss 0.414 train_acc 81.1 (103s)
+[17:50:50]   [attr] epoch 4/10 loss 0.395 train_acc 82.0 (103s)
+[17:52:33]   [attr] epoch 5/10 loss 0.375 train_acc 82.9 (103s)
+[17:54:16]   [attr] epoch 6/10 loss 0.358 train_acc 83.8 (103s)
+[17:55:31]   [attr] epoch 7/10 loss 0.342 train_acc 84.4 (75s)
+[17:56:24]   [attr] epoch 8/10 loss 0.332 train_acc 85.0 (53s)
+[17:57:26]   [attr] epoch 9/10 loss 0.326 train_acc 85.4 (63s)
+[17:58:29]   [attr] epoch 10/10 loss 0.321 train_acc 85.5 (62s)
+[17:59:29]   strong attr/frame_r50: 72.65  (AP per attribute [96.7, 78.5, 95.0, 40.7, 52.4], F1 66.9)  action-conditional cMAP 64.82 (floor 57.5)
+[18:00:28]   weak attr/frame_r50: 66.71
+[18:00:28] strong eval: training attr r3d on anonymised data
+[18:01:14]   [attr] epoch 1/10 loss 0.487 train_acc 76.6 (46s)
+[18:01:58]   [attr] epoch 2/10 loss 0.428 train_acc 80.6 (44s)
+[18:02:43]   [attr] epoch 3/10 loss 0.408 train_acc 81.6 (44s)
+[18:03:27]   [attr] epoch 4/10 loss 0.388 train_acc 82.4 (44s)
+[18:04:11]   [attr] epoch 5/10 loss 0.368 train_acc 83.3 (44s)
+[18:04:55]   [attr] epoch 6/10 loss 0.338 train_acc 84.8 (44s)
+[18:05:39]   [attr] epoch 7/10 loss 0.303 train_acc 86.6 (44s)
+[18:06:23]   [attr] epoch 8/10 loss 0.264 train_acc 88.3 (44s)
+[18:07:07]   [attr] epoch 9/10 loss 0.237 train_acc 89.7 (44s)
+[18:07:52]   [attr] epoch 10/10 loss 0.223 train_acc 90.7 (44s)
+[18:08:08]   strong attr/r3d: 72.43  (AP per attribute [95.9, 78.2, 95.1, 40.9, 52.0], F1 68.2)  action-conditional cMAP 64.81 (floor 57.5)
+[18:08:25]   weak attr/r3d: 65.88
+[18:08:25] DONE p12_ucf_personbox: action None  privacy cmap (strong, best attacker) 72.65  (106.2 min)
+[18:08:34] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_ucf_personbox

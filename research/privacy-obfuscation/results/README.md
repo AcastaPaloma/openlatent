@@ -52,9 +52,11 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p11_ch_mask_k25_a1_pw | charades | `{type: taskmask, keep: 0.25, fill: gray}` | s1 | 8.4 | **87.7** | 93.6% | 77.2 / 87.7 | 5.8 | 13.8 | 109 |
 | p8_personbox | charades | `{type: person_box, mode: black, every: 8, dilate: 6}` | s1 | 10.6 | **90.6** | 96.8% | 83.5 / 90.6 | 10.0 | 77.5 | 129 |
 | p11_ch_saliency_k25 | charades | `{type: taskmask, keep: 0.25, fill: gray, head: saliency}` | s1 | 11.0 | **91.3** | 97.5% | 81.8 / 91.3 | 7.9 | 22.8 | 50 |
+| p13_hmdb_gray | hmdb51_vp | `{type: gray}` | s1 | 65.6 | **75.0** | 99.0% | 75.0 / 73.7 | 57.2 | 72.8 | 38 |
 | p7_bdq_a3_ens | hmdb51_vp | `{type: bdq}` | s1 | 63.1 | **72.7** | 85.0% | 72.7 / 70.9 | 11.8 | 67.3 | 124 |
 | p7_raw | hmdb51_vp | `{type: raw}` | s1 | 64.9 | **75.2** | 100.0% | 74.5 / 75.2 | 65.8 | 75.9 | 49 |
 | p7_diff | hmdb51_vp | `{type: diff, gain: 4.0}` | s1 | 59.9 | **72.8** | 85.3% | 72.8 / 71.4 | 10.3 | 67.0 | 100 |
+| p13_hmdb_headblur16 | hmdb51_vp | `{type: person_box, mode: blur, sigma: 16.0, every: 8, dilate: 6, head: 0.33}` | s1 | 59.2 | **74.0** | 93.1% | 74.0 / 73.0 | 56.2 | 72.2 | 28 |
 | p7_personbox_blur | hmdb51_vp | `{type: person_box, mode: blur, every: 8, dilate: 6, sigma: 8.0}` | s1 | 45.4 | **69.3** | 64.0% | 69.3 / 69.3 | 28.8 | 66.6 | 129 |
 | p7_down8 | hmdb51_vp | `{type: down, factor: 8}` | s1 | 45.6 | **70.3** | 70.0% | 67.6 / 70.3 | 3.3 | 65.0 | 46 |
 | p7_pix8 | hmdb51_vp | `{type: pixelate, factor: 8}` | s1 | 44.5 | **69.5** | 65.6% | 69.5 / 68.9 | 4.1 | 62.2 | 100 |
@@ -336,6 +338,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p12_ucf_diff_down16 | ucf101_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 16}]}` | s1 | - | **70.2** | 62.6% | 69.6 / 70.2 | - | 60.4 | 28 |
 | p12_ucf_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | s1 | - | **70.8** | 66.1% | 69.7 / 70.8 | - | 61.1 | 37 |
 | p4_dino_ucf_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | s1 | - | **71.4** | 68.9% | - / - | - | - | 43 |
+| p12_ucf_personbox | ucf101_vp | `{type: person_box, mode: black, every: 8, dilate: 6}` | s1 | - | **72.7** | 75.8% | 72.7 / 72.4 | - | 66.7 | 106 |
 | p12_ucf_bdq_a3_ens | ucf101_vp | `{type: bdq}` | s1 | - | **74.8** | 87.6% | 74.7 / 74.8 | - | 59.2 | 39 |
 | p12_ucf_raw | ucf101_vp | `{type: raw}` | s1 | - | **77.1** | 100.0% | 77.1 / 74.9 | - | 77.0 | 23 |
 | p4_dino_ucf_raw | ucf101_vp | `{type: raw}` | s1 | - | **78.9** | 109.8% | - / - | - | - | 35 |
