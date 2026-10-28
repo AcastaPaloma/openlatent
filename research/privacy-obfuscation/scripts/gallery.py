@@ -50,7 +50,7 @@ def finished_runs(dataset):
         r["_priv"] = r.get("privacy_main", r.get("privacy_top1"))
         out.append(r)
     raw = next((r for r in out if r["config"]["anonymizer"]["type"] == "raw"), None)
-    floor = 4.0 if dataset == "kth" else 58.7
+    floor = {"kth": 4.0, "ucf101_vp": 58.7, "hmdb51_vp": 58.8, "charades": 100 / 90, "utdmhad": 12.5}[dataset]  # chance / blind cMAP
     for r in out:
         r["_leak"] = 100 * (r["_priv"] - floor) / (raw["_priv"] - floor) if raw else None
     return sorted(out, key=lambda r: -r["_priv"])

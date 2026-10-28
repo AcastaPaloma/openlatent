@@ -24,7 +24,7 @@ os.environ.setdefault("USE_TF", "0")
 import torch  # noqa: E402
 
 from gallery import build, finished_runs  # noqa: E402
-from ppv import kth, train, ucf101  # noqa: E402
+from ppv import charades, hmdb51, kth, train, ucf101, utdmhad  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
@@ -74,7 +74,7 @@ def save_gif(frames, path, ms):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", default="kth", choices=["kth", "ucf101_vp"])
+    ap.add_argument("--dataset", default="kth", choices=["kth", "ucf101_vp", "hmdb51_vp", "charades", "utdmhad"])
     ap.add_argument("--out", default=os.path.join(ROOT, "results", "gifs"))
     ap.add_argument("--only", default=None, help="comma-separated run names (default: all finished runs)")
     args = ap.parse_args()
@@ -93,10 +93,18 @@ def main():
         frames = {v: np.asarray(frames[v]) for v in {r["video"] for r in picks}}
         in_ch, stride, n, ms = 1, 2, 32, 80  # 25 fps video at the attackers' stride 2 -> 12.5 fps
     else:
-        _, te, allf = ucf101.load(os.path.expanduser("~/work/data/ucf101"))
+        root = os.path.expanduser(f"~/work/data/{args.dataset.split('_')[0]}")
+        if args.dataset == "charades":
+            _, te, allf, _ = charades.load(root)
+            ms = 160  # stored at 6.25 fps
+        else:
+            _, te, allf = {"ucf101_vp": ucf101, "hmdb51_vp": hmdb51, "utdmhad": utdmhad}[args.dataset].load(root)
+            ms = 67 if args.dataset == "utdmhad" else 80  # 15 / 12.5 fps
+        if args.dataset in ("ucf101_vp", "hmdb51_vp"):
+            te = [r for r in te if not r["priv"][3]]  # no nudity-labelled videos in a public gallery
         picks = [te[i] for i in np.linspace(0, len(te) - 1, 4).astype(int)]
         frames = {r["video"]: np.asarray(allf[r["video"]]) for r in picks}
-        in_ch, stride, n, ms = 3, 1, 32, 80  # stored at 12.5 fps
+        in_ch, stride, n = 3, 1, 32
 
     windows = []
     for r in picks:
@@ -106,7 +114,7 @@ def main():
 
     index_path = os.path.join(out_dir, "index.json")
     index = {e["run"]: e for e in json.load(open(index_path))["runs"]} if os.path.exists(index_path) else {}
-    clip_info = [dict(video=r["video"], action=r.get("action") or r["video"].split("/")[0]) for r in picks]
+    clip_info = [dict(video=r["video"], action=r.get("action") or (r["video"].split("/")[0] if "/" in r["video"] else r["video"])) for r in picks]
     for r in finished_runs(args.dataset):
         if args.only and r["name"] not in args.only.split(","):
             continue
