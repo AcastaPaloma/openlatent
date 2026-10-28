@@ -32,6 +32,7 @@ PHASES = {
     "p8": "Phase 8: Charades (identity in people's homes)",
     "p9": "Phase 9: UTD-MHAD (identity without a scene cue)",
     "p10": "Phase 10: cross-action identity (attackers tested on unseen actions)",
+    "p11": "Phase 11: keep only the task-relevant region (DINOv2 task mask)",
 }
 
 
@@ -44,7 +45,7 @@ def family(cfg):
         return {"bg_median": "controls", "fg_only": "controls", "person_box": "person removal", "raw": "raw"}[t]
     if t in ("blur", "down", "pixelate", "diff", "bdq_fixed", "hold"):
         return "fixed filters"
-    return {"bdq": "BDQ (learned)", "unet3d": "3D U-Net (learned)", "vae_latent": "frozen VAE + latent edit"}.get(t, t)
+    return {"bdq": "BDQ (learned)", "unet3d": "3D U-Net (learned)", "vae_latent": "frozen VAE + latent edit", "taskmask": "task mask (DINOv2)"}.get(t, t)
 
 
 CURVE = re.compile(r"\[(action|person|attr)\] epoch (\d+)/(\d+) loss ([\d.]+) train_acc ([\d.]+)")
