@@ -245,7 +245,7 @@ class Pose(nn.Module):
     Fixed; no learned parameters of its own."""
     learned = False
 
-    def __init__(self, every=4, score=0.7, kp_score=1.0, det_size=320, width=1):
+    def __init__(self, every=4, score=0.7, kp_score=2.0, det_size=320, width=1):
         super().__init__()
         from torchvision.models.detection import KeypointRCNN_ResNet50_FPN_Weights, keypointrcnn_resnet50_fpn
         self.det = keypointrcnn_resnet50_fpn(weights=KeypointRCNN_ResNet50_FPN_Weights.COCO_V1, min_size=det_size, max_size=int(det_size * 1.6)).eval()
@@ -288,7 +288,9 @@ class Pose(nn.Module):
             chunk = idx[i:i + 64]
             for k, det in zip(chunk, self.det(list(rgb[chunk].float()))):
                 keep = det["scores"] >= self.score
-                canvas = self.draw([kp for kp in det["keypoints"][keep]], h, w, x.device).to(x.dtype)
+                # keypoints[..., 2] is a constant visibility flag; the per-keypoint confidence is keypoints_scores
+                kps = torch.cat([det["keypoints"][keep][..., :2], det["keypoints_scores"][keep][..., None]], -1)
+                canvas = self.draw(list(kps), h, w, x.device).to(x.dtype)
                 last = min(k + self.every, (k // t + 1) * t)
                 out[k:last, 0] = canvas
         return out.view(b, t, 1, h, w).transpose(1, 2).expand(-1, c, -1, -1, -1)
