@@ -1090,3 +1090,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   New phase p13 (inverting the mask): blur only inside detected person boxes (sigma 16) and keep the scene and handled objects raw,
   on VP-UCF101 and VP-HMDB51, with action eval. Hypothesis: action survives (objects and scene carry most UCF/HMDB classes) while
   face/skin/gender cMAP falls toward the floor, unlike every whole-frame filter so far.
+- 17:10 UTC: hardest test on scenario learned pool x48 a3 (scenario 56.8 / 26.0): 16.0. Ladder x16 16.5-18, x24 20, x32 12, x48 16,
+  x64 4-9.5, x120 4: the drop below ~15 needs x64.
+  p12_hmdb_bdq_a3_ens (attack only): attribute mAP 73.3, action-conditional cMAP 70.4 (floor 57.5; blur8 65.2). Raw reference pending.
+  Correction to the 16:55 plan: person-box blur is not new. p3/p7 already ran it (sigma 8): UCF 75.9 action / 73.6 attr mAP,
+  HMDB 45.4 / 69.3; black boxes 70.4 / 73.1 and 38.4 / 68.8 (raw 91.8/76.6, 64.9/75.2). Removing the person entirely leaves
+  attribute mAP within 3-6 points of raw, which is what "attributes are implied by the action/scene" predicts. Dropped the UCF p13
+  duplicate (p12_ucf_personbox gives its conditional score); kept HMDB p13 (sigma 16, ~2 h) for the conditional number with action.
+  Moved p12_ucf_raw / p12_hmdb_raw to VM5 so the conditional references land first.
