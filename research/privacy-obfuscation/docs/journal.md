@@ -694,3 +694,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Charades prepared on 129.213.90.42: 90 subjects, 6,352 train / 2,720 test videos, none missing. Its first wave
   is split across three VMs; 129.213.82.145 and 150.136.92.19 prepare their own copy and release their jobs only
   when the prep log says CHARADES READY and meta.json exists.
+
+### 2026-10-28 01:45 UTC: learned-before-pool beats the curve at high utility too (H31)
+- p2_bdq_down32_a3_ens (BDQ then x32, i.e. 3x5 px): 93.0 / 40.8 (ResNet-50 18.2). Fixed diff->down32: 93.6 / 63.9;
+  best plain BDQ near 93-95 action: ~95 / 63. At equal utility the learned stage before a 3x5 pool removes ~23
+  identity points. With x64 (82.1 / 12.5 vs fixed 69.9 / 11.0) this is the second pool size where learning helps.
+- p2_bdq_down48_a1_ens (2x3 px): 82.9 / 41.3 vs fixed 83.6 / 37.0: no gain at this size and alpha.
+- p2_bdq_down64_a1_ens_scenario: 50.8 / 12.7. Scenario-split reference: BDQ a3 55.8 / 24.7, fixed x48 44.0 / 26.5,
+  x64 23.3 / 8.8. Best scenario-split trade-off so far: the learned-before-pool gain holds under unseen conditions.
+- Next: seed and split checks for the x32 point (p2_bdq_down32_a3_ens_s1, _scenario) and alpha 5.
