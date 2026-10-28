@@ -1183,3 +1183,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   if pose identity is gait style it should fall on unseen actions like the learned pools did.
   Queued p12_hmdb_pose_1p: stick figure of only the most confident person (Pose max_people=1; checked on a 2-person clip: lit
   pixels 8748 -> 6172). Prediction: relationship drops to chance (+10.3 now) if people count is the cue.
+- 19:50 UTC: metric check: VP-HMDB51 all-black frames give conditional cMAP 61.7 vs computed chance 61.9 (attribute mAP 59.5):
+  the action-conditional metric and its Monte Carlo floor are right.
+  Hardest test, plain BDQ a7 scenario seed 2: 8.5 (seed 0: 8.0). Replicates; plain BDQ a7 (scenario action 53-60) matches the
+  learned x64 pool (51-53 action, 4-9.5 hardest).
+  p10_kth_pose_scenario_xh failed: CUDA OOM, two Keypoint R-CNN jobs on one GPU with 64 frames per detector call. Pose now uses
+  16 per call; requeued. Queued p12_hmdb_raw_s1 (attacker seed 1) to measure the conditional metric's seed noise.
