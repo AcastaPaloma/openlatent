@@ -894,3 +894,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   high-utility point; the binding attacker remains the video model. p8_bdq_a3_ens_s2 (Charades) 5.8 / 22.0%:
   a3 over 3 seeds 5.8-6.0 mAP / 21.1-24.2% identity. Queued p9_bdq_down16_a3_ens (UTD-MHAD), p2_bdq_down16_a5_ens_s1,
   p8_bdq_a3_r18 (Charades frame-only adversary).
+- 10:20 UTC: p8_bdq_a3_r3d (Charades, video adversary only): 7.5 / 55.4% vs frame+video ensemble 5.8-6.0 / 21-24%.
+  On Charades the frame (appearance) adversary is what removes the room; a video adversary alone leaves it
+  (opposite of KTH, where either adversary sufficed at x32). Frame-only (p8_bdq_a3_r18) queued; p8_bdq_a1_ens_e15 queued.
