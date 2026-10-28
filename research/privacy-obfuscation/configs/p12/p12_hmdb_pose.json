@@ -1,0 +1,15 @@
+{
+ "name": "p12_hmdb_pose",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16
+ }
+}

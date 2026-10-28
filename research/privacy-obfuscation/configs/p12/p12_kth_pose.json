@@ -1,0 +1,11 @@
+{
+ "name": "p12_kth_pose",
+ "dataset": "kth",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2
+ },
+ "split": "ilic"
+}

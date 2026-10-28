@@ -1042,3 +1042,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H43: raw video reveals substantial within-action attribute information (face/skin/gender of the specific person), and
   person-removing methods (person box, task mask with adversary) reduce the conditional cMAP toward its floor while the
   standard cMAP barely moves.
+- 15:45 UTC: new fixed obfuscator "pose" (ppv/anonymizers.py): torchvision Keypoint R-CNN on every 4th frame, people drawn as
+  2 px stick figures on black; no face, skin, clothing, objects or room survive. Checked on 6 VP-UCF101 clips (full bodies
+  -> clean skeletons; close-ups -> partial ones). Queued on VP-UCF101, VP-HMDB51, KTH and Charades (p12_*_pose).
+  H44: pose removes most within-action attribute information (conditional cMAP near its floor) at a large action cost
+  where objects matter (instruments, sports equipment); on Charades it removes the home entirely.
