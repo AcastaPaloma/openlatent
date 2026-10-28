@@ -13,41 +13,78 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 
 | run | dataset | anonymizer | split | action (strong) | privacy (strong, best) | leakage | privacy frame / video | action (weak) | privacy (weak) | min |
 |---|---|---|---|---|---|---|---|---|---|---|
+| p2_bdq_down64_a1_ens | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | ilic | 82.1 | **12.5** | 8.9% | 7.2 / 12.5 | 16.7 | 4.8 | 100 |
+| p1_diff_down64_stride4 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | ilic | 71.6 | **11.4** | 7.7% | 6.0 / 11.4 | 16.7 | 4.2 | 38 |
+| p1_diff_down64_s1 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | ilic | 70.7 | **10.9** | 7.2% | 6.2 / 10.9 | 16.7 | 4.0 | 37 |
+| p1_diff_down64 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | ilic | 69.9 | **11.0** | 7.4% | 6.2 / 11.0 | 16.7 | 3.8 | 34 |
+| p1_diff_down64_e24 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | ilic | 71.2 | **12.7** | 9.1% | 6.4 / 12.7 | 16.7 | 4.0 | 131 |
+| p1_diff_down64_tshuffle | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}, {type: tshuffle}]}` | ilic | 64.2 | **11.9** | 8.2% | 7.0 / 11.9 | 16.7 | 4.0 | 18 |
 | p2_bdq_a5_ens_warm_s1 | kth | `{type: bdq}` | ilic | 78.9 | **30.3** | 27.5% | 15.4 / 30.3 | 30.8 | 4.7 | 162 |
 | p2_bdq_a5_ens | kth | `{type: bdq}` | ilic | 84.4 | **37.0** | 34.5% | 13.2 / 37.0 | 28.8 | 3.8 | 118 |
+| p1_diff_down120 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 120}]}` | ilic | 54.2 | **6.9** | 3.0% | 3.7 / 6.9 | 16.7 | 4.0 | 37 |
+| p2_bdq_down8_a5_ens | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 8}]}` | ilic | 82.8 | **35.6** | 33.1% | 13.9 / 35.6 | 16.7 | 4.0 | 112 |
+| p1_diff_down48 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 48}]}` | ilic | 83.6 | **37.0** | 34.5% | 24.7 / 37.0 | 16.7 | 4.0 | 36 |
+| p6_bdq_a5_ens_tshuffle | kth | `{type: chain, stages: [{type: bdq}, {type: tshuffle}]}` | ilic | 76.3 | **29.9** | 27.2% | 13.7 / 29.9 | 28.8 | 4.0 | 39 |
+| p1_diff_down48_s1 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 48}]}` | ilic | 82.4 | **36.3** | 33.8% | 24.7 / 36.3 | 16.7 | 4.2 | 29 |
 | p2_bdq_a3_lr3e-3 | kth | `{type: bdq}` | ilic | 89.1 | **46.2** | 44.1% | 18.7 / 46.2 | 35.8 | 4.0 | 86 |
 | p2_bdq_a5_lr3e-3_s1 | kth | `{type: bdq}` | ilic | 90.3 | **48.0** | 46.1% | 26.3 / 48.0 | 26.9 | 4.7 | 92 |
 | p2_bdq_a5_lr3e-3 | kth | `{type: bdq}` | ilic | 76.9 | **35.3** | 32.8% | 15.2 / 35.3 | 32.1 | 5.2 | 92 |
+| p2_bdq_a10_ens | kth | `{type: bdq}` | ilic | 71.2 | **31.3** | 28.6% | 14.2 / 31.3 | 31.3 | 4.7 | 72 |
 | p2_bdq_a3_lr3e-3_s3 | kth | `{type: bdq}` | ilic | 68.4 | **28.9** | 26.1% | 11.4 / 28.9 | 28.9 | 5.0 | 92 |
 | p2_bdq_a5_ens_s1 | kth | `{type: bdq}` | ilic | 86.5 | **48.0** | 46.1% | 18.2 / 48.0 | 30.1 | 5.7 | 111 |
+| p2_bdq_down4_a5_ens | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 4}]}` | ilic | 90.6 | **52.3** | 50.6% | 29.4 / 52.3 | 23.7 | 5.0 | 61 |
+| p2_bdq_a7_ens_s2 | kth | `{type: bdq}` | ilic | 67.4 | **29.4** | 26.6% | 13.4 / 29.4 | 30.8 | 4.5 | 117 |
 | p2_bdq_a5_ens_warm | kth | `{type: bdq}` | ilic | 61.4 | **23.6** | 20.5% | 11.4 / 23.6 | 28.6 | 5.4 | 185 |
+| p2_bdq_a7_ens_warm | kth | `{type: bdq}` | ilic | 64.7 | **27.1** | 24.2% | 11.4 / 27.1 | 30.3 | 4.0 | 89 |
+| p6_bdq_a5_ens_warm_tshuffle | kth | `{type: chain, stages: [{type: bdq}, {type: tshuffle}]}` | ilic | 56.0 | **18.9** | 15.6% | 8.9 / 18.9 | 27.6 | 4.3 | 36 |
+| p2_bdq_a5_ens_s3 | kth | `{type: bdq}` | ilic | 92.3 | **55.2** | 53.6% | 24.6 / 55.2 | 29.3 | 4.8 | 113 |
+| p1_diff_down32_stride4 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 32}]}` | ilic | 93.6 | **57.0** | 55.5% | 48.5 / 57.0 | 16.7 | 4.8 | 75 |
 | p2_bdq_a10_lr3e-3 | kth | `{type: bdq}` | ilic | 90.8 | **56.5** | 55.0% | 33.8 / 56.5 | 27.8 | 5.4 | 74 |
 | p2_bdq_a5_ens_s2 | kth | `{type: bdq}` | ilic | 93.0 | **60.0** | 58.7% | 25.4 / 60.0 | 22.4 | 5.2 | 114 |
 | p2_bdq_a5_ens_b3 | kth | `{type: bdq}` | ilic | 90.3 | **58.0** | 56.6% | 26.8 / 58.0 | 29.9 | 5.2 | 171 |
 | p2_bdq_a7_ens | kth | `{type: bdq}` | ilic | 95.0 | **62.9** | 61.7% | 33.1 / 62.9 | 27.6 | 4.7 | 122 |
 | p2_bdq_a3_scenario | kth | `{type: bdq}` | scenario | 55.8 | **24.7** | 21.6% | 16.8 / 24.7 | 30.5 | 4.0 | 132 |
 | p2_bdq_a1_vadv | kth | `{type: bdq}` | ilic | 93.8 | **62.7** | 61.5% | 29.8 / 62.7 | 39.1 | 5.5 | 133 |
+| p1_diff_down32_tshuffle | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 32}, {type: tshuffle}]}` | ilic | 90.0 | **59.2** | 57.8% | 52.8 / 59.2 | 16.7 | 4.0 | 36 |
+| p1_diff_down32_s1 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 32}]}` | ilic | 93.5 | **62.9** | 61.7% | 50.0 / 62.9 | 16.7 | 4.0 | 37 |
+| p1_diff_down40 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 40}]}` | ilic | 87.8 | **57.2** | 55.7% | 47.3 / 57.2 | 16.7 | 4.0 | 37 |
+| p1_diff_down16_scenario | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 16}]}` | scenario | 81.0 | **50.7** | 48.9% | 44.3 / 50.7 | 16.5 | 4.0 | 71 |
 | p1_diff_down32 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 32}]}` | ilic | 93.6 | **63.9** | 62.7% | 52.8 / 63.9 | 16.7 | 4.0 | 40 |
 | p2_bdq_a1_ens | kth | `{type: bdq}` | ilic | 94.1 | **65.2** | 64.1% | 37.3 / 65.2 | 37.5 | 4.0 | 113 |
+| p2_bdq_a5_ens_b3_s1 | kth | `{type: bdq}` | ilic | 96.3 | **67.4** | 66.4% | 32.6 / 67.4 | 42.0 | 4.2 | 172 |
+| p2_bdq_a7_ens_s1 | kth | `{type: bdq}` | ilic | 95.2 | **66.7** | 65.7% | 34.6 / 66.7 | 44.0 | 4.0 | 117 |
 | p2_down4_bdq_a3 | kth | `{type: chain, stages: [{type: down, factor: 4}, {type: bdq}]}` | ilic | 93.1 | **65.1** | 63.9% | 31.9 / 65.1 | 49.5 | 4.8 | 103 |
 | p2_bdq_a3_ens | kth | `{type: bdq}` | ilic | 96.7 | **68.6** | 67.6% | 47.8 / 68.6 | 31.6 | 4.0 | 112 |
 | p2_bdq_a3_lr3e-3_s1 | kth | `{type: bdq}` | ilic | 94.5 | **68.7** | 67.8% | 31.6 / 68.7 | 32.6 | 5.7 | 92 |
 | p2_bdq_a3_lr3e-3_s2 | kth | `{type: bdq}` | ilic | 91.6 | **66.6** | 65.5% | 35.8 / 66.6 | 34.3 | 4.2 | 91 |
 | p2_bdq_a5_ens_scenario | kth | `{type: bdq}` | scenario | 78.7 | **54.0** | 52.4% | 31.7 / 54.0 | 45.2 | 4.8 | 158 |
+| p1_diff_down8_scenario | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 8}]}` | scenario | 86.2 | **61.7** | 60.4% | 50.2 / 61.7 | 16.7 | 3.7 | 36 |
 | p2_bdq_a1 | kth | `{type: bdq}` | ilic | 93.5 | **69.9** | 69.0% | 31.3 / 69.9 | 35.1 | 4.8 | 122 |
 | p2_vae_a1_vadv | kth | `{type: vae_latent}` | ilic | 96.2 | **75.6** | 75.0% | 54.0 / 75.6 | 16.7 | 4.0 | 408 |
+| p2_bdq_a5_ens_warm_scenario | kth | `{type: bdq}` | scenario | 32.7 | **12.5** | 8.9% | 5.3 / 12.5 | 17.8 | 4.3 | 139 |
+| p2_vae_a1_ens_warm | kth | `{type: vae_latent}` | ilic | 93.1 | **74.1** | 73.4% | 51.2 / 74.1 | 16.7 | 4.0 | 316 |
+| p2_bdq_a1_scenario | kth | `{type: bdq}` | scenario | 79.2 | **61.2** | 59.9% | 38.0 / 61.2 | 55.5 | 4.0 | 133 |
+| p2_vae_a1_vadv_b3_scenario | kth | `{type: vae_latent}` | scenario | 83.0 | **65.0** | 63.9% | 60.3 / 65.0 | 16.7 | 4.0 | 419 |
+| p1_diff_down48_scenario | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 48}]}` | scenario | 44.0 | **26.5** | 23.6% | 21.0 / 26.5 | 16.7 | 4.0 | 36 |
+| p1_diff_down24 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 24}]}` | ilic | 94.3 | **77.8** | 77.2% | 59.9 / 77.8 | 16.7 | 5.5 | 35 |
+| p1_diff_down32_scenario | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 32}]}` | scenario | 58.0 | **42.7** | 40.5% | 40.5 / 42.7 | 16.7 | 3.8 | 68 |
 | p2_unet_a05_ens | kth | `{type: unet3d}` | ilic | 94.1 | **78.9** | 78.5% | 44.5 / 78.9 | 47.2 | 4.2 | 84 |
 | p2_vae_a1_ens_b3 | kth | `{type: vae_latent}` | ilic | 97.0 | **81.8** | 81.4% | 58.7 / 81.8 | 16.7 | 4.0 | 298 |
 | p2_vae_a1_ens | kth | `{type: vae_latent}` | ilic | 97.3 | **82.6** | 82.3% | 58.2 / 82.6 | 16.7 | 4.0 | 274 |
 | p2_vae_a05_ens | kth | `{type: vae_latent}` | ilic | 95.7 | **81.3** | 80.9% | 50.5 / 81.3 | 16.7 | 4.0 | 246 |
 | p5_sanity_mean | kth | `{type: mean}` | ilic | 36.6 | **22.4** | 19.3% | 18.7 / 22.4 | - | - | 53 |
+| p1_diff_down64_scenario | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | scenario | 23.3 | **9.5** | 5.8% | 9.5 / 8.8 | 16.7 | 4.0 | 30 |
+| p1_diff_down20 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 20}]}` | ilic | 95.3 | **82.4** | 82.1% | 64.0 / 82.4 | 16.7 | 5.0 | 39 |
 | p2_unet_a3 | kth | `{type: unet3d}` | ilic | 16.7 | **4.0** | 0.0% | 4.0 / 4.0 | 16.7 | 4.0 | 70 |
 | p5_sanity_const | kth | `{type: const}` | ilic | 16.7 | **4.0** | 0.0% | 4.0 / 3.8 | - | - | 73 |
 | p2_vae_a1 | kth | `{type: vae_latent}` | ilic | 97.2 | **85.1** | 84.9% | 61.9 / 85.1 | 16.7 | 4.0 | 396 |
 | p1_down64 | kth | `{type: down, factor: 64}` | ilic | 48.7 | **38.1** | 35.7% | 32.1 / 38.1 | 16.7 | 8.4 | 34 |
+| p1_diff_down16 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 16}]}` | ilic | 94.8 | **84.6** | 84.4% | 70.1 / 84.6 | 16.7 | 4.0 | 36 |
+| p2_vae_a1_vadv_b3_s1 | kth | `{type: vae_latent}` | ilic | 96.7 | **87.0** | 86.9% | 75.3 / 87.0 | 16.7 | 4.2 | 413 |
 | p1_bdqfixed_s2_l8 | kth | `{type: bdq_fixed, sigma: 2.0, levels: 8}` | ilic | 96.8 | **87.8** | 87.7% | 68.2 / 87.8 | 18.9 | 4.0 | 36 |
 | p2_vae_a1_ens_b3_s1 | kth | `{type: vae_latent}` | ilic | 96.8 | **89.5** | 89.5% | 60.9 / 89.5 | 16.7 | 4.0 | 283 |
 | p1_diff_down8 | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 8}]}` | ilic | 95.5 | **88.3** | 88.3% | 73.6 / 88.3 | 16.7 | 5.9 | 39 |
+| p1_bdqfixed_tshuffle | kth | `{type: chain, stages: [{type: bdq_fixed, sigma: 2.0, levels: 8}, {type: tshuffle}]}` | ilic | 95.0 | **89.1** | 89.1% | 65.4 / 89.1 | 17.4 | 4.2 | 36 |
 | p1_fgonly | kth | `{type: fg_only, thresh: 20}` | ilic | 97.3 | **93.5** | 93.7% | 92.3 / 93.5 | 81.6 | 10.5 | 36 |
 | p2_unet_a1_ens | kth | `{type: unet3d}` | ilic | 91.8 | **89.1** | 89.1% | 88.8 / 89.1 | 69.6 | 9.7 | 74 |
 | p2_unet_a1_vadv | kth | `{type: unet3d}` | ilic | 92.8 | **92.3** | 92.5% | 89.6 / 92.3 | 25.8 | 5.9 | 54 |
@@ -78,6 +115,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p4_dino_bdq_a3_s3 | kth | `{type: bdq}` | ilic | - | **13.0** | 9.5% | - / - | - | - | 18 |
 | p1_bgmedian_byaction | kth | `{type: bg_median}` | ilic | 62.5 | **90.6** | 90.7% | 86.6 / 90.6 | 42.0 | 48.5 | 36 |
 | p1_bgmedian | kth | `{type: bg_median}` | ilic | 59.4 | **89.3** | 89.3% | 83.9 / 89.3 | 42.0 | 48.5 | 36 |
+| p4_dino_bdq_a5 | kth | `{type: bdq}` | ilic | - | **31.4** | 28.7% | - / - | - | - | 18 |
 | p4_dino_bdq_a5_ens | kth | `{type: bdq}` | ilic | - | **35.1** | 32.6% | - / - | - | - | 27 |
 | p4_dino_down64 | kth | `{type: down, factor: 64}` | ilic | - | **36.6** | 34.2% | - / - | - | - | 18 |
 | p4_dino_down16 | kth | `{type: down, factor: 16}` | ilic | - | **94.0** | 94.2% | - / - | - | - | 27 |
@@ -93,12 +131,20 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p3_down4 | ucf101_vp | `{type: down, factor: 4}` | ilic | 84.5 | **75.1** | 91.5% | 75.1 / 74.4 | 21.0 | 69.2 | 74 |
 | p3_blur4 | ucf101_vp | `{type: blur, sigma: 4}` | ilic | 79.9 | **73.5** | 83.0% | 72.1 / 73.5 | 3.0 | 64.2 | 66 |
 | p3_vae_a1_ens | ucf101_vp | `{type: vae_latent}` | s1 | 78.0 | **72.2** | 75.4% | 70.3 / 72.2 | 1.6 | 61.0 | 373 |
+| p6_vae_a1_ens_ctx8 | ucf101_vp | `{type: vae_latent}` | s1 | 77.4 | **71.8** | 73.3% | 69.7 / 71.8 | 2.7 | 60.2 | 317 |
 | p3_personbox_blur | ucf101_vp | `{type: person_box, mode: blur, every: 8, dilate: 6, sigma: 8.0}` | s1 | 75.9 | **73.6** | 83.6% | 73.6 / 72.5 | 57.9 | 66.9 | 201 |
+| p3_diff_down8 | ucf101_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 8}]}` | s1 | 73.4 | **72.5** | 77.2% | 71.9 / 72.5 | 1.6 | 63.1 | 61 |
 | p3_pix8 | ucf101_vp | `{type: pixelate, factor: 8}` | s1 | 72.6 | **72.1** | 74.8% | 71.7 / 72.1 | 2.6 | 62.6 | 65 |
 | p3_down8 | ucf101_vp | `{type: down, factor: 8}` | ilic | 72.2 | **72.1** | 75.0% | 71.9 / 72.1 | 3.1 | 64.3 | 106 |
 | p3_personbox | ucf101_vp | `{type: person_box, mode: black, every: 8, dilate: 6}` | s1 | 70.4 | **73.1** | 80.7% | 73.1 / 71.7 | 55.3 | 66.7 | 256 |
+| p6_vae_a1_ctx8 | ucf101_vp | `{type: vae_latent}` | s1 | 66.1 | **69.9** | 62.6% | 68.2 / 69.9 | 0.9 | 59.0 | 285 |
 | p3_vae_a1 | ucf101_vp | `{type: vae_latent}` | s1 | 66.0 | **70.2** | 64.5% | 67.6 / 70.2 | 1.5 | 60.5 | 331 |
+| p3_diff_down16 | ucf101_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 16}]}` | s1 | 63.7 | **71.0** | 68.7% | 69.9 / 71.0 | 1.9 | 61.7 | 59 |
 | p3_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | ilic | 58.9 | **70.3** | 64.7% | 69.4 / 70.3 | 1.7 | 61.2 | 95 |
 | p3_pix16 | ucf101_vp | `{type: pixelate, factor: 16}` | s1 | 55.2 | **70.9** | 68.0% | 69.0 / 70.9 | 1.6 | 60.9 | 65 |
 | p3_down16 | ucf101_vp | `{type: down, factor: 16}` | ilic | 53.7 | **70.3** | 64.9% | 68.5 / 70.3 | 2.2 | 61.0 | 53 |
+| p3_diff_down32 | ucf101_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 32}]}` | s1 | 42.9 | **68.9** | 57.2% | 67.9 / 68.9 | 0.7 | 58.3 | 114 |
 | p3_blur16 | ucf101_vp | `{type: blur, sigma: 16}` | s1 | 40.0 | **68.7** | 56.2% | 67.3 / 68.7 | 1.1 | 59.4 | 67 |
+| p3_diff_down64 | ucf101_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | s1 | 17.8 | **65.1** | 35.7% | 64.0 / 65.1 | 1.0 | 59.9 | 116 |
+| p4_dino_ucf_blur8 | ucf101_vp | `{type: blur, sigma: 8}` | s1 | - | **71.4** | 70.9% | - / - | - | - | 43 |
+| p4_dino_ucf_raw | ucf101_vp | `{type: raw}` | s1 | - | **78.9** | 112.9% | - / - | - | - | 35 |

@@ -684,3 +684,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Both corrected VAE numbers moved by <0.5 cMAP; the edge-frame leak did not change any conclusion.
 - Queued p3_bdq_down16_a3_ens: learned BDQ before a 7x9 px pool on VP-UCF101 (does the KTH learned-before-pool
   gain exist when the private attributes are appearance?).
+
+### 2026-10-28 01:10 UTC: collapse-guard fix for many-class datasets; Charades ready
+- Bug in the protocol, caught before any result: the collapse guard stops adversarial training when action never
+  reaches 40% by epoch 3. That floor was tuned on KTH (6 classes). p7_bdq_a3_ens (VP-HMDB51, 51 classes) was
+  stopped at epoch 3 while still climbing (11 -> 20 -> 32%), and p3_bdq_down16_a3_ens (VP-UCF101) was at 33.5% at
+  epoch 2. Both killed and requeued with min_action 10 (also set for p8_bdq_a3_ens). Earlier VP-UCF101 BDQ runs
+  (p3_bdq_*) passed 40% and are unaffected; VP-HMDB51 had no finished BDQ result.
+- Charades prepared on 129.213.90.42: 90 subjects, 6,352 train / 2,720 test videos, none missing. Its first wave
+  is split across three VMs; 129.213.82.145 and 150.136.92.19 prepare their own copy and release their jobs only
+  when the prep log says CHARADES READY and meta.json exists.
