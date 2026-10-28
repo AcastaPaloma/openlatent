@@ -23,6 +23,7 @@ INFO = {
     "kth": dict(name="KTH", task="person", metric="identity top-1 (%)", floor=4.0, floor_label="chance 4.0"),
     "ucf101_vp": dict(name="VP-UCF101", task="attr", metric="attribute cMAP (%)", floor=58.7, floor_label="blind floor 58.7"),
     "hmdb51_vp": dict(name="VP-HMDB51", task="attr", metric="attribute cMAP (%)", floor=None, floor_label="blind floor"),
+    "charades": dict(name="Charades", task="person", metric="identity top-1 (%)", floor=100 / 90, floor_label="chance 1.1"),
 }
 
 
@@ -57,8 +58,7 @@ def f1(v):
     return "-" if v is None else f"{v:.1f}"
 
 
-def figure(ds, rs, path):
-    info = INFO[ds]
+def figure(ds, rs, path, info):
     rs = [r for r in rs if r["split"] in ("ilic", "s1", None)]
     n = len(rs)
     fig, ax = plt.subplots(figsize=(8.2, 0.24 * n + 1.6))
@@ -114,7 +114,7 @@ def main():
             info["floor_label"] = f"blind floor {info['floor']:.1f}"
 
         fig_path = os.path.join(ROOT, "results", "figures", f"frozen_vs_retrained_{ds}.png")
-        figure(ds, rs, fig_path)
+        figure(ds, rs, fig_path, info)
         non_raw = [r for r in rs if r["anon"]["type"] != "raw"]
         near_floor = [r for r in non_raw if r["frozen"] - info["floor"] < 0.25 * (r["retrained"] - info["floor"])]
         gaps = sorted(r["retrained"] - r["frozen"] for r in non_raw)
