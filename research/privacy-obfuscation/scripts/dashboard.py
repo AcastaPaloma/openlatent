@@ -27,7 +27,11 @@ PHASES = {
     "p3": "Phase 3: VP-UCF101 (5 privacy attributes)",
     "p4": "Phase 4: DINOv2 attacker (attack-only)",
     "p5": "Phase 5: sanity controls",
-    "p6": "Phase 6: re-evaluations after the release fix",
+    "p6": "Phase 6: re-evaluations and stronger attacks on stored obfuscators",
+    "p7": "Phase 7: VP-HMDB51 (5 privacy attributes)",
+    "p8": "Phase 8: Charades (identity in people's homes)",
+    "p9": "Phase 9: UTD-MHAD (identity without a scene cue)",
+    "p10": "Phase 10: cross-action identity (attackers tested on unseen actions)",
 }
 
 
