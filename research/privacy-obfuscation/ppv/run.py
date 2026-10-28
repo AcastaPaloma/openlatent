@@ -60,8 +60,9 @@ def clean_model(arch, task, n_classes, rows_tr, frames, ev, tag, priv_kind, stri
     train.train_classifier(m, dl, task, ev["epochs"], frames_per_clip=ev["frames_per_clip"] if arch.startswith("frame") else None,
                            priv_kind=priv_kind, log=log)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    torch.save(m.state_dict(), path + ".tmp")
-    os.replace(path + ".tmp", path)
+    tmp = f"{path}.{os.getpid()}.tmp"  # two jobs on one VM may train the same cached model at once
+    torch.save(m.state_dict(), tmp)
+    os.replace(tmp, path)
     return m
 
 
