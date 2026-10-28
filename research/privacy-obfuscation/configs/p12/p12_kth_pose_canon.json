@@ -1,0 +1,13 @@
+{
+ "name": "p12_kth_pose_canon",
+ "dataset": "kth",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2,
+  "canonical": 0.5
+ },
+ "split": "ilic",
+ "note": "canonical stick figures: template limb lengths at a fixed size; identity left = posture and motion style"
+}

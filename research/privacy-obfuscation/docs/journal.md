@@ -1197,3 +1197,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   New dataset search: Weizmann actions (9 people, static scene) is the natural second KTH, but its official host times out from
   the Mac and the VMs and no verified mirror exists; not used.
   Queued: KTH pose on the scenario split (action + identity), VP-UCF101 single-person pose, raw UCF attacker seed 1.
+- 20:20 UTC: KTH pose cross-action (identity on unseen actions): 27.4 (frame 23.8) vs 53.3 within actions; raw 99.9 / 99.4.
+  Halves on unseen actions like the learned pools (x32: ~40 within, 23.5-26.9 across). So stick figures (97.8 action) sit at about
+  the learned x32 point on identity with 6 more points of action: a strong, simple baseline the paper doesn't have.
+  Plain BDQ a7 scenario seed 1: 67.5 / 45.0 (seeds 0, 2: 53.3 / 24.5, 60.0 / 24.8): a large seed spread; queued its hardest test.
+  Charades BDQ a3 r18-utility pos_weight: 7.6 / 55.3, on the same frontier as a0.5 (7.1 / 45.6).
+  VP-UCF101 gray + head blur: 86.4 action / 74.7 / 65.1 conditional, same as BDQ (87.8 / 74.9 / 65.2).
+  VP-UCF101 black-frame control: strong frame_r50 conditional 61.8 vs chance 61.3 (metric holds on UCF too).
+  Pose canonical=s (ppv/anonymizers.py): every person redrawn with template limb lengths at s x frame height from the mid-hip,
+  keeping joint angles and position (visual check on KTH frames: figures same size, standard proportions). Queued KTH within and
+  cross-action, and VP-HMDB51. Hypothesis: if KTH pose identity is body shape, canonical drops it toward chance; if it is
+  posture/motion style it stays near 53 / 27.

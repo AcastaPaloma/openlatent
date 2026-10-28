@@ -1,0 +1,17 @@
+{
+ "name": "p12_hmdb_pose_canon",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2,
+  "canonical": 0.5
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16
+ },
+ "note": "canonical stick figures on VP-HMDB51: does the beyond-action attribute signal ride on body proportions and size?"
+}
