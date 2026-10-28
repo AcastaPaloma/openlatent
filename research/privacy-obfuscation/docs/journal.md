@@ -1105,3 +1105,18 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   adversary weight doesn't move the frontier. Queued hardest tests for both.
   In-game reading worth watching: p8_bdq_a3_ens_pw (Charades, pos_weight 20) at adv epoch 5 has action positive recall 61.0 with the
   identity adversary at 4.8% (floor 3.6). If the strong eval holds, this is the first Charades obfuscator with both.
+- 17:50 UTC: CORRECTION to the action-conditional floor. The reported floor (57.5) was the mean within-class prevalence. With
+  ~30 test clips per (action, attribute) cell, random scores get well above prevalence in AP. Monte Carlo over the test labels
+  (200 random score draws per cell, scripts in ppv/train.py and scripts/fix_cond_floor.py) gives chance = 61.3 on VP-UCF101 and
+  61.9 on VP-HMDB51. ppv/train.py now computes this floor; collect.sh rewrites the floor of older results (old value kept as
+  privacy_cond_floor_prevalence). The 16:55 and 17:10 entries quoting "floor 57.5" overstate the gap.
+  VP-HMDB51 action-conditional cMAP (chance 61.9): raw 69.7, BDQ a3 70.4, diff->down16 66.0, blur8 65.2. So raw video reveals
+  only ~8 points beyond its action on HMDB; blur8 removes about half of that but also half of action (p7: 32.0 vs 64.9), and
+  BDQ removes none of it. VP-UCF101 BDQ a3: 65.2 (chance 61.3; raw pending).
+  KTH: task mask + BDQ inside (a1): 80.1 / 82.9, worse than BDQ alone on both axes (96.7 / 68.6): masking first throws away
+  action before BDQ sees it. UTD-MHAD learned mask a0 and saliency mask: 99.5 / 100.
+  Hardest test: plain BDQ a7 scenario: 8.0 (a3 seeds 5.5-23, a1 21, a5 24); learned pool x16 a5: 19.5 (a3 16.5-18).
+  Queued seed 1 of plain BDQ a7 scenario to test whether 8.0 replicates.
+  New p13 on VP-UCF101 / VP-HMDB51, all with action eval: grayscale (removes skin tone and clothing colour), blur of the top third
+  of each detected person box (head and shoulders, sigma 16), and both. Hypothesis: the ~8 points of attribute signal beyond the
+  action sit in face and skin colour, which these remove at little action cost, unlike whole-frame blur.
