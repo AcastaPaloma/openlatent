@@ -74,6 +74,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p7_bdq_down16_a3_ens | hmdb51_vp | `{type: chain, stages: [{type: bdq}, {type: down, factor: 16}]}` | s1 | 32.9 | **68.9** | 61.6% | 68.9 / 66.3 | 2.1 | 61.2 | 130 |
 | p7_blur8 | hmdb51_vp | `{type: blur, sigma: 8}` | s1 | 32.0 | **68.3** | 58.1% | 66.6 / 68.3 | 1.7 | 62.2 | 99 |
 | p7_down16 | hmdb51_vp | `{type: down, factor: 16}` | s1 | 29.7 | **66.6** | 47.7% | 65.8 / 66.6 | 2.2 | 62.8 | 51 |
+| p12_hmdb_const | hmdb51_vp | `{type: const}` | s1 | - | **59.5** | 4.6% | 59.5 / 59.5 | - | 59.5 | 30 |
 | p12_hmdb_down16 | hmdb51_vp | `{type: down, factor: 16}` | s1 | - | **67.5** | 53.1% | 65.9 / 67.5 | - | 62.4 | 26 |
 | p12_hmdb_blur8 | hmdb51_vp | `{type: blur, sigma: 8}` | s1 | - | **67.9** | 55.4% | 66.1 / 67.9 | - | 62.6 | 20 |
 | p12_hmdb_diff_down16 | hmdb51_vp | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 16}]}` | s1 | - | **69.3** | 64.3% | 69.3 / 66.5 | - | 61.4 | 26 |
@@ -254,6 +255,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p10_kth_bdq_a7_ens_scenario_xh | kth | `{type: bdq}` | scenario | - | **8.0** | 4.2% | 3.5 / 8.0 | - | 4.0 | 12 |
 | p10_kth_bdq_down64_a1_ens_scenario_s1_xh | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | scenario | - | **8.0** | 4.2% | 8.0 / 4.0 | - | 4.0 | 12 |
 | p10_kth_diff_down64_scenario_xh | kth | `{type: chain, stages: [{type: diff, gain: 4.0}, {type: down, factor: 64}]}` | scenario | - | **8.0** | 4.2% | 7.0 / 8.0 | - | 3.0 | 24 |
+| p10_kth_bdq_a7_ens_scenario_s2_xh | kth | `{type: bdq}` | scenario | - | **8.5** | 4.7% | 5.5 / 8.5 | - | 4.0 | 12 |
 | p1_raw_scenario | kth | `{type: raw}` | scenario | 88.7 | **97.7** | 98.1% | 95.2 / 97.7 | 92.8 | 97.7 | 44 |
 | p10_kth_bdq_down64_a1_ens_scenario | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | scenario | - | **9.1** | 5.4% | 7.9 / 9.1 | - | 4.3 | 33 |
 | p10_kth_bdq_down64_a1_ens_scenario_s2_xh | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | scenario | - | **9.5** | 5.8% | 9.5 / 6.0 | - | 4.5 | 8 |
