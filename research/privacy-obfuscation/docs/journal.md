@@ -938,3 +938,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   p9_mean (per-frame mean colour only) to measure this session cue directly.
 - p9_bdq_down16_a3_ens 97.2 / 96.2. p2_bdq_down32_a1_ens_scenario 55.0 / 22.0 (a3: 66.2/31.2, 62.2/32.2).
   p6_bdq_down16_a3_ens_e24 (24-epoch attackers on x16): 96.0 / 57.5 (12 epochs: 57.0). Robust.
+- 12:05 UTC: cross-action identity, KTH: raw 99.9, down16 99.0, fixed diff->x32 65.9, learned BDQ->x32 26.9. Appearance
+  identity transfers across actions completely; only the learned pool removes most of it. UTD-MHAD cross-action: raw 100,
+  down16 100. p9_mean (UTD-MHAD, per-frame mean colour only): 56.8 / 72.8% identity (chance 12.5; KTH's version: 22.4 vs
+  chance 4.0): the session colour cue alone identifies most UTD subjects. p2_bdq_down16_a3_ens_scenario_s1: 76.2 / 37.0
+  (seed 0: 73.7 / 37.3). Queued cross-action on plain BDQ (a5 ens warm), fixed x64, and learned x48 / x120.

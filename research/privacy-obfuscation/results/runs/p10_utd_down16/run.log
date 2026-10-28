@@ -1,0 +1,36 @@
+[11:44:53] run p10_utd_down16 @ 2627709: {"name": "p10_utd_down16", "dataset": "utdmhad", "seed": 0, "anonymizer": {"type": "down", "factor": 16}, "priv_split": "xaction", "eval": {"epochs": 12, "repeats": 4, "batch": 16, "action": []}, "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"}
+[11:44:53] UTD-MHAD: 648 train / 213 test videos, 8 subjects
+[11:45:01] materialised anonymised dataset (8s)
+[11:45:01] privacy split xaction: 574 train / 287 test rows (actions with id % 3 == 2 held out)
+[11:45:02] strong eval: training person frame_r50 on anonymised data
+[11:45:28]   [person] epoch 1/12 loss 1.148 train_acc 77.2 (26s)
+[11:45:53]   [person] epoch 2/12 loss 0.030 train_acc 99.8 (25s)
+[11:46:20]   [person] epoch 3/12 loss 0.020 train_acc 99.7 (27s)
+[11:46:44]   [person] epoch 4/12 loss 0.025 train_acc 99.5 (25s)
+[11:47:09]   [person] epoch 5/12 loss 0.005 train_acc 99.9 (25s)
+[11:47:36]   [person] epoch 6/12 loss 0.003 train_acc 100.0 (27s)
+[11:48:01]   [person] epoch 7/12 loss 0.002 train_acc 100.0 (25s)
+[11:48:26]   [person] epoch 8/12 loss 0.001 train_acc 100.0 (25s)
+[11:48:53]   [person] epoch 9/12 loss 0.001 train_acc 100.0 (27s)
+[11:49:18]   [person] epoch 10/12 loss 0.001 train_acc 100.0 (25s)
+[11:49:44]   [person] epoch 11/12 loss 0.001 train_acc 100.0 (26s)
+[11:50:10]   [person] epoch 12/12 loss 0.001 train_acc 100.0 (26s)
+[11:50:23]   strong person/frame_r50: 100.00
+[11:50:33]   weak person/frame_r50: 21.25
+[11:50:33] strong eval: training person r3d on anonymised data
+[11:50:56]   [person] epoch 1/12 loss 0.271 train_acc 92.7 (23s)
+[11:51:14]   [person] epoch 2/12 loss 0.017 train_acc 99.7 (18s)
+[11:51:34]   [person] epoch 3/12 loss 0.003 train_acc 100.0 (19s)
+[11:51:51]   [person] epoch 4/12 loss 0.001 train_acc 100.0 (18s)
+[11:52:11]   [person] epoch 5/12 loss 0.001 train_acc 100.0 (19s)
+[11:52:29]   [person] epoch 6/12 loss 0.001 train_acc 100.0 (18s)
+[11:52:48]   [person] epoch 7/12 loss 0.001 train_acc 100.0 (19s)
+[11:53:03]   [person] epoch 8/12 loss 0.001 train_acc 100.0 (15s)
+[11:53:20]   [person] epoch 9/12 loss 0.001 train_acc 100.0 (17s)
+[11:53:36]   [person] epoch 10/12 loss 0.001 train_acc 100.0 (16s)
+[11:53:55]   [person] epoch 11/12 loss 0.001 train_acc 100.0 (19s)
+[11:54:13]   [person] epoch 12/12 loss 0.001 train_acc 100.0 (18s)
+[11:54:19]   strong person/r3d: 100.00
+[11:54:23]   weak person/r3d: 20.56
+[11:54:23] DONE p10_utd_down16: action None  privacy top1 (strong, best attacker) 100.00  (9.5 min)
+[11:54:23] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p10_utd_down16

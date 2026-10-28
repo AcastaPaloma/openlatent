@@ -1,0 +1,15 @@
+{
+ "name": "p10_kth_bdq_a5_ens_warm",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "action": []
+ },
+ "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third",
+ "anonymizer_from": "p2_bdq_a5_ens_warm"
+}
