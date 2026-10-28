@@ -291,8 +291,9 @@ class Pose(nn.Module):
         rgb = frames.expand(-1, 3, -1, -1) if c == 1 else frames
         out = torch.zeros(b * t, 1, h, w, device=x.device, dtype=x.dtype)
         idx = [k for k in range(b * t) if (k % t) % self.every == 0]
-        for i in range(0, len(idx), 64):
-            chunk = idx[i:i + 64]
+        # 16 frames per detector call: at 64, two pose jobs on one 40 GB A100 ran out of memory (p10_kth_pose_scenario_xh)
+        for i in range(0, len(idx), 16):
+            chunk = idx[i:i + 16]
             for k, det in zip(chunk, self.det(list(rgb[chunk].float()))):
                 keep = (det["scores"] >= self.score).nonzero()[:, 0][:self.max_people]  # detections come sorted by score
                 # keypoints[..., 2] is a constant visibility flag; the per-keypoint confidence is keypoints_scores
