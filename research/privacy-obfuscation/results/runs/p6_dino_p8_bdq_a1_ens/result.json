@@ -1,0 +1,58 @@
+{
+ "name": "p6_dino_p8_bdq_a1_ens",
+ "config": {
+  "dataset": "charades",
+  "seed": 0,
+  "anonymizer": {
+   "type": "bdq"
+  },
+  "anonymizer_from": "p8_bdq_a1_ens",
+  "name": "p6_dino_p8_bdq_a1_ens",
+  "eval": {
+   "epochs": 8,
+   "repeats": 1,
+   "batch": 16,
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  },
+  "note": "DINOv2 on the frozen Charades BDQ a1 output (scene-heavy identity: the strongest appearance attacker)"
+ },
+ "git": "9fdf228",
+ "dataset": "charades",
+ "split": "s1",
+ "n_train": 6352,
+ "n_test": 2720,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 10.551470518112183,
+  "person/frame_dino_ft": 13.272058963775635
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 10.551470518112183,
+   "by_action": {
+    "0": 10.551470518112183
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 13.272058963775635,
+   "by_action": {
+    "0": 13.272058963775635
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "map",
+ "privacy_main": 13.272058963775635,
+ "privacy_top1": 13.272058963775635,
+ "chance": {
+  "action": 0.6369426751592356,
+  "person": 1.1111111111111112
+ },
+ "minutes": 31.670571410655974
+}

@@ -1,0 +1,24 @@
+{
+ "name": "p10_kth_bdq_down16_a3_ens",
+ "dataset": "kth",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "action": []
+ },
+ "split": "ilic",
+ "anonymizer_from": "p2_bdq_down16_a3_ens",
+ "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"
+}

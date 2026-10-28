@@ -905,3 +905,17 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   p9_raw (UTD-MHAD): 100.0 / 100.0. With trials held out in a single lab, every model sees near-identical repetitions:
   the dataset is a ceiling test; the obfuscated runs show how fast identity falls without a scene cue.
   gifs.py now renders VP-HMDB51, Charades and UTD-MHAD (Charades GIFs rendering).
+
+### 2026-10-28 11:15 UTC: UTD-MHAD exposes a person-action leak; cross-action identity split
+- p9_bdq_down32_a3_ens (UTD-MHAD, BDQ -> 3x5 px): 84.0 / 95.3% identity (raw 100 / 100). Without a scene cue and with
+  trials held out, the attacker learns how each person performs each action; the learned pool keeps exactly that
+  motion, so it cannot hide identity here. KTH's Ilic split has the same structure (same person, same action in
+  train and test), so part of every KTH identity number may be this person-action signature.
+- p6_dino_p8_bdq_a1_ens: DINOv2 probe / fine-tune 10.6 / 13.3% on the frozen Charades a1 output (R3D 19.6). Robust.
+- p2_bdq_down24_a3_ens_s1: 93.5 / 54.8 (seed 0: 93.0 / 48.8).
+- New protocol option priv_split "xaction" (run.py): identity attackers train on actions with id % 3 != 2 and are
+  tested on the held-out third (all their videos). Smoke-tested. H41: on cross-action identity, raw video still
+  identifies people (appearance, scene), but the learned pools fall much further, because a 1-15 number motion map
+  carries person-action style and little that transfers across actions. Attack-only runs (configs/p10) on stored
+  outputs: KTH raw, diff->down32, BDQ->x16/x32/x64; UTD raw, diff->down32, BDQ->x32.
+- Charades GIFs added (results/gifs/charades).

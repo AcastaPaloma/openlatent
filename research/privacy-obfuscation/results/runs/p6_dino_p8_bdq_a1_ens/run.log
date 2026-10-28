@@ -1,0 +1,26 @@
+[10:20:31] run p6_dino_p8_bdq_a1_ens @ 9fdf228: {"dataset": "charades", "seed": 0, "anonymizer": {"type": "bdq"}, "anonymizer_from": "p8_bdq_a1_ens", "name": "p6_dino_p8_bdq_a1_ens", "eval": {"epochs": 8, "repeats": 1, "batch": 16, "action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false}, "note": "DINOv2 on the frozen Charades BDQ a1 output (scene-heavy identity: the strongest appearance attacker)"}
+[10:20:31] Charades identity split: 6352 train / 2720 test videos, 90 subjects
+[10:20:32] loaded anonymizer from p8_bdq_a1_ens (missing 0, unexpected 0)
+[10:28:19] materialised anonymised dataset (467s)
+[10:28:22] strong eval: training person frame_dino_probe on anonymised data
+[10:28:57]   [person] epoch 1/8 loss 4.490 train_acc 3.9 (35s)
+[10:29:32]   [person] epoch 2/8 loss 4.448 train_acc 5.0 (36s)
+[10:30:06]   [person] epoch 3/8 loss 4.363 train_acc 4.7 (34s)
+[10:30:42]   [person] epoch 4/8 loss 4.274 train_acc 5.5 (36s)
+[10:31:17]   [person] epoch 5/8 loss 4.178 train_acc 6.1 (36s)
+[10:31:51]   [person] epoch 6/8 loss 4.096 train_acc 6.5 (34s)
+[10:32:27]   [person] epoch 7/8 loss 4.034 train_acc 6.7 (36s)
+[10:33:01]   [person] epoch 8/8 loss 4.001 train_acc 7.3 (34s)
+[10:35:44]   strong person/frame_dino_probe: 10.55
+[10:35:46] strong eval: training person frame_dino_ft on anonymised data
+[10:37:36]   [person] epoch 1/8 loss 4.277 train_acc 3.7 (110s)
+[10:39:26]   [person] epoch 2/8 loss 4.135 train_acc 5.9 (110s)
+[10:41:15]   [person] epoch 3/8 loss 4.085 train_acc 5.7 (109s)
+[10:42:40]   [person] epoch 4/8 loss 4.054 train_acc 6.5 (85s)
+[10:44:06]   [person] epoch 5/8 loss 4.004 train_acc 7.3 (85s)
+[10:45:54]   [person] epoch 6/8 loss 3.976 train_acc 7.5 (109s)
+[10:47:42]   [person] epoch 7/8 loss 3.939 train_acc 8.6 (107s)
+[10:49:31]   [person] epoch 8/8 loss 3.930 train_acc 8.9 (109s)
+[10:52:11]   strong person/frame_dino_ft: 13.27
+[10:52:11] DONE p6_dino_p8_bdq_a1_ens: action None  privacy top1 (strong, best attacker) 13.27  (31.7 min)
+[10:52:23] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p6_dino_p8_bdq_a1_ens

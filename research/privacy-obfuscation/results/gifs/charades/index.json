@@ -1,0 +1,94 @@
+{
+ "clips": [
+  {
+   "video": "MQSXF",
+   "action": "MQSXF"
+  },
+  {
+   "video": "K5IAK",
+   "action": "K5IAK"
+  },
+  {
+   "video": "2UQKZ",
+   "action": "2UQKZ"
+  },
+  {
+   "video": "PWW6X",
+   "action": "PWW6X"
+  }
+ ],
+ "runs": [
+  {
+   "run": "p8_raw",
+   "file": "p8_raw.gif",
+   "split": "s1",
+   "action": 15.839634854335364,
+   "privacy": 93.45588088035583,
+   "leakage": 100.0,
+   "kb": 1255
+  },
+  {
+   "run": "p8_personbox",
+   "file": "p8_personbox.gif",
+   "split": "s1",
+   "action": 10.60373904149536,
+   "privacy": 90.625,
+   "leakage": 96.93444372926614,
+   "kb": 778
+  },
+  {
+   "run": "p8_diff",
+   "file": "p8_diff.gif",
+   "split": "s1",
+   "action": 12.907006791785092,
+   "privacy": 89.41176533699036,
+   "leakage": 95.62063389895162,
+   "kb": 1676
+  },
+  {
+   "run": "p8_bdq_a0",
+   "file": "p8_bdq_a0.gif",
+   "split": "s1",
+   "action": 12.649793770571161,
+   "privacy": 88.78676295280457,
+   "leakage": 94.9438198403454,
+   "kb": 1432
+  },
+  {
+   "run": "p8_blur8",
+   "file": "p8_blur8.gif",
+   "split": "s1",
+   "action": 9.000309004047153,
+   "privacy": 86.87499761581421,
+   "leakage": 92.87357228678329,
+   "kb": 713
+  },
+  {
+   "run": "p8_down16",
+   "file": "p8_down16.gif",
+   "split": "s1",
+   "action": 8.449996603203639,
+   "privacy": 85.03676652908325,
+   "leakage": 90.88295485243978,
+   "kb": 679
+  },
+  {
+   "run": "p8_bdq_a3_ens",
+   "file": "p8_bdq_a3_ens.gif",
+   "split": "s1",
+   "action": 5.957494180496482,
+   "privacy": 24.154411256313324,
+   "leakage": 24.953552001682233,
+   "kb": 32
+  },
+  {
+   "run": "p8_bdq_a1_ens",
+   "file": "p8_bdq_a1_ens.gif",
+   "split": "s1",
+   "action": 5.756296041082752,
+   "privacy": 19.632352888584137,
+   "leakage": 20.05662239859901,
+   "kb": 31
+  }
+ ]
+}
