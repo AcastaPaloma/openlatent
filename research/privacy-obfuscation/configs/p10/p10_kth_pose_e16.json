@@ -1,0 +1,16 @@
+{
+ "name": "p10_kth_pose_e16",
+ "dataset": "kth",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 16,
+  "width": 2
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "action": []
+ },
+ "split": "ilic",
+ "note": "stick figures redrawn only every 16th frame (held in between): removes fine motion timing, keeps posture"
+}

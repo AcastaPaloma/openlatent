@@ -1,0 +1,37 @@
+[20:08:41] run p10_kth_bdq_a7_ens_scenario_s1_xh @ b53146c: {"name": "p10_kth_bdq_a7_ens_scenario_s1_xh", "dataset": "kth", "split": "scenario", "seed": 0, "anonymizer": {"type": "bdq"}, "priv_split": "xaction_heldout", "eval": {"action": []}, "note": "attackers train on seen scenarios and seen actions, tested on the unseen scenario with unseen actions", "anonymizer_from": "p2_bdq_a7_ens_scenario_s1"}
+[20:08:43] kth split=scenario: 1791 train / 600 test subsequences, 599 videos
+[20:08:43] loaded anonymizer from p2_bdq_a7_ens_scenario_s1 (missing 0, unexpected 0)
+[20:09:05] materialised anonymised dataset (21s)
+[20:09:05] privacy split xaction_heldout: 1193 train / 200 test rows
+[20:09:05] strong eval: training person frame_r50 on anonymised data
+[20:09:39]   [person] epoch 1/12 loss 3.220 train_acc 3.5 (33s)
+[20:10:00]   [person] epoch 2/12 loss 3.184 train_acc 5.2 (21s)
+[20:10:14]   [person] epoch 3/12 loss 3.103 train_acc 8.3 (14s)
+[20:10:28]   [person] epoch 4/12 loss 2.981 train_acc 12.2 (14s)
+[20:10:41]   [person] epoch 5/12 loss 2.803 train_acc 17.5 (14s)
+[20:10:55]   [person] epoch 6/12 loss 2.609 train_acc 22.9 (14s)
+[20:11:09]   [person] epoch 7/12 loss 2.438 train_acc 28.2 (14s)
+[20:11:22]   [person] epoch 8/12 loss 2.327 train_acc 33.1 (14s)
+[20:11:36]   [person] epoch 9/12 loss 2.240 train_acc 36.5 (14s)
+[20:11:50]   [person] epoch 10/12 loss 2.167 train_acc 39.0 (14s)
+[20:12:03]   [person] epoch 11/12 loss 2.157 train_acc 39.0 (14s)
+[20:12:17]   [person] epoch 12/12 loss 2.160 train_acc 39.6 (14s)
+[20:12:24]   strong person/frame_r50: 10.00
+[20:12:29]   weak person/frame_r50: 4.00
+[20:12:30] strong eval: training person r3d on anonymised data
+[20:12:44]   [person] epoch 1/12 loss 2.562 train_acc 28.6 (14s)
+[20:12:57]   [person] epoch 2/12 loss 1.350 train_acc 64.1 (13s)
+[20:13:11]   [person] epoch 3/12 loss 0.765 train_acc 81.2 (13s)
+[20:13:24]   [person] epoch 4/12 loss 0.477 train_acc 88.3 (13s)
+[20:13:38]   [person] epoch 5/12 loss 0.354 train_acc 91.4 (13s)
+[20:13:51]   [person] epoch 6/12 loss 0.254 train_acc 94.0 (13s)
+[20:14:05]   [person] epoch 7/12 loss 0.184 train_acc 95.5 (13s)
+[20:14:18]   [person] epoch 8/12 loss 0.161 train_acc 95.5 (13s)
+[20:14:31]   [person] epoch 9/12 loss 0.115 train_acc 97.1 (13s)
+[20:14:45]   [person] epoch 10/12 loss 0.100 train_acc 97.4 (13s)
+[20:14:58]   [person] epoch 11/12 loss 0.105 train_acc 97.3 (13s)
+[20:15:12]   [person] epoch 12/12 loss 0.086 train_acc 97.8 (13s)
+[20:15:15]   strong person/r3d: 17.00
+[20:15:18]   weak person/r3d: 4.00
+[20:15:18] DONE p10_kth_bdq_a7_ens_scenario_s1_xh: action None  privacy top1 (strong, best attacker) 17.00  (6.6 min)
+[20:15:19] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p10_kth_bdq_a7_ens_scenario_s1_xh

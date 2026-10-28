@@ -1208,3 +1208,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   keeping joint angles and position (visual check on KTH frames: figures same size, standard proportions). Queued KTH within and
   cross-action, and VP-HMDB51. Hypothesis: if KTH pose identity is body shape, canonical drops it toward chance; if it is
   posture/motion style it stays near 53 / 27.
+- 20:35 UTC: p14 conditional adversary on VP-UCF101: alpha 10 89.7 action / 65.7 conditional, alpha 30 89.2 / 65.9 (plain BDQ
+  87.8 / 65.2, raw 91.8 / 67.1, chance 61.3). Negative on both VP datasets: an action-aware adversary finds nothing more for BDQ
+  to remove. Closing p14 for BDQ; the beyond-action signal is structural (see pose results).
+  Hardest test (unseen scenario + unseen actions): KTH pose 21.5 (frame 17.5), next to the learned x16-x24 pools (17.5-20) and
+  far below fixed maps at similar action (fixed x8 50.5). Plain BDQ a7 seed 1: 17.0 (seeds 0, 2: 8.0, 8.5): its weaker scenario
+  result (45.0) carries over, so a7's 8% is seed-dependent, not a property of the setting.
+  Queued KTH pose redrawn every 16 frames (within and cross-action): tests how much of pose identity is fine motion timing.
