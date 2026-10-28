@@ -1,0 +1,18 @@
+{
+ "name": "p10_utd_pose",
+ "dataset": "utdmhad",
+ "seed": 0,
+ "anonymizer": {
+  "type": "pose",
+  "every": 4,
+  "width": 2
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "epochs": 12,
+  "repeats": 4,
+  "batch": 16,
+  "action": []
+ },
+ "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"
+}

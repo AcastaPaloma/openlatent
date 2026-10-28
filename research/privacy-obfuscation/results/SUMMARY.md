@@ -34,6 +34,7 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | 3D U-Net -> x64 (a0) | 66.1 | 9.9 | – | 1 |
 | pose: stick figures (Keypoint R-CNN) | 97.8 | 53.3 | 27.4 | 1 |
 | pose, redrawn every 16 frames | 93.3 | 38.1 | 29.1 | 1 |
+| pose, canonical skeleton (fixed size and proportions) | 97.3 | 45.2 | 21.4 | 1 |
 
 Chance: action 16.7, identity 4.0. Controls: brightness only (one number per frame) 22.4 identity; all-black 16.7 / 4.0; shuffled training labels: identity at chance for every attacker.
 

@@ -1237,3 +1237,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   limb lengths and size removes ~5 points on unseen scenario + unseen actions, landing at the learned x16 pool (17.3).
   KTH pose GIFs added (results/gifs/kth/p12_kth_pose.gif, p12_kth_pose_e16.gif): limbs only, no background; an empty tile is a
   walking clip before the person enters.
+- 21:35 UTC: KTH canonical stick figures (Ilic): 97.3 action / 45.2 identity (plain stick figures 97.8 / 53.3; across actions
+  21.4 vs 27.4). Fixing limb lengths and size costs nothing in action and removes ~8 identity points within actions, ~6 across.
+  KTH one posture per clip, hardest test: 17.0 (all frames 21.5; canonical 16.5).
+  VP-UCF101 controls: black frames 61.8 conditional (chance 61.3), mean colour per frame 62.1: no hidden channel in the pipeline.
+  Queued pose and canonical pose on UTD-MHAD (within and across actions): every obfuscator so far kept UTD identity at 84-100
+  through the per-session colour cue (mean colour alone 72.8); stick figures remove colour and background entirely.
+  Also canonical + one posture per clip on the KTH scenario split and its hardest test.
