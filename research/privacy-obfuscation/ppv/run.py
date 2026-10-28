@@ -32,7 +32,7 @@ import resource
 import numpy as np
 import torch
 
-from . import anonymizers, charades, hmdb51, kth, models, train, ucf101
+from . import anonymizers, charades, hmdb51, kth, models, train, ucf101, utdmhad
 
 WORK = os.path.expanduser("~/work")
 HF_REPO = os.environ.get("PPV_HF_REPO", "KuanKuanKuan/openlatent-privacy")
@@ -103,6 +103,11 @@ def load_dataset(cfg, log):
         return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=charades.N_ACTIONS, n_priv=n_subj,
                     priv_kind="multiclass", priv_task="person", tag="charades_id", stride=cfg.get("clip_stride", 1), big=True,
                     in_ch=3, act_kind="multilabel")
+    if ds == "utdmhad":
+        rows_tr, rows_te, frames = utdmhad.load(os.path.join(WORK, "data", "utdmhad"))
+        log(f"UTD-MHAD: {len(rows_tr)} train / {len(rows_te)} test videos, {utdmhad.N_SUBJECTS} subjects")
+        return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=utdmhad.N_ACTIONS, n_priv=utdmhad.N_SUBJECTS,
+                    priv_kind="multiclass", priv_task="person", tag="utdmhad", stride=cfg.get("clip_stride", 1), big=False, in_ch=3)
     raise ValueError(ds)
 
 
