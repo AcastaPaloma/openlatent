@@ -1098,3 +1098,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   attribute mAP within 3-6 points of raw, which is what "attributes are implied by the action/scene" predicts. Dropped the UCF p13
   duplicate (p12_ucf_personbox gives its conditional score); kept HMDB p13 (sigma 16, ~2 h) for the conditional number with action.
   Moved p12_ucf_raw / p12_hmdb_raw to VM5 so the conditional references land first.
+- 17:25 UTC: KTH task mask (learned DINOv2 head, keep 25% of patches, gray fill): a0 92.5 / 96.2, a1 94.8 / 96.7 (raw 97.5 / 99.5).
+  Even with an identity adversary in the loop the mask keeps identity: the patches the action needs are the person, so selecting
+  patches can't trade identity for action on KTH. The mask's value is only as a carrier for an inner obfuscator (BDQ-inside run pending).
+  Scenario split: plain BDQ a7 53.3 / 24.5 (a3 seeds ~55-62 / 25-31); learned pool x16 a5 74.2 / 36.0 vs a3 73.7 / 37.3: a stronger
+  adversary weight doesn't move the frontier. Queued hardest tests for both.
+  In-game reading worth watching: p8_bdq_a3_ens_pw (Charades, pos_weight 20) at adv epoch 5 has action positive recall 61.0 with the
+  identity adversary at 4.8% (floor 3.6). If the strong eval holds, this is the first Charades obfuscator with both.
