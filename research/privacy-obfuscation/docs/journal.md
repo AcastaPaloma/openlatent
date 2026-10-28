@@ -1258,3 +1258,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   vs small figures) carried most of the relationship signal. One posture per clip: 26.1 / 66.3.
   Queued: seed replicates of canonical + one posture (Ilic, scenario), its cross-action test, every-8 variant (Ilic, scenario,
   hardest), a 4x downsample after it (Ilic, scenario, hardest), 24-epoch attackers and DINOv2 attackers on it.
+- 22:30 UTC: Charades stick figures: 8.2 mAP / 32.5% identity (raw 15.8 / 93.5). Beats every non-collapsed Charades point on both
+  axes except the near-floor BDQ a1-a3 (~5.8 / ~20): BDQ a0.5 7.1 / 45.6, two RGB pixels 5.5 / 38.8, person removed 10.6 / 90.6.
+  Removing the room and appearance takes identity from 93 to 33; what's left is body and motion in each home.
+  VP-UCF101 stick figures: 55.5 action / 74.7 attr / 66.0 conditional (raw 91.8 / 77.1 / 67.1); skin colour beyond the action
+  69.2 = raw 69.2, relationship 45.4 vs raw 43.8: the HMDB finding holds on UCF, the beyond-action signal is structural.
+  Queued canonical and canonical + one posture per clip on Charades.

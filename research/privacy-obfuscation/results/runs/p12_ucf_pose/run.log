@@ -1,0 +1,44 @@
+[17:56:20] run p12_ucf_pose @ 7cb3ac9: {"name": "p12_ucf_pose", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "pose", "every": 4, "width": 2}, "eval": {"epochs": 10, "repeats": 1, "batch": 16}}
+[17:56:21] VP-UCF101 split 1: 9537 train / 3783 test videos
+[21:32:05] materialised anonymised dataset (12943s)
+[21:32:06] strong eval: training action r2p1d on anonymised data
+[21:33:30]   [action] epoch 1/10 loss 3.552 train_acc 18.0 (84s)
+[21:34:51]   [action] epoch 2/10 loss 2.504 train_acc 35.7 (82s)
+[21:36:13]   [action] epoch 3/10 loss 2.128 train_acc 44.5 (82s)
+[21:37:35]   [action] epoch 4/10 loss 1.874 train_acc 50.6 (82s)
+[21:38:57]   [action] epoch 5/10 loss 1.642 train_acc 56.5 (82s)
+[21:40:18]   [action] epoch 6/10 loss 1.462 train_acc 61.4 (81s)
+[21:41:39]   [action] epoch 7/10 loss 1.283 train_acc 66.0 (81s)
+[21:43:01]   [action] epoch 8/10 loss 1.165 train_acc 69.5 (81s)
+[21:44:22]   [action] epoch 9/10 loss 1.062 train_acc 72.7 (81s)
+[21:45:44]   [action] epoch 10/10 loss 1.006 train_acc 74.7 (81s)
+[21:46:36]   strong action/r2p1d: 55.51
+[21:47:27]   weak action/r2p1d: 1.90
+[21:47:28] strong eval: training attr frame_r50 on anonymised data
+[21:48:32]   [attr] epoch 1/10 loss 0.484 train_acc 78.7 (64s)
+[21:49:35]   [attr] epoch 2/10 loss 0.440 train_acc 80.3 (63s)
+[21:50:38]   [attr] epoch 3/10 loss 0.436 train_acc 80.6 (63s)
+[21:51:40]   [attr] epoch 4/10 loss 0.432 train_acc 80.8 (63s)
+[21:52:43]   [attr] epoch 5/10 loss 0.427 train_acc 80.8 (63s)
+[21:53:45]   [attr] epoch 6/10 loss 0.423 train_acc 80.9 (63s)
+[21:54:48]   [attr] epoch 7/10 loss 0.419 train_acc 81.1 (63s)
+[21:55:51]   [attr] epoch 8/10 loss 0.414 train_acc 81.4 (63s)
+[21:56:54]   [attr] epoch 9/10 loss 0.410 train_acc 81.5 (63s)
+[21:57:56]   [attr] epoch 10/10 loss 0.409 train_acc 81.5 (63s)
+[21:58:58]   strong attr/frame_r50: 72.99  (AP per attribute [96.8, 83.7, 96.3, 32.7, 55.5], F1 62.5)  action-conditional cMAP 65.95 (floor 61.3)
+[21:59:59]   weak attr/frame_r50: 63.74
+[22:00:00] strong eval: training attr r3d on anonymised data
+[22:00:46]   [attr] epoch 1/10 loss 0.473 train_acc 77.9 (46s)
+[22:01:30]   [attr] epoch 2/10 loss 0.440 train_acc 80.3 (44s)
+[22:02:14]   [attr] epoch 3/10 loss 0.434 train_acc 80.4 (44s)
+[22:02:58]   [attr] epoch 4/10 loss 0.427 train_acc 81.0 (44s)
+[22:03:42]   [attr] epoch 5/10 loss 0.424 train_acc 81.0 (44s)
+[22:04:27]   [attr] epoch 6/10 loss 0.415 train_acc 81.2 (44s)
+[22:05:11]   [attr] epoch 7/10 loss 0.406 train_acc 81.8 (44s)
+[22:05:55]   [attr] epoch 8/10 loss 0.398 train_acc 82.1 (44s)
+[22:06:39]   [attr] epoch 9/10 loss 0.388 train_acc 82.5 (44s)
+[22:07:24]   [attr] epoch 10/10 loss 0.382 train_acc 82.7 (44s)
+[22:07:42]   strong attr/r3d: 74.69  (AP per attribute [97.1, 84.3, 96.2, 37.7, 58.1], F1 64.8)  action-conditional cMAP 66.02 (floor 61.3)
+[22:08:00]   weak attr/r3d: 63.43
+[22:08:00] DONE p12_ucf_pose: action 55.51  privacy cmap (strong, best attacker) 74.69  (251.7 min)
+[22:08:15] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_ucf_pose
