@@ -1083,3 +1083,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   (2) Test this directly: invert the mask's role, i.e. obfuscate inside the person box and keep task objects raw.
   GIF check (results/gifs/charades/p11_ch_saliency_k25.gif): the saliency mask keeps the person plus the objects they handle
   (pots, dishes, the counter) and grays the rest of the room, which is what the 91.3% identity predicts.
+- 16:55 UTC: hardest tests on scenario seed 2: x16 16.5 (seed 0: 17.5/18.0), x64 9.5 (4.0-7.5). Scenario x48 a3: 56.8 / 26.0.
+  UTD task mask a1: 96.2 / 100; raw-background composite a0: 100 / 100 (session cue survives every mask variant).
+  p12_hmdb_blur8 (attack only): attribute mAP 67.9, action-conditional cMAP 65.2 vs floor 57.5; waiting on p12_hmdb_raw for the
+  raw reference. Charades p8_bdq_a1_ens_s3_g (guard, pre pos_weight): 5.9 / 23.1%, the same near-floor action as the other seeds.
+  New phase p13 (inverting the mask): blur only inside detected person boxes (sigma 16) and keep the scene and handled objects raw,
+  on VP-UCF101 and VP-HMDB51, with action eval. Hypothesis: action survives (objects and scene carry most UCF/HMDB classes) while
+  face/skin/gender cMAP falls toward the floor, unlike every whole-frame filter so far.

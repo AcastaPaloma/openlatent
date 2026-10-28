@@ -1,0 +1,35 @@
+[16:31:26] run p12_hmdb_blur8 @ 322013b: {"name": "p12_hmdb_blur8", "dataset": "hmdb51_vp", "seed": 0, "anonymizer": {"type": "blur", "sigma": 8}, "eval": {"epochs": 12, "repeats": 2, "batch": 16, "action": []}, "note": "attack-only re-evaluation for the action-conditional attribute cMAP (what the video reveals beyond its action)"}
+[16:31:26] VP-HMDB51 split 1: 3570 train / 1530 test videos
+[16:32:30] materialised anonymised dataset (64s)
+[16:32:30] strong eval: training attr frame_r50 on anonymised data
+[16:33:54]   [attr] epoch 1/12 loss 0.500 train_acc 78.9 (83s)
+[16:35:12]   [attr] epoch 2/12 loss 0.435 train_acc 80.5 (78s)
+[16:36:29]   [attr] epoch 3/12 loss 0.412 train_acc 81.5 (77s)
+[16:37:14]   [attr] epoch 4/12 loss 0.382 train_acc 82.7 (45s)
+[16:38:01]   [attr] epoch 5/12 loss 0.346 train_acc 84.5 (47s)
+[16:38:48]   [attr] epoch 6/12 loss 0.310 train_acc 86.3 (47s)
+[16:39:34]   [attr] epoch 7/12 loss 0.278 train_acc 88.0 (47s)
+[16:40:21]   [attr] epoch 8/12 loss 0.248 train_acc 89.5 (47s)
+[16:41:08]   [attr] epoch 9/12 loss 0.228 train_acc 90.4 (47s)
+[16:41:55]   [attr] epoch 10/12 loss 0.217 train_acc 91.0 (47s)
+[16:42:41]   [attr] epoch 11/12 loss 0.206 train_acc 91.5 (47s)
+[16:43:28]   [attr] epoch 12/12 loss 0.208 train_acc 91.3 (47s)
+[16:43:55]   strong attr/frame_r50: 66.11  (AP per attribute [95.4, 72.4, 93.9, 39.0, 29.9], F1 63.0)  action-conditional cMAP 64.47 (floor 57.5)
+[16:44:20]   weak attr/frame_r50: 62.56
+[16:44:21] strong eval: training attr r3d on anonymised data
+[16:44:56]   [attr] epoch 1/12 loss 0.469 train_acc 78.7 (35s)
+[16:45:29]   [attr] epoch 2/12 loss 0.406 train_acc 81.9 (33s)
+[16:46:02]   [attr] epoch 3/12 loss 0.356 train_acc 84.5 (33s)
+[16:46:35]   [attr] epoch 4/12 loss 0.291 train_acc 87.7 (33s)
+[16:47:08]   [attr] epoch 5/12 loss 0.217 train_acc 91.0 (33s)
+[16:47:42]   [attr] epoch 6/12 loss 0.151 train_acc 94.3 (33s)
+[16:48:15]   [attr] epoch 7/12 loss 0.106 train_acc 96.1 (33s)
+[16:48:48]   [attr] epoch 8/12 loss 0.078 train_acc 97.4 (33s)
+[16:49:21]   [attr] epoch 9/12 loss 0.058 train_acc 98.1 (33s)
+[16:49:55]   [attr] epoch 10/12 loss 0.045 train_acc 98.7 (33s)
+[16:50:28]   [attr] epoch 11/12 loss 0.038 train_acc 98.9 (33s)
+[16:51:01]   [attr] epoch 12/12 loss 0.036 train_acc 99.0 (33s)
+[16:51:09]   strong attr/r3d: 67.87  (AP per attribute [93.5, 74.7, 94.2, 42.0, 34.9], F1 65.8)  action-conditional cMAP 65.18 (floor 57.5)
+[16:51:17]   weak attr/r3d: 60.39
+[16:51:17] DONE p12_hmdb_blur8: action None  privacy cmap (strong, best attacker) 67.87  (19.8 min)
+[16:51:20] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_hmdb_blur8

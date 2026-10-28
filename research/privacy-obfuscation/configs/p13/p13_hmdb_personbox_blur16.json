@@ -1,0 +1,18 @@
+{
+ "name": "p13_hmdb_personbox_blur16",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "person_box",
+  "mode": "blur",
+  "sigma": 16.0,
+  "every": 8,
+  "dilate": 6
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "note": "degrade only the person (blur inside detected boxes), keep scene and handled objects raw; reports action, attribute mAP and action-conditional cMAP"
+}

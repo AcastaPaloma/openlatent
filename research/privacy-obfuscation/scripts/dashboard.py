@@ -33,6 +33,8 @@ PHASES = {
     "p9": "Phase 9: UTD-MHAD (identity without a scene cue)",
     "p10": "Phase 10: cross-action identity (attackers tested on unseen actions)",
     "p11": "Phase 11: keep only the task-relevant region (DINOv2 task mask)",
+    "p12": "Phase 12: action-conditional attribute re-evaluation and pose",
+    "p13": "Phase 13: degrade only the person, keep scene objects raw",
 }
 
 
