@@ -802,3 +802,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p8_diff_down32 (Charades): action mAP 6.8, identity 58.4% vs BDQ a3 ens 6.0 / 24.2. Unlike KTH-Ilic, on Charades
   the learned BDQ beats a fixed coarse motion map by ~34 identity points at similar action.
 - Queued p2_bdq_down32_a3_ens_scenario_s1 and p8_bdq_down16_a3_ens (learned pool + adversary on Charades).
+
+### 2026-10-28 05:55 UTC: encoder bias matters; in homes the adversary matters
+- p2_unet_down64_a0 (3D U-Net encoder -> 1x2 px, utility only): 66.1 / 9.9 vs BDQ -> 1x2 px 81.8 / 10.7. With the
+  adversary (p2_unet_down64_a1_ens) it collapsed to chance (16.7 / 4.0). A more expressive encoder does not help;
+  BDQ's built-in temporal difference is the useful inductive bias.
+- p6_bdq_down64_a1_ens_stride4 (2.5 s view on the frozen 1x2 px output): 81.8 / 12.2. Robust to longer views.
+- Charades (action mAP / identity): raw 15.8 / 93.5, diff 12.9 / 89.4, diff->down16 7.9 / 75.1, diff->down32 6.8 / 58.4,
+  BDQ->down32 a0 6.7 / 53.3, BDQ a3 ens 6.0 / 24.2. Frame differencing alone keeps in-home identity (handheld
+  camera motion turns the static room into edges); only the adversarially trained BDQ removes it.
+- Next: p8_bdq_a3_ens_s1, p8_bdq_a5_ens; KTH x32 adversary ablation p2_bdq_down32_a3_r3d / _r18 (which attacker's
+  gradient carries the x32 gain: gait or appearance?).
