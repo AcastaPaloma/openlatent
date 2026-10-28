@@ -631,3 +631,16 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   x16 63.7/71.0, x32 42.9/68.9. Same curve as plain downsampling: appearance attributes survive any coarse map.
 - H31 dose: p2_bdq_down48_a1_ens (2x3 px) and p2_bdq_down120_a1_ens (one number per frame), learned BDQ before the
   pool, to compare with the fixed ladder (2x3: 83.6 / 37.0; 1x1: 54.2 / 6.9).
+
+### 2026-10-28 00:30 UTC: scenario split: learning helps where fixed maps fail; new data and VMs
+- Fixed motion maps on the scenario split (action / identity): x8 86.2/61.7, x16 81.0/50.7, x32 58.0/42.7,
+  x48 44.0/26.5, x64 23.3/8.8. Learned BDQ there: a1 79.2/61.2, a5 ens 78.7/54.0, a3 55.8/24.7. At mid utility
+  BDQ a3 beats the fixed curve by ~15 identity points (x32 at 58 action leaks 42.7). On the Ilic split the
+  two families coincide; under a shift in recording conditions the learned blur/thresholds generalise better than
+  a fixed coarse map. H32 supported at mid utility.
+- p1_diff_down48_s1: 82.4 / 36.3 (seed 0: 83.6 / 37.0): replicates. p1_diff_down24: 94.3 / 77.8.
+- New dataset: VP-HMDB51 (HMDB51 split 1, 51 actions; STPrivacy's five attributes on 6,766 videos; prevalence
+  face 0.90, skin 0.62, gender 0.92, nudity 0.27, relationship 0.21). Videos from the MichiganNLP/hmdb HF mirror
+  (official host down). First wave mirrors VP-UCF101 (configs/p7): raw, blur8, down8/16, pix8, diff, diff->down16,
+  person box (black / blur), BDQ a3 ens.
+- Two more A100 VMs (150.136.92.19, 129.213.90.42) bootstrapping.

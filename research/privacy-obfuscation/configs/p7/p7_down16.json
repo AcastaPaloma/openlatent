@@ -1,0 +1,14 @@
+{
+ "name": "p7_down16",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "down",
+  "factor": 16
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16
+ }
+}
