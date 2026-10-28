@@ -198,23 +198,36 @@ def main(cfg_path):
     del f
     torch.cuda.empty_cache()
 
+    # Privacy attackers normally use the action split. priv_split "xaction" trains them on two thirds of the actions
+    # and tests them on the rest (all trials/videos of those actions): identity must transfer to actions the attacker
+    # never saw, so a leak that is only "how this person does this action" no longer counts.
+    rows_tr_p, rows_te_p, tag_p = rows_tr, rows_te, D["tag"]
+    if cfg.get("priv_split") == "xaction":
+        everything = rows_tr + rows_te
+        rows_tr_p = [r for r in everything if r["action_id"] % 3 != 2]
+        rows_te_p = [r for r in everything if r["action_id"] % 3 == 2]
+        tag_p = D["tag"] + "_xaction"
+        log(f"privacy split xaction: {len(rows_tr_p)} train / {len(rows_te_p)} test rows (actions with id % 3 == 2 held out)")
     dl_te = train.loader(rows_te, anon, False, ev["batch"] * 2, stride=stride)
+    dl_te_p = train.loader(rows_te_p, anon, False, ev["batch"] * 2, stride=stride) if rows_te_p is not rows_te else dl_te
     strong, weak, details = {}, {}, {}
     for task, archs, n_cls in (("action", ev["action"], D["n_act"]), (pt, ev["privacy"], D["n_priv"])):
+        is_priv = task != "action"
+        rtr, rte, dte, tag = (rows_tr_p, rows_te_p, dl_te_p, tag_p) if is_priv else (rows_tr, rows_te, dl_te, D["tag"])
         for arch in archs:
             key = f"{task}/{arch}"
             m = models.build(arch, n_cls)
-            dl_tr = train.loader(rows_tr, anon, True, ev["batch"], repeats=ev["repeats"], seed=cfg.get("seed", 0), stride=stride)
+            dl_tr = train.loader(rtr, anon, True, ev["batch"], repeats=ev["repeats"], seed=cfg.get("seed", 0), stride=stride)
             log(f"strong eval: training {task} {arch} on anonymised data")
             train.train_classifier(m, dl_tr, task, ev["epochs"],
                                    frames_per_clip=ev["frames_per_clip"] if arch.startswith("frame") else None, priv_kind=pk, log=log)
-            r = train.evaluate(m, dl_te, task, len(rows_te), priv_kind=pk)
+            r = train.evaluate(m, dte, task, len(rte), priv_kind=pk)
             strong[key], details[f"strong/{key}"] = r["main"], r
             log(f"  strong {key}: {r['main']:.2f}" + (f"  (AP per attribute {[round(a, 1) for a in r['ap']]}, F1 {r['f1']:.1f})" if "ap" in r else ""))
             del m
             if ev["clean_attacker"]:
-                mc = clean_model(arch, task, n_cls, rows_tr, frames, ev, D["tag"], pk, stride, log)
-                r = train.evaluate(mc, dl_te, task, len(rows_te), priv_kind=pk)
+                mc = clean_model(arch, task, n_cls, rtr, frames, ev, tag, pk, stride, log)
+                r = train.evaluate(mc, dte, task, len(rte), priv_kind=pk)
                 weak[key], details[f"weak/{key}"] = r["main"], r
                 log(f"  weak {key}: {r['main']:.2f}")
                 del mc
