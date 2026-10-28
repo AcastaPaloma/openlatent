@@ -919,3 +919,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   carries person-action style and little that transfers across actions. Attack-only runs (configs/p10) on stored
   outputs: KTH raw, diff->down32, BDQ->x16/x32/x64; UTD raw, diff->down32, BDQ->x32.
 - Charades GIFs added (results/gifs/charades).
+- 11:20 UTC: p8_bdq_a1_ens_s1 (Charades): 4.4 / 3.6% identity (chance 1.1). Charades a1 seeds: 5.8/19.6, 4.4/3.6: the game
+  sometimes removes in-home identity almost completely, at ~30% of raw action mAP. p8_bdq_a5_ens_s1: 8.4 / 66.0% (seed 0
+  54.8%): at alpha 5 the Charades game reliably fails (keeps more action and identity), unlike KTH where alpha 5 was on
+  the curve. p2_bdq_down24_a1_ens: 90.8 / 46.2. UTD-MHAD at 1x2 px: BDQ -> x64 a1 51.2 / 58.7, fixed diff -> x64 62.9 / 55.4
+  (chance 12.5): the person-action signature survives two numbers per frame, and learning does not help here.
