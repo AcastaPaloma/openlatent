@@ -23,7 +23,7 @@ INFO = {
     "kth": dict(name="KTH", task="person", metric="identity top-1 (%)", floor=4.0, floor_label="chance 4.0"),
     "ucf101_vp": dict(name="VP-UCF101", task="attr", metric="attribute cMAP (%)", floor=58.7, floor_label="blind floor 58.7"),
     "hmdb51_vp": dict(name="VP-HMDB51", task="attr", metric="attribute cMAP (%)", floor=None, floor_label="blind floor"),
-    "charades": dict(name="Charades", task="person", metric="identity top-1 (%)", floor=100 / 90, floor_label="chance 1.1"),
+    "charades": dict(name="Charades", task="person", metric="identity top-1 (%)", floor=3.6, floor_label="majority-class 3.6"),
     "utdmhad": dict(name="UTD-MHAD", task="person", metric="identity top-1 (%)", floor=12.5, floor_label="chance 12.5"),
 }
 

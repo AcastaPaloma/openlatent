@@ -56,6 +56,13 @@ def loss_fn(logits, y, kind):
     return F.cross_entropy(logits.float(), y)
 
 
+def positive_recall(logits, y):
+    """Sum over the batch of each clip's recall on its positive labels (multilabel). Per-label accuracy is useless for
+    the collapse guard on Charades: predicting no action at all scores ~96% there (6 of 157 actions per video)."""
+    pos = y.sum(1).clamp(min=1)
+    return (((logits > 0).float() * y).sum(1) / pos).sum().item()
+
+
 def n_correct(logits, y, kind):
     """Correct predictions (multiclass) or correct attribute decisions / n_attrs (multilabel)."""
     if kind == "multilabel":
@@ -247,7 +254,10 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             s["la"] += la.item() * n
             s["ent"] += ent.item() * n
             s["lb"] += sum(lbs) / len(lbs) * n
-            s["acc_a"] += n_correct(la_logits.float(), ya, ACTION_KIND)
+            # the collapse guard needs a score that drops when f erases the action: top-1 for one action per clip,
+            # recall on the positive labels for several (Charades)
+            s["acc_a"] += (positive_recall(la_logits.float(), ya) if ACTION_KIND == "multilabel"
+                           else n_correct(la_logits.float(), ya, ACTION_KIND))
             s["n"] += n
         n = s["n"]
         accs = [100 * a / n for a in s["acc_b"]]

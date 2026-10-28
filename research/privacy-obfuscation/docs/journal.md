@@ -943,3 +943,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   down16 100. p9_mean (UTD-MHAD, per-frame mean colour only): 56.8 / 72.8% identity (chance 12.5; KTH's version: 22.4 vs
   chance 4.0): the session colour cue alone identifies most UTD subjects. p2_bdq_down16_a3_ens_scenario_s1: 76.2 / 37.0
   (seed 0: 73.7 / 37.3). Queued cross-action on plain BDQ (a5 ens warm), fixed x64, and learned x48 / x120.
+
+### 2026-10-28 12:25 UTC: correction: three Charades runs collapsed; guard fixed for multilabel action
+- p8_bdq_a1_ens_s1, p8_bdq_a1_ens_s2, p8_bdq_a3_r18 all report exactly 4.4 mAP / 3.6% identity (both attackers). These are
+  floors, not results: 4.4 is the mAP of a blind predictor (each video has ~6 of 157 actions) and 3.6% is the most
+  frequent subject's share. BDQ released content-free video. The 11:20 entry calling a1 s1 "near-chance identity" was
+  wrong. Charades floors: action mAP 4.4, identity 3.6 (not 0.6 / 1.1 as used before).
+- Cause: the collapse guard tracked per-label accuracy, which stays ~96% when nothing is predicted. Fixed (train.py):
+  for multilabel actions the guard now tracks recall on positive labels, so the kept epoch is the last one that still
+  predicted actions. Charades min_action set to 0 (best-epoch restore still applies). Reruns: *_g configs.
+- Corrected Charades reading (mAP / identity, floors 4.4 / 3.6, raw 15.8 / 93.5): BDQ a3 seeds 5.8-6.0 / 21-24%,
+  a1 seed 0 5.8 / 19.6%. Identity drops a lot, but action keeps only ~13% of its raw gap above the floor.
+  Charades has no good trade-off yet.
