@@ -1171,3 +1171,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   the honest attribute-privacy metric needs a control that keeps structure but no appearance (pose is that control).
   Queued controls on both VP datasets: all-black frames (the conditional cMAP must land at chance: tests the metric) and
   per-frame mean colour.
+- 19:20 UTC: plain BDQ a7 scenario seed 2: 60.0 / 24.8 (seed 0: 53.3 / 24.5). Queued its hardest test (seed 0 gave 8.0).
+  In-game p14 readings at alpha 10 / 30 on UCF: action 93.9 / 91.2 with gain over the action-only predictor ~0.008-0.010: the
+  conditional adversaries barely beat the action prior on training clips, so f is under little pressure. Strong evals pending.
