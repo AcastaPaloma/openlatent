@@ -785,3 +785,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - Replication of the best scenario-split point: p2_bdq_down64_a1_ens_scenario_s1.
 - 05:05 UTC: p3_personbox_blur_down8 (VP-UCF101): 59.3 / 71.4 cMAP (plain down8 72.2 / 72.1). Blurring the person
   first costs action and buys nothing: the attributes leak through the coarse frame either way.
+
+### 2026-10-28 05:20 UTC: the adversary matters once the bottleneck has room; VP-HMDB51 reference
+- p2_bdq_down32_a0 (BDQ -> 3x5 px, utility only): 89.5 / 53.2 vs adversarial a3 93.0/40.8, 92.1/37.5, a5 91.8/38.3.
+  At 15 numbers per frame the privacy term removes ~15 identity points; at 2 numbers per frame (x64) it removed
+  none (a0 81.8 / 10.7 vs ~81 / 12). H38 refined: a small enough bottleneck makes the adversary unnecessary;
+  with more capacity, adversarial training decides what the extra capacity carries.
+- p7_raw (VP-HMDB51): action 64.9, cMAP 75.2 (ResNet-50 74.5); floor (mean prevalence) 58.8. Leakage of the first
+  wave: BDQ a3 ens 85%, diff 77%, pix8 65%, person box 61%, person-box blur 64%, blur8 58%, down8 70%, down16 48%,
+  diff->down16 66%. Same picture as VP-UCF101: appearance attributes survive every obfuscation that keeps action.
+- Queued p2_bdq_down32_a1_ens (alpha dose at x32).
