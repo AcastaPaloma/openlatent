@@ -703,3 +703,17 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p2_bdq_down64_a1_ens_scenario: 50.8 / 12.7. Scenario-split reference: BDQ a3 55.8 / 24.7, fixed x48 44.0 / 26.5,
   x64 23.3 / 8.8. Best scenario-split trade-off so far: the learned-before-pool gain holds under unseen conditions.
 - Next: seed and split checks for the x32 point (p2_bdq_down32_a3_ens_s1, _scenario) and alpha 5.
+
+### 2026-10-28 02:15 UTC: learned-before-pool replicates; one learned number per frame
+- p2_bdq_down64_a1_ens_s1: 82.6 / 13.4; p2_bdq_down64_a3_ens: 82.9 / 12.5 (seed 0, alpha 1: 82.1 / 12.5).
+  The BDQ->1x2 px point replicates across seed and alpha: ~82 action at ~13 identity (chance 16.7 / 4.0).
+- p2_bdq_down120_a1_ens (BDQ then one number per frame): 75.9 / 8.5 (ResNet-50 5.2). Fixed one-number map: 54.2 / 6.9.
+  A learned blur/threshold before the global pool buys ~22 action points at near-chance identity.
+- Learned-before-pool vs fixed motion map, KTH Ilic (action / identity):
+  1 number: 75.9 / 8.5 vs 54.2 / 6.9;  2 numbers: ~82.5 / 13 vs 69.9 / 11.0;  6 numbers: 82.9 / 41.3 vs 83.6 / 37.0;
+  15 numbers: 93.0 / 40.8 vs 93.6 / 63.9. Gains at 1, 2 and 15 numbers; none at 6 (one alpha, one seed so far).
+- p2_bdq_a3_scenario_s3: 74.2 / 44.7 (seed 0: 55.8 / 24.7). Large seed spread on the scenario split as on Ilic.
+- p7_diff (VP-HMDB51 frame difference): 59.9 / 71.4 cMAP (ResNet-50 72.8). Raw reference (p7_raw) pending.
+- H37: what the learned stage adds is a choice of which motion to integrate (thresholds on the blurred
+  difference) that a fixed difference cannot make; the alpha-0 controls (p2_bdq_down64_a0, p2_bdq_down48_a0,
+  finishing) decide whether that choice needs the adversary at all.
