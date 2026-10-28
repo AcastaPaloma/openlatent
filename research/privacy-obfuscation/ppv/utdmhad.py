@@ -45,7 +45,7 @@ def prepare(raw_dir, root, workers=16):
     zpath = os.path.join(raw_dir, "RGB.zip")
     if not os.path.exists(zpath):
         os.makedirs(raw_dir, exist_ok=True)
-        subprocess.run(["curl", "-sL", "-o", zpath + ".part", URL], check=True)
+        subprocess.run(["curl", "-sL", "--http1.1", "--retry", "3", "-o", zpath + ".part", URL], check=True)  # HTTP/2 streams from this host reset mid-file
         os.replace(zpath + ".part", zpath)
     vid_dir = os.path.join(raw_dir, "RGB")
     if not os.path.isdir(vid_dir):
