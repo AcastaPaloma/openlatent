@@ -126,7 +126,9 @@ L += ["", "## Charades (90 people filmed in their own homes; action = 157-way mu
 for label, ns in [("raw", ["p8_raw"]), ("blur sigma 8", ["p8_blur8"]), ("downsample x16", ["p8_down16"]),
                   ("downsample x64 (1x2 RGB px)", ["p8_down64"]), ("person boxes blacked out", ["p8_personbox"]),
                   ("frame difference", ["p8_diff"]), ("BDQ, no adversary", ["p8_bdq_a0"]),
-                  ("BDQ a1 ens (non-collapsed)", ["p8_bdq_a1_ens"]), ("BDQ a3 ens", ["p8_bdq_a3_ens", "p8_bdq_a3_ens_s1", "p8_bdq_a3_ens_s2"])]:
+                  ("BDQ a1 ens (non-collapsed)", ["p8_bdq_a1_ens"]), ("BDQ a3 ens", ["p8_bdq_a3_ens", "p8_bdq_a3_ens_s1", "p8_bdq_a3_ens_s2"]),
+                  ("BDQ a0.5 ens", ["p8_bdq_a05_ens"]), ("**pose: stick figures**", ["p12_ch_pose"]),
+                  ("pose, canonical skeleton", ["p12_ch_pose_canon"]), ("pose, canonical, one posture per clip", ["p12_ch_pose_canon_e16"])]:
     g = agg(ns)
     if g:
         L.append(f"| {label} | {g[0]} | {g[1]} | {g[2]} |")

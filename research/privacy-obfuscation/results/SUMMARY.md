@@ -78,6 +78,8 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | BDQ, no adversary | 12.6 | 88.8 | 1 |
 | BDQ a1 ens (non-collapsed) | 5.8 | 19.6 | 1 |
 | BDQ a3 ens | 5.8 ± 0.1 | 22.4 ± 1.3 | 3 |
+| BDQ a0.5 ens | 7.1 | 45.6 | 1 |
+| **pose: stick figures** | 8.2 | 32.5 | 1 |
 
 Floors: action mAP 4.4 (blind predictor), identity 3.6 (most frequent person). Runs that collapsed exactly to these floors (content-free output) are excluded; the collapse guard was fixed and they are being rerun.
 
