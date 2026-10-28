@@ -625,3 +625,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p6_vae_a1_ctx8 (VP-UCF101 VAE re-evaluated on the fixed release path): 66.1 / 69.9 vs 66.0 / 70.2 with the old
   path. The ~1% near-raw edge frames moved cMAP by 0.3: the earlier number was contaminated but not materially.
 - p3_diff_down32 (VP-UCF101): 42.9 / 68.9. Motion maps on VP-UCF101 follow plain downsampling (H27 not supported).
+
+### 2026-10-28 00:05 UTC: VP-UCF101 motion maps done; learned-before-pool dose
+- p3_diff_down64 (VP-UCF101, 1x2 px): see dashboard; VP-UCF101 motion-map dose (action / cMAP): x8 73.4/72.5,
+  x16 63.7/71.0, x32 42.9/68.9. Same curve as plain downsampling: appearance attributes survive any coarse map.
+- H31 dose: p2_bdq_down48_a1_ens (2x3 px) and p2_bdq_down120_a1_ens (one number per frame), learned BDQ before the
+  pool, to compare with the fixed ladder (2x3: 83.6 / 37.0; 1x1: 54.2 / 6.9).
