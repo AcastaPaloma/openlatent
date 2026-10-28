@@ -41,8 +41,13 @@ def label_of(batch, task):
     return batch[1 if task == "action" else 2].to(DEV)
 
 
+# Action labels are one class per clip on KTH / UCF101 / HMDB51; Charades has several actions per video
+# (multilabel, scored by mAP). run.py sets this per dataset; each run is its own process.
+ACTION_KIND = "multiclass"
+
+
 def kind_of(task, priv_kind):
-    return "multiclass" if task == "action" else priv_kind
+    return ACTION_KIND if task == "action" else priv_kind
 
 
 def loss_fn(logits, y, kind):
@@ -121,7 +126,8 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
         probs = logits.sigmoid() if kind == "multilabel" else logits.softmax(1)
         agg.index_add_(0, batch[3], probs)
         labels[batch[3]] = y
-        actions[batch[3]] = batch[1]
+        if batch[1].dim() == 1:
+            actions[batch[3]] = batch[1]
     if kind == "multilabel":
         s, lab = agg.numpy(), labels.numpy()
         aps = [average_precision(s[:, j], lab[:, j]) for j in range(s.shape[1])]
@@ -216,7 +222,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
                 # co-trained T reach 74% action, but a fresh model on the uint8 output got 16.7%.
                 z = z + (torch.round(z.float().clamp(0, 1) * 255) / 255 - z).detach()
                 la_logits = T(z)
-                la = F.cross_entropy(la_logits.float(), ya)
+                la = loss_fn(la_logits, ya, ACTION_KIND)
                 ent = torch.stack([privacy_entropy(B(z), priv_kind) for B in Bs]).mean()
                 loss = la - alpha * ent
             opt_fT.zero_grad(set_to_none=True)
@@ -241,7 +247,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             s["la"] += la.item() * n
             s["ent"] += ent.item() * n
             s["lb"] += sum(lbs) / len(lbs) * n
-            s["acc_a"] += (la_logits.argmax(1) == ya).sum().item()
+            s["acc_a"] += n_correct(la_logits.float(), ya, ACTION_KIND)
             s["n"] += n
         n = s["n"]
         accs = [100 * a / n for a in s["acc_b"]]

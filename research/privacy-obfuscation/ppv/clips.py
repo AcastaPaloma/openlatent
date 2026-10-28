@@ -62,9 +62,10 @@ class Clips(Dataset):
         arr = self.frames[r["video"]]
         idx = np.clip(np.arange(s, s + span, stride), 0, len(arr) - 1)
         clip = torch.from_numpy(np.ascontiguousarray(arr[idx]))
-        priv = r["priv"]
+        priv, act = r["priv"], r["action_id"]
         priv = torch.tensor(priv, dtype=torch.float32) if isinstance(priv, (list, tuple)) else priv
-        return clip, r["action_id"], priv, ri
+        act = torch.tensor(act, dtype=torch.float32) if isinstance(act, (list, tuple)) else act  # multilabel actions
+        return clip, act, priv, ri
 
 
 def worker_init(wid):

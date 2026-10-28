@@ -32,7 +32,7 @@ import resource
 import numpy as np
 import torch
 
-from . import anonymizers, hmdb51, kth, models, train, ucf101
+from . import anonymizers, charades, hmdb51, kth, models, train, ucf101
 
 WORK = os.path.expanduser("~/work")
 HF_REPO = os.environ.get("PPV_HF_REPO", "KuanKuanKuan/openlatent-privacy")
@@ -97,6 +97,12 @@ def load_dataset(cfg, log):
         log(f"VP-HMDB51 split 1: {len(rows_tr)} train / {len(rows_te)} test videos")
         return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=51, n_priv=len(hmdb51.ATTRS),
                     priv_kind="multilabel", priv_task="attr", tag="hmdb51_vp_s1", stride=cfg.get("clip_stride", 1), big=True, in_ch=3)
+    if ds == "charades":
+        rows_tr, rows_te, frames, n_subj = charades.load(os.path.join(WORK, "data", "charades"))
+        log(f"Charades identity split: {len(rows_tr)} train / {len(rows_te)} test videos, {n_subj} subjects")
+        return dict(rows_tr=rows_tr, rows_te=rows_te, frames=frames, n_act=charades.N_ACTIONS, n_priv=n_subj,
+                    priv_kind="multiclass", priv_task="person", tag="charades_id", stride=cfg.get("clip_stride", 1), big=True,
+                    in_ch=3, act_kind="multilabel")
     raise ValueError(ds)
 
 
@@ -121,6 +127,7 @@ def main(cfg_path):
     t_start = time.time()
     log(f"run {name} @ {git_head()}: {json.dumps(cfg)}")
     D = load_dataset(cfg, log)
+    train.ACTION_KIND = D.get("act_kind", "multiclass")
     rows_tr, rows_te, frames, stride = D["rows_tr"], D["rows_te"], D["frames"], D["stride"]
     if cfg.get("shuffle_train_privacy"):
         # sanity control: permute the privacy labels of the TRAIN rows only. A correct pipeline must then score at
@@ -210,6 +217,7 @@ def main(cfg_path):
 
     result["strong"], result["weak"], result["details"] = strong, weak, details
     result["action_top1"] = max([v for k, v in strong.items() if k.startswith("action/")], default=None)  # None: attack-only
+    result["action_metric"] = "map" if D.get("act_kind") == "multilabel" else "top1"  # Charades: mAP over 157 actions
     result["privacy_main"] = max(v for k, v in strong.items() if not k.startswith("action/"))
     if pk == "multiclass":
         result["privacy_top1"] = result["privacy_main"]
