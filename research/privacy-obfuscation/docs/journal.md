@@ -754,3 +754,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p2_bdq_down32_a5_ens: 91.8 / 38.3 (a3: 93.0 / 40.8; fixed diff->down32 93.6 / 63.9). Seed 1, scenario split,
   alpha 0 and seed 2 (queued) pending.
 - p7_pix8 (VP-HMDB51): 44.5 / 69.5 cMAP. p7_raw moved to an idle VM so the VP-HMDB51 reference lands sooner.
+
+### 2026-10-28 04:25 UTC: x32 learned-before-pool replicates (3/3); blur in homes
+- p2_bdq_down32_a3_ens_s1: 92.1 / 37.5. BDQ->3x5 px: 93.0/40.8 (a3 s0), 92.1/37.5 (a3 s1), 91.8/38.3 (a5).
+  Fixed diff->down32 93.6 / 63.9: ~25 identity points removed at equal utility, replicated.
+- p8_blur8 (Charades): action mAP 9.0 (raw 15.8), identity 86.9% (raw 93.5; ResNet-50 71.9). H34 supported so far:
+  in-home identity survives blur (room and body shape), and the video attacker is again the strongest.
+- Next: p2_bdq_down16_a3_ens and p2_bdq_down24_a3_ens (can a finer learned pool reach ~95 action at low identity?),
+  p8_bdq_down32_a0 (learned bottleneck on Charades).
