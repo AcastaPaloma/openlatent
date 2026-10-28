@@ -188,6 +188,10 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
         min over f, T : CE(T(f(x)), action) - alpha * H(B(f(x)))      [push B to max entropy]
         min over B    : privacy loss of B(f(x))
     B is re-initialised every `restart_every` epochs so f cannot overfit to one adversary.
+    cond_adv (multilabel attributes, one action per clip): each adversary also gets a learned per-action logit offset, and
+    f pays only for what the adversaries gain over an action-only predictor, relu(BCE(prior(action)) - BCE(B(f(x)) +
+    offset(action))). On VP-UCF101 / VP-HMDB51 the action implies most attributes, so plain entropy maximisation asks f to
+    hide the action itself; this asks it to hide only what the video reveals beyond the action (the conditional cMAP).
     `adversary` may be a list (e.g. ["frame_r18", "r3d"]): every adversary trains on f's output and
     f maximises their mean entropy, so it cannot hide appearance from a frame model while leaving
     gait for a video model.
@@ -196,11 +200,27 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
     adv_names = cfg.get("adversary", "frame_r18")
     adv_names = [adv_names] if isinstance(adv_names, str) else list(adv_names)
 
+    cond = cfg.get("cond_adv", False)
+    assert not cond or (priv_kind == "multilabel" and ACTION_KIND == "multiclass"), "cond_adv needs attributes + one action per clip"
+
     def new_advs():
         Bs = [models.build(a, n_priv).to(DEV).train() for a in adv_names]
-        opts = [torch.optim.AdamW(B.parameters(), lr=cfg.get("lr_b", 2e-4), weight_decay=0.01) for B in Bs]
+        if cond:
+            for B in Bs:
+                B.offset = torch.nn.Embedding(n_actions, n_priv).to(DEV)
+                torch.nn.init.zeros_(B.offset.weight)
+        groups = lambda B: [{"params": [p for n, p in B.named_parameters() if not n.startswith("offset.")]}] + (  # noqa: E731
+            [{"params": B.offset.parameters(), "lr": 1e-2, "weight_decay": 0.0}] if cond else [])
+        opts = [torch.optim.AdamW(groups(B), lr=cfg.get("lr_b", 2e-4), weight_decay=0.01) for B in Bs]
         return Bs, opts
 
+    def adv(B, z, ya):
+        return B(z) + B.offset(ya) if cond else B(z)
+
+    if cond:  # action-only predictor: the attribute loss f is allowed to leave
+        prior = torch.nn.Embedding(n_actions, n_priv).to(DEV)
+        torch.nn.init.zeros_(prior.weight)
+        opt_prior = torch.optim.AdamW(prior.parameters(), lr=1e-2, weight_decay=0.0)
     Bs, opts_B = new_advs()
     f.to(DEV).train()
     fparams = [p for p in f.parameters() if p.requires_grad]
@@ -221,13 +241,13 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
         for bi, batch in enumerate(dl):
             if bi >= n_batches:
                 break
-            x, yp = to_input(batch[0]), batch[2].to(DEV)
+            x, ya, yp = to_input(batch[0]), batch[1].to(DEV), batch[2].to(DEV)
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
                 zd = f(x)
                 zd = torch.round(zd.float().clamp(0, 1) * 255) / 255
             for B, opt_B in zip(Bs, opts_B):
                 with torch.autocast("cuda", dtype=torch.bfloat16):
-                    lb = loss_fn(B(zd), yp, priv_kind)
+                    lb = loss_fn(adv(B, zd, ya), yp, priv_kind)
                 opt_B.zero_grad(set_to_none=True)
                 lb.backward()
                 opt_B.step()
@@ -243,7 +263,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             if b_warmup:
                 warm_up_adversaries()
         t0 = time.time()
-        s = dict(la=0.0, ent=0.0, lb=0.0, acc_a=0.0, acc_b=[0.0] * len(Bs), n=0)
+        s = dict(la=0.0, ent=0.0, lb=0.0, gain=0.0, acc_a=0.0, acc_b=[0.0] * len(Bs), n=0)
         for batch in dl:
             x, ya, yp = to_input(batch[0]), batch[1].to(DEV), batch[2].to(DEV)
             with torch.autocast("cuda", dtype=torch.bfloat16):
@@ -261,12 +281,26 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
                                                             pos_weight=torch.full_like(ya[0].float(), cfg.get("pos_weight", 20.0)))
                 else:
                     la = loss_fn(la_logits, ya, ACTION_KIND)
-                ent = torch.stack([privacy_entropy(B(z), priv_kind) for B in Bs]).mean()
-                loss = la - alpha * ent
+                if cond:
+                    with torch.no_grad():
+                        lprior = loss_fn(prior(ya), yp, priv_kind)
+                    advs = [adv(B, z, ya) for B in Bs]
+                    gain = torch.stack([F.relu(lprior - loss_fn(o, yp, priv_kind)) for o in advs]).mean()
+                    ent = torch.stack([privacy_entropy(o, priv_kind) for o in advs]).mean().detach()
+                    loss = la + alpha * gain
+                else:
+                    ent = torch.stack([privacy_entropy(B(z), priv_kind) for B in Bs]).mean()
+                    loss = la - alpha * ent
             opt_fT.zero_grad(set_to_none=True)
             loss.backward()
             opt_fT.step()
             zd = z.detach()
+            if cond:
+                lp = loss_fn(prior(ya), yp, priv_kind)
+                opt_prior.zero_grad(set_to_none=True)
+                lp.backward()
+                opt_prior.step()
+                s["gain"] += gain.item() * len(ya)
             lbs = []
             # b_steps adversary updates per f update keep B close to a converged attacker. With one
             # step, f learned to fool a short-trained B: p2_vae_a1_vadv's in-training R3D sat at ~4%
@@ -274,7 +308,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
             for i, (B, opt_B) in enumerate(zip(Bs, opts_B)):
                 for _ in range(b_steps):
                     with torch.autocast("cuda", dtype=torch.bfloat16):
-                        pb2 = B(zd)
+                        pb2 = adv(B, zd, ya)
                         lb = loss_fn(pb2, yp, priv_kind)
                     opt_B.zero_grad(set_to_none=True)
                     lb.backward()
@@ -296,9 +330,12 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
                    train_action_acc=100 * s["acc_a"] / n, train_adv_acc=max(accs),
                    train_adv_accs=dict(zip(adv_names, accs)))
         extra = ""
+        if cond:
+            row["beyond_action_gain"] = s["gain"] / n
+            extra = f" gain_over_action {row['beyond_action_gain']:.4f}"
         if hasattr(f, "log_sigma"):
             row["sigma"] = f.log_sigma.exp().item()
-            extra = f" sigma {row['sigma']:.2f}"
+            extra += f" sigma {row['sigma']:.2f}"
         hist.append(row)
         if len(accs) > 1:
             extra += " per-adversary " + " ".join(f"{k}={v:.1f}" for k, v in row["train_adv_accs"].items())
