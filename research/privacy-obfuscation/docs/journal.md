@@ -880,3 +880,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - First wave (configs/p9): raw, blur8, down16, diff->down32, BDQ a3 ens, BDQ->x32 a3 ens, BDQ->x64 a1 ens.
 - H40: without a scene cue, fixed filters lose identity faster than on KTH, and the learned bottleneck keeps
   its advantage (identity here is body/gait, which BDQ+pool already removes on KTH).
+- 09:25 UTC: p2_bdq_down32_a3_ens_s4: 89.8 / 55.2, an outlier. x32 a3 over seeds 0-4: action 89.8-93.0 (mean 91.9),
+  identity 35.8, 37.5, 39.5, 40.8, 55.2 (mean 41.8, sd ~7). Still ~22 points below the fixed map (63.9) on average,
+  but one in five runs of the game lands much worse: report mean +- sd, not the best seed.
