@@ -900,3 +900,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 10:35 UTC: p8_bdq_a05_ens (Charades): 7.1 / 45.6%. Charades alpha curve (mAP / identity): a0 12.6/88.8, a0.5 7.1/45.6,
   a1 5.8/19.6, a3 5.8-6.0/21-24 (3 seeds), a5 7.8/54.8 (seed 1 running), a10 6.3/32.9. Most identity goes between
   a0.5 and a1; action mAP falls from 12.6 to ~6 as soon as the adversary is on. p8_bdq_a2_ens queued.
+- 10:50 UTC: x16 learned pool: a3 s1 95.0 / 61.2, a1 94.1 / 57.9 (4 runs: ~95.4 / 57.5 vs fixed x16 94.8 / 84.6).
+  p8_bdq_a3_ens_e15 (Charades, 15 adversarial epochs): 5.7 / 20.6%, no change from 10 epochs.
+  p9_raw (UTD-MHAD): 100.0 / 100.0. With trials held out in a single lab, every model sees near-identical repetitions:
+  the dataset is a ceiling test; the obfuscated runs show how fast identity falls without a scene cue.
+  gifs.py now renders VP-HMDB51, Charades and UTD-MHAD (Charades GIFs rendering).
