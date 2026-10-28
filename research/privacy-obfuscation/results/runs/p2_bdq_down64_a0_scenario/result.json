@@ -1,0 +1,325 @@
+{
+ "name": "p2_bdq_down64_a0_scenario",
+ "config": {
+  "name": "p2_bdq_down64_a0_scenario",
+  "dataset": "kth",
+  "split": "scenario",
+  "seed": 0,
+  "anonymizer": {
+   "type": "chain",
+   "stages": [
+    {
+     "type": "bdq"
+    },
+    {
+     "type": "down",
+     "factor": 64
+    }
+   ]
+  },
+  "adv": {
+   "epochs": 15,
+   "alpha": 0.0,
+   "restart_every": 3,
+   "batch": 8,
+   "repeats": 2,
+   "utility": "r2p1d",
+   "adversary": [
+    "frame_r18",
+    "r3d"
+   ],
+   "lr_f": 0.003
+  },
+  "note": "utility-only training (no privacy term): is the BDQ-before-pool gain adversarial or just a utility-optimal pool?"
+ },
+ "git": "d3fe890",
+ "dataset": "kth",
+ "split": "scenario",
+ "n_train": 1791,
+ "n_test": 600,
+ "privacy_metric": "top1",
+ "adv_history": [
+  {
+   "epoch": 1,
+   "action_loss": 1.0010928699634218,
+   "adv_entropy": 3.1838525573679264,
+   "adv_loss": 3.2341657828964645,
+   "train_action_acc": 57.07494407158837,
+   "train_adv_acc": 4.977628635346756,
+   "train_adv_accs": {
+    "frame_r18": 3.998881431767338,
+    "r3d": 4.977628635346756
+   },
+   "kept": false
+  },
+  {
+   "epoch": 2,
+   "action_loss": 0.7589168567252106,
+   "adv_entropy": 3.1629515488942466,
+   "adv_loss": 3.1904635525389806,
+   "train_action_acc": 68.51230425055928,
+   "train_adv_acc": 5.648769574944072,
+   "train_adv_accs": {
+    "frame_r18": 5.648769574944072,
+    "r3d": 5.3970917225950785
+   },
+   "kept": false
+  },
+  {
+   "epoch": 3,
+   "action_loss": 0.6494056273760145,
+   "adv_entropy": 3.124038258921647,
+   "adv_loss": 3.137075388458218,
+   "train_action_acc": 74.24496644295301,
+   "train_adv_acc": 7.690156599552573,
+   "train_adv_accs": {
+    "frame_r18": 7.690156599552573,
+    "r3d": 5.900447427293065
+   },
+   "kept": false
+  },
+  {
+   "epoch": 4,
+   "action_loss": 0.5979018626230408,
+   "adv_entropy": 3.172807710549442,
+   "adv_loss": 3.2310198436114077,
+   "train_action_acc": 76.28635346756153,
+   "train_adv_acc": 5.22930648769575,
+   "train_adv_accs": {
+    "frame_r18": 5.22930648769575,
+    "r3d": 4.642058165548098
+   },
+   "kept": false
+  },
+  {
+   "epoch": 5,
+   "action_loss": 0.5603941534322914,
+   "adv_entropy": 3.142326862219996,
+   "adv_loss": 3.169016806871299,
+   "train_action_acc": 77.15324384787472,
+   "train_adv_acc": 7.550335570469799,
+   "train_adv_accs": {
+    "frame_r18": 7.550335570469799,
+    "r3d": 6.459731543624161
+   },
+   "kept": false
+  },
+  {
+   "epoch": 6,
+   "action_loss": 0.5416893090977765,
+   "adv_entropy": 3.097856410131092,
+   "adv_loss": 3.1012608807625655,
+   "train_action_acc": 78.10402684563758,
+   "train_adv_acc": 8.640939597315436,
+   "train_adv_accs": {
+    "frame_r18": 8.640939597315436,
+    "r3d": 7.186800894854586
+   },
+   "kept": false
+  },
+  {
+   "epoch": 7,
+   "action_loss": 0.5654644263404061,
+   "adv_entropy": 3.1729493551872987,
+   "adv_loss": 3.225176369050472,
+   "train_action_acc": 77.85234899328859,
+   "train_adv_acc": 5.732662192393736,
+   "train_adv_accs": {
+    "frame_r18": 4.614093959731544,
+    "r3d": 5.732662192393736
+   },
+   "kept": false
+  },
+  {
+   "epoch": 8,
+   "action_loss": 0.505851363817384,
+   "adv_entropy": 3.141187868929016,
+   "adv_loss": 3.156653294360611,
+   "train_action_acc": 80.03355704697987,
+   "train_adv_acc": 7.354586129753915,
+   "train_adv_accs": {
+    "frame_r18": 7.354586129753915,
+    "r3d": 6.487695749440716
+   },
+   "kept": false
+  },
+  {
+   "epoch": 9,
+   "action_loss": 0.5171010660411794,
+   "adv_entropy": 3.097690179043968,
+   "adv_loss": 3.106206061589371,
+   "train_action_acc": 79.58612975391499,
+   "train_adv_acc": 9.004474272930649,
+   "train_adv_accs": {
+    "frame_r18": 9.004474272930649,
+    "r3d": 6.9630872483221475
+   },
+   "kept": false
+  },
+  {
+   "epoch": 10,
+   "action_loss": 0.4907997526161756,
+   "adv_entropy": 3.183072919546891,
+   "adv_loss": 3.236387670173474,
+   "train_action_acc": 79.86577181208054,
+   "train_adv_acc": 4.614093959731544,
+   "train_adv_accs": {
+    "frame_r18": 4.614093959731544,
+    "r3d": 3.970917225950783
+   },
+   "kept": false
+  },
+  {
+   "epoch": 11,
+   "action_loss": 0.4467618318328788,
+   "adv_entropy": 3.1576275857502982,
+   "adv_loss": 3.1730365062453334,
+   "train_action_acc": 82.27069351230425,
+   "train_adv_acc": 6.991051454138702,
+   "train_adv_accs": {
+    "frame_r18": 6.991051454138702,
+    "r3d": 5.5369127516778525
+   },
+   "kept": false
+  },
+  {
+   "epoch": 12,
+   "action_loss": 0.47880095283457097,
+   "adv_entropy": 3.1054876250708663,
+   "adv_loss": 3.113197071440268,
+   "train_action_acc": 81.26398210290827,
+   "train_adv_acc": 8.83668903803132,
+   "train_adv_accs": {
+    "frame_r18": 8.83668903803132,
+    "r3d": 7.019015659955257
+   },
+   "kept": false
+  },
+  {
+   "epoch": 13,
+   "action_loss": 0.45758313539810896,
+   "adv_entropy": 3.1743917177187515,
+   "adv_loss": 3.234036303739953,
+   "train_action_acc": 81.71140939597315,
+   "train_adv_acc": 5.201342281879195,
+   "train_adv_accs": {
+    "frame_r18": 4.2225950782997765,
+    "r3d": 5.201342281879195
+   },
+   "kept": false
+  },
+  {
+   "epoch": 14,
+   "action_loss": 0.4506084864471583,
+   "adv_entropy": 3.1421859323045016,
+   "adv_loss": 3.1644141452691166,
+   "train_action_acc": 82.38255033557047,
+   "train_adv_acc": 7.242729306487695,
+   "train_adv_accs": {
+    "frame_r18": 7.242729306487695,
+    "r3d": 5.480984340044743
+   },
+   "kept": false
+  },
+  {
+   "epoch": 15,
+   "action_loss": 0.46078386289428014,
+   "adv_entropy": 3.103173184448174,
+   "adv_loss": 3.1102235378568337,
+   "train_action_acc": 81.29194630872483,
+   "train_adv_acc": 7.857941834451902,
+   "train_adv_accs": {
+    "frame_r18": 7.857941834451902,
+    "r3d": 7.158836689038031
+   },
+   "kept": true
+  }
+ ],
+ "strong": {
+  "action/r2p1d": 52.49999761581421,
+  "person/frame_r50": 11.833333224058151,
+  "person/r3d": 11.166666448116302
+ },
+ "weak": {
+  "action/r2p1d": 16.66666716337204,
+  "person/frame_r50": 3.999999910593033,
+  "person/r3d": 3.999999910593033
+ },
+ "details": {
+  "strong/action/r2p1d": {
+   "main": 52.49999761581421,
+   "by_action": {
+    "0": 70.99999785423279,
+    "1": 83.99999737739563,
+    "2": 63.999998569488525,
+    "3": 7.999999821186066,
+    "4": 12.999999523162842,
+    "5": 75.0
+   }
+  },
+  "weak/action/r2p1d": {
+   "main": 16.66666716337204,
+   "by_action": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0,
+    "4": 0.0,
+    "5": 100.0
+   }
+  },
+  "strong/person/frame_r50": {
+   "main": 11.833333224058151,
+   "by_action": {
+    "0": 9.000000357627869,
+    "1": 7.000000029802322,
+    "2": 15.999999642372131,
+    "3": 11.999999731779099,
+    "4": 18.000000715255737,
+    "5": 9.000000357627869
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 3.999999910593033,
+   "by_action": {
+    "0": 3.999999910593033,
+    "1": 3.999999910593033,
+    "2": 3.999999910593033,
+    "3": 3.999999910593033,
+    "4": 3.999999910593033,
+    "5": 3.999999910593033
+   }
+  },
+  "strong/person/r3d": {
+   "main": 11.166666448116302,
+   "by_action": {
+    "0": 14.000000059604645,
+    "1": 7.999999821186066,
+    "2": 20.999999344348907,
+    "3": 7.999999821186066,
+    "4": 9.000000357627869,
+    "5": 7.000000029802322
+   }
+  },
+  "weak/person/r3d": {
+   "main": 3.999999910593033,
+   "by_action": {
+    "0": 3.999999910593033,
+    "1": 3.999999910593033,
+    "2": 3.999999910593033,
+    "3": 3.999999910593033,
+    "4": 3.999999910593033,
+    "5": 3.999999910593033
+   }
+  }
+ },
+ "action_top1": 52.49999761581421,
+ "action_metric": "top1",
+ "privacy_main": 11.833333224058151,
+ "privacy_top1": 11.833333224058151,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 116.85792719523111
+}

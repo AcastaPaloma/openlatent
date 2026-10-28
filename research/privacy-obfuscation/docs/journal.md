@@ -813,3 +813,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   camera motion turns the static room into edges); only the adversarially trained BDQ removes it.
 - Next: p8_bdq_a3_ens_s1, p8_bdq_a5_ens; KTH x32 adversary ablation p2_bdq_down32_a3_r3d / _r18 (which attacker's
   gradient carries the x32 gain: gait or appearance?).
+
+### 2026-10-28 06:20 UTC: no adversary needed at one number per frame either; seeds for the headline points
+- p2_bdq_down120_a0 (BDQ -> one number per frame, utility only): 78.1 / 7.2 (adversarial: 75.9 / 8.5, 75.8 / 9.5).
+- p2_bdq_down64_a0_scenario: 52.5 / 11.2 (adversarial 50.8 / 12.7). The adversary is unnecessary at 1-2 numbers per
+  frame on both splits.
+- p7_bdq_down16_a3_ens (VP-HMDB51): 32.9 / 68.9 cMAP. No learned-before-pool gain on appearance attributes.
+- Seeds for the headline points so they can be reported as mean +- sd: p2_bdq_down32_a3_ens_s3/_s4,
+  p2_bdq_down120_a1_ens_s2, p2_bdq_down120_a0_s1, p8_bdq_a3_ens_s2.
