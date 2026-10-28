@@ -886,3 +886,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 09:35 UTC: p2_bdq_down120_a0_s1: 74.9 / 8.5 (seed 0: 78.1 / 7.2). p2_bdq_down16_a3_ens_scenario: 73.7 / 37.3; scenario
   learned pools x16 73.7/37.3, x32 66.2/31.2 and 62.2/32.2, x64 ~51/13 vs fixed maps x8 86.2/61.7, x16 81.0/50.7,
   x24 69.0/50.3, x32 58.0/42.7. The learned pool sits below the fixed curve on the scenario split at every size tried.
+- 09:50 UTC: p2_bdq_down32_a1_ens_s1 91.3 / 41.6 (seed 0 91.8 / 32.4). p2_bdq_down48_a3_ens 87.3 / 25.3 (a1: 82.9/41.3,
+  87.3/27.9): x48 sits between x32 and x64 once the bad a1 seed is set aside. p6_bdq_down32_a3_ens_e24 (24-epoch
+  attackers on the frozen x32 output): 92.1 / 42.5 vs 40.8 with 12 epochs: budget-robust (+1.7).
