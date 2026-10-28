@@ -45,7 +45,7 @@ def family(cfg):
         return {"bg_median": "controls", "fg_only": "controls", "person_box": "person removal", "raw": "raw"}[t]
     if t in ("blur", "down", "pixelate", "diff", "bdq_fixed", "hold"):
         return "fixed filters"
-    return {"bdq": "BDQ (learned)", "unet3d": "3D U-Net (learned)", "vae_latent": "frozen VAE + latent edit", "taskmask": "task mask (DINOv2)"}.get(t, t)
+    return {"bdq": "BDQ (learned)", "unet3d": "3D U-Net (learned)", "vae_latent": "frozen VAE + latent edit", "taskmask": "task mask (DINOv2)", "pose": "pose (stick figures)"}.get(t, t)
 
 
 CURVE = re.compile(r"\[(action|person|attr)\] epoch (\d+)/(\d+) loss ([\d.]+) train_acc ([\d.]+)")
