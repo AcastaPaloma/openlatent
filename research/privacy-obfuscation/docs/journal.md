@@ -995,3 +995,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   learned pools leak 12-18% vs 40-48% for fixed maps; at the low end plain BDQ a3 (55.8/5.5) and learned x64 (~51/4-8) tie.
   Cross-action (Ilic): learned x16 seed 1 46.6 (seed 0 38.5); x32 a1 20.2. p8_bdq_a1_ens_s3 collapsed (started pre-fix).
 - Queued: scenario-split learned pools x48 and x120 and third seeds of x16/x32/x64 (hardest-test attacks to follow).
+- 14:35 UTC: hardest test: fixed diff->x48 18.0 (scenario action 44.0); plain BDQ a3 seed 1 10.5 (action 64.5).
+  Charades BDQ a1.5 7.5 / 49.8%, a2 6.9 / 41.1%: across alpha 0.5-10 the Charades game gives 20-66% identity at 5.8-7.8 mAP,
+  non-monotone and seed-dependent, with collapses mixed in. Guard-fixed reruns of the collapsed a1 runs queued.
