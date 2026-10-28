@@ -234,6 +234,73 @@ class PersonBox(nn.Module):
         return out.view(b, t, c, h, w).transpose(1, 2)
 
 
+class TaskMask(nn.Module):
+    """Keep only the task-relevant part of each frame, chosen on frozen DINOv2 patch features.
+
+    Each frame is encoded by a frozen DINOv2 ViT-S/14; a head scores every patch and the top `keep` fraction of patches
+    is kept (hard top-k forward, sigmoid straight-through backward, so the action loss and an optional adversary decide
+    what is "important": the person, but also the pool table in "playing pool"). Inside the mask an optional `inner`
+    anonymizer runs (e.g. BDQ); outside it the frame becomes `fill`:
+        gray  constant 0.5 (foreground only: nothing of the room survives)
+        blur  the frame blurred with sigma 8 (a soft room)
+        raw   the original frame (the obfuscated region pasted back into the real background)
+    head="saliency" needs no training: it keeps the patches whose DINOv2 features are furthest from the frame's mean
+    feature (an unsupervised "salient object" baseline).
+    """
+
+    def __init__(self, keep=0.25, fill="gray", head="learned", inner=None, size=(126, 168), in_ch=1):
+        super().__init__()
+        import timm
+        self.dino = timm.create_model("vit_small_patch14_dinov2.lvd142m", pretrained=True, num_classes=0, dynamic_img_size=True)
+        self.dino.requires_grad_(False).eval()
+        self.keep, self.fill, self.size, self.head_kind = keep, fill, size, head
+        self.head = nn.Sequential(nn.Linear(self.dino.num_features, 128), nn.GELU(), nn.Linear(128, 1)) if head == "learned" else None
+        self.inner = build(inner, in_ch) if inner else None
+        self.learned = head == "learned" or bool(getattr(self.inner, "learned", False))
+        self.register_buffer("mean", torch.tensor((0.485, 0.456, 0.406)).view(1, 3, 1, 1), persistent=False)
+        self.register_buffer("std", torch.tensor((0.229, 0.224, 0.225)).view(1, 3, 1, 1), persistent=False)
+
+    def train(self, mode=True):
+        super().train(mode)
+        self.dino.eval()
+        return self
+
+    def patch_scores(self, x):
+        """x (B, C, T, H, W) -> per-patch scores (B*T, gh, gw)."""
+        b, c, t, h, w = x.shape
+        f = x.transpose(1, 2).reshape(b * t, c, h, w)
+        f = f.expand(-1, 3, -1, -1) if c == 1 else f
+        f = F.interpolate(f.float(), size=self.size, mode="bilinear", align_corners=False)
+        with torch.no_grad():
+            tok = self.dino.forward_features((f - self.mean) / self.std)[:, self.dino.num_prefix_tokens:]
+        gh, gw = self.size[0] // 14, self.size[1] // 14
+        if self.head is None:
+            return (tok - tok.mean(1, keepdim=True)).norm(dim=-1).view(b * t, gh, gw)
+        return self.head(tok.float()).squeeze(-1).view(b * t, gh, gw)
+
+    def mask(self, x):
+        b, c, t, h, w = x.shape
+        s = self.patch_scores(x).flatten(1)  # (BT, P)
+        k = max(1, int(round(self.keep * s.shape[1])))
+        thr = s.topk(k, dim=1).values[:, -1:].detach()
+        hard = (s >= thr).float()
+        m = hard if self.head is None else torch.sigmoid(s - thr) + (hard - torch.sigmoid(s - thr)).detach()
+        gh, gw = self.size[0] // 14, self.size[1] // 14
+        m = F.interpolate(m.view(b * t, 1, gh, gw), size=(h, w), mode="nearest")
+        return m.view(b, t, 1, h, w).transpose(1, 2)  # (B, 1, T, H, W)
+
+    def forward(self, x):
+        m = self.mask(x)
+        inside = self.inner(x) if self.inner is not None else x
+        if self.fill == "raw":
+            outside = x
+        elif self.fill == "blur":
+            outside = blur2d(x, torch.tensor(8.0, device=x.device), size=33)
+        else:
+            outside = torch.full_like(x, 0.5)
+        return m * inside + (1 - m) * outside
+
+
 class Chain(nn.Module):
     """Apply anonymizers in order, e.g. [{"type": "down", "factor": 4}, {"type": "bdq"}]."""
 
@@ -246,6 +313,11 @@ class Chain(nn.Module):
         for m in self.stages:
             x = m(x)
         return x
+
+
+def frozen_key(k):
+    """State-dict keys of frozen pretrained parts (SD-VAE, DINOv2): rebuilt from their own weights, never checkpointed."""
+    return any(k.startswith(p) or f".{p}" in k for p in ("vae.", "dino."))
 
 
 def build(cfg, in_ch=1):
@@ -264,4 +336,6 @@ def build(cfg, in_ch=1):
     if kind == "vae_latent":
         cfg.setdefault("out_gray", in_ch == 1)  # keep the dataset's channel count
         return VAELatent(**cfg)
+    if kind == "taskmask":
+        return TaskMask(in_ch=in_ch, **cfg)
     raise ValueError(kind)

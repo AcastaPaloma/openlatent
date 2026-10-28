@@ -161,14 +161,14 @@ def main(cfg_path):
             assert len(learned) == 1, "anonymizer_from with a chain needs exactly one learned stage"
             target = learned[0]
         missing, unexpected = target.load_state_dict(sd, strict=False)
-        assert not [k for k in missing if not k.startswith("vae.")] and not unexpected, (missing, unexpected)
-        log(f"loaded anonymizer from {cfg['anonymizer_from']} (missing {len([k for k in missing if not k.startswith('vae.')])}, unexpected {len(unexpected)})")
+        assert not [k for k in missing if not anonymizers.frozen_key(k)] and not unexpected, (missing, unexpected)
+        log(f"loaded anonymizer from {cfg['anonymizer_from']} (missing {len([k for k in missing if not anonymizers.frozen_key(k)])}, unexpected {len(unexpected)})")
     elif getattr(f, "learned", False) and cfg.get("adv"):  # a learned f without "adv" runs untrained (e.g. plain VAE reconstruction)
         adv = cfg["adv"]
         dl = train.loader(rows_tr, frames, True, adv.get("batch", 8), repeats=adv.get("repeats", 2), seed=cfg.get("seed", 0), stride=stride)
         f, hist = train.train_anonymizer(f, dl, adv, D["n_act"], D["n_priv"], priv_kind=pk, log=log)
         result["adv_history"] = hist
-        torch.save({k: v for k, v in f.state_dict().items() if not k.startswith("vae.")}, os.path.join(out, "anonymizer.pt"))
+        torch.save({k: v for k, v in f.state_dict().items() if not anonymizers.frozen_key(k)}, os.path.join(out, "anonymizer.pt"))
 
     tmp_dir = None
     if cfg["anonymizer"]["type"] == "raw":

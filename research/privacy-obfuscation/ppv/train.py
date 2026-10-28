@@ -14,7 +14,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from . import models
+from . import anonymizers, models
 from .clips import Clips, LazyFrames, worker_init
 
 DEV = "cuda"
@@ -281,7 +281,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
         acc = row["train_action_acc"]
         best_act = max(best_act, acc)
         if acc >= best_act - keep_margin:
-            kept = {k: v.detach().clone() for k, v in f.state_dict().items() if not k.startswith("vae.")}
+            kept = {k: v.detach().clone() for k, v in f.state_dict().items() if not anonymizers.frozen_key(k)}
             kept_epoch = ep + 1
         collapsed = collapsed + 1 if acc < best_act - collapse_drop else 0
         if ep + 1 >= 3 and best_act < min_action:  # never learned the task (p2_unet_a3_vadv: 17% from epoch 1)
