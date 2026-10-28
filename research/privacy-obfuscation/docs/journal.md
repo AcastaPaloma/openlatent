@@ -967,3 +967,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 13:20 UTC: p10_kth_bdq_down16_a3_ens (learned x16, cross-action): 38.5 (within 57.5) vs fixed x16 88.2: at the
   highest-utility point the learned pool removes ~50 more points of identity that transfers across actions.
   Queued cross-action on plain BDQ a7 ens (95 / 63 point) and a guard-check rerun of Charades BDQ a3 seed 0.
+
+### 2026-10-28 13:40 UTC: cross-action keeps separating the families; a protocol mistake corrected
+- Cross-action identity (KTH Ilic): learned x24 33.1 vs fixed x24 84.3; learned x32 seed 1 20.1 (seed 0 26.9).
+- p2_bdq_down24_a3_ens_scenario: 66.7 / 28.8.
+- Correction: the p10_*_scenario runs (raw 99.7, fixed x16 90.6, learned x32 19.9, learned x64 9.1) rebuilt the attackers'
+  split from all videos, so the attackers saw every scenario. They measure cross-action identity on obfuscators trained
+  on the scenario split, not unseen conditions + unseen actions as the 12:50 entry said. Added priv_split
+  "xaction_heldout" (train rows of seen actions -> test rows of held-out actions, i.e. unseen scenario AND unseen actions)
+  and queued it for raw, fixed x16, learned x32 and learned x64 (p10_*_scenario_xh).

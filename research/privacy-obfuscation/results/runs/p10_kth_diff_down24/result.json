@@ -1,0 +1,80 @@
+{
+ "name": "p10_kth_diff_down24",
+ "config": {
+  "name": "p10_kth_diff_down24",
+  "dataset": "kth",
+  "seed": 0,
+  "anonymizer": {
+   "type": "chain",
+   "stages": [
+    {
+     "type": "diff",
+     "gain": 4.0
+    },
+    {
+     "type": "down",
+     "factor": 24
+    }
+   ]
+  },
+  "priv_split": "xaction",
+  "eval": {
+   "action": []
+  },
+  "split": "ilic",
+  "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"
+ },
+ "git": "9a3f94b",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 60.025060176849365,
+  "person/r3d": 84.33583974838257
+ },
+ "weak": {
+  "person/frame_r50": 4.010025039315224,
+  "person/r3d": 3.8847118616104126
+ },
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 60.025060176849365,
+   "by_action": {
+    "2": 55.527639389038086,
+    "5": 64.49999809265137
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 4.010025039315224,
+   "by_action": {
+    "2": 4.020100459456444,
+    "5": 3.999999910593033
+   }
+  },
+  "strong/person/r3d": {
+   "main": 84.33583974838257,
+   "by_action": {
+    "2": 82.66331553459167,
+    "5": 86.00000143051147
+   }
+  },
+  "weak/person/r3d": {
+   "main": 3.8847118616104126,
+   "by_action": {
+    "2": 5.025125667452812,
+    "5": 2.749999985098839
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 84.33583974838257,
+ "privacy_top1": 84.33583974838257,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 8.067930241425833
+}

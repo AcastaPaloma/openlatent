@@ -208,6 +208,13 @@ def main(cfg_path):
         rows_te_p = [r for r in everything if r["action_id"] % 3 == 2]
         tag_p = D["tag"] + "_xaction"
         log(f"privacy split xaction: {len(rows_tr_p)} train / {len(rows_te_p)} test rows (actions with id % 3 == 2 held out)")
+    elif cfg.get("priv_split") == "xaction_heldout":
+        # unseen actions AND the dataset's own held-out videos (e.g. KTH's unseen scenario): attackers train on the
+        # train rows of the seen actions and are tested on the test rows of the held-out actions
+        rows_tr_p = [r for r in rows_tr if r["action_id"] % 3 != 2]
+        rows_te_p = [r for r in rows_te if r["action_id"] % 3 == 2]
+        tag_p = D["tag"] + "_xaction_heldout"
+        log(f"privacy split xaction_heldout: {len(rows_tr_p)} train / {len(rows_te_p)} test rows")
     dl_te = train.loader(rows_te, anon, False, ev["batch"] * 2, stride=stride)
     dl_te_p = train.loader(rows_te_p, anon, False, ev["batch"] * 2, stride=stride) if rows_te_p is not rows_te else dl_te
     strong, weak, details = {}, {}, {}

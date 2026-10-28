@@ -1,0 +1,36 @@
+[13:25:01] run p10_kth_diff_down24 @ 9a3f94b: {"name": "p10_kth_diff_down24", "dataset": "kth", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "diff", "gain": 4.0}, {"type": "down", "factor": 24}]}, "priv_split": "xaction", "eval": {"action": []}, "split": "ilic", "note": "identity attackers trained on 2/3 of the actions, tested on the held-out third"}
+[13:25:02] kth split=ilic: 1793 train / 598 test subsequences, 599 videos
+[13:25:08] materialised anonymised dataset (6s)
+[13:25:08] privacy split xaction: 1593 train / 798 test rows (actions with id % 3 == 2 held out)
+[13:25:09] strong eval: training person frame_r50 on anonymised data
+[13:25:28]   [person] epoch 1/12 loss 3.198 train_acc 5.2 (19s)
+[13:25:46]   [person] epoch 2/12 loss 2.799 train_acc 17.3 (18s)
+[13:26:04]   [person] epoch 3/12 loss 2.180 train_acc 34.8 (18s)
+[13:26:22]   [person] epoch 4/12 loss 1.807 train_acc 45.4 (18s)
+[13:26:40]   [person] epoch 5/12 loss 1.550 train_acc 54.0 (18s)
+[13:26:58]   [person] epoch 6/12 loss 1.364 train_acc 59.1 (18s)
+[13:27:16]   [person] epoch 7/12 loss 1.212 train_acc 64.7 (18s)
+[13:27:34]   [person] epoch 8/12 loss 1.121 train_acc 67.6 (18s)
+[13:27:52]   [person] epoch 9/12 loss 1.070 train_acc 69.4 (18s)
+[13:28:10]   [person] epoch 10/12 loss 1.008 train_acc 72.0 (18s)
+[13:28:28]   [person] epoch 11/12 loss 1.004 train_acc 70.9 (18s)
+[13:28:47]   [person] epoch 12/12 loss 0.994 train_acc 71.5 (18s)
+[13:29:03]   strong person/frame_r50: 60.03
+[13:29:18]   weak person/frame_r50: 4.01
+[13:29:19] strong eval: training person r3d on anonymised data
+[13:29:37]   [person] epoch 1/12 loss 2.285 train_acc 36.2 (19s)
+[13:29:55]   [person] epoch 2/12 loss 0.901 train_acc 77.1 (18s)
+[13:30:13]   [person] epoch 3/12 loss 0.437 train_acc 90.1 (18s)
+[13:30:31]   [person] epoch 4/12 loss 0.237 train_acc 95.3 (18s)
+[13:30:48]   [person] epoch 5/12 loss 0.143 train_acc 97.1 (18s)
+[13:31:06]   [person] epoch 6/12 loss 0.091 train_acc 98.6 (18s)
+[13:31:24]   [person] epoch 7/12 loss 0.049 train_acc 99.5 (18s)
+[13:31:42]   [person] epoch 8/12 loss 0.035 train_acc 99.8 (18s)
+[13:31:59]   [person] epoch 9/12 loss 0.026 train_acc 99.7 (18s)
+[13:32:17]   [person] epoch 10/12 loss 0.021 train_acc 99.9 (18s)
+[13:32:35]   [person] epoch 11/12 loss 0.019 train_acc 100.0 (18s)
+[13:32:53]   [person] epoch 12/12 loss 0.020 train_acc 99.9 (18s)
+[13:32:59]   strong person/r3d: 84.34
+[13:33:05]   weak person/r3d: 3.88
+[13:33:05] DONE p10_kth_diff_down24: action None  privacy top1 (strong, best attacker) 84.34  (8.1 min)
+[13:33:05] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p10_kth_diff_down24

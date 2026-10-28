@@ -1,0 +1,70 @@
+{
+ "name": "p10_kth_raw_scenario",
+ "config": {
+  "name": "p10_kth_raw_scenario",
+  "dataset": "kth",
+  "split": "scenario",
+  "seed": 0,
+  "anonymizer": {
+   "type": "raw"
+  },
+  "priv_split": "xaction",
+  "eval": {
+   "action": []
+  },
+  "note": "scenario split + identity attackers tested on held-out actions (unseen conditions and unseen actions)"
+ },
+ "git": "4e6e798",
+ "dataset": "kth",
+ "split": "scenario",
+ "n_train": 1791,
+ "n_test": 600,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 100.0,
+  "person/r3d": 99.74937438964844
+ },
+ "weak": {
+  "person/frame_r50": 100.0,
+  "person/r3d": 99.49874877929688
+ },
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 100.0,
+   "by_action": {
+    "2": 100.0,
+    "5": 100.0
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 100.0,
+   "by_action": {
+    "2": 100.0,
+    "5": 100.0
+   }
+  },
+  "strong/person/r3d": {
+   "main": 99.74937438964844,
+   "by_action": {
+    "2": 99.74874258041382,
+    "5": 99.75000023841858
+   }
+  },
+  "weak/person/r3d": {
+   "main": 99.49874877929688,
+   "by_action": {
+    "2": 98.99497628211975,
+    "5": 100.0
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 100.0,
+ "privacy_top1": 100.0,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 32.35486315091451
+}
