@@ -99,7 +99,10 @@ def main():
         r["leakage"] = (round(100 * (r["privacy"] - floor[ds]) / (raw_priv[ds] - floor[ds]), 1)
                         if ds in raw_priv and ds in floor and raw_priv[ds] != floor[ds] else None)
 
-    live = json.load(open(args.live)) if args.live and os.path.exists(args.live) else {}
+    try:  # a partial snapshot (a VM timed out mid-write) must not block the results
+        live = json.load(open(args.live)) if args.live and os.path.exists(args.live) else {}
+    except json.JSONDecodeError:
+        live = {}
     for host in live.get("hosts", []):
         for job in host.get("running", []):
             if job["name"] not in runs:
