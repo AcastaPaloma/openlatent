@@ -1007,3 +1007,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   plain BDQ is on the Ilic split (within- and cross-action), not under both shifts at once: correct finding 2's scope.
 - p8_bdq_a1_ens_s1_g (Charades, rerun with the fixed guard): 5.7 / 19.9% (the original collapsed to 4.4 / 3.6). Guard works.
 - Queued hardest tests for plain BDQ a5 ens and a5 ens warm, the VAE, 24-epoch attackers on learned x32, DINOv2 on learned x16.
+- 15:10 UTC: hardest test: DINOv2 on learned x16 15.5 (R3D 17.5); plain BDQ a5 ens 24.0 at scenario action 78.7; plain BDQ
+  a5 ens warm 6.0 at 32.7. Queued scenario-split plain BDQ a7 ens and learned x16 a5 (higher-utility comparison), the
+  hardest test on plain BDQ a1 scenario (79.2 action), and a guard-fixed Charades a3 seed.
