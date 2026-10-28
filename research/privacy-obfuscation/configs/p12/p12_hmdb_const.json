@@ -1,0 +1,15 @@
+{
+ "name": "p12_hmdb_const",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "const"
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16,
+  "action": []
+ },
+ "note": "sanity control: every frame black; the action-conditional cMAP must land at chance"
+}

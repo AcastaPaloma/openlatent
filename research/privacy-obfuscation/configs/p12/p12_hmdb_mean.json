@@ -1,0 +1,15 @@
+{
+ "name": "p12_hmdb_mean",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "mean"
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16,
+  "action": []
+ },
+ "note": "brightness-only control: each frame becomes its mean colour; how much beyond-action signal is global"
+}
