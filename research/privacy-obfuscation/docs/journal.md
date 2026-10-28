@@ -1264,3 +1264,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   VP-UCF101 stick figures: 55.5 action / 74.7 attr / 66.0 conditional (raw 91.8 / 77.1 / 67.1); skin colour beyond the action
   69.2 = raw 69.2, relationship 45.4 vs raw 43.8: the HMDB finding holds on UCF, the beyond-action signal is structural.
   Queued canonical and canonical + one posture per clip on Charades.
+- 22:40 UTC: VP-HMDB51 one canonical skeleton per frame (no appearance, proportions, size or people count): 26.5 action / 65.8 /
+  65.1 conditional (chance 61.9). Per attribute vs chance: face +3.5, skin colour +5.5, gender +1.1, nudity +0.7, relationship
+  +5.5. Skin colour is still predictable within an action from one fixed-size skeleton's posture and position. That can't be
+  appearance; most likely HMDB source films (a shared actor, camera style, framing) correlate with the skin-colour label within
+  an action class. The VP skin-colour label measures source, not something an appearance obfuscator can or should remove.
+  Queued DINOv2 attackers on canonical one-posture stick figures, KTH scenario split.

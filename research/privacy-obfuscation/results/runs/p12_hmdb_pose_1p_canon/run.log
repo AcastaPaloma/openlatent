@@ -1,0 +1,50 @@
+[20:37:49] run p12_hmdb_pose_1p_canon @ 499457b: {"name": "p12_hmdb_pose_1p_canon", "dataset": "hmdb51_vp", "seed": 0, "anonymizer": {"type": "pose", "every": 4, "width": 2, "canonical": 0.5, "max_people": 1}, "eval": {"epochs": 12, "repeats": 2, "batch": 16}, "note": "one canonical stick figure per frame: no appearance, no body proportions, no people count; posture and position only"}
+[20:37:49] VP-HMDB51 split 1: 3570 train / 1530 test videos
+[21:37:28] materialised anonymised dataset (3578s)
+[21:37:29] strong eval: training action r2p1d on anonymised data
+[21:39:18]   [action] epoch 1/12 loss 3.335 train_acc 14.6 (109s)
+[21:41:03]   [action] epoch 2/12 loss 2.854 train_acc 24.7 (105s)
+[21:42:47]   [action] epoch 3/12 loss 2.561 train_acc 31.2 (105s)
+[21:44:32]   [action] epoch 4/12 loss 2.292 train_acc 37.9 (104s)
+[21:45:42]   [action] epoch 5/12 loss 1.994 train_acc 45.9 (70s)
+[21:47:08]   [action] epoch 6/12 loss 1.702 train_acc 53.9 (86s)
+[21:48:51]   [action] epoch 7/12 loss 1.416 train_acc 62.8 (102s)
+[21:50:34]   [action] epoch 8/12 loss 1.224 train_acc 67.9 (103s)
+[21:52:17]   [action] epoch 9/12 loss 1.081 train_acc 71.7 (103s)
+[21:53:59]   [action] epoch 10/12 loss 1.005 train_acc 73.7 (103s)
+[21:55:43]   [action] epoch 11/12 loss 0.948 train_acc 75.1 (103s)
+[21:57:25]   [action] epoch 12/12 loss 0.926 train_acc 75.8 (102s)
+[21:57:56]   strong action/r2p1d: 26.47
+[21:58:24]   weak action/r2p1d: 2.29
+[21:58:25] strong eval: training attr frame_r50 on anonymised data
+[21:59:31]   [attr] epoch 1/12 loss 0.503 train_acc 77.9 (66s)
+[22:00:37]   [attr] epoch 2/12 loss 0.463 train_acc 79.8 (66s)
+[22:01:51]   [attr] epoch 3/12 loss 0.457 train_acc 80.1 (74s)
+[22:03:09]   [attr] epoch 4/12 loss 0.452 train_acc 80.4 (78s)
+[22:04:26]   [attr] epoch 5/12 loss 0.444 train_acc 80.8 (77s)
+[22:05:44]   [attr] epoch 6/12 loss 0.435 train_acc 81.2 (78s)
+[22:07:01]   [attr] epoch 7/12 loss 0.419 train_acc 81.9 (77s)
+[22:08:19]   [attr] epoch 8/12 loss 0.402 train_acc 82.6 (78s)
+[22:09:31]   [attr] epoch 9/12 loss 0.381 train_acc 83.7 (73s)
+[22:10:20]   [attr] epoch 10/12 loss 0.370 train_acc 84.4 (49s)
+[22:10:59]   [attr] epoch 11/12 loss 0.361 train_acc 84.6 (39s)
+[22:11:34]   [attr] epoch 12/12 loss 0.358 train_acc 85.0 (35s)
+[22:11:53]   strong attr/frame_r50: 65.79  (AP per attribute [94.0, 72.3, 92.5, 40.6, 29.5], F1 58.4)  action-conditional cMAP 65.15 (floor 61.9)
+[22:12:12]   weak attr/frame_r50: 59.71
+[22:12:12] strong eval: training attr r3d on anonymised data
+[22:12:38]   [attr] epoch 1/12 loss 0.485 train_acc 77.8 (26s)
+[22:13:09]   [attr] epoch 2/12 loss 0.451 train_acc 80.3 (31s)
+[22:13:40]   [attr] epoch 3/12 loss 0.440 train_acc 81.0 (31s)
+[22:14:12]   [attr] epoch 4/12 loss 0.424 train_acc 81.7 (32s)
+[22:14:44]   [attr] epoch 5/12 loss 0.397 train_acc 83.1 (32s)
+[22:15:16]   [attr] epoch 6/12 loss 0.358 train_acc 85.2 (32s)
+[22:15:47]   [attr] epoch 7/12 loss 0.303 train_acc 87.9 (32s)
+[22:16:19]   [attr] epoch 8/12 loss 0.258 train_acc 90.0 (32s)
+[22:16:50]   [attr] epoch 9/12 loss 0.217 train_acc 92.0 (32s)
+[22:17:22]   [attr] epoch 10/12 loss 0.191 train_acc 93.2 (32s)
+[22:17:54]   [attr] epoch 11/12 loss 0.175 train_acc 93.8 (32s)
+[22:18:25]   [attr] epoch 12/12 loss 0.174 train_acc 93.9 (31s)
+[22:18:33]   strong attr/r3d: 64.55  (AP per attribute [93.3, 70.1, 92.6, 37.5, 29.1], F1 60.7)  action-conditional cMAP 63.94 (floor 61.9)
+[22:18:41]   weak attr/r3d: 61.29
+[22:18:41] DONE p12_hmdb_pose_1p_canon: action 26.47  privacy cmap (strong, best attacker) 65.79  (100.9 min)
+[22:18:44] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_hmdb_pose_1p_canon
