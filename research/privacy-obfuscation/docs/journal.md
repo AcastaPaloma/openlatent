@@ -1174,3 +1174,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 19:20 UTC: plain BDQ a7 scenario seed 2: 60.0 / 24.8 (seed 0: 53.3 / 24.5). Queued its hardest test (seed 0 gave 8.0).
   In-game p14 readings at alpha 10 / 30 on UCF: action 93.9 / 91.2 with gain over the action-only predictor ~0.008-0.010: the
   conditional adversaries barely beat the action prior on training clips, so f is under little pressure. Strong evals pending.
+- 19:35 UTC: p14 conditional adversary on VP-HMDB51 (BDQ, alpha 3 / 10 / 30): action 64.7 / 64.1 / 63.0, conditional cMAP
+  69.6 / 69.8 / 68.5 (raw 69.7, plain BDQ 70.4, chance 61.9). Negative: knowing the action, the adversaries find nothing BDQ
+  can remove. Fits the pose result: what survives beyond the action is structure (framing, body visibility, people count),
+  which a blur/difference/quantise front end keeps by construction.
+  KTH pose (stick figures, Ilic split): 97.8 action / 53.3 identity (frame_r50 34.8): body proportions and gait alone identify
+  half the people, between the learned pools at x16 (57.5) and x32 (~40). Queued pose cross-action and hardest test on KTH:
+  if pose identity is gait style it should fall on unseen actions like the learned pools did.
+  Queued p12_hmdb_pose_1p: stick figure of only the most confident person (Pose max_people=1; checked on a 2-person clip: lit
+  pixels 8748 -> 6172). Prediction: relationship drops to chance (+10.3 now) if people count is the cue.
