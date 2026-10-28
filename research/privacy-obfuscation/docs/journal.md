@@ -795,3 +795,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   wave: BDQ a3 ens 85%, diff 77%, pix8 65%, person box 61%, person-box blur 64%, blur8 58%, down8 70%, down16 48%,
   diff->down16 66%. Same picture as VP-UCF101: appearance attributes survive every obfuscation that keeps action.
 - Queued p2_bdq_down32_a1_ens (alpha dose at x32).
+
+### 2026-10-28 05:40 UTC: x32 learned pool on the scenario split; fixed maps lose on Charades
+- p2_bdq_down32_a3_ens_scenario: 66.2 / 31.2. Scenario-split references near this utility: fixed diff->down24
+  69.0 / 50.3, plain BDQ a3 s1 64.5 / 39.3. The x32 learned-pool gain holds under unseen recording conditions.
+- p8_diff_down32 (Charades): action mAP 6.8, identity 58.4% vs BDQ a3 ens 6.0 / 24.2. Unlike KTH-Ilic, on Charades
+  the learned BDQ beats a fixed coarse motion map by ~34 identity points at similar action.
+- Queued p2_bdq_down32_a3_ens_scenario_s1 and p8_bdq_down16_a3_ens (learned pool + adversary on Charades).
