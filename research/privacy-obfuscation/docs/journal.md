@@ -771,3 +771,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   coarse downsampling (room colour layout); H34 holds.
 - Next: p6_bdq_down64_a1_ens_stride4 (2.5 s attack on the 1x2 px learned output), p7_diff_down8, p7_bdq_down16_a0,
   p8_down64 and p8_diff_down32 (where does in-home identity break?).
+
+### 2026-10-28 04:55 UTC: BDQ is the first method that hides who is home (Charades)
+- p8_bdq_a3_ens (Charades): action mAP 6.0 (raw 15.8), identity 24.2% (raw 93.5, blur8 86.9, down16 85.0; ResNet-50
+  11.4; chance 1.1). Temporal differencing removes the static room, which carries most in-home identity; what is
+  left is the moving person, and the video attacker still reads 24%. Action keeps ~40% of its mAP.
+- p7_bdq_a3_ens (VP-HMDB51, full 15 epochs with the fixed guard): 63.1 / 72.7 cMAP. Like VP-UCF101 (87.8 / 74.9):
+  BDQ does not hide appearance attributes on web/movie video.
+- p7_personbox (VP-HMDB51): 38.4 / 68.8.
+- H39: on Charades the scene is the identity; any method that removes the static background (diff, BDQ) will
+  cut identity sharply, and the trade-off is then set by how much action survives. Tests: p8_bdq_a1_ens (less
+  privacy weight), p8_bdq_a0 (no adversary: is it the differencing alone?), p8_diff (running).
+- Replication of the best scenario-split point: p2_bdq_down64_a1_ens_scenario_s1.
