@@ -234,6 +234,66 @@ class PersonBox(nn.Module):
         return out.view(b, t, c, h, w).transpose(1, 2)
 
 
+COCO_LIMBS = [(5, 7), (7, 9), (6, 8), (8, 10), (5, 6), (5, 11), (6, 12), (11, 12), (11, 13), (13, 15), (12, 14), (14, 16),
+              (0, 1), (0, 2), (1, 3), (2, 4), (0, 5), (0, 6)]
+
+
+class Pose(nn.Module):
+    """Replace every frame by stick figures of the people in it (torchvision Keypoint R-CNN, COCO 17 keypoints) drawn on a
+    plain background: no face, skin, clothing or room survives, only body configuration and motion. People are detected on
+    every `every`-th frame (input upscaled to `det_size` short side) and the drawing is held until the next keyframe.
+    Fixed; no learned parameters of its own."""
+    learned = False
+
+    def __init__(self, every=4, score=0.7, kp_score=1.0, det_size=320, width=1):
+        super().__init__()
+        from torchvision.models.detection import KeypointRCNN_ResNet50_FPN_Weights, keypointrcnn_resnet50_fpn
+        self.det = keypointrcnn_resnet50_fpn(weights=KeypointRCNN_ResNet50_FPN_Weights.COCO_V1, min_size=det_size, max_size=int(det_size * 1.6)).eval()
+        self.det.requires_grad_(False)
+        self.every, self.score, self.kp_score, self.width = every, score, kp_score, width
+        self.register_buffer("limbs", torch.tensor(COCO_LIMBS), persistent=False)
+
+    def train(self, mode=True):
+        super().train(mode)
+        self.det.eval()
+        return self
+
+    def draw(self, people, h, w, device):
+        """people: list of (17, 3) keypoints (x, y, visibility score) -> (h, w) canvas with limbs set to 1."""
+        canvas = torch.zeros(h * w, device=device)
+        t = torch.linspace(0, 1, 32, device=device)
+        for kp in people:
+            a, b = kp[self.limbs[:, 0]], kp[self.limbs[:, 1]]  # (L, 3)
+            ok = (a[:, 2] > self.kp_score) & (b[:, 2] > self.kp_score)
+            if not ok.any():
+                continue
+            a, b = a[ok, :2], b[ok, :2]
+            pts = a[:, None] + (b - a)[:, None] * t[None, :, None]  # (L, 32, 2) points along each limb
+            xs = pts[..., 0].round().long().clamp(0, w - 1)
+            ys = pts[..., 1].round().long().clamp(0, h - 1)
+            canvas[(ys * w + xs).flatten()] = 1.0
+        canvas = canvas.view(1, 1, h, w)
+        if self.width > 1:
+            canvas = F.max_pool2d(canvas, self.width * 2 - 1, stride=1, padding=self.width - 1)
+        return canvas[0, 0]
+
+    @torch.no_grad()
+    def forward(self, x):
+        b, c, t, h, w = x.shape
+        frames = x.transpose(1, 2).reshape(b * t, c, h, w)
+        rgb = frames.expand(-1, 3, -1, -1) if c == 1 else frames
+        out = torch.zeros(b * t, 1, h, w, device=x.device, dtype=x.dtype)
+        idx = [k for k in range(b * t) if (k % t) % self.every == 0]
+        for i in range(0, len(idx), 64):
+            chunk = idx[i:i + 64]
+            for k, det in zip(chunk, self.det(list(rgb[chunk].float()))):
+                keep = det["scores"] >= self.score
+                canvas = self.draw([kp for kp in det["keypoints"][keep]], h, w, x.device).to(x.dtype)
+                last = min(k + self.every, (k // t + 1) * t)
+                out[k:last, 0] = canvas
+        return out.view(b, t, 1, h, w).transpose(1, 2).expand(-1, c, -1, -1, -1)
+
+
 class TaskMask(nn.Module):
     """Keep only the task-relevant part of each frame, chosen on frozen DINOv2 patch features.
 
@@ -338,4 +398,6 @@ def build(cfg, in_ch=1):
         return VAELatent(**cfg)
     if kind == "taskmask":
         return TaskMask(in_ch=in_ch, **cfg)
+    if kind == "pose":
+        return Pose(**cfg)
     raise ValueError(kind)
