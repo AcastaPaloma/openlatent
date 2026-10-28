@@ -1058,3 +1058,6 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   p11_ch_mask_k25_a1_pw. p10_kth_bdq_a1_scenario_xh (hardest test, plain BDQ a1, scenario action 79.2): 21.0.
 - 15:50 UTC: hardest test with 24-epoch attackers on learned x32: 15.0 (12 epochs: 12.0). p2_bdq_down120_a1_ens_scenario:
   45.7 / 10.3. p8_bdq_a1_ens_s2_g (pre pos_weight): 5.8 / 22.2%.
+- 16:05 UTC: hardest test on the VAE latent edit (scenario action 83.0): 61.0. Scenario-split learned pools, seed 2: x16 74.0 / 38.3
+  (seeds 0,1: 73.7/37.3, 76.2/37.0), x64 53.0 / 14.8 (50.8/12.7, 51.5/14.0). p8_bdq_a3_ens_g (guard, pre pos_weight): 5.7 / 19.6%.
+  Queued hardest tests for x16 s2, x64 s2, x120.
