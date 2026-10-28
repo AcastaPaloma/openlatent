@@ -1,0 +1,14 @@
+{
+ "name": "p10_kth_raw_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "raw"
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "action": []
+ },
+ "note": "scenario split + identity attackers tested on held-out actions (unseen conditions and unseen actions)"
+}

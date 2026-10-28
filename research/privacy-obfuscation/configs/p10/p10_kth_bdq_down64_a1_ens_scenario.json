@@ -1,0 +1,24 @@
+{
+ "name": "p10_kth_bdq_down64_a1_ens_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 64
+   }
+  ]
+ },
+ "priv_split": "xaction",
+ "eval": {
+  "action": []
+ },
+ "note": "scenario split + identity attackers tested on held-out actions (unseen conditions and unseen actions)",
+ "anonymizer_from": "p2_bdq_down64_a1_ens_scenario"
+}

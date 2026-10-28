@@ -957,3 +957,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Charades has no good trade-off yet.
 - 12:35 UTC: cross-action identity, learned pools on KTH: x32 26.9, x48 17.0, x64 6.0, x120 4.9 (chance 4.0; within-action
   40.8 / 25.3 / 12.5 / 8.5). Fixed maps: x32 65.9 (x16, x48, x64 queued/running). p9_bdq_a3_ens (UTD-MHAD): 96.2 / 96.7.
+- 12:50 UTC: cross-action identity: plain BDQ (a5 ens warm) 14.4 (within 23.6), fixed diff->x64 13.9 (within 11.0), learned
+  BDQ->x64 6.0 (within 12.5). UTD-MHAD BDQ->x32 cross-action 84.0 (within 95.3; session cue). p2_bdq_down32_a1_ens_s2
+  93.0 / 39.3 (a1 seeds: 32.4, 41.6, 39.3). p2_bdq_down48_a3_ens_s1 87.5 / 24.7 (seed 0 87.3 / 25.3). p9_blur8 97.7 / 100.
+- Queued the hardest test: scenario split + cross-action identity (raw, fixed x16, learned x32, learned x64).
