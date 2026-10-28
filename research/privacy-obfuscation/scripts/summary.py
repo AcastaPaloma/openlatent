@@ -129,8 +129,9 @@ L += ["", "## Findings", "",
       "1. **The frozen-attacker protocol is the main reason published obfuscations look private.** Retrained attackers recover "
       "95-99% KTH identity through blur, pixelation and downsampling up to x16.",
       "2. **On KTH a learned temporal-difference stage (BDQ) in front of a tiny spatial pool is the best obfuscator found.** "
-      "It sits below the fixed motion-map curve at every pool size and below plain BDQ, consistently across seeds, privacy weights, "
-      "24-epoch attackers, 2.5 s views and DINOv2. At 1-2 numbers per frame it needs no adversary; at ~15 numbers per frame the "
+      "It sits below the fixed motion-map curve at every pool size, consistently across seeds, privacy weights, "
+      "24-epoch attackers, 2.5 s views and DINOv2. It also beats plain BDQ on the Ilic split; under an unseen scenario plus "
+      "unseen actions, plain BDQ and the learned pools are about even, and both leak a third of what fixed maps leak. At 1-2 numbers per frame it needs no adversary; at ~15 numbers per frame the "
       "adversary buys ~15 identity points.",
       "3. **Most identity left in a learned coarse motion map is person-specific action style**: tested on unseen actions, the "
       "learned pools leak much less (x16 38, x32 ~22, x64 6, 1 px 5), while fixed maps and raw video leak as much across actions "
