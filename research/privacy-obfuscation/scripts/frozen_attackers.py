@@ -22,6 +22,7 @@ FROZEN, RETRAINED = "#eb6834", "#2a78d6"  # validated pair (dataviz validate_pal
 INFO = {
     "kth": dict(name="KTH", task="person", metric="identity top-1 (%)", floor=4.0, floor_label="chance 4.0"),
     "ucf101_vp": dict(name="VP-UCF101", task="attr", metric="attribute cMAP (%)", floor=58.7, floor_label="blind floor 58.7"),
+    "hmdb51_vp": dict(name="VP-HMDB51", task="attr", metric="attribute cMAP (%)", floor=None, floor_label="blind floor"),
 }
 
 
@@ -38,7 +39,7 @@ def rows(ds):
             continue
         task = INFO[ds]["task"]
         w, s = r["weak"], r["strong"]
-        out.append(dict(name=r["name"], split="s1" if ds == "ucf101_vp" else r.get("split"), anon=r["config"]["anonymizer"],
+        out.append(dict(name=r["name"], split="s1" if ds != "kth" else r.get("split"), anon=r["config"]["anonymizer"],
                         frozen_action=w.get("action/r2p1d"), retrained_action=s.get("action/r2p1d"),
                         frozen_frame=w.get(f"{task}/frame_r50"), frozen_video=w.get(f"{task}/r3d"),
                         frozen=best(w, task), retrained=best(s, task)))
@@ -103,6 +104,15 @@ def main():
         rs = rows(ds)
         if not rs:
             continue
+        if info["floor"] is None:  # cMAP floor = mean attribute prevalence, from the raw run's details
+            raw = [json.load(open(p)) for p in glob.glob(os.path.join(ROOT, "results", "runs", "*", "result.json"))]
+            prev = [d["prevalence"] for r in raw if r.get("dataset") == ds and r["config"]["anonymizer"]["type"] == "raw"
+                    for d in r.get("details", {}).values() if d.get("prevalence")]
+            if not prev:
+                continue
+            info = dict(info, floor=sum(prev[0]) / len(prev[0]))
+            info["floor_label"] = f"blind floor {info['floor']:.1f}"
+
         fig_path = os.path.join(ROOT, "results", "figures", f"frozen_vs_retrained_{ds}.png")
         figure(ds, rs, fig_path)
         non_raw = [r for r in rs if r["anon"]["type"] != "raw"]
