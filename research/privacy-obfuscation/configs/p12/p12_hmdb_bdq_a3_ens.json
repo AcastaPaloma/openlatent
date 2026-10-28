@@ -1,0 +1,16 @@
+{
+ "name": "p12_hmdb_bdq_a3_ens",
+ "dataset": "hmdb51_vp",
+ "seed": 0,
+ "anonymizer": {
+  "type": "bdq"
+ },
+ "eval": {
+  "epochs": 12,
+  "repeats": 2,
+  "batch": 16,
+  "action": []
+ },
+ "note": "attack-only re-evaluation for the action-conditional attribute cMAP (what the video reveals beyond its action)",
+ "anonymizer_from": "p7_bdq_a3_ens"
+}

@@ -1026,3 +1026,19 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   raw-background composite (UTD); learned a1 on VP-UCF101 (attributes sit on the person, so expected not to help there).
 - H42: removing the background (gray fill) cuts identity on UTD-MHAD and Charades far more than any obfuscator so far;
   the raw-background composite gives it all back; the learned head keeps task objects beyond the person.
+
+### 2026-10-28 15:35 UTC: VP-UCF101 / VP-HMDB51 attributes are mostly implied by the action
+- An "attacker" that sees no video, only the action class (per-class mean attribute vector from train), scores cMAP 77.6 on
+  VP-UCF101 (raw-video attacker 76.6) and 74.3 on VP-HMDB51 (raw 75.2); blind floor 58.6 / 58.7. Per attribute (UCF):
+  face 96.9, skin 83.1, gender 96.1, nudity 49.5, relationship 62.4. The benchmark's privacy labels are largely a function of
+  the action (makeup -> face, horse race -> no face), so no action-preserving obfuscation can lower this cMAP; our 66-72
+  results sit below the action-implied level only because they lose action. This also undercuts attribute-privacy claims
+  made on these labels.
+- Fair metric added (train.evaluate): action-conditional cMAP = attribute AP within each action class where the attribute
+  varies, averaged; floor = mean within-class prevalence. It measures what the video reveals beyond its action.
+  Unit-tested on a synthetic case. Attack-only re-evaluations queued (p12): raw, down16, diff->down16, blur8, BDQ,
+  person box on VP-UCF101; raw, down16, diff->down16, blur8, BDQ on VP-HMDB51. The task-mask run (p11_ucf_mask_k25_a1)
+  reports it too.
+- H43: raw video reveals substantial within-action attribute information (face/skin/gender of the specific person), and
+  person-removing methods (person box, task mask with adversary) reduce the conditional cMAP toward its floor while the
+  standard cMAP barely moves.
