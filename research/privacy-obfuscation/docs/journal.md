@@ -1126,3 +1126,14 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   costs a third of HMDB action: HMDB actions are about the body (chew, smile, wave), so the person can't be blurred for free there.
   KTH saliency mask (keep 25%): 98.2 / 98.8, the same as the learned mask: selecting patches keeps the person.
   Queued: p12_hmdb_personbox (black boxes, conditional score) and seed 2 of plain BDQ a7 scenario.
+- 18:30 UTC: VP-UCF101 action-conditional cMAP (chance 61.3): raw 67.1, BDQ a3 65.2, blur8 63.8, down16 63.5, diff->down16 63.5.
+  Raw UCF reveals ~6 points beyond its action (HMDB ~8). Fixed filters remove ~60% of it at large action cost (p3: down16 53.7,
+  blur8 58.9, diff->down16 63.7 vs raw 91.8); BDQ keeps action (87.8) and removes ~1/3.
+  Charades learned task mask with pos_weight: a0 9.9 / 87.4%, a1 8.4 / 87.7% (raw 15.8 / 93.5; saliency 11.0 / 91.3). The in-game
+  adversary sat at ~27% while fresh attackers reach 87%: hard top-k patch selection gives f too weak a gradient to fight them,
+  and the people it keeps identify themselves.
+  New p14: BDQ trained against action-conditional adversaries (ppv/train.py cond_adv). Each adversary gets a learned per-action
+  logit offset; f pays alpha * relu(BCE(action-only prior) - BCE(adversary)), i.e. only for what the video adds beyond the action.
+  The usual entropy objective asks f to hide attributes the action implies, i.e. to hide the action. Hypothesis: at matched
+  action, p14 lowers the conditional cMAP more than p3/p7 BDQ. Smoke-tested on GPU; queued alpha 10 and 30 on UCF and HMDB.
+  Also queued Charades BDQ a3 pos_weight seed 1 (seed 0's in-game reading: action recall 61, identity adversary 6.3%).

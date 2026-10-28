@@ -1,0 +1,30 @@
+[17:35:58] run p12_ucf_raw @ dc98b93: {"name": "p12_ucf_raw", "dataset": "ucf101_vp", "seed": 0, "anonymizer": {"type": "raw"}, "eval": {"epochs": 10, "repeats": 1, "batch": 16, "action": []}, "note": "attack-only re-evaluation for the action-conditional attribute cMAP (what the video reveals beyond its action)"}
+[17:35:58] VP-UCF101 split 1: 9537 train / 3783 test videos
+[17:35:59] strong eval: training attr frame_r50 on anonymised data
+[17:37:45]   [attr] epoch 1/10 loss 0.483 train_acc 78.5 (106s)
+[17:39:25]   [attr] epoch 2/10 loss 0.400 train_acc 81.7 (100s)
+[17:41:07]   [attr] epoch 3/10 loss 0.379 train_acc 82.7 (102s)
+[17:42:48]   [attr] epoch 4/10 loss 0.358 train_acc 83.5 (101s)
+[17:44:01]   [attr] epoch 5/10 loss 0.340 train_acc 84.4 (73s)
+[17:45:00]   [attr] epoch 6/10 loss 0.323 train_acc 85.4 (60s)
+[17:46:00]   [attr] epoch 7/10 loss 0.308 train_acc 86.0 (60s)
+[17:46:59]   [attr] epoch 8/10 loss 0.297 train_acc 86.5 (60s)
+[17:47:59]   [attr] epoch 9/10 loss 0.289 train_acc 86.8 (60s)
+[17:48:59]   [attr] epoch 10/10 loss 0.287 train_acc 86.9 (60s)
+[17:49:56]   strong attr/frame_r50: 77.11  (AP per attribute [97.5, 84.4, 96.5, 50.8, 56.4], F1 72.5)  action-conditional cMAP 67.14 (floor 57.5)
+[17:50:53]   weak attr/frame_r50: 76.99
+[17:50:54] strong eval: training attr r3d on anonymised data
+[17:51:37]   [attr] epoch 1/10 loss 0.452 train_acc 79.2 (44s)
+[17:52:19]   [attr] epoch 2/10 loss 0.401 train_acc 81.7 (42s)
+[17:53:02]   [attr] epoch 3/10 loss 0.380 train_acc 83.0 (42s)
+[17:53:44]   [attr] epoch 4/10 loss 0.359 train_acc 83.8 (42s)
+[17:54:26]   [attr] epoch 5/10 loss 0.335 train_acc 84.9 (42s)
+[17:55:09]   [attr] epoch 6/10 loss 0.299 train_acc 86.5 (42s)
+[17:55:51]   [attr] epoch 7/10 loss 0.266 train_acc 88.3 (42s)
+[17:56:33]   [attr] epoch 8/10 loss 0.226 train_acc 90.2 (42s)
+[17:57:16]   [attr] epoch 9/10 loss 0.197 train_acc 91.6 (42s)
+[17:57:58]   [attr] epoch 10/10 loss 0.187 train_acc 92.3 (42s)
+[17:58:13]   strong attr/r3d: 74.92  (AP per attribute [96.7, 82.5, 96.0, 45.5, 53.8], F1 70.9)  action-conditional cMAP 66.52 (floor 57.5)
+[17:58:29]   weak attr/r3d: 74.88
+[17:58:29] DONE p12_ucf_raw: action None  privacy cmap (strong, best attacker) 77.11  (22.5 min)
+[17:58:29] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p12_ucf_raw

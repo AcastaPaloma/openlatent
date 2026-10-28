@@ -83,10 +83,10 @@ AP of each attribute within each action class where it varies. Chance = expected
 
 | method | VP-UCF101 | VP-HMDB51 |
 |---|---:|---:|
-| raw | - | 69.7 |
+| raw | 67.1 | 69.7 |
 | blur sigma 8 | 63.8 | 65.2 |
-| downsample x16 | - | 64.7 |
-| diff->down16 | - | 66.0 |
+| downsample x16 | 63.5 | 64.7 |
+| diff->down16 | 63.5 | 66.0 |
 | BDQ a3 | 65.2 | 70.4 |
 | person boxes blurred (sigma 16) | - | 66.0 |
 
