@@ -717,3 +717,16 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - H37: what the learned stage adds is a choice of which motion to integrate (thresholds on the blurred
   difference) that a fixed difference cannot make; the alpha-0 controls (p2_bdq_down64_a0, p2_bdq_down48_a0,
   finishing) decide whether that choice needs the adversary at all.
+
+### 2026-10-28 02:45 UTC: the adversary is not needed for the learned-before-pool gain (H36 supported)
+- p2_bdq_down64_a0 (BDQ -> 1x2 px, trained for action only, no privacy term): 81.8 / 10.7. With the 2-adversary
+  game: 82.1 / 12.5, 82.6 / 13.4 (seed 1), 82.9 / 12.5 (alpha 3). The privacy comes from the capacity bottleneck
+  (two numbers per frame); learning only spends that capacity on action. p2_bdq_down48_a0: 83.3 / 36.3 vs
+  adversarial 82.9 / 41.3 and fixed 83.6 / 37.0.
+- p6_bdq_down64_a1_ens_e24 (24-epoch attackers on the frozen BDQ->1x2 output): 82.4 / 14.5. Budget-robust.
+- Scenario-split BDQ a3 seeds 0-3: 55.8/24.7, 64.5/39.3, 73.7/55.7, 74.2/44.7, spread along a curve ~8 identity
+  points below the fixed maps (x24 69.0 / 50.3, x32 58.0 / 42.7).
+- H38: the right object is a utility-trained encoder in front of a tiny bottleneck; adversarial training adds
+  nothing at 1-2 numbers per frame. Tests: p2_bdq_down32_a0 (does the 93.0 / 40.8 point also hold without the
+  adversary?), p2_unet_down64_a0 and p2_unet_down64_a1_ens (a 3D U-Net encoder before the 1x2 bottleneck: more
+  action, or does a stronger encoder pack gait into the two numbers?).
