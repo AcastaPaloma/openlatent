@@ -1149,3 +1149,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Hypotheses: (1) relationship leaks through the count and layout of people, which survives any per-person obfuscation; only
   removing person count (one box for all people, or pose with identities merged) can hide it. (2) The p14 conditional adversary
   should concentrate on nudity and relationship, so its per-attribute numbers matter more than the mean.
+- 18:55 UTC: CORRECTION to 17:25 / 18:05: Charades p8_bdq_a3_ens_pw (pos_weight 20) finished 5.7 mAP / 21.5% identity, the same
+  as without pos_weight (a3 5.8 / 22.4 over 3 seeds). The in-game "action recall 61%" was not utility: with positives weighted 20x
+  the in-game model predicts many positives, so recall is high while mAP for a fresh model stays at the floor. pos_weight fixed
+  the collapse guard's signal, not the trade-off. Charades frontier stands: BDQ a0 12.6 / 88.8, a0.5 7.1 / 45.6, a1-a3 ~5.8 / 20;
+  fixed diff->down32 6.8 / 58.4. Killed the seed-1 replicate (p8_bdq_a3_ens_pw_s1); a1_pw and a3_r18_pw continue.
+  Charades learned task mask a1 on UCF: p11_ucf_mask_k25_a1 79.1 action / 74.8 attr mAP / 65.1 conditional (raw 91.8 / 77.1 / 67.1).
+  VP-HMDB51 gray + head blur: 60.2 / 73.2 / 68.4 conditional (raw 64.9 / 75.6 / 69.7).
+  In-game p14 readings: HMDB a10 epoch 5 action 74.6, gain over action-only 0.015; a30 epoch 4 action 65.2, gain 0.006.
+  Queued p14_hmdb_bdq_cond_a3 to complete the alpha sweep (3, 10, 30).
