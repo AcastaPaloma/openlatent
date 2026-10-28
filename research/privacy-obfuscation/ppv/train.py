@@ -251,7 +251,14 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
                 # co-trained T reach 74% action, but a fresh model on the uint8 output got 16.7%.
                 z = z + (torch.round(z.float().clamp(0, 1) * 255) / 255 - z).detach()
                 la_logits = T(z)
-                la = loss_fn(la_logits, ya, ACTION_KIND)
+                if ACTION_KIND == "multilabel":
+                    # Charades: ~6 of 157 actions per video. Plain BCE lets the in-game action model predict "nothing"
+                    # (positive recall 0 from epoch 2 in p8_bdq_a3_r18_g), so f gets no utility signal and the privacy
+                    # term erases the video. Weight positives; the attackers and the evaluation keep plain BCE.
+                    la = F.binary_cross_entropy_with_logits(la_logits.float(), ya.float(),
+                                                            pos_weight=torch.full_like(ya[0].float(), cfg.get("pos_weight", 20.0)))
+                else:
+                    la = loss_fn(la_logits, ya, ACTION_KIND)
                 ent = torch.stack([privacy_entropy(B(z), priv_kind) for B in Bs]).mean()
                 loss = la - alpha * ent
             opt_fT.zero_grad(set_to_none=True)

@@ -1047,3 +1047,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   -> clean skeletons; close-ups -> partial ones). Queued on VP-UCF101, VP-HMDB51, KTH and Charades (p12_*_pose).
   H44: pose removes most within-action attribute information (conditional cMAP near its floor) at a large action cost
   where objects matter (instruments, sports equipment); on Charades it removes the home entirely.
+
+### 2026-10-28 15:40 UTC: why Charades BDQ fails: the in-game action model never learns
+- p8_bdq_a3_r18_g (guard-fixed rerun) still collapsed (4.4 / 3.6). Its training log shows positive-label recall of the
+  co-trained action model at 0.3% after epoch 1 and 0 afterwards: with ~6 positives among 157 labels, plain BCE lets it
+  predict "no action" everywhere, so f receives no utility gradient and the adversarial term erases the video. The guard
+  had no good epoch to keep. This also explains why even non-collapsed Charades BDQ runs kept only ~6 mAP (floor 4.4).
+- Fix (train.py): the in-game action loss weights positives (pos_weight 20, configurable); attackers and evaluation keep
+  plain BCE, so numbers stay comparable. Reruns: p8_bdq_a1_ens_pw, p8_bdq_a3_ens_pw, p8_bdq_a3_r18_pw,
+  p11_ch_mask_k25_a1_pw. p10_kth_bdq_a1_scenario_xh (hardest test, plain BDQ a1, scenario action 79.2): 21.0.
