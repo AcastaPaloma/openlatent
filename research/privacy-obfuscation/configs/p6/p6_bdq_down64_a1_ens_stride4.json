@@ -1,0 +1,21 @@
+{
+ "name": "p6_bdq_down64_a1_ens_stride4",
+ "dataset": "kth",
+ "split": "ilic",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 64
+   }
+  ]
+ },
+ "anonymizer_from": "p2_bdq_down64_a1_ens",
+ "clip_stride": 4,
+ "note": "frozen BDQ->1x2 output, all models see 16 frames at stride 4 (~2.5 s, 2+ gait cycles)"
+}

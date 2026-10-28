@@ -762,3 +762,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   in-home identity survives blur (room and body shape), and the video attacker is again the strongest.
 - Next: p2_bdq_down16_a3_ens and p2_bdq_down24_a3_ens (can a finer learned pool reach ~95 action at low identity?),
   p8_bdq_down32_a0 (learned bottleneck on Charades).
+
+### 2026-10-28 04:40 UTC: one learned number per frame replicates; first VP-HMDB51 fixed filters; Charades down16
+- p2_bdq_down120_a1_ens_s1: 75.8 / 9.5 (seed 0: 75.9 / 8.5; fixed one-number map 54.2 / 6.9).
+- VP-HMDB51 (action / cMAP): down8 45.6 / 70.3, down16 29.7 / 66.6, person-box blur 45.4 / 69.3, pix8 44.5 / 69.5,
+  blur8 32.0 / 68.3, diff 59.9 / 71.4, diff->down16 34.4 / 69.5. Raw reference running now.
+- p8_down16 (Charades, 7x9 px): action mAP 8.4, identity 85.0% (raw 93.5, blur8 86.9). In-home identity survives
+  coarse downsampling (room colour layout); H34 holds.
+- Next: p6_bdq_down64_a1_ens_stride4 (2.5 s attack on the 1x2 px learned output), p7_diff_down8, p7_bdq_down16_a0,
+  p8_down64 and p8_diff_down32 (where does in-home identity break?).
