@@ -749,3 +749,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - p7_diff_down16 (VP-HMDB51): 34.4 / 69.5 cMAP.
 - Queued p8_bdq_down16_a0 (Charades: utility-only learned stage before a 7x9 px pool, H38 on in-home identity) and
   p2_bdq_down120_a0 (lost from an earlier submission; requeued).
+
+### 2026-10-28 04:10 UTC: x32 learned-before-pool replicates across alpha
+- p2_bdq_down32_a5_ens: 91.8 / 38.3 (a3: 93.0 / 40.8; fixed diff->down32 93.6 / 63.9). Seed 1, scenario split,
+  alpha 0 and seed 2 (queued) pending.
+- p7_pix8 (VP-HMDB51): 44.5 / 69.5 cMAP. p7_raw moved to an idle VM so the VP-HMDB51 reference lands sooner.
