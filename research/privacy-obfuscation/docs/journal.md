@@ -889,3 +889,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 09:50 UTC: p2_bdq_down32_a1_ens_s1 91.3 / 41.6 (seed 0 91.8 / 32.4). p2_bdq_down48_a3_ens 87.3 / 25.3 (a1: 82.9/41.3,
   87.3/27.9): x48 sits between x32 and x64 once the bad a1 seed is set aside. p6_bdq_down32_a3_ens_e24 (24-epoch
   attackers on the frozen x32 output): 92.1 / 42.5 vs 40.8 with 12 epochs: budget-robust (+1.7).
+- 10:05 UTC: p2_bdq_down16_a5_ens 96.5 / 54.0 (a3: 95.8 / 57.0). p6_dino_bdq_down16_a3_ens: DINOv2 probe 23.6, fine-tune
+  4.2 on the frozen x16 output (ResNet-50 25.6, R3D 57.0): the strongest appearance attacker does not break the
+  high-utility point; the binding attacker remains the video model. p8_bdq_a3_ens_s2 (Charades) 5.8 / 22.0%:
+  a3 over 3 seeds 5.8-6.0 mAP / 21.1-24.2% identity. Queued p9_bdq_down16_a3_ens (UTD-MHAD), p2_bdq_down16_a5_ens_s1,
+  p8_bdq_a3_r18 (Charades frame-only adversary).

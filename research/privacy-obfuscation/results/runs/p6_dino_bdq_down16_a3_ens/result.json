@@ -1,0 +1,75 @@
+{
+ "name": "p6_dino_bdq_down16_a3_ens",
+ "config": {
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "chain",
+   "stages": [
+    {
+     "type": "bdq"
+    },
+    {
+     "type": "down",
+     "factor": 16
+    }
+   ]
+  },
+  "anonymizer_from": "p2_bdq_down16_a3_ens",
+  "name": "p6_dino_bdq_down16_a3_ens",
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  },
+  "note": "DINOv2 on the frozen BDQ->7x10 px output (ResNet-50 read 25.6 there)"
+ },
+ "git": "c7ca60b",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 23.578594624996185,
+  "person/frame_dino_ft": 4.180601984262466
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 23.578594624996185,
+   "by_action": {
+    "0": 20.202019810676575,
+    "1": 23.999999463558197,
+    "2": 13.131313025951385,
+    "3": 36.000001430511475,
+    "4": 30.000001192092896,
+    "5": 18.000000715255737
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 4.180601984262466,
+   "by_action": {
+    "0": 4.040404036641121,
+    "1": 5.000000074505806,
+    "2": 3.030303120613098,
+    "3": 0.9999999776482582,
+    "4": 3.999999910593033,
+    "5": 7.999999821186066
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 23.578594624996185,
+ "privacy_top1": 23.578594624996185,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 17.567100258668265
+}
