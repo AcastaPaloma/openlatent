@@ -1069,3 +1069,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   is in the background).
   Hypothesis: a task mask alone hides nothing on KTH (the person is the task region); it only helps when combined with an inner
   obfuscator, so the mask's value should show on datasets where the background carries identity (Charades homes, VP scenes).
+- 16:40 UTC: hardest test on scenario learned pool x120 (scenario 45.7 / 10.3): 4.0 = chance (r3d 2.0). The hardest-test ladder for
+  learned pools is now x16 17.5-18.0, x24 20.0, x32 12.0, x64 4.0-7.5, x120 4.0.
+  p11_ch_saliency_k25 (Charades, DINOv2 saliency mask, keep 25% of patches, gray fill): 11.0 mAP / 91.3% identity (raw 15.8 / 93.5).
+  Best Charades utility of any obfuscator so far, but identity is barely touched: unsupervised saliency picks the person, so the
+  mask keeps exactly what identifies them.
+  p11_utd_mask_k25_bdq_a1 (UTD-MHAD, learned mask + BDQ inside, adversary 1): 27.2 action / 92.5 identity. Worse than BDQ alone
+  (96.2 / 96.7) on action; identity still near raw, so the mask doesn't remove the session cue the person carries.
+  Killed p8_bdq_a3_ens_s1_g and p8_bdq_a1_ens_e15_g: both pre-pos_weight runs collapsed to 0.0 positive recall / 4-5% identity,
+  the same collapse documented at 15:20; the pos_weight reruns are queued on the same VMs.
+  Hypotheses: (1) a mask that picks the task region keeps the person, so on its own it can't hide identity; its use is as a
+  carrier for an inner obfuscator, which keeps scene objects (tables, pool cues) at full resolution while the person is degraded.
+  (2) Test this directly: invert the mask's role, i.e. obfuscate inside the person box and keep task objects raw.
