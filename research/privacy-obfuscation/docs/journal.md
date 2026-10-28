@@ -1061,3 +1061,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 16:05 UTC: hardest test on the VAE latent edit (scenario action 83.0): 61.0. Scenario-split learned pools, seed 2: x16 74.0 / 38.3
   (seeds 0,1: 73.7/37.3, 76.2/37.0), x64 53.0 / 14.8 (50.8/12.7, 51.5/14.0). p8_bdq_a3_ens_g (guard, pre pos_weight): 5.7 / 19.6%.
   Queued hardest tests for x16 s2, x64 s2, x120.
+- 16:25 UTC: scenario learned pool x32 a3 seed 2: 66.3 / 29.5 (seeds 0,1: 66.2/31.2, 62.2/32.2); x32 replicates across three seeds.
+  Killed p11_ch_mask_k25_a0 at adv epoch 8: the in-game action model's positive recall was 0.3% (no pos_weight), so the mask
+  head got no action signal and the result would only measure an untrained mask. Requeued as p11_ch_mask_k25_a0_pw (pos_weight 20);
+  the a1_pw twin already shows 61.6% recall at epoch 2. Early task-mask readings (in-game adversaries, not final): KTH a0 keeps
+  identity (r3d 96.3), KTH a1 77.5, KTH BDQ-inside a1 53.0 at adv epoch 2; UTD raw-background composite 100 (expected: the session cue
+  is in the background).
+  Hypothesis: a task mask alone hides nothing on KTH (the person is the task region); it only helps when combined with an inner
+  obfuscator, so the mask's value should show on datasets where the background carries identity (Charades homes, VP scenes).
