@@ -1,0 +1,80 @@
+{
+ "name": "p10_kth_diff_down8_scenario_xh",
+ "config": {
+  "name": "p10_kth_diff_down8_scenario_xh",
+  "dataset": "kth",
+  "split": "scenario",
+  "seed": 0,
+  "anonymizer": {
+   "type": "chain",
+   "stages": [
+    {
+     "type": "diff",
+     "gain": 4.0
+    },
+    {
+     "type": "down",
+     "factor": 8
+    }
+   ]
+  },
+  "priv_split": "xaction_heldout",
+  "eval": {
+   "action": []
+  },
+  "note": "attackers train on seen scenarios and seen actions, tested on the unseen scenario with unseen actions"
+ },
+ "git": "1ec52ca",
+ "dataset": "kth",
+ "split": "scenario",
+ "n_train": 1791,
+ "n_test": 600,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 42.500001192092896,
+  "person/r3d": 50.49999952316284
+ },
+ "weak": {
+  "person/frame_r50": 3.999999910593033,
+  "person/r3d": 2.9999999329447746
+ },
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 42.500001192092896,
+   "by_action": {
+    "2": 20.999999344348907,
+    "5": 63.999998569488525
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 3.999999910593033,
+   "by_action": {
+    "2": 3.999999910593033,
+    "5": 3.999999910593033
+   }
+  },
+  "strong/person/r3d": {
+   "main": 50.49999952316284,
+   "by_action": {
+    "2": 34.99999940395355,
+    "5": 66.00000262260437
+   }
+  },
+  "weak/person/r3d": {
+   "main": 2.9999999329447746,
+   "by_action": {
+    "2": 3.999999910593033,
+    "5": 1.9999999552965164
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 50.49999952316284,
+ "privacy_top1": 50.49999952316284,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 25.086146442095437
+}

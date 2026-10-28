@@ -1,0 +1,29 @@
+{
+ "name": "p10_dino_bdq_down16_a3_ens_scenario_xh",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "bdq"
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "priv_split": "xaction_heldout",
+ "eval": {
+  "action": [],
+  "privacy": [
+   "frame_dino_probe",
+   "frame_dino_ft"
+  ],
+  "clean_attacker": false
+ },
+ "note": "attackers train on seen scenarios and seen actions, tested on the unseen scenario with unseen actions",
+ "anonymizer_from": "p2_bdq_down16_a3_ens_scenario"
+}

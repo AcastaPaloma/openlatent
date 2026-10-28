@@ -998,3 +998,12 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
 - 14:35 UTC: hardest test: fixed diff->x48 18.0 (scenario action 44.0); plain BDQ a3 seed 1 10.5 (action 64.5).
   Charades BDQ a1.5 7.5 / 49.8%, a2 6.9 / 41.1%: across alpha 0.5-10 the Charades game gives 20-66% identity at 5.8-7.8 mAP,
   non-monotone and seed-dependent, with collapses mixed in. Guard-fixed reruns of the collapsed a1 runs queued.
+
+### 2026-10-28 14:55 UTC: hardest test: plain BDQ ties the learned pools; Charades guard fix works
+- Hardest test (unseen scenario + unseen actions), plain BDQ a3 seeds 0-3: 5.5 / 10.5 / 23.0 / 17.5 at scenario action 55.8 /
+  64.5 / 73.7 / 74.2. Learned pools: ~17-18 at ~75 action, ~12 at ~64, 4-8 at ~51. In this setting plain BDQ and the learned
+  pools are about even; both stay far below the fixed motion maps (x8 50.5 at 86.2, x16 48.5 at 81.0, x24 43.5 at 69.0,
+  x32 40.5 at 58.0, x48 18.0 at 44.0, x64 8.0 at 23.3) and plain downsampling (x16 87.5). The learned pools' clear edge over
+  plain BDQ is on the Ilic split (within- and cross-action), not under both shifts at once: correct finding 2's scope.
+- p8_bdq_a1_ens_s1_g (Charades, rerun with the fixed guard): 5.7 / 19.9% (the original collapsed to 4.4 / 3.6). Guard works.
+- Queued hardest tests for plain BDQ a5 ens and a5 ens warm, the VAE, 24-epoch attackers on learned x32, DINOv2 on learned x16.
