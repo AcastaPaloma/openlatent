@@ -1,0 +1,542 @@
+{
+ "dataset": "hmdb51_vp",
+ "modality": "video",
+ "screen": [
+  "raw",
+  "black",
+  "gray",
+  "blur4",
+  "blur8",
+  "blur16",
+  "down4",
+  "down8",
+  "down16",
+  "down32",
+  "down64",
+  "personbox_black",
+  "personbox_blur16",
+  "motion_down8",
+  "motion_down16",
+  "motion_down32",
+  "motion_down64",
+  "pose",
+  "pose_canon",
+  "pose_canon_down4",
+  "pose_canon_down8",
+  "pose_canon_down16",
+  "pose_canon_down32"
+ ],
+ "learned": [
+  "bdq_down64",
+  "bdq_down32"
+ ],
+ "priority": {
+  "pose_canon_down16": {
+   "score": 2,
+   "why": "R2: attributes survives in posture alone (0.67): needs coarsening on top of canonical skeletons"
+  },
+  "pose_canon_down32": {
+   "score": 2,
+   "why": "R2: attributes survives in posture alone (0.67): needs coarsening on top of canonical skeletons"
+  },
+  "bdq_down64": {
+   "score": 2,
+   "why": "R2: attributes survives in posture alone (0.67): needs coarsening on top of canonical skeletons"
+  },
+  "raw": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  },
+  "black": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  },
+  "blur8": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  },
+  "down16": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  },
+  "down64": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  },
+  "motion_down16": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  },
+  "bdq_down32": {
+   "score": 1,
+   "why": "R1: baseline / control"
+  }
+ },
+ "shortlist_size": 8,
+ "attackers": [
+  "frame_r50",
+  "r3d"
+ ],
+ "utility_models": [
+  "r2p1d"
+ ],
+ "robustness": {
+  "epochs_x2": true,
+  "dino_ft": true,
+  "second_seed": true
+ },
+ "protocols": {
+  "attributes": [
+   "within"
+  ]
+ },
+ "metrics": {
+  "attributes": "conditional"
+ },
+ "reasons": [
+  "attributes: strongest cues [('person', 0.98), ('posture', 0.67), ('body', 0.54), ('scene', 0.48)]; task 'action' cues [('person', 0.93), ('scene', 0.55), ('posture', 0.4), ('body', 0.36)]",
+  "train bdq_down64: R2: attributes survives in posture alone (0.67): needs coarsening on top of canonical skeletons",
+  "train bdq_down32: R1: baseline / control"
+ ],
+ "warnings": [
+  "R3: the task label alone gives 102% of the raw probe's 'attributes' score above chance; it is scored with the conditional metric (what the footage reveals beyond the task label)"
+ ],
+ "candidates": {
+  "raw": {
+   "name": "raw",
+   "family": "reference",
+   "config": {
+    "type": "raw"
+   },
+   "learned": false,
+   "needs": []
+  },
+  "black": {
+   "name": "black",
+   "family": "control",
+   "config": {
+    "type": "const"
+   },
+   "learned": false,
+   "needs": []
+  },
+  "gray": {
+   "name": "gray",
+   "family": "colour removal",
+   "config": {
+    "type": "gray"
+   },
+   "learned": false,
+   "needs": []
+  },
+  "blur4": {
+   "name": "blur4",
+   "family": "blur",
+   "config": {
+    "type": "blur",
+    "sigma": 4.0
+   },
+   "learned": false,
+   "needs": []
+  },
+  "blur8": {
+   "name": "blur8",
+   "family": "blur",
+   "config": {
+    "type": "blur",
+    "sigma": 8.0
+   },
+   "learned": false,
+   "needs": []
+  },
+  "blur16": {
+   "name": "blur16",
+   "family": "blur",
+   "config": {
+    "type": "blur",
+    "sigma": 16.0
+   },
+   "learned": false,
+   "needs": []
+  },
+  "down4": {
+   "name": "down4",
+   "family": "downsample",
+   "config": {
+    "type": "down",
+    "factor": 4
+   },
+   "learned": false,
+   "needs": []
+  },
+  "down8": {
+   "name": "down8",
+   "family": "downsample",
+   "config": {
+    "type": "down",
+    "factor": 8
+   },
+   "learned": false,
+   "needs": []
+  },
+  "down16": {
+   "name": "down16",
+   "family": "downsample",
+   "config": {
+    "type": "down",
+    "factor": 16
+   },
+   "learned": false,
+   "needs": []
+  },
+  "down32": {
+   "name": "down32",
+   "family": "downsample",
+   "config": {
+    "type": "down",
+    "factor": 32
+   },
+   "learned": false,
+   "needs": []
+  },
+  "down64": {
+   "name": "down64",
+   "family": "downsample",
+   "config": {
+    "type": "down",
+    "factor": 64
+   },
+   "learned": false,
+   "needs": []
+  },
+  "personbox_black": {
+   "name": "personbox_black",
+   "family": "person removal",
+   "config": {
+    "type": "person_box",
+    "mode": "black",
+    "every": 8,
+    "dilate": 6
+   },
+   "learned": false,
+   "needs": [
+    "people"
+   ]
+  },
+  "personbox_blur16": {
+   "name": "personbox_blur16",
+   "family": "person blur",
+   "config": {
+    "type": "person_box",
+    "mode": "blur",
+    "sigma": 16.0,
+    "every": 8,
+    "dilate": 6
+   },
+   "learned": false,
+   "needs": [
+    "people"
+   ]
+  },
+  "motion_down8": {
+   "name": "motion_down8",
+   "family": "fixed motion map",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "diff",
+      "gain": 4.0
+     },
+     {
+      "type": "down",
+      "factor": 8
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "video"
+   ]
+  },
+  "motion_down16": {
+   "name": "motion_down16",
+   "family": "fixed motion map",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "diff",
+      "gain": 4.0
+     },
+     {
+      "type": "down",
+      "factor": 16
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "video"
+   ]
+  },
+  "motion_down32": {
+   "name": "motion_down32",
+   "family": "fixed motion map",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "diff",
+      "gain": 4.0
+     },
+     {
+      "type": "down",
+      "factor": 32
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "video"
+   ]
+  },
+  "motion_down64": {
+   "name": "motion_down64",
+   "family": "fixed motion map",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "diff",
+      "gain": 4.0
+     },
+     {
+      "type": "down",
+      "factor": 64
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "video"
+   ]
+  },
+  "pose": {
+   "name": "pose",
+   "family": "stick figure",
+   "config": {
+    "type": "pose",
+    "every": 4,
+    "width": 2
+   },
+   "learned": false,
+   "needs": [
+    "skeleton"
+   ]
+  },
+  "pose_canon": {
+   "name": "pose_canon",
+   "family": "canonical stick figure",
+   "config": {
+    "type": "pose",
+    "every": 16,
+    "width": 2,
+    "canonical": 0.5
+   },
+   "learned": false,
+   "needs": [
+    "skeleton"
+   ]
+  },
+  "pose_canon_down4": {
+   "name": "pose_canon_down4",
+   "family": "canonical stick figure",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "pose",
+      "every": 16,
+      "width": 2,
+      "canonical": 0.5
+     },
+     {
+      "type": "down",
+      "factor": 4
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "skeleton"
+   ]
+  },
+  "pose_canon_down8": {
+   "name": "pose_canon_down8",
+   "family": "canonical stick figure",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "pose",
+      "every": 16,
+      "width": 2,
+      "canonical": 0.5
+     },
+     {
+      "type": "down",
+      "factor": 8
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "skeleton"
+   ]
+  },
+  "pose_canon_down16": {
+   "name": "pose_canon_down16",
+   "family": "canonical stick figure",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "pose",
+      "every": 16,
+      "width": 2,
+      "canonical": 0.5
+     },
+     {
+      "type": "down",
+      "factor": 16
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "skeleton"
+   ]
+  },
+  "pose_canon_down32": {
+   "name": "pose_canon_down32",
+   "family": "canonical stick figure",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "pose",
+      "every": 16,
+      "width": 2,
+      "canonical": 0.5
+     },
+     {
+      "type": "down",
+      "factor": 32
+     }
+    ]
+   },
+   "learned": false,
+   "needs": [
+    "skeleton"
+   ]
+  },
+  "bdq_a1": {
+   "name": "bdq_a1",
+   "family": "BDQ (learned)",
+   "config": {
+    "type": "bdq"
+   },
+   "learned": true,
+   "needs": [
+    "video"
+   ],
+   "adv": {
+    "alpha": 1.0
+   }
+  },
+  "bdq_a3": {
+   "name": "bdq_a3",
+   "family": "BDQ (learned)",
+   "config": {
+    "type": "bdq"
+   },
+   "learned": true,
+   "needs": [
+    "video"
+   ],
+   "adv": {
+    "alpha": 3.0
+   }
+  },
+  "bdq_down16": {
+   "name": "bdq_down16",
+   "family": "learned pool",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "bdq"
+     },
+     {
+      "type": "down",
+      "factor": 16
+     }
+    ]
+   },
+   "learned": true,
+   "needs": [
+    "video"
+   ],
+   "adv": {
+    "alpha": 3.0
+   }
+  },
+  "bdq_down32": {
+   "name": "bdq_down32",
+   "family": "learned pool",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "bdq"
+     },
+     {
+      "type": "down",
+      "factor": 32
+     }
+    ]
+   },
+   "learned": true,
+   "needs": [
+    "video"
+   ],
+   "adv": {
+    "alpha": 3.0
+   }
+  },
+  "bdq_down64": {
+   "name": "bdq_down64",
+   "family": "learned pool",
+   "config": {
+    "type": "chain",
+    "stages": [
+     {
+      "type": "bdq"
+     },
+     {
+      "type": "down",
+      "factor": 64
+     }
+    ]
+   },
+   "learned": true,
+   "needs": [
+    "video"
+   ],
+   "adv": {
+    "alpha": 1.0
+   }
+  }
+ }
+}

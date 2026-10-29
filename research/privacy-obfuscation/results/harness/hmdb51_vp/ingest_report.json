@@ -1,0 +1,76 @@
+{
+ "n_items": 5100,
+ "targets": {
+  "action": {
+   "train": {
+    "n": 3570,
+    "per_class_min": 70,
+    "per_class_max": 70,
+    "classes_present": 51
+   },
+   "test": {
+    "n": 1530,
+    "per_class_min": 30,
+    "per_class_max": 30,
+    "classes_present": 51
+   }
+  },
+  "attributes": {
+   "train": {
+    "n": 3570,
+    "positive_rate": [
+     0.908,
+     0.615,
+     0.914,
+     0.272,
+     0.203
+    ]
+   },
+   "test": {
+    "n": 1530,
+    "positive_rate": [
+     0.909,
+     0.595,
+     0.908,
+     0.31,
+     0.218
+    ]
+   }
+  }
+ },
+ "near_duplicates_across_split": 6,
+ "near_duplicate_examples": [
+  [
+   "catch/Goalkeeper_Training_Day_#_7_catch_f_cm_np1_le_bad_3",
+   "hit/Einde_van_Opel_Kadett_hit_u_cm_np1_fr_bad_0",
+   1
+  ],
+  [
+   "catch/Goalkeeper_Training_Day_#_7_catch_f_nm_np1_ri_bad_4",
+   "hit/Einde_van_Opel_Kadett_hit_u_cm_np1_fr_bad_0",
+   1
+  ],
+  [
+   "fencing/Die_Another_Day_-_Fencing_Scene_Part_1_[HD]_fencing_u_cm_np2_fr_goo_2",
+   "fencing/Die_Another_Day_-_Fencing_Scene_Part_1_[HD]_avi_fencing_u_cm_np2_fr_goo_2",
+   1.0
+  ],
+  [
+   "hit/HARD_FACE_SLAP_COMPILATION_-_THE_FUNNIEST_FACE_SLAPS_EVER!!_-_Old_school_Vids_hit_u_cm_np1_ri_bad_2",
+   "hit/HARD_FACE_SLAP_COMPILATION_hit_u_cm_np1_ba_bad_1",
+   2
+  ],
+  [
+   "kick_ball/FOOT_2009_(REMI_GAILLARD)_kick_ball_f_cm_np1_ba_bad_2",
+   "hit/Einde_van_Opel_Kadett_hit_u_cm_np1_fr_bad_0",
+   2
+  ],
+  [
+   "punch/HARD_FACE_SLAP_COMPILATION_-_THE_FUNNIEST_FACE_SLAPS_EVER!!_-_Old_school_Vids_punch_f_cm_np1_fr_bad_0",
+   "punch/HARD_FACE_SLAP_COMPILATION_punch_u_cm_np1_ri_bad_2",
+   2
+  ]
+ ],
+ "warnings": [],
+ "source": "ppv:hmdb51_vp"
+}

@@ -1342,3 +1342,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Note: R3D gives exactly 54.46 (116/213) on seeds 0, 1 and with 24 epochs (seed 2: 52.6) while the frame attacker varies
   (43.7-52.1); on a 1x2 px input the video attacker plausibly converges to the same decision rule. Kept as is.
   129.151.4.50 retired.
+- 13:10 UTC (Oct 29): HARNESS, VP-HMDB51 report (results/harness/hmdb51_vp/report.md; conditional metric, attributes beyond the
+  action; raw 70.5 vs baseline 62.5). Recommendation: blur inside detected person boxes (sigma 16): utility 65.0, privacy 52.3,
+  PUS 57.9. Privacy first (utility >= 50): fixed motion map x16 (54.8 / 53.0). Learned x32 pool: privacy 83.5 at utility 29.5.
+  Grayscale keeps all utility (100.8) and removes 21% of the beyond-action signal.
+  Robustness: seed 1 54.3, seed 2 50.0, 24-epoch attackers 58.9, DINOv2 43.4. DINOv2 beat the standard suite here, so the report
+  now carries a CERTIFIED privacy = worst over the recommendation and its re-runs: 43.4 (utility 63.3). UTD-MHAD's certified
+  value is unchanged (51.9; its DINOv2 re-run was weaker, 78.1). Checks pass; screening rank correlation 0.76; frozen attackers
+  understate by only 1.9 points here (attributes, unlike identity).
+  This matches the hand-run result (person blur kept the most action at the same conditional leakage, journal 18:05 Oct 28).
+  129.213.90.42 retired.

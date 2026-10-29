@@ -1,0 +1,71 @@
+[02:53:10] profiling hmdb51_vp: 4000 of 5100 items
+[02:53:24]   features 64/4000 (9s)
+[02:54:44]   features 704/4000 (90s)
+[02:56:04]   features 1344/4000 (169s)
+[02:57:24]   features 1984/4000 (250s)
+[02:58:42]   features 2624/4000 (328s)
+[03:00:03]   features 3264/4000 (409s)
+[03:01:23]   features 3904/4000 (489s)
+[03:01:51]   action: chance 2.0, raw 57.9, cues [('person', 0.93), ('scene', 0.55), ('posture', 0.4), ('body', 0.36)]
+[03:03:49]   attributes: chance 59.2, raw 73.6, cues [('person', 0.98), ('posture', 0.67), ('body', 0.54), ('scene', 0.48)]
+[03:03:49] warning: R3: the task label alone gives 102% of the raw probe's 'attributes' score above chance; it is scored with the conditional metric (what the footage reveals beyond the task label)
+[03:04:27]   screened raw: {"minutes": 0.641}
+[03:05:05]   screened black: {"minutes": 0.636, "utility": 0.0, "privacy": 1.0, "pus": 0.0}
+[03:05:44]   screened gray: {"minutes": 0.641, "utility": 0.966, "privacy": 0.169, "pus": 28.776}
+[03:06:23]   screened blur4: {"minutes": 0.645, "utility": 0.514, "privacy": 0.542, "pus": 52.766}
+[03:07:02]   screened blur8: {"minutes": 0.658, "utility": 0.295, "privacy": 0.672, "pus": 40.962}
+[03:07:41]   screened blur16: {"minutes": 0.655, "utility": 0.208, "privacy": 0.701, "pus": 32.057}
+[03:08:18]   screened down4: {"minutes": 0.617, "utility": 0.719, "privacy": 0.349, "pus": 47.037}
+[03:08:56]   screened down8: {"minutes": 0.62, "utility": 0.422, "privacy": 0.675, "pus": 51.949}
+[03:09:33]   screened down16: {"minutes": 0.623, "utility": 0.295, "privacy": 0.582, "pus": 39.116}
+[03:10:11]   screened down32: {"minutes": 0.634, "utility": 0.158, "privacy": 0.746, "pus": 26.016}
+[03:10:48]   screened down64: {"minutes": 0.62, "utility": 0.096, "privacy": 0.735, "pus": 16.964}
+[03:11:39]   screened personbox_black: {"minutes": 0.842, "utility": 0.571, "privacy": 0.578, "pus": 57.419}
+[03:12:30]   screened personbox_blur16: {"minutes": 0.862, "utility": 0.559, "privacy": 0.394, "pus": 46.234}
+[03:13:07]   screened motion_down8: {"minutes": 0.612, "utility": 0.336, "privacy": 0.554, "pus": 41.788}
+[03:13:45]   screened motion_down16: {"minutes": 0.632, "utility": 0.247, "privacy": 0.717, "pus": 36.698}
+[03:14:23]   screened motion_down32: {"minutes": 0.63, "utility": 0.162, "privacy": 0.713, "pus": 26.415}
+[03:15:00]   screened motion_down64: {"minutes": 0.622, "utility": 0.066, "privacy": 0.687, "pus": 12.079}
+[03:16:58]   screened pose: {"minutes": 1.958, "utility": 0.358, "privacy": 0.414, "pus": 38.405}
+[03:18:05]   screened pose_canon: {"minutes": 1.116, "utility": 0.158, "privacy": 0.417, "pus": 22.872}
+[03:19:12]   screened pose_canon_down4: {"minutes": 1.115, "utility": 0.167, "privacy": 0.679, "pus": 26.763}
+[03:20:18]   screened pose_canon_down8: {"minutes": 1.108, "utility": 0.142, "privacy": 0.617, "pus": 23.025}
+[03:21:25]   screened pose_canon_down16: {"minutes": 1.109, "utility": 0.098, "privacy": 0.43, "pus": 15.984}
+[03:22:32]   screened pose_canon_down32: {"minutes": 1.119, "utility": 0.075, "privacy": 0.581, "pus": 13.34}
+[03:22:32] shortlist: ['raw', 'black', 'personbox_black', 'down8', 'down4', 'motion_down16', 'gray', 'down32', 'blur4', 'personbox_blur16', 'bdq_down64', 'bdq_down32']
+[03:27:45] warning: R3: the task label alone gives 102% of the raw probe's 'attributes' score above chance; it is scored with the conditional metric (what the footage reveals beyond the task label)
+[03:27:45] shortlist: ['raw', 'black', 'personbox_black', 'down8', 'down4', 'motion_down16', 'gray', 'down32', 'blur4', 'personbox_blur16', 'bdq_down64', 'bdq_down32']
+[03:27:45] evaluate raw: started (pid 2215069)
+[03:51:17] evaluate raw: done
+[03:51:27] evaluate black: started (pid 2216618)
+[03:51:27] evaluate personbox_black: started (pid 2216619)
+[04:58:21] evaluate black: done
+[04:58:31] evaluate down8: started (pid 2220421)
+[05:08:21] evaluate personbox_black: done
+[05:08:31] evaluate down4: started (pid 2221123)
+[05:52:04] evaluate down8: done
+[05:52:14] evaluate motion_down16: started (pid 2223636)
+[06:02:24] evaluate down4: done
+[06:02:34] evaluate gray: started (pid 2224299)
+[06:45:07] evaluate motion_down16: done
+[06:45:17] evaluate down32: started (pid 2226694)
+[06:56:18] evaluate gray: done
+[06:56:28] evaluate blur4: started (pid 2227451)
+[07:38:30] evaluate down32: done
+[07:38:40] evaluate personbox_blur16: started (pid 2229775)
+[07:45:41] evaluate blur4: done
+[07:45:51] evaluate bdq_down64: started (pid 2230261)
+[08:51:04] evaluate bdq_down64: done
+[08:51:14] evaluate bdq_down32: started (pid 2233464)
+[08:51:14] evaluate personbox_blur16: done
+[09:39:17] evaluate bdq_down32: done
+[09:39:30] robustness on personbox_blur16: attacker seeds 1 and 2, 24-epoch attackers, DINOv2 fine-tune attacker
+[09:39:30] evaluate personbox_blur16_s1: started (pid 2235986)
+[09:39:30] evaluate personbox_blur16_s2: started (pid 2235987)
+[11:10:55] evaluate personbox_blur16_s1: done
+[11:10:55] evaluate personbox_blur16_s2: done
+[11:11:05] evaluate personbox_blur16_e24: started (pid 2241030)
+[11:11:05] evaluate personbox_blur16_dino: started (pid 2241031)
+[12:17:09] evaluate personbox_blur16_dino: done
+[13:03:31] evaluate personbox_blur16_e24: done
+[13:03:44] report: /home/ubuntu/work/harness/hmdb51_vp/report.md

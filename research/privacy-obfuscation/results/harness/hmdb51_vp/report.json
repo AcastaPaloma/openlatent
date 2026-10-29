@@ -1,0 +1,906 @@
+{
+ "dataset": "hmdb51_vp",
+ "generated_from": [
+  "bdq_down32",
+  "bdq_down64",
+  "black",
+  "blur4",
+  "down32",
+  "down4",
+  "down8",
+  "gray",
+  "motion_down16",
+  "personbox_black",
+  "personbox_blur16",
+  "personbox_blur16_dino",
+  "personbox_blur16_e24",
+  "personbox_blur16_s1",
+  "personbox_blur16_s2",
+  "raw"
+ ],
+ "checks": [
+  {
+   "check": "measurable",
+   "secret": "attributes",
+   "protocol": "within",
+   "ok": true,
+   "detail": "raw 70.5 vs baseline 62.5 (chance 61.8, task label alone 62.5)"
+  },
+  {
+   "check": "black control",
+   "secret": "attributes",
+   "protocol": "within",
+   "ok": true,
+   "detail": "black frames 62.6 [59.8, 63.4] vs baseline 62.5"
+  }
+ ],
+ "baselines": {
+  "attributes": {
+   "within": {
+    "chance": 61.83405252923929,
+    "label": 62.5469863596009,
+    "base": 62.5469863596009
+   }
+  }
+ },
+ "scored": {
+  "bdq_down32": {
+   "utility": {
+    "score": 20.326797385620914,
+    "lo": 18.30065359477124,
+    "hi": 22.35294117647059,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.2948583420776495,
+    "retention_lo": 0.26232948583420773,
+    "retention_hi": 0.3273871983210913
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_r50",
+      "score": 63.85990933261043,
+      "lo": 62.86329360237309,
+      "hi": 66.05534943894855,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.1651236361013506,
+      "privacy": 0.8348763638986494,
+      "privacy_lo": 0.5587603535509071,
+      "privacy_hi": 0.9602186852348134,
+      "attackers": {
+       "retrained/frame_r50": 63.86,
+       "retrained/r3d": 63.76,
+       "frozen/frame_r50": 63.56,
+       "frozen/r3d": 61.34
+      },
+      "frozen_understates_by": 0.2983877460330291
+     }
+    }
+   },
+   "privacy": 0.8348763638986494,
+   "privacy_worst_protocol": 0.8348763638986494,
+   "pus": 43.580189082752085,
+   "f_lambda": 56.486735298814935,
+   "family": "learned pool",
+   "learned": true,
+   "minutes": 47.827999929587044
+  },
+  "bdq_down64": {
+   "utility": {
+    "score": 11.045751633986928,
+    "lo": 9.542483660130719,
+    "hi": 12.61437908496732,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.1458551941238195,
+    "retention_lo": 0.12172088142707238,
+    "retention_hi": 0.17103882476390345
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "frozen/frame_r50",
+      "score": 63.36450450214386,
+      "lo": 62.12200485690819,
+      "hi": 65.38058255976851,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.10281758416191257,
+      "privacy": 0.8971824158380874,
+      "privacy_lo": 0.643624403385886,
+      "privacy_hi": 1.0,
+      "attackers": {
+       "retrained/frame_r50": 63.1,
+       "retrained/r3d": 62.92,
+       "frozen/frame_r50": 63.36,
+       "frozen/r3d": 62.99
+      },
+      "frozen_understates_by": -0.2670664472963722
+     }
+    }
+   },
+   "privacy": 0.8971824158380874,
+   "privacy_worst_protocol": 0.8971824158380874,
+   "pus": 25.091849838726475,
+   "f_lambda": 52.15188049809535,
+   "family": "learned pool",
+   "learned": true,
+   "minutes": 65.08660622437795
+  },
+  "black": {
+   "utility": {
+    "score": 1.9607843137254901,
+    "lo": 1.3071895424836601,
+    "hi": 2.679738562091503,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.0,
+    "retention_lo": -0.010493179433368308,
+    "retention_hi": 0.011542497376705138
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 62.64886197539372,
+      "lo": 59.765150772016575,
+      "hi": 63.38604271064158,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.012812687762797408,
+      "privacy": 0.9871873122372026,
+      "privacy_lo": 0.8944735994220712,
+      "privacy_hi": 1.0,
+      "attackers": {
+       "retrained/frame_r50": 62.55,
+       "retrained/r3d": 62.65,
+       "frozen/frame_r50": 62.55,
+       "frozen/r3d": 62.55
+      },
+      "frozen_understates_by": 0.1018756157928209
+     }
+    }
+   },
+   "privacy": 0.9871873122372026,
+   "privacy_worst_protocol": 0.9871873122372026,
+   "pus": 0.0,
+   "f_lambda": 49.35936561186013,
+   "family": "control",
+   "learned": false,
+   "minutes": 66.76197313070297
+  },
+  "blur4": {
+   "utility": {
+    "score": 53.790849673202615,
+    "lo": 51.30555555555555,
+    "hi": 56.341503267973856,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.832109129066107,
+    "retention_lo": 0.7922088142707239,
+    "retention_hi": 0.8730587618048268
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 67.2443165364824,
+      "lo": 66.2069787025888,
+      "hi": 69.48521967675107,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.590773605703101,
+      "privacy": 0.409226394296899,
+      "privacy_lo": 0.12739259118816726,
+      "privacy_hi": 0.5396902512933044,
+      "attackers": {
+       "retrained/frame_r50": 66.54,
+       "retrained/r3d": 67.24,
+       "frozen/frame_r50": 65.02,
+       "frozen/r3d": 62.72
+      },
+      "frozen_understates_by": 2.2266803725234183
+     }
+    }
+   },
+   "privacy": 0.409226394296899,
+   "privacy_worst_protocol": 0.409226394296899,
+   "pus": 54.86365485243215,
+   "f_lambda": 62.066776168150305,
+   "family": "blur",
+   "learned": false,
+   "minutes": 49.052374160289766
+  },
+  "down32": {
+   "utility": {
+    "score": 18.562091503267975,
+    "lo": 16.599673202614376,
+    "hi": 20.45751633986928,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.26652675760755506,
+    "retention_lo": 0.23502098635886667,
+    "retention_hi": 0.29695697796432313
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_r50",
+      "score": 65.02429159491501,
+      "lo": 63.75621598305755,
+      "hi": 67.01159684400808,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.3115656109286541,
+      "privacy": 0.6884343890713459,
+      "privacy_lo": 0.438495073879573,
+      "privacy_hi": 0.8479176643174022,
+      "attackers": {
+       "retrained/frame_r50": 65.02,
+       "retrained/r3d": 64.9,
+       "frozen/frame_r50": 62.92,
+       "frozen/r3d": 63.02
+      },
+      "frozen_understates_by": 2.005018936888696
+     }
+    }
+   },
+   "privacy": 0.6884343890713459,
+   "privacy_worst_protocol": 0.6884343890713459,
+   "pus": 38.42798970048984,
+   "f_lambda": 47.74805733394505,
+   "family": "downsample",
+   "learned": false,
+   "minutes": 52.93917736212413
+  },
+  "down4": {
+   "utility": {
+    "score": 58.235294117647065,
+    "lo": 55.751633986928105,
+    "hi": 60.71895424836601,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.9034627492130115,
+    "retention_lo": 0.8635886673662119,
+    "retention_hi": 0.943336831059811
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 68.85467009658821,
+      "lo": 67.70828907317616,
+      "hi": 70.94311240303506,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.7933044782065378,
+      "privacy": 0.20669552179346218,
+      "privacy_lo": 0.0,
+      "privacy_hi": 0.35087351763542474,
+      "attackers": {
+       "retrained/frame_r50": 67.63,
+       "retrained/r3d": 68.85,
+       "frozen/frame_r50": 66.35,
+       "frozen/r3d": 64.6
+      },
+      "frozen_understates_by": 2.506060175770955
+     }
+    }
+   },
+   "privacy": 0.20669552179346218,
+   "privacy_worst_protocol": 0.20669552179346218,
+   "pus": 33.642356994780314,
+   "f_lambda": 55.507913550323686,
+   "family": "downsample",
+   "learned": false,
+   "minutes": 53.69055972099304
+  },
+  "down8": {
+   "utility": {
+    "score": 45.16339869281046,
+    "lo": 42.810457516339866,
+    "hi": 47.647058823529406,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.6935991605456453,
+    "retention_lo": 0.6558237145855192,
+    "retention_hi": 0.7334732423924447
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 67.41066127118536,
+      "lo": 66.29518212963086,
+      "hi": 69.55117178397748,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.611694442648703,
+      "privacy": 0.388305557351297,
+      "privacy_lo": 0.1190979295989899,
+      "privacy_hi": 0.5285970867366663,
+      "attackers": {
+       "retrained/frame_r50": 65.54,
+       "retrained/r3d": 67.41,
+       "frozen/frame_r50": 64.16,
+       "frozen/r3d": 62.42
+      },
+      "frozen_understates_by": 3.25056266293295
+     }
+    }
+   },
+   "privacy": 0.388305557351297,
+   "privacy_worst_protocol": 0.388305557351297,
+   "pus": 49.7878240401062,
+   "f_lambda": 54.095235894847114,
+   "family": "downsample",
+   "learned": false,
+   "minutes": 53.37345588207245
+  },
+  "gray": {
+   "utility": {
+    "score": 64.77124183006536,
+    "lo": 62.35294117647059,
+    "hi": 67.05882352941175,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 1.0083945435466946,
+    "retention_lo": 0.9695697796432318,
+    "retention_hi": 1.0451206715634835
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_r50",
+      "score": 68.79329570084305,
+      "lo": 67.62332967933015,
+      "hi": 71.17147397855572,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.785585546024451,
+      "privacy": 0.21441445397554904,
+      "privacy_lo": 0.0,
+      "privacy_hi": 0.361558686774222,
+      "attackers": {
+       "retrained/frame_r50": 68.79,
+       "retrained/r3d": 68.02,
+       "frozen/frame_r50": 66.36,
+       "frozen/r3d": 67.03
+      },
+      "frozen_understates_by": 1.7610341664369997
+     }
+    }
+   },
+   "privacy": 0.21441445397554904,
+   "privacy_worst_protocol": 0.21441445397554904,
+   "pus": 35.311578065237036,
+   "f_lambda": 60.72072269877745,
+   "family": "colour removal",
+   "learned": false,
+   "minutes": 53.55197861591975
+  },
+  "motion_down16": {
+   "utility": {
+    "score": 36.07843137254902,
+    "lo": 33.85457516339869,
+    "hi": 38.563725490196084,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.5477439664218258,
+    "retention_lo": 0.5120409233997901,
+    "retention_hi": 0.5876442812172088
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_r50",
+      "score": 66.28197288372321,
+      "lo": 64.97358348854945,
+      "hi": 68.36958943897854,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.46974161343138116,
+      "privacy": 0.5302583865686188,
+      "privacy_lo": 0.2677031236357388,
+      "privacy_hi": 0.6948118438611746,
+      "attackers": {
+       "retrained/frame_r50": 66.28,
+       "retrained/r3d": 65.35,
+       "frozen/frame_r50": 63.95,
+       "frozen/r3d": 61.24
+      },
+      "frozen_understates_by": 2.330442924475392
+     }
+    }
+   },
+   "privacy": 0.5302583865686188,
+   "privacy_worst_protocol": 0.5302583865686188,
+   "pus": 53.88593653470579,
+   "f_lambda": 53.90011764952223,
+   "family": "fixed motion map",
+   "learned": false,
+   "minutes": 52.64913117090861
+  },
+  "personbox_black": {
+   "utility": {
+    "score": 39.150326797385624,
+    "lo": 36.9264705882353,
+    "hi": 41.568627450980394,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.5970619097586568,
+    "retention_lo": 0.5613588667366212,
+    "retention_hi": 0.6358866736621196
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 66.41158776925224,
+      "lo": 65.2147939336408,
+      "hi": 68.48815015793572,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.48604301239491143,
+      "privacy": 0.5139569876050886,
+      "privacy_lo": 0.2527919845853457,
+      "privacy_hi": 0.6644752996937654,
+      "attackers": {
+       "retrained/frame_r50": 66.09,
+       "retrained/r3d": 66.41,
+       "frozen/frame_r50": 63.97,
+       "frozen/r3d": 65.42
+      },
+      "frozen_understates_by": 0.9865887612137243
+     }
+    }
+   },
+   "privacy": 0.5139569876050886,
+   "privacy_worst_protocol": 0.5139569876050886,
+   "pus": 55.24012980903128,
+   "f_lambda": 55.550944868187266,
+   "family": "person removal",
+   "learned": false,
+   "minutes": 76.62994372844696
+  },
+  "personbox_blur16": {
+   "utility": {
+    "score": 42.41830065359477,
+    "lo": 40.19444444444444,
+    "hi": 45.165032679738566,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.6495278069254984,
+    "retention_lo": 0.6138247639034626,
+    "retention_hi": 0.6936253934942287
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "frozen/r3d",
+      "score": 66.33902030316084,
+      "lo": 65.06856510875998,
+      "hi": 68.51343032783984,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.47691635065617555,
+      "privacy": 0.5230836493438245,
+      "privacy_lo": 0.24961254933922472,
+      "privacy_hi": 0.682866199817785,
+      "attackers": {
+       "retrained/frame_r50": 65.9,
+       "retrained/r3d": 66.21,
+       "frozen/frame_r50": 65.14,
+       "frozen/r3d": 66.34
+      },
+      "frozen_understates_by": -0.12645750331277839
+     }
+    }
+   },
+   "privacy": 0.5230836493438245,
+   "privacy_worst_protocol": 0.5230836493438245,
+   "pus": 57.94884124325764,
+   "f_lambda": 58.630572813466145,
+   "family": "person blur",
+   "learned": false,
+   "minutes": 72.31826068560282
+  },
+  "personbox_blur16_dino": {
+   "utility": {
+    "score": 42.41830065359477,
+    "lo": 40.19444444444444,
+    "hi": 45.165032679738566,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.6495278069254984,
+    "retention_lo": 0.6138247639034626,
+    "retention_hi": 0.6936253934942287
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_dino_ft",
+      "score": 67.04343880031347,
+      "lo": 65.84574495582456,
+      "hi": 69.16622716295267,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.5655096238169516,
+      "privacy": 0.4344903761830484,
+      "privacy_lo": 0.1675116269963105,
+      "privacy_hi": 0.5851218805468457,
+      "attackers": {
+       "retrained/frame_dino_probe": 66.58,
+       "retrained/frame_dino_ft": 67.04
+      }
+     }
+    }
+   },
+   "privacy": 0.4344903761830484,
+   "privacy_worst_protocol": 0.4344903761830484,
+   "pus": 52.068053021607135,
+   "f_lambda": 54.20090915542735,
+   "family": "person blur",
+   "learned": false,
+   "minutes": 65.83099302053452
+  },
+  "personbox_blur16_e24": {
+   "utility": {
+    "score": 41.37254901960784,
+    "lo": 39.150326797385624,
+    "hi": 43.98692810457516,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.6327387198321089,
+    "retention_lo": 0.5970619097586568,
+    "retention_hi": 0.6747114375655823
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_r50",
+      "score": 65.8180336208413,
+      "lo": 64.65103972162298,
+      "hi": 68.03682297635007,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.41139292154914603,
+      "privacy": 0.5886070784508539,
+      "privacy_lo": 0.3095544808070162,
+      "privacy_hi": 0.735377513509442,
+      "attackers": {
+       "retrained/frame_r50": 65.82,
+       "retrained/r3d": 65.75,
+       "frozen/frame_r50": 63.51,
+       "frozen/r3d": 64.3
+      },
+      "frozen_understates_by": 1.521526199370328
+     }
+    }
+   },
+   "privacy": 0.5886070784508539,
+   "privacy_worst_protocol": 0.5886070784508539,
+   "pus": 60.987558122638255,
+   "f_lambda": 61.067289914148134,
+   "family": "person blur",
+   "learned": false,
+   "minutes": 112.2945175131162
+  },
+  "personbox_blur16_s1": {
+   "utility": {
+    "score": 42.810457516339866,
+    "lo": 40.32516339869281,
+    "hi": 45.35947712418301,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.6558237145855192,
+    "retention_lo": 0.6159233997901363,
+    "retention_hi": 0.6967471143756558
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 66.18347688880925,
+      "lo": 65.14183112211404,
+      "hi": 68.24812771454177,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.4573539736718815,
+      "privacy": 0.5426460263281185,
+      "privacy_lo": 0.28297911620990046,
+      "privacy_hi": 0.6736516832190382,
+      "attackers": {
+       "retrained/frame_r50": 65.64,
+       "retrained/r3d": 66.18,
+       "frozen/frame_r50": 63.97,
+       "frozen/r3d": 65.54
+      },
+      "frozen_understates_by": 0.6419269322270509
+     }
+    }
+   },
+   "privacy": 0.5426460263281185,
+   "privacy_worst_protocol": 0.5426460263281185,
+   "pus": 59.38908935994955,
+   "f_lambda": 59.92348704568189,
+   "family": "person blur",
+   "learned": false,
+   "minutes": 91.17893110911051
+  },
+  "personbox_blur16_s2": {
+   "utility": {
+    "score": 43.20261437908497,
+    "lo": 40.65359477124183,
+    "hi": 45.622549019607845,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 0.6621196222455403,
+    "retention_lo": 0.6211962224554038,
+    "retention_hi": 0.7009706190975865
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/r3d",
+      "score": 66.5259178168691,
+      "lo": 65.30684989966484,
+      "hi": 68.78244263696959,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 0.5004220685667007,
+      "privacy": 0.4995779314332993,
+      "privacy_lo": 0.21577942161376262,
+      "privacy_hi": 0.6528976091915819,
+      "attackers": {
+       "retrained/frame_r50": 66.21,
+       "retrained/r3d": 66.53,
+       "frozen/frame_r50": 64.45,
+       "frozen/r3d": 65.37
+      },
+      "frozen_understates_by": 1.1534311606218068
+     }
+    }
+   },
+   "privacy": 0.4995779314332993,
+   "privacy_worst_protocol": 0.4995779314332993,
+   "pus": 56.94775721879008,
+   "f_lambda": 58.08487768394198,
+   "family": "person blur",
+   "learned": false,
+   "minutes": 91.21258072853088
+  },
+  "raw": {
+   "utility": {
+    "score": 64.2483660130719,
+    "lo": 62.02287581699346,
+    "hi": 66.73366013071895,
+    "raw": 64.2483660130719,
+    "chance": 1.9607843137254901,
+    "retention": 1.0,
+    "retention_lo": 0.9642707240293807,
+    "retention_hi": 1.039900314795383
+   },
+   "secrets": {
+    "attributes": {
+     "within": {
+      "attacker": "retrained/frame_r50",
+      "score": 70.49813741228044,
+      "lo": 69.31796702709286,
+      "hi": 72.66409044438075,
+      "base": 62.5469863596009,
+      "raw": 70.49813741228044,
+      "chance": 61.83405252923929,
+      "label_only": 62.5469863596009,
+      "leakage": 1.0,
+      "privacy": 0.0,
+      "privacy_lo": 0.0,
+      "privacy_hi": 0.14842761474011512,
+      "attackers": {
+       "retrained/frame_r50": 70.5,
+       "retrained/r3d": 70.11
+      }
+     }
+    }
+   },
+   "privacy": 0.0,
+   "privacy_worst_protocol": 0.0,
+   "pus": 0.0,
+   "f_lambda": 50.0,
+   "family": "reference",
+   "learned": false,
+   "minutes": 23.405060891310374
+  }
+ },
+ "frontier": [
+  "bdq_down32",
+  "bdq_down64",
+  "blur4",
+  "gray",
+  "motion_down16",
+  "personbox_blur16"
+ ],
+ "hypervolume": 0.5533094332300511,
+ "recommendation": {
+  "best": "personbox_blur16",
+  "privacy_first": "motion_down16",
+  "utility_first": "personbox_blur16",
+  "robustness": [
+   "personbox_blur16_dino",
+   "personbox_blur16_e24",
+   "personbox_blur16_s1",
+   "personbox_blur16_s2"
+  ],
+  "certified_privacy": 0.4344903761830484,
+  "certified_utility": 0.6327387198321089
+ },
+ "screen": {
+  "raw": {
+   "minutes": 0.6413896958033244
+  },
+  "black": {
+   "minutes": 0.636304255326589,
+   "utility": 0.0,
+   "privacy": 1.0,
+   "pus": 0.0
+  },
+  "gray": {
+   "minutes": 0.6407828330993652,
+   "utility": 0.9657534246575342,
+   "privacy": 0.1690686214720699,
+   "pus": 28.776071234367322
+  },
+  "blur4": {
+   "minutes": 0.6451552351315816,
+   "utility": 0.5136986301369864,
+   "privacy": 0.5424003364009087,
+   "pus": 52.765946871133416
+  },
+  "blur8": {
+   "minutes": 0.6579673568407695,
+   "utility": 0.2945205479452055,
+   "privacy": 0.672405937793747,
+   "pus": 40.96223821799201
+  },
+  "blur16": {
+   "minutes": 0.6551587541898092,
+   "utility": 0.20776255707762556,
+   "privacy": 0.7013753745727588,
+   "pus": 32.05664096051628
+  },
+  "down4": {
+   "minutes": 0.6168066024780273,
+   "utility": 0.7191780821917808,
+   "privacy": 0.34947168831641373,
+   "pus": 47.0373709927812
+  },
+  "down8": {
+   "minutes": 0.6201508800188701,
+   "utility": 0.4223744292237443,
+   "privacy": 0.6746085462683802,
+   "pus": 51.94928381668628
+  },
+  "down16": {
+   "minutes": 0.6231746673583984,
+   "utility": 0.2945205479452055,
+   "privacy": 0.5821841646455888,
+   "pus": 39.115838369280596
+  },
+  "down32": {
+   "minutes": 0.6340908328692119,
+   "utility": 0.15753424657534246,
+   "privacy": 0.7464429569759429,
+   "pus": 26.016215536569042
+  },
+  "down64": {
+   "minutes": 0.6199900150299072,
+   "utility": 0.09589041095890409,
+   "privacy": 0.7346355143107045,
+   "pus": 16.963829599754245
+  },
+  "personbox_black": {
+   "minutes": 0.841613248984019,
+   "utility": 0.5707762557077626,
+   "privacy": 0.5776457719358674,
+   "pus": 57.41904681286498
+  },
+  "personbox_blur16": {
+   "minutes": 0.8624078114827474,
+   "utility": 0.5593607305936074,
+   "privacy": 0.3940039520122396,
+   "pus": 46.23421498097423
+  },
+  "motion_down8": {
+   "minutes": 0.6115786155064901,
+   "utility": 0.3356164383561644,
+   "privacy": 0.5535765166184153,
+   "pus": 41.788315533920525
+  },
+  "motion_down16": {
+   "minutes": 0.6320335348447164,
+   "utility": 0.2465753424657534,
+   "privacy": 0.7172034495806244,
+   "pus": 36.698190011521284
+  },
+  "motion_down32": {
+   "minutes": 0.6295517007509868,
+   "utility": 0.16210045662100456,
+   "privacy": 0.7130445283760456,
+   "pus": 26.415015939617234
+  },
+  "motion_down64": {
+   "minutes": 0.6224873026212057,
+   "utility": 0.06621004566210045,
+   "privacy": 0.6873710352621107,
+   "pus": 12.078558972232667
+  },
+  "pose": {
+   "minutes": 1.9584665854771932,
+   "utility": 0.3584474885844749,
+   "privacy": 0.41359214295864466,
+   "pus": 38.4050400742976
+  },
+  "pose_canon": {
+   "minutes": 1.1162163058916728,
+   "utility": 0.15753424657534246,
+   "privacy": 0.4172941710819328,
+   "pus": 22.8722592072227
+  },
+  "pose_canon_down4": {
+   "minutes": 1.114847199122111,
+   "utility": 0.16666666666666666,
+   "privacy": 0.6788827742972274,
+   "pus": 26.762983586283138
+  },
+  "pose_canon_down8": {
+   "minutes": 1.107866684595744,
+   "utility": 0.1415525114155251,
+   "privacy": 0.6166654078102618,
+   "pus": 23.025184439785733
+  },
+  "pose_canon_down16": {
+   "minutes": 1.1085193355878193,
+   "utility": 0.09817351598173514,
+   "privacy": 0.42987293533305226,
+   "pus": 15.984251908882387
+  },
+  "pose_canon_down32": {
+   "minutes": 1.1185993552207947,
+   "utility": 0.07534246575342465,
+   "privacy": 0.5813335633229182,
+   "pus": 13.339638466042242
+  }
+ },
+ "screen_rank_correlation": 0.7619047619047621
+}
