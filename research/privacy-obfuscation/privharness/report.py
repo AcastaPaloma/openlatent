@@ -202,7 +202,14 @@ def build(root):
     robust = {n: v for n, v in scored.items() if rec and n != rec and n.startswith(rec + "_")}
     rep = dict(dataset=spec.name, generated_from=sorted(ev), checks=checks(spec, scored, base, raw), baselines=base,
                scored={n: v for n, v in scored.items()}, frontier=front, hypervolume=hv,
-               recommendation=dict(best=rec, privacy_first=priv_first, utility_first=util_first, robustness=sorted(robust)),
+               recommendation=dict(best=rec, privacy_first=priv_first, utility_first=util_first, robustness=sorted(robust),
+                                   # certified = the worst privacy over the recommendation and every robustness re-run
+                                   # (more attacker seeds, longer training, DINOv2): an attacker that does better on any
+                                   # re-run counts, the same worst-case rule as within one run
+                                   certified_privacy=min([main[rec]["privacy"]] + [v["privacy"] for v in robust.values()
+                                                                                  if v["privacy"] is not None]) if rec else None,
+                                   certified_utility=min([main[rec]["utility"]["retention"]] + [v["utility"]["retention"] for v in robust.values()
+                                                                                                 if v["utility"]["retention"] is not None]) if rec else None),
                screen={n: {k: v for k, v in r.items() if k != "probes"} for n, r in screened.items()})
     if screened:
         common = [n for n in main if n in screened and screened[n].get("privacy") is not None]
@@ -289,6 +296,10 @@ def markdown(spec, plan, profile, ingest, rep, main, scored):
         L.append(f"- **{r['best']}** ({b['family']}): utility {fmt(b['utility']['retention'], 1, True)}, privacy "
                  f"{fmt(b['privacy'], 1, True)}, PUS {fmt(b['pus'])}")
         L.append(f"- privacy first (utility >= 50): {r['privacy_first']}; utility first (privacy >= 50): {r['utility_first']}")
+        if r["robustness"]:
+            cp, cu = r["certified_privacy"], r["certified_utility"]
+            L.append(f"- **certified** (worst over the recommendation and its {len(r['robustness'])} robustness re-runs): "
+                     f"privacy {fmt(cp, 1, True)}, utility {fmt(cu, 1, True)}, PUS {fmt(scoring.pus(cp, cu))}")
         for n in r["robustness"]:
             v = scored[n]
             L.append(f"- robustness {n}: privacy {fmt(v['privacy'], 1, True)}, utility {fmt(v['utility']['retention'], 1, True)}")

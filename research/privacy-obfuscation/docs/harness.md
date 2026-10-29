@@ -169,6 +169,7 @@ All scores run 0–100; higher is better for privacy, utility and the trade-offs
 | f_0.5 | 0.5 U + 0.5 P (Ilic et al. 2024), for comparability |
 | frontier | hypervolume of the (U, P) Pareto front in [0, 1]² |
 | uncertainty | 95% bootstrap over test recordings (1,000 draws); the recommendation is re-run with attacker seeds 1 and 2, 24-epoch attackers and DINOv2 (probe and fine-tune) |
+| certified privacy | the worst privacy over the recommendation and all its re-runs (a stronger attacker on any re-run counts) |
 
 **Checks:**
 - **measurable:** raw is at least 2 points above the baseline.
