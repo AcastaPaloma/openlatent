@@ -755,6 +755,33 @@
    "privacy": 38.12709152698517,
    "leakage": 35.595517988639145,
    "kb": 7
+  },
+  {
+   "run": "p12_kth_pose_canon_e16",
+   "file": "p12_kth_pose_canon_e16.gif",
+   "split": "ilic",
+   "action": 91.47157073020935,
+   "privacy": 29.096990823745728,
+   "leakage": 26.176868533345875,
+   "kb": 6
+  },
+  {
+   "run": "p12_kth_pose_canon_e16_down16",
+   "file": "p12_kth_pose_canon_e16_down16.gif",
+   "split": "ilic",
+   "action": 88.96321058273315,
+   "privacy": 13.210701942443848,
+   "leakage": 9.60702163619793,
+   "kb": 64
+  },
+  {
+   "run": "p12_kth_pose_canon_e16_down32",
+   "file": "p12_kth_pose_canon_e16_down32.gif",
+   "split": "ilic",
+   "action": 82.6086938381195,
+   "privacy": 10.869564861059189,
+   "leakage": 7.165149699106441,
+   "kb": 69
   }
  ]
 }
