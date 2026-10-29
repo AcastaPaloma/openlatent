@@ -1357,3 +1357,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   96.2, chance 4.0), PUS 81.9; learned x32 pool 72.4, fixed motion map x16 60.3. Robustness: seed 1 84.8, seed 2 84.8,
   24-epoch attackers 86.6, DINOv2 90.1. Certified privacy 84.8 (utility 75.5). Screening vs full-evaluation rank correlation
   0.98; frozen attackers understate by a median 26.7 points. 129.213.89.64 retired.
+- 22:15 UTC (Oct 29): HARNESS, KTH Ilic split report (results/harness/kth_ilic/report.md). Pick: canonical one-posture stick
+  figures + x16 downsample, utility 89.0, privacy 89.6 (identity 13.9% vs raw 99.2, chance 4.0), PUS 89.3; learned x64 pool
+  85.2, learned x32 pool 73.7. Robustness: seed 1 90.0, seed 2 89.5, 24-epoch attackers 89.5, DINOv2 92.3. Certified privacy
+  89.5 / utility 88.8 (PUS 89.1). Screening vs full-evaluation rank correlation 1.00. Matches the hand-run result (89.0 / 13.2).
+  Harness validation so far: on both KTH splits it independently selects the method we found by hand; on UTD-MHAD it corrected
+  a hand-drawn conclusion; on VP-HMDB51 it matches the hand-run pick and its robustness pass caught a stronger attacker
+  (DINOv2), which led to the certified-privacy rule. 158.101.125.222 retired; Charades (150.136.92.19) is the last search.
