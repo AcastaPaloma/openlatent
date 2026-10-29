@@ -109,8 +109,10 @@ def screen(root, plan, log=print, seed=0):
 
 def shortlist(plan, screened, budget=None):
     budget = budget or plan["shortlist_size"]
+    # candidates that keep (almost) no privacy or no utility are corners of the front, not choices worth certifying
     pts = {n: (r["utility"], r["privacy"]) for n, r in screened.items()
-           if n not in ("raw", "black") and r.get("utility") is not None and r.get("privacy") is not None}
+           if n not in ("raw", "black") and r.get("utility") is not None and r.get("privacy") is not None
+           and r["utility"] >= 0.05 and r["privacy"] >= 0.05}
     names = list(pts)
     front = [names[i] for i in scoring.pareto([pts[n] for n in names])]
     by_pus = sorted(names, key=lambda n: -(screened[n].get("pus") or 0))
