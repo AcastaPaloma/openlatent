@@ -50,7 +50,22 @@ def kind_of(task, priv_kind):
     return ACTION_KIND if task == "action" else priv_kind
 
 
+def segments(kind):
+    """Composite privacy targets (privharness: several secrets defended at once) are a tuple of (kind, n) segments:
+    the adversary's logits are the segments' heads side by side, and labels are one float row per clip holding a class
+    index for each multiclass segment and n 0/1 values for each multilabel one. -> [(kind, n, logit slice, label slice)]."""
+    out, o, c = [], 0, 0
+    for k, n in kind:
+        w = 1 if k == "multiclass" else n
+        out.append((k, n, slice(o, o + n), slice(c, c + w)))
+        o, c = o + n, c + w
+    return out
+
+
 def loss_fn(logits, y, kind):
+    if isinstance(kind, tuple):
+        return torch.stack([loss_fn(logits[:, ls], y[:, ys][:, 0].long() if k == "multiclass" else y[:, ys], k)
+                            for k, n, ls, ys in segments(kind)]).mean()
     if kind == "multilabel":
         return F.binary_cross_entropy_with_logits(logits.float(), y.float())
     return F.cross_entropy(logits.float(), y)
@@ -64,7 +79,12 @@ def positive_recall(logits, y):
 
 
 def n_correct(logits, y, kind):
-    """Correct predictions (multiclass) or correct attribute decisions / n_attrs (multilabel)."""
+    """Correct predictions (multiclass) or correct attribute decisions / n_attrs (multilabel); composite: the mean
+    over segments."""
+    if isinstance(kind, tuple):
+        segs = segments(kind)
+        return sum(n_correct(logits[:, ls], y[:, ys][:, 0].long() if k == "multiclass" else y[:, ys], k)
+                   for k, n, ls, ys in segs) / len(segs)
     if kind == "multilabel":
         return ((logits > 0).float() == y).float().mean(1).sum().item()
     return (logits.argmax(1) == y).sum().item()
@@ -174,8 +194,21 @@ def evaluate(model, dl, task, n_rows, priv_kind="multiclass"):
     return {"main": 100.0 * correct.mean().item(), "by_action": by_action}
 
 
+def max_entropy(kind, n):
+    if isinstance(kind, tuple):
+        segs = segments(kind)
+        cap = max(max_entropy(k, m) for k, m, _, _ in segs)
+        return cap * len(segs)
+    return n * math.log(2) if kind == "multilabel" else math.log(n)
+
+
 def privacy_entropy(logits, kind):
-    """Mean entropy of the adversary's prediction (nats); the anonymizer maximises it."""
+    """Mean entropy of the adversary's prediction (nats); the anonymizer maximises it. Composite: the sum over
+    segments, each scaled to the largest segment's maximum so no secret is drowned out by another's class count."""
+    if isinstance(kind, tuple):
+        segs = segments(kind)
+        cap = max(max_entropy(k, n) for k, n, _, _ in segs)
+        return sum(privacy_entropy(logits[:, ls], k) * cap / max_entropy(k, n) for k, n, ls, _ in segs)
     if kind == "multilabel":
         p = logits.float().sigmoid().clamp(1e-6, 1 - 1e-6)
         return -(p * p.log() + (1 - p) * (1 - p).log()).sum(1).mean()
@@ -228,7 +261,7 @@ def train_anonymizer(f, dl, cfg, n_actions, n_priv, priv_kind="multiclass", log=
                                 {"params": T.parameters(), "lr": cfg.get("lr_t", 1e-4)}], weight_decay=0.01)
     alpha, epochs, restart = cfg.get("alpha", 1.0), cfg["epochs"], cfg.get("restart_every", 0)
     b_steps, b_warmup = cfg.get("b_steps", 1), cfg.get("b_warmup", 0)
-    max_ent = n_priv * math.log(2) if priv_kind == "multilabel" else math.log(n_priv)
+    max_ent = max_entropy(priv_kind, n_priv)
     keep_margin, collapse_drop = cfg.get("keep_margin", 5.0), cfg.get("collapse_drop", 30.0)
     collapse_patience, min_action = cfg.get("collapse_patience", 3), cfg.get("min_action", 40.0)
     best_act, kept, kept_epoch, collapsed = 0.0, None, 0, 0
