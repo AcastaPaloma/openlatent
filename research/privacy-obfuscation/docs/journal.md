@@ -1352,3 +1352,8 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   understate by only 1.9 points here (attributes, unlike identity).
   This matches the hand-run result (person blur kept the most action at the same conditional leakage, journal 18:05 Oct 28).
   129.213.90.42 retired.
+- 21:30 UTC (Oct 29): HARNESS, KTH scenario split report (results/harness/kth_scenario/report.md). The harness's own pick is
+  the hand-found best: canonical one-posture stick figures + x16 downsample, utility 78.6, privacy 85.4 (identity 17.5% vs raw
+  96.2, chance 4.0), PUS 81.9; learned x32 pool 72.4, fixed motion map x16 60.3. Robustness: seed 1 84.8, seed 2 84.8,
+  24-epoch attackers 86.6, DINOv2 90.1. Certified privacy 84.8 (utility 75.5). Screening vs full-evaluation rank correlation
+  0.98; frozen attackers understate by a median 26.7 points. 129.213.89.64 retired.
