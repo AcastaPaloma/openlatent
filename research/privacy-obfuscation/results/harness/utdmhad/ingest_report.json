@@ -1,0 +1,39 @@
+{
+ "n_items": 861,
+ "targets": {
+  "action": {
+   "train": {
+    "n": 648,
+    "per_class_min": 24,
+    "per_class_max": 24,
+    "classes_present": 27
+   },
+   "test": {
+    "n": 213,
+    "per_class_min": 7,
+    "per_class_max": 8,
+    "classes_present": 27
+   }
+  },
+  "identity": {
+   "train": {
+    "n": 648,
+    "per_class_min": 81,
+    "per_class_max": 81,
+    "classes_present": 8
+   },
+   "test": {
+    "n": 213,
+    "per_class_min": 26,
+    "per_class_max": 27,
+    "classes_present": 8
+   }
+  }
+ },
+ "near_duplicates_across_split": 0,
+ "near_duplicate_examples": [],
+ "warnings": [
+  "identity: only 8 classes; identity among few people is easy to recover from body shape and motion alone, so expect low privacy scores for every obfuscator"
+ ],
+ "source": "ppv:utdmhad"
+}

@@ -1,0 +1,66 @@
+[02:59:21] profiling utdmhad: 861 of 861 items
+[02:59:34]   features 64/861 (9s)
+[03:00:47]   features 704/861 (81s)
+[03:01:18]   action: chance 3.8, raw 96.7, cues [('person', 0.95), ('body', 0.84), ('posture', 0.8), ('colour', 0.77)]
+[03:01:44]   identity: chance 12.2, raw 100.0, cues [('lowres', 1.0), ('scene', 1.0), ('person', 1.0), ('colour', 1.0)]
+[03:01:44] warning: R4: identity has only 8 classes; body and motion tell so few people apart, so expect low privacy scores for every obfuscator
+[03:01:56]   screened raw: {"minutes": 0.191}
+[03:02:07]   screened black: {"minutes": 0.183, "utility": 0.0, "privacy": 0.995, "pus": 0.0}
+[03:02:18]   screened gray: {"minutes": 0.192, "utility": 1.0, "privacy": 0.0, "pus": 0.0}
+[03:02:30]   screened blur4: {"minutes": 0.195, "utility": 1.0, "privacy": 0.0, "pus": 0.0}
+[03:02:42]   screened blur8: {"minutes": 0.194, "utility": 0.97, "privacy": 0.0, "pus": 0.0}
+[03:02:54]   screened blur16: {"minutes": 0.197, "utility": 0.838, "privacy": 0.0, "pus": 0.0}
+[03:03:05]   screened down4: {"minutes": 0.191, "utility": 0.98, "privacy": 0.0, "pus": 0.0}
+[03:03:16]   screened down8: {"minutes": 0.185, "utility": 0.975, "privacy": 0.005, "pus": 1.064}
+[03:03:28]   screened down16: {"minutes": 0.19, "utility": 0.924, "privacy": 0.0, "pus": 0.0}
+[03:03:39]   screened down32: {"minutes": 0.186, "utility": 0.914, "privacy": 0.005, "pus": 1.063}
+[03:03:50]   screened down64: {"minutes": 0.183, "utility": 0.692, "privacy": 0.123, "pus": 20.886}
+[03:04:06]   screened personbox_black: {"minutes": 0.267, "utility": 0.687, "privacy": 0.016, "pus": 3.135}
+[03:04:22]   screened personbox_blur16: {"minutes": 0.27, "utility": 0.758, "privacy": 0.005, "pus": 1.062}
+[03:04:33]   screened motion_down8: {"minutes": 0.178, "utility": 0.833, "privacy": 0.043, "pus": 8.138}
+[03:04:44]   screened motion_down16: {"minutes": 0.181, "utility": 0.889, "privacy": 0.112, "pus": 19.941}
+[03:04:54]   screened motion_down32: {"minutes": 0.18, "utility": 0.808, "privacy": 0.193, "pus": 31.095}
+[03:05:05]   screened motion_down64: {"minutes": 0.183, "utility": 0.626, "privacy": 0.647, "pus": 63.649}
+[03:05:41]   screened pose: {"minutes": 0.593, "utility": 0.788, "privacy": 0.102, "pus": 18.0}
+[03:06:03]   screened pose_canon: {"minutes": 0.367, "utility": 0.379, "privacy": 0.332, "pus": 35.36}
+[03:06:25]   screened pose_canon_down4: {"minutes": 0.361, "utility": 0.409, "privacy": 0.273, "pus": 32.727}
+[03:06:46]   screened pose_canon_down8: {"minutes": 0.36, "utility": 0.348, "privacy": 0.321, "pus": 33.41}
+[03:07:08]   screened pose_canon_down16: {"minutes": 0.359, "utility": 0.359, "privacy": 0.337, "pus": 34.74}
+[03:07:29]   screened pose_canon_down32: {"minutes": 0.361, "utility": 0.177, "privacy": 0.503, "pus": 26.156}
+[03:07:29] shortlist: ['raw', 'black', 'motion_down64', 'motion_down32', 'motion_down16', 'down8', 'gray', 'blur4', 'pose_canon', 'pose_canon_down16', 'bdq_down32', 'bdq_down64']
+[03:27:47] warning: R4: identity has only 8 classes; body and motion tell so few people apart, so expect low privacy scores for every obfuscator
+[03:27:47] shortlist: ['raw', 'black', 'motion_down64', 'motion_down32', 'motion_down16', 'pose_canon', 'pose_canon_down16', 'pose_canon_down8', 'pose_canon_down4', 'pose_canon_down32', 'bdq_down32', 'bdq_down64']
+[03:27:47] evaluate raw: started (pid 1265040)
+[03:56:18] evaluate raw: done
+[03:56:28] evaluate black: started (pid 1269279)
+[03:56:28] evaluate motion_down64: started (pid 1269280)
+[05:15:03] evaluate motion_down64: done
+[05:15:13] evaluate motion_down32: started (pid 1285337)
+[05:15:13] evaluate black: done
+[05:15:23] evaluate motion_down16: started (pid 1285372)
+[06:12:46] evaluate motion_down32: done
+[06:12:56] evaluate pose_canon: started (pid 1294146)
+[06:13:06] evaluate motion_down16: done
+[06:13:16] evaluate pose_canon_down16: started (pid 1294210)
+[06:39:08] evaluate pose_canon: done
+[06:39:18] evaluate pose_canon_down8: started (pid 1302375)
+[06:40:58] evaluate pose_canon_down16: done
+[06:41:08] evaluate pose_canon_down4: started (pid 1302882)
+[07:02:29] evaluate pose_canon_down8: done
+[07:02:39] evaluate pose_canon_down32: started (pid 1308690)
+[07:21:00] evaluate pose_canon_down4: done
+[07:21:10] evaluate bdq_down32: started (pid 1313767)
+[07:32:21] evaluate pose_canon_down32: done
+[07:32:31] evaluate bdq_down64: started (pid 1316658)
+[07:55:03] evaluate bdq_down32: done
+[08:01:03] evaluate bdq_down64: done
+[08:01:13] robustness on motion_down64: attacker seeds 1 and 2, 24-epoch attackers, DINOv2 fine-tune attacker
+[08:01:13] evaluate motion_down64_s1: started (pid 1325341)
+[08:01:13] evaluate motion_down64_s2: started (pid 1325342)
+[08:48:46] evaluate motion_down64_s1: done
+[08:48:46] evaluate motion_down64_s2: done
+[08:48:56] evaluate motion_down64_e24: started (pid 1341267)
+[08:48:56] evaluate motion_down64_dino: started (pid 1341268)
+[09:16:27] evaluate motion_down64_dino: done
+[09:46:49] evaluate motion_down64_e24: done
+[09:46:59] report: /home/ubuntu/work/harness/utdmhad/report.md

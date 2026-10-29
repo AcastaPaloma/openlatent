@@ -1332,3 +1332,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   66.3 / 13.3, seed 1 68.7 / 14.3). The scenario-split headline holds against longer-trained attackers. 150.136.215.90 retired.
   Harness: VP-HMDB51 and UTD-MHAD raw references done; the report builds on real data (VP-HMDB51 raw 70.5 conditional cMAP
   vs baseline 62.5, chance 61.8, task-label attacker 62.5; measurable check passes).
+- 09:50 UTC (Oct 29): HARNESS, first complete report (UTD-MHAD; results/harness/utdmhad/report.md). Recommendation: fixed motion
+  map x64 (1x2 px frame differences): utility 60.5, privacy 51.9, PUS 55.8 (worst attacker R3D 54.5% identity vs raw 100,
+  chance 12.2). Robustness: seed 1 51.9, seed 2 54.0, 24-epoch attackers 51.9, DINOv2 attackers 78.1. Learned x64 pool: privacy
+  72.7 at utility 39.5. Canonical stick figures: utility 79 but privacy 6 (8 people are told apart by body and motion).
+  CORRECTION to "nothing hides UTD-MHAD identity": a 1x2 px motion map halves identity above chance while keeping 60% of action.
+  Checks: black frames at chance (12.7 vs 12.2), every protocol measurable, screening vs full-evaluation privacy rank correlation
+  0.98, frozen raw-trained attackers understate retrained ones by a median 81.7 points.
+  Note: R3D gives exactly 54.46 (116/213) on seeds 0, 1 and with 24 epochs (seed 2: 52.6) while the frame attacker varies
+  (43.7-52.1); on a 1x2 px input the video attacker plausibly converges to the same decision rule. Kept as is.
+  129.151.4.50 retired.

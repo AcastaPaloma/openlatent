@@ -1,0 +1,16 @@
+{
+ "shortlist": [
+  "raw",
+  "black",
+  "motion_down64",
+  "motion_down32",
+  "motion_down16",
+  "pose_canon",
+  "pose_canon_down16",
+  "pose_canon_down8",
+  "pose_canon_down4",
+  "pose_canon_down32",
+  "bdq_down32",
+  "bdq_down64"
+ ]
+}
