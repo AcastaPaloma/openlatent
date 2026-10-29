@@ -1,0 +1,35 @@
+[03:04:35] profiling ucf101_vp: 4007 of 13320 items
+[03:04:49]   features 64/4007 (10s)
+[03:06:11]   features 704/4007 (91s)
+[03:07:37]   features 1344/4007 (178s)
+[03:09:00]   features 1984/4007 (260s)
+[03:10:28]   features 2624/4007 (348s)
+[03:11:52]   features 3264/4007 (433s)
+[03:13:15]   features 3904/4007 (515s)
+[03:13:44]   action: chance 1.2, raw 82.3, cues [('person', 0.83), ('scene', 0.74), ('lowres', 0.3), ('posture', 0.27)]
+[03:16:24]   attributes: chance 58.4, raw 72.3, cues [('person', 0.99), ('posture', 0.7), ('scene', 0.69), ('body', 0.63)]
+[03:16:24] warning: R3: the task label alone gives 134% of the raw probe's 'attributes' score above chance; it is scored with the conditional metric (what the footage reveals beyond the task label)
+[03:17:06]   screened raw: {"minutes": 0.71}
+[03:17:47]   screened black: {"minutes": 0.672, "utility": 0.036, "privacy": null, "pus": null}
+[03:18:29]   screened gray: {"minutes": 0.698, "utility": 0.875, "privacy": null, "pus": null}
+[03:19:11]   screened blur4: {"minutes": 0.707, "utility": 0.486, "privacy": null, "pus": null}
+[03:19:52]   screened blur8: {"minutes": 0.691, "utility": 0.307, "privacy": null, "pus": null}
+[03:20:34]   screened blur16: {"minutes": 0.696, "utility": 0.207, "privacy": null, "pus": null}
+[03:21:14]   screened down4: {"minutes": 0.666, "utility": 0.622, "privacy": null, "pus": null}
+[03:21:55]   screened down8: {"minutes": 0.684, "utility": 0.396, "privacy": null, "pus": null}
+[03:22:35]   screened down16: {"minutes": 0.669, "utility": 0.276, "privacy": null, "pus": null}
+[03:23:17]   screened down32: {"minutes": 0.687, "utility": 0.203, "privacy": null, "pus": null}
+[03:23:58]   screened down64: {"minutes": 0.698, "utility": 0.132, "privacy": null, "pus": null}
+[03:24:53]   screened personbox_black: {"minutes": 0.914, "utility": 0.648, "privacy": null, "pus": null}
+[03:25:47]   screened personbox_blur16: {"minutes": 0.9, "utility": 0.703, "privacy": null, "pus": null}
+[03:26:28]   screened motion_down8: {"minutes": 0.683, "utility": 0.293, "privacy": null, "pus": null}
+[03:27:08]   screened motion_down16: {"minutes": 0.664, "utility": 0.227, "privacy": null, "pus": null}
+[03:27:48]   screened motion_down32: {"minutes": 0.672, "utility": 0.158, "privacy": null, "pus": null}
+[03:28:29]   screened motion_down64: {"minutes": 0.673, "utility": 0.08, "privacy": null, "pus": null}
+[03:30:41]   screened pose: {"minutes": 2.208, "utility": 0.233, "privacy": null, "pus": null}
+[03:31:57]   screened pose_canon: {"minutes": 1.26, "utility": 0.12, "privacy": null, "pus": null}
+[03:33:14]   screened pose_canon_down4: {"minutes": 1.287, "utility": 0.099, "privacy": null, "pus": null}
+[03:34:27]   screened pose_canon_down8: {"minutes": 1.219, "utility": 0.111, "privacy": null, "pus": null}
+[03:35:44]   screened pose_canon_down16: {"minutes": 1.272, "utility": 0.085, "privacy": null, "pus": null}
+[03:37:00]   screened pose_canon_down32: {"minutes": 1.28, "utility": 0.064, "privacy": null, "pus": null}
+[03:37:00] shortlist: ['raw', 'black', 'bdq_down64', 'bdq_down32']

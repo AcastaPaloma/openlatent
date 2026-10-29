@@ -1318,3 +1318,13 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Harness: screening finished on VP-HMDB51, UTD-MHAD and the KTH scenario split; full searches launched there. On VP-UCF101 the
   screening probes cannot measure attributes beyond the action (proxy privacy undefined), consistent with trained attackers
   finding only ~6 points there.
+- 04:00 UTC (Oct 29): RESEARCH PAUSED (user decision). The per-dataset obfuscator search has reached diminishing returns:
+  KTH (canonical stick figures + downsample beat or match every learned obfuscator, robust to seeds, 24-epoch and DINOv2
+  attackers), Charades (canonical stick figures 6.5 / 16.8, replicated), VP-UCF101 / VP-HMDB51 (attribute labels implied by
+  the action; the remainder is structural and survives stick figures), UTD-MHAD (8 people, unhideable). No new research jobs.
+  Cancelled p12_ch_pose_canon_e8. The five harness validation searches keep running (KTH Ilic, KTH scenario, VP-HMDB51,
+  UTD-MHAD, Charades). Retired for shutdown: 158.101.16.146 (VP-UCF101 harness screening done; artifacts in
+  results/harness/ucf101_vp and on HF under harness/ucf101_vp), 129.213.82.145 (idle); 150.136.215.90 after its last job
+  (p12_kth_pose_canon_e16_down32_scenario_e24). Workers stopped on all three; every finished run's result is collected and its
+  checkpoint on HF (unuploaded: smoke tests and failed/cancelled runs only). Crons: Colab watchdog deleted; the research loop
+  replaced by a harness monitor.

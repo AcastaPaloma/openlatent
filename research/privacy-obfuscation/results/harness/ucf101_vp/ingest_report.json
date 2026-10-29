@@ -1,0 +1,71 @@
+{
+ "n_items": 13320,
+ "targets": {
+  "action": {
+   "train": {
+    "n": 9537,
+    "per_class_min": 72,
+    "per_class_max": 121,
+    "classes_present": 101
+   },
+   "test": {
+    "n": 3783,
+    "per_class_min": 28,
+    "per_class_max": 49,
+    "classes_present": 101
+   }
+  },
+  "attributes": {
+   "train": {
+    "n": 9537,
+    "positive_rate": [
+     0.91,
+     0.596,
+     0.897,
+     0.245,
+     0.252
+    ]
+   },
+   "test": {
+    "n": 3783,
+    "positive_rate": [
+     0.916,
+     0.611,
+     0.898,
+     0.251,
+     0.257
+    ]
+   }
+  }
+ },
+ "near_duplicates_across_split": 5,
+ "near_duplicate_examples": [
+  [
+   "Basketball/v_Basketball_g03_c01",
+   "Basketball/v_Basketball_g23_c01",
+   1.0
+  ],
+  [
+   "BenchPress/v_BenchPress_g07_c01",
+   "BenchPress/v_BenchPress_g22_c03",
+   1.0
+  ],
+  [
+   "BenchPress/v_BenchPress_g07_c02",
+   "BenchPress/v_BenchPress_g22_c04",
+   1.0
+  ],
+  [
+   "BenchPress/v_BenchPress_g07_c06",
+   "BenchPress/v_BenchPress_g22_c01",
+   1.0
+  ],
+  [
+   "WalkingWithDog/v_WalkingWithDog_g04_c05",
+   "WalkingWithDog/v_WalkingWithDog_g16_c03",
+   1.0
+  ]
+ ],
+ "warnings": [],
+ "source": "ppv:ucf101_vp"
+}
