@@ -23,6 +23,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p12_ch_pose_canon_e16_s1 | charades | `{type: pose, every: 16, width: 2, canonical: 0.5}` | s1 | 6.7 | **16.2** | 13.5% | 11.6 / 16.2 | 4.6 | 2.2 | 65 |
 | p12_ch_pose_canon_e16_down4 | charades | `{type: chain, stages: [{type: pose, every: 16, width: 2, canonical: 0.5}, {type: down, factor: 4}]}` | s1 | 6.4 | **16.0** | 13.2% | 11.4 / 16.0 | 4.5 | 1.7 | 69 |
 | p12_ch_pose_canon_e16 | charades | `{type: pose, every: 16, width: 2, canonical: 0.5}` | s1 | 6.5 | **16.8** | 14.2% | 11.5 / 16.8 | 4.6 | 2.2 | 91 |
+| p12_ch_pose_canon | charades | `{type: pose, every: 4, width: 2, canonical: 0.5}` | s1 | 7.0 | **20.1** | 17.8% | 12.7 / 20.1 | 4.7 | 2.1 | 301 |
 | p6_dino_p8_bdq_a1_ens | charades | `{type: bdq}` | s1 | - | **13.3** | 10.2% | - / - | - | - | 32 |
 | p8_bdq_a3_ens_g | charades | `{type: bdq}` | s1 | 5.7 | **19.6** | 17.3% | 9.0 / 19.6 | 4.4 | 3.3 | 95 |
 | p8_bdq_a1_ens | charades | `{type: bdq}` | s1 | 5.8 | **19.6** | 17.3% | 9.3 / 19.6 | 4.4 | 3.3 | 122 |
@@ -100,6 +101,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p12_kth_pose_canon_e16_down32 | kth | `{type: chain, stages: [{type: pose, every: 16, width: 2, canonical: 0.5}, {type: down, factor: 32}]}` | ilic | 82.6 | **10.9** | 7.2% | 10.9 / 8.9 | 16.7 | 4.0 | 49 |
 | p2_bdq_down64_a0 | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | ilic | 81.8 | **10.7** | 7.0% | 7.5 / 10.7 | 16.7 | 4.0 | 116 |
 | p2_bdq_down120_a0 | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 120}]}` | ilic | 78.1 | **7.2** | 3.3% | 5.2 / 7.2 | 16.7 | 4.8 | 119 |
+| p12_kth_pose_canon_e16_down32_e24 | kth | `{type: chain, stages: [{type: pose, every: 16, width: 2, canonical: 0.5}, {type: down, factor: 32}]}` | ilic | 81.9 | **11.0** | 7.4% | 11.0 / 10.4 | 16.7 | 4.2 | 85 |
 | p2_bdq_down64_a5_ens | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | ilic | 80.9 | **10.4** | 6.7% | 7.0 / 10.4 | 16.7 | 4.0 | 70 |
 | p2_bdq_down64_a1_ens_s3 | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | ilic | 80.1 | **9.7** | 6.0% | 8.5 / 9.7 | 16.7 | 4.8 | 94 |
 | p2_bdq_down64_a3_ens | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 64}]}` | ilic | 82.9 | **12.5** | 8.9% | 9.4 / 12.5 | 16.7 | 4.0 | 118 |

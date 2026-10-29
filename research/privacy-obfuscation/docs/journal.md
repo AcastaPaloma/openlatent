@@ -1312,3 +1312,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Charades canonical one-posture: seed 1 6.7 / 16.2 (seed 0 6.5 / 16.8); plus x4 downsample 6.4 / 16.0.
   Harness (privharness/, docs/harness.md) started on KTH Ilic: profile agrees with the experiments (action in body/posture,
   identity in appearance/scene; across actions identity transfers through appearance, not posture).
+- 03:35 UTC (Oct 29): Charades canonical stick figures (every 4 frames): 7.0 mAP / 20.1% (plain 8.2 / 32.5; one posture per clip
+  6.5 / 16.8): fixing proportions removes 12 identity points for 1.2 mAP. KTH canonical one-posture x32 with 24-epoch attackers:
+  81.9 / 11.0 (12-epoch 82.6 / 10.9): robust.
+  Harness: screening finished on VP-HMDB51, UTD-MHAD and the KTH scenario split; full searches launched there. On VP-UCF101 the
+  screening probes cannot measure attributes beyond the action (proxy privacy undefined), consistent with trained attackers
+  finding only ~6 points there.

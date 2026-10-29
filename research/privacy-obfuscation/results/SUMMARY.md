@@ -95,6 +95,7 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | BDQ a3 ens | 5.8 ± 0.1 | 22.4 ± 1.3 | 3 |
 | BDQ a0.5 ens | 7.1 | 45.6 | 1 |
 | **pose: stick figures** | 8.2 | 32.5 | 1 |
+| pose, canonical skeleton | 7.0 | 20.1 | 1 |
 | **pose, canonical, one posture per clip** | 6.6 ± 0.1 | 16.5 ± 0.3 | 2 |
 | pose, canonical, one posture per clip, then x4 | 6.4 | 16.0 | 1 |
 
