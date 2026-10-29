@@ -1,0 +1,77 @@
+{
+ "name": "p4_dino_kth_pose_canon_e16_down16",
+ "config": {
+  "name": "p4_dino_kth_pose_canon_e16_down16",
+  "dataset": "kth",
+  "split": "ilic",
+  "seed": 0,
+  "anonymizer": {
+   "type": "chain",
+   "stages": [
+    {
+     "type": "pose",
+     "every": 16,
+     "width": 2,
+     "canonical": 0.5
+    },
+    {
+     "type": "down",
+     "factor": 16
+    }
+   ]
+  },
+  "eval": {
+   "action": [],
+   "privacy": [
+    "frame_dino_probe",
+    "frame_dino_ft"
+   ],
+   "clean_attacker": false
+  },
+  "note": "DINOv2 attackers (probe and fine-tune) on canonical one-posture-per-clip stick figures"
+ },
+ "git": "378d3b8",
+ "dataset": "kth",
+ "split": "ilic",
+ "n_train": 1793,
+ "n_test": 598,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_dino_probe": 8.361203968524933,
+  "person/frame_dino_ft": 4.013377800583839
+ },
+ "weak": {},
+ "details": {
+  "strong/person/frame_dino_probe": {
+   "main": 8.361203968524933,
+   "by_action": {
+    "0": 11.11111119389534,
+    "1": 18.99999976158142,
+    "2": 7.070706784725189,
+    "3": 5.999999865889549,
+    "4": 5.000000074505806,
+    "5": 1.9999999552965164
+   }
+  },
+  "strong/person/frame_dino_ft": {
+   "main": 4.013377800583839,
+   "by_action": {
+    "0": 1.0101010091602802,
+    "1": 2.9999999329447746,
+    "2": 7.070706784725189,
+    "3": 3.999999910593033,
+    "4": 3.999999910593033,
+    "5": 5.000000074505806
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 8.361203968524933,
+ "privacy_top1": 8.361203968524933,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 31.333016630013784
+}

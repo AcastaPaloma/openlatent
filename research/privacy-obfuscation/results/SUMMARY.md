@@ -39,8 +39,10 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | pose, canonical, one posture per 8 frames | 96.3 | 37.5 | – | 1 |
 | pose, canonical, one posture per clip, 24-epoch attackers | 91.6 | 25.1 | – | 1 |
 | pose, canonical, one posture per clip, then x4 downsample | 91.1 ± 0.8 | 24.4 ± 0.8 | 15.9 | 2 |
-| pose, canonical, one posture per clip, then x8 | 89.1 | 20.1 | 13.2 | 1 |
-| **pose, canonical, one posture per clip, then x16** | 89.0 | 13.2 | 12.5 | 1 |
+| pose, canonical, one posture per clip, then x8 | 88.7 ± 0.4 | 20.2 ± 0.2 | 13.2 | 2 |
+| **pose, canonical, one posture per clip, then x16** | 89.1 ± 0.2 | 13.7 ± 0.5 | 12.5 | 2 |
+| pose, canonical, one posture per clip, then x16, 24-epoch attackers | 88.3 | 13.9 | – | 1 |
+| pose, canonical, one posture per clip, then x32 | 82.6 | 10.9 | 12.3 | 1 |
 
 Chance: action 16.7, identity 4.0. Controls: brightness only (one number per frame) 22.4 identity; all-black 16.7 / 4.0; shuffled training labels: identity at chance for every attacker.
 
@@ -72,7 +74,8 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | pose, canonical, one posture per 8 frames | 86.2 | 36.2 | 17.0 | 1 |
 | pose, canonical, one posture per clip, then x4 | 79.6 ± 0.1 | 28.0 ± 2.2 | 13.0 | 2 |
 | pose, canonical, one posture per clip, then x8 | 75.0 | 23.3 | 12.0 | 1 |
-| **pose, canonical, one posture per clip, then x16** | 73.7 | 18.2 | 11.5 | 1 |
+| **pose, canonical, one posture per clip, then x16** | 73.3 ± 0.3 | 18.7 ± 0.5 | 11.0 ± 0.5 | 2 |
+| pose, canonical, one posture per clip, then x32 | 66.3 | 13.3 | 8.0 | 1 |
 | pose, canonical, one posture per clip, 24-epoch attackers | 79.2 | 31.0 | 16.5 | 1 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
@@ -119,9 +122,10 @@ AP of each attribute within each action class where it varies. Chance = expected
 ## Findings
 
 1. **The frozen-attacker protocol is the main reason published obfuscations look private.** Retrained attackers recover 95-99% KTH identity through blur, pixelation and downsampling up to x16.
-2. **On KTH a learned temporal-difference stage (BDQ) in front of a tiny spatial pool is the best obfuscator found.** It sits below the fixed motion-map curve at every pool size, consistently across seeds, privacy weights, 24-epoch attackers, 2.5 s views and DINOv2. It also beats plain BDQ on the Ilic split; under an unseen scenario plus unseen actions, plain BDQ and the learned pools are about even, and both leak a third of what fixed maps leak. At 1-2 numbers per frame it needs no adversary; at ~15 numbers per frame the adversary buys ~15 identity points.
-3. **Most identity left in a learned coarse motion map is person-specific action style**: tested on unseen actions, the learned pools leak much less (x16 38, x32 ~22, x64 6, 1 px 5), while fixed maps and raw video leak as much across actions as within.
-4. **Where identity is the scene, obfuscating the person does not help.** Charades: removing people leaves 91% identity and two RGB pixels per frame 39%; adversarial BDQ removes most of it but also almost all action. UTD-MHAD: each subject has a separate recording session and mean colour alone identifies 73%.
-5. **No method tried removes appearance attributes** (VP-UCF101, VP-HMDB51) while keeping action.
+2. **The best KTH obfuscator found needs no training: a canonical stick figure.** Keypoint R-CNN skeletons redrawn with template limb lengths at a fixed size, one posture per 16-frame clip, then downsampled. Scenario split at x32: 66 action / 13 identity / 8 on an unseen scenario with unseen actions, vs the best learned pool (BDQ -> x64) 52 / 13 / 8. Ilic split at x16: 89 / 13-14 (learned x64: ~81 / ~11). It holds across seeds, 24-epoch attackers and DINOv2. Without the canonical redraw, stick figures keep 53% KTH identity (body proportions, size and motion timing all identify people).
+3. **Among learned obfuscators, a temporal-difference stage (BDQ) in front of a tiny spatial pool is the best.** It sits below the fixed motion-map curve at every pool size, consistently across seeds, privacy weights, 24-epoch attackers, 2.5 s views and DINOv2. It also beats plain BDQ on the Ilic split; under an unseen scenario plus unseen actions, plain BDQ and the learned pools are about even, and both leak a third of what fixed maps leak. At 1-2 numbers per frame it needs no adversary; at ~15 numbers per frame the adversary buys ~15 identity points.
+4. **Most identity left in a learned coarse motion map is person-specific action style**: tested on unseen actions, the learned pools leak much less (x16 38, x32 ~22, x64 6, 1 px 5), while fixed maps and raw video leak as much across actions as within.
+5. **Where identity is the scene, obfuscating the person does not help.** Charades: removing people leaves 91% identity and two RGB pixels per frame 39%; adversarial BDQ removes most of it but also almost all action. Canonical stick figures, which discard the room, reach 6.5 mAP / 17% identity, the best Charades trade-off found. UTD-MHAD: each subject has a separate recording session (mean colour alone identifies 73%), and with 8 people even stick figures identify everyone.
+6. **VP-UCF101 / VP-HMDB51 attribute labels are mostly implied by the action**: an action-only predictor matches raw-video attackers. Beyond the action, raw video adds 6-8 cMAP points over chance; most of that survives stick figures (skin colour is as predictable from a skeleton as from pixels), so it is scene structure and source, not appearance. No method removes it while keeping action.
 
 Mistakes found and corrected along the way are logged in `docs/journal.md`.

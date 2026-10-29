@@ -1,0 +1,22 @@
+{
+ "name": "p12_kth_pose_canon_e16_down64_scenario",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 0,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "pose",
+    "every": 16,
+    "width": 2,
+    "canonical": 0.5
+   },
+   {
+    "type": "down",
+    "factor": 64
+   }
+  ]
+ },
+ "note": "one stick-figure posture per 16-frame clip, no motion, scenario split"
+}

@@ -82,7 +82,8 @@ kth = [
     ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8", "p12_kth_pose_canon_e16_down8_s1"], ["p10_kth_pose_canon_e16_down8"]),
     ("**pose, canonical, one posture per clip, then x16**", ["p12_kth_pose_canon_e16_down16", "p12_kth_pose_canon_e16_down16_s1"], ["p10_kth_pose_canon_e16_down16"]),
     ("pose, canonical, one posture per clip, then x16, 24-epoch attackers", ["p12_kth_pose_canon_e16_down16_e24"], []),
-    ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32"], ["p10_kth_pose_canon_e16_down32"]),
+    ("pose, canonical, one posture per clip, then x64", ["p12_kth_pose_canon_e16_down64"], ["p10_kth_pose_canon_e16_down64"]),
+    ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32", "p12_kth_pose_canon_e16_down32_s1"], ["p10_kth_pose_canon_e16_down32"]),
 ]
 for label, ns, xs in kth:
     g = agg(ns)
@@ -122,7 +123,8 @@ scen = [
     ("pose, canonical, one posture per clip, then x4", ["p12_kth_pose_canon_e16_down4_scenario", "p12_kth_pose_canon_e16_down4_scenario_s1"], ["p10_kth_pose_canon_e16_down4_scenario_xh"]),
     ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8_scenario"], ["p10_kth_pose_canon_e16_down8_scenario_xh"]),
     ("**pose, canonical, one posture per clip, then x16**", ["p12_kth_pose_canon_e16_down16_scenario", "p12_kth_pose_canon_e16_down16_scenario_s1"], ["p10_kth_pose_canon_e16_down16_scenario_xh", "p10_kth_pose_canon_e16_down16_scenario_xh_s1"]),
-    ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32_scenario"], ["p10_kth_pose_canon_e16_down32_scenario_xh"]),
+    ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32_scenario", "p12_kth_pose_canon_e16_down32_scenario_s1"], ["p10_kth_pose_canon_e16_down32_scenario_xh", "p10_kth_pose_canon_e16_down32_scenario_xh_s1"]),
+    ("pose, canonical, one posture per clip, then x64", ["p12_kth_pose_canon_e16_down64_scenario"], ["p10_kth_pose_canon_e16_down64_scenario_xh"]),
     ("pose, canonical, one posture per clip, 24-epoch attackers", ["p12_kth_pose_canon_e16_scenario_e24"], ["p10_kth_pose_canon_e16_scenario_xh_e24"]),
 ]
 for label, ns, xs in scen:
@@ -171,18 +173,27 @@ if "p13_hmdb_personbox_blur16" in R:
 L += ["", "## Findings", "",
       "1. **The frozen-attacker protocol is the main reason published obfuscations look private.** Retrained attackers recover "
       "95-99% KTH identity through blur, pixelation and downsampling up to x16.",
-      "2. **On KTH a learned temporal-difference stage (BDQ) in front of a tiny spatial pool is the best obfuscator found.** "
+      "2. **The best KTH obfuscator found needs no training: a canonical stick figure.** Keypoint R-CNN skeletons redrawn with "
+      "template limb lengths at a fixed size, one posture per 16-frame clip, then downsampled. Scenario split at x32: 66 action / "
+      "13 identity / 8 on an unseen scenario with unseen actions, vs the best learned pool (BDQ -> x64) 52 / 13 / 8. Ilic split "
+      "at x16: 89 / 13-14 (learned x64: ~81 / ~11). It holds across seeds, 24-epoch attackers and DINOv2. Without the canonical "
+      "redraw, stick figures keep 53% KTH identity (body proportions, size and motion timing all identify people).",
+      "3. **Among learned obfuscators, a temporal-difference stage (BDQ) in front of a tiny spatial pool is the best.** "
       "It sits below the fixed motion-map curve at every pool size, consistently across seeds, privacy weights, "
       "24-epoch attackers, 2.5 s views and DINOv2. It also beats plain BDQ on the Ilic split; under an unseen scenario plus "
       "unseen actions, plain BDQ and the learned pools are about even, and both leak a third of what fixed maps leak. At 1-2 numbers per frame it needs no adversary; at ~15 numbers per frame the "
       "adversary buys ~15 identity points.",
-      "3. **Most identity left in a learned coarse motion map is person-specific action style**: tested on unseen actions, the "
+      "4. **Most identity left in a learned coarse motion map is person-specific action style**: tested on unseen actions, the "
       "learned pools leak much less (x16 38, x32 ~22, x64 6, 1 px 5), while fixed maps and raw video leak as much across actions "
       "as within.",
-      "4. **Where identity is the scene, obfuscating the person does not help.** Charades: removing people leaves 91% identity and "
-      "two RGB pixels per frame 39%; adversarial BDQ removes most of it but also almost all action. UTD-MHAD: each subject has a "
-      "separate recording session and mean colour alone identifies 73%.",
-      "5. **No method tried removes appearance attributes** (VP-UCF101, VP-HMDB51) while keeping action.",
+      "5. **Where identity is the scene, obfuscating the person does not help.** Charades: removing people leaves 91% identity and "
+      "two RGB pixels per frame 39%; adversarial BDQ removes most of it but also almost all action. Canonical stick figures, which "
+      "discard the room, reach 6.5 mAP / 17% identity, the best Charades trade-off found. UTD-MHAD: each subject has a separate "
+      "recording session (mean colour alone identifies 73%), and with 8 people even stick figures identify everyone.",
+      "6. **VP-UCF101 / VP-HMDB51 attribute labels are mostly implied by the action**: an action-only predictor matches raw-video "
+      "attackers. Beyond the action, raw video adds 6-8 cMAP points over chance; most of that survives stick figures (skin colour "
+      "is as predictable from a skeleton as from pixels), so it is scene structure and source, not appearance. No method removes "
+      "it while keeping action.",
       "", "Mistakes found and corrected along the way are logged in `docs/journal.md`."]
 open(os.path.join(ROOT, "results", "SUMMARY.md"), "w").write("\n".join(L) + "\n")
 print("wrote results/SUMMARY.md")

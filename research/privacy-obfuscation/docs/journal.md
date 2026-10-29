@@ -1297,3 +1297,11 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   floors 4.4 / 3.6). Lowest Charades identity with action above BDQ's.
   Queued: seed replicates (x16 Ilic + scenario, x8 Ilic, Charades canonical), x32 (Ilic, scenario, cross-action, hardest),
   24-epoch attackers on x16 (Ilic, hardest), DINOv2 on x16, Charades canonical + x4.
+- 02:10 UTC (Oct 29): canonical one-posture stick figures, robustness of the x16 version: Ilic seeds 89.0 / 13.2, 89.3 / 14.2;
+  24-epoch attackers 88.3 / 13.9; DINOv2 probe 8.4, fine-tune 4.0. Scenario seeds 73.7 / 18.2, 73.0 / 19.2; DINOv2 14.0; hardest
+  test 11.5, 10.5 (seed 1), 11.0 (24-epoch attackers). The x16 numbers hold.
+  x32: Ilic 82.6 / 10.9 (across actions 12.3), ties the learned x64 pool (~81 / ~11.4). Scenario 66.3 / 13.3 / 8.0 hardest,
+  vs the learned x64 pool 52.0 / 13.3 / 8.3: same identity on both tests, +14 action, no training.
+  SUMMARY.md findings rewritten: the canonical stick figure is now finding 2 (best KTH obfuscator); learned pools are finding 3;
+  Charades and VP findings updated with the pose results. VP-UCF101 single-person pose: 51.6 action / 71.4 / 65.2 conditional.
+  Queued: x32 seed replicates, 24-epoch attackers and DINOv2 on x32 (scenario), x64 (Ilic, scenario, cross-action, hardest).
