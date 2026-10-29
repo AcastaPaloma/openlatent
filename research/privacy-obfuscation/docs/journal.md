@@ -1328,3 +1328,7 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   (p12_kth_pose_canon_e16_down32_scenario_e24). Workers stopped on all three; every finished run's result is collected and its
   checkpoint on HF (unuploaded: smoke tests and failed/cancelled runs only). Crons: Colab watchdog deleted; the research loop
   replaced by a harness monitor.
+- 04:25 UTC (Oct 29): last research job: canonical one-posture x32, KTH scenario, 24-epoch attackers: 64.7 / 13.7 (12-epoch:
+  66.3 / 13.3, seed 1 68.7 / 14.3). The scenario-split headline holds against longer-trained attackers. 150.136.215.90 retired.
+  Harness: VP-HMDB51 and UTD-MHAD raw references done; the report builds on real data (VP-HMDB51 raw 70.5 conditional cMAP
+  vs baseline 62.5, chance 61.8, task-label attacker 62.5; measurable check passes).

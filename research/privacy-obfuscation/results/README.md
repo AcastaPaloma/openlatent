@@ -154,6 +154,7 @@ Leakage = (privacy - floor) / (raw - floor): 100% as leaky as raw, 0% as a blind
 | p12_kth_pose_canon_e16_down64 | kth | `{type: chain, stages: [{type: pose, every: 16, width: 2, canonical: 0.5}, {type: down, factor: 64}]}` | ilic | 60.5 | **8.4** | 4.6% | 7.2 / 8.4 | 16.7 | 4.0 | 49 |
 | p12_kth_pose_canon_e16_down8_scenario | kth | `{type: chain, stages: [{type: pose, every: 16, width: 2, canonical: 0.5}, {type: down, factor: 8}]}` | scenario | 75.0 | **23.3** | 20.2% | 14.5 / 23.3 | 16.7 | 5.0 | 29 |
 | p12_kth_pose_canon_e16_scenario_s1 | kth | `{type: pose, every: 16, width: 2, canonical: 0.5}` | scenario | 81.0 | **29.7** | 26.9% | 20.5 / 29.7 | 34.2 | 4.0 | 39 |
+| p12_kth_pose_canon_e16_down32_scenario_e24 | kth | `{type: chain, stages: [{type: pose, every: 16, width: 2, canonical: 0.5}, {type: down, factor: 32}]}` | scenario | 64.7 | **13.7** | 10.1% | 10.7 / 13.7 | 16.7 | 5.3 | 114 |
 | p2_bdq_down32_a3_r3d | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 32}]}` | ilic | 92.8 | **42.1** | 39.9% | 19.7 / 42.1 | 16.7 | 4.0 | 83 |
 | p12_kth_pose_canon_e8_scenario | kth | `{type: pose, every: 8, width: 2, canonical: 0.5}` | scenario | 86.2 | **36.2** | 33.7% | 22.0 / 36.2 | 52.3 | 4.5 | 53 |
 | p2_bdq_down32_a3_r18 | kth | `{type: chain, stages: [{type: bdq}, {type: down, factor: 32}]}` | ilic | 90.6 | **40.6** | 38.4% | 18.9 / 40.6 | 16.7 | 4.8 | 93 |
