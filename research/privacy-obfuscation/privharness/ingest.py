@@ -352,8 +352,9 @@ def audit(spec, root):
     # images duplicated in training). Appearance alone cannot decide it for static cameras: on KTH's gray, static
     # scenes, different recordings of one person hash alike. So appearance is only a gate (average hashes of three
     # frames within 6 of 64 bits); a pair is confirmed when the per-frame motion-energy traces of the two items (64
-    # frames, thumbnails 32x24) correlate >= 0.98 at some lag within +-4 frames. Calibrated on KTH: the same footage
-    # shifted 2 frames correlates 1.00; the best match among 1,793 other recordings tops out at 0.95.
+    # frames, thumbnails 32x24) correlate >= 0.99 at some lag within +-4 frames. Calibrated on KTH: the same footage
+    # shifted 2-3 frames correlates 1.00 (5 of 5 planted copies found); among 1,793 other recordings the best match
+    # is 0.95 for 99% of test items and 0.98 for short running clips (people crossing the frame alike).
     # Items too short or too still for a trace, and images, need a strict appearance match (<= 2 bits) instead.
     sigs = {}
     for it in spec.items:
@@ -373,7 +374,7 @@ def audit(spec, root):
                 ta = sigs[tr[j]["id"]][1]
                 if ta is not None and tb is not None:
                     c = trace_corr(ta, tb)
-                    if c >= 0.98:
+                    if c >= 0.99:
                         near.append((it["id"], tr[j]["id"], round(c, 3)))
                         break
                 elif d[j] <= 2:
