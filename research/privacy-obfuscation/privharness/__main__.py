@@ -58,7 +58,7 @@ def run_evals(root, jobs, parallel, log):
         time.sleep(10)
 
 
-def search(root, parallel=2, budget=None, robustness=True):
+def search(root, parallel=2, budget=None, robustness=True, until=None):
     from . import planner, profile, report, screen
     from . import spec as S
     log = log_to(root)
@@ -74,6 +74,8 @@ def search(root, parallel=2, budget=None, robustness=True):
     short = screen.shortlist(p, screened, budget)
     json.dump(dict(shortlist=short), open(os.path.join(root, "shortlist.json"), "w"), indent=1)
     log(f"shortlist: {short}")
+    if until == "screen":
+        return None
     run_evals(root, [("raw", ["raw"])], 1, log)  # the reference every score is normalised by
     run_evals(root, [(n, [n]) for n in short if n != "raw"], parallel, log)
     rep = report.build(root)
@@ -116,6 +118,7 @@ def main():
     a.add_argument("--parallel", type=int, default=2)
     a.add_argument("--budget", type=int, default=None)
     a.add_argument("--no-robustness", action="store_true")
+    a.add_argument("--until", choices=["screen"], default=None, help="stop after screening (no full evaluation)")
     args = ap.parse_args()
 
     if args.cmd == "ingest":
@@ -143,7 +146,7 @@ def main():
         from .evaluate import evaluate
         evaluate(args.root, args.candidate, args.seed, args.epochs, args.attackers.split(",") if args.attackers else None, args.tag)
     elif args.cmd == "search":
-        search(args.root, args.parallel, args.budget, not args.no_robustness)
+        search(args.root, args.parallel, args.budget, not args.no_robustness, args.until)
     elif args.cmd == "report":
         from .report import build
         print(json.dumps(build(args.root)["recommendation"], indent=1))

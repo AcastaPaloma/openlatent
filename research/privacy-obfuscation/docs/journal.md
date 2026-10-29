@@ -1305,3 +1305,10 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   SUMMARY.md findings rewritten: the canonical stick figure is now finding 2 (best KTH obfuscator); learned pools are finding 3;
   Charades and VP findings updated with the pose results. VP-UCF101 single-person pose: 51.6 action / 71.4 / 65.2 conditional.
   Queued: x32 seed replicates, 24-epoch attackers and DINOv2 on x32 (scenario), x64 (Ilic, scenario, cross-action, hardest).
+- 03:00 UTC (Oct 29): canonical one-posture stick figures, replicates and x64:
+  KTH Ilic x32: 82.6 / 10.9, seed 1 84.3 / 11.2; x64: 60.5 / 8.4 (across actions 8.9).
+  KTH scenario x32: 66.3 / 13.3, seed 1 68.7 / 14.3; DINOv2 probe 9.5 / fine-tune 4.0; hardest test 8.0, seed 1 12.0.
+  KTH scenario x64: 49.7 / 8.3, hardest 6.5 (learned x64 pool: 52.0 / 13.3 / 8.3): at about the same action, 5 fewer identity points.
+  Charades canonical one-posture: seed 1 6.7 / 16.2 (seed 0 6.5 / 16.8); plus x4 downsample 6.4 / 16.0.
+  Harness (privharness/, docs/harness.md) started on KTH Ilic: profile agrees with the experiments (action in body/posture,
+  identity in appearance/scene; across actions identity transfers through appearance, not posture).

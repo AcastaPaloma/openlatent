@@ -1,0 +1,33 @@
+[01:58:49] run p4_dino_kth_pose_canon_e16_down32_scenario @ 1b7fb56: {"name": "p4_dino_kth_pose_canon_e16_down32_scenario", "dataset": "kth", "split": "scenario", "seed": 0, "anonymizer": {"type": "chain", "stages": [{"type": "pose", "every": 16, "width": 2, "canonical": 0.5}, {"type": "down", "factor": 32}]}, "eval": {"action": [], "privacy": ["frame_dino_probe", "frame_dino_ft"], "clean_attacker": false}, "note": "DINOv2 attackers (probe and fine-tune) on canonical one-posture-per-clip stick figures"}
+[01:58:51] kth split=scenario: 1791 train / 600 test subsequences, 599 videos
+[02:12:21] materialised anonymised dataset (809s)
+[02:12:24] strong eval: training person frame_dino_probe on anonymised data
+[02:12:45]   [person] epoch 1/12 loss 3.396 train_acc 5.2 (21s)
+[02:13:04]   [person] epoch 2/12 loss 3.295 train_acc 7.3 (19s)
+[02:13:24]   [person] epoch 3/12 loss 3.219 train_acc 9.9 (20s)
+[02:13:43]   [person] epoch 4/12 loss 3.128 train_acc 10.7 (19s)
+[02:14:03]   [person] epoch 5/12 loss 3.054 train_acc 12.3 (20s)
+[02:14:22]   [person] epoch 6/12 loss 2.989 train_acc 12.9 (19s)
+[02:14:42]   [person] epoch 7/12 loss 2.946 train_acc 14.4 (20s)
+[02:15:01]   [person] epoch 8/12 loss 2.912 train_acc 14.9 (19s)
+[02:15:21]   [person] epoch 9/12 loss 2.862 train_acc 17.3 (20s)
+[02:15:41]   [person] epoch 10/12 loss 2.837 train_acc 17.5 (20s)
+[02:16:00]   [person] epoch 11/12 loss 2.812 train_acc 19.6 (19s)
+[02:16:20]   [person] epoch 12/12 loss 2.785 train_acc 19.7 (20s)
+[02:16:58]   strong person/frame_dino_probe: 9.50
+[02:17:00] strong eval: training person frame_dino_ft on anonymised data
+[02:18:01]   [person] epoch 1/12 loss 3.288 train_acc 4.5 (61s)
+[02:19:03]   [person] epoch 2/12 loss 3.237 train_acc 4.0 (62s)
+[02:20:02]   [person] epoch 3/12 loss 3.238 train_acc 3.0 (59s)
+[02:20:54]   [person] epoch 4/12 loss 3.231 train_acc 3.6 (52s)
+[02:21:51]   [person] epoch 5/12 loss 3.230 train_acc 3.8 (57s)
+[02:22:52]   [person] epoch 6/12 loss 3.230 train_acc 3.5 (61s)
+[02:23:53]   [person] epoch 7/12 loss 3.226 train_acc 3.8 (60s)
+[02:24:59]   [person] epoch 8/12 loss 3.225 train_acc 4.0 (66s)
+[02:26:04]   [person] epoch 9/12 loss 3.223 train_acc 3.3 (66s)
+[02:27:11]   [person] epoch 10/12 loss 3.222 train_acc 3.5 (66s)
+[02:28:16]   [person] epoch 11/12 loss 3.220 train_acc 3.2 (65s)
+[02:29:22]   [person] epoch 12/12 loss 3.219 train_acc 4.0 (66s)
+[02:29:57]   strong person/frame_dino_ft: 4.00
+[02:29:57] DONE p4_dino_kth_pose_canon_e16_down32_scenario: action None  privacy top1 (strong, best attacker) 9.50  (31.1 min)
+[02:29:58] uploaded to hf://KuanKuanKuan/openlatent-privacy/runs/p4_dino_kth_pose_canon_e16_down32_scenario

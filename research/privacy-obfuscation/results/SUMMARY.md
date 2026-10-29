@@ -42,7 +42,8 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | pose, canonical, one posture per clip, then x8 | 88.7 ± 0.4 | 20.2 ± 0.2 | 13.2 | 2 |
 | **pose, canonical, one posture per clip, then x16** | 89.1 ± 0.2 | 13.7 ± 0.5 | 12.5 | 2 |
 | pose, canonical, one posture per clip, then x16, 24-epoch attackers | 88.3 | 13.9 | – | 1 |
-| pose, canonical, one posture per clip, then x32 | 82.6 | 10.9 | 12.3 | 1 |
+| pose, canonical, one posture per clip, then x64 | 60.5 | 8.4 | 8.9 | 1 |
+| pose, canonical, one posture per clip, then x32 | 83.4 ± 0.8 | 11.0 ± 0.2 | 12.3 | 2 |
 
 Chance: action 16.7, identity 4.0. Controls: brightness only (one number per frame) 22.4 identity; all-black 16.7 / 4.0; shuffled training labels: identity at chance for every attacker.
 
@@ -75,7 +76,8 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | pose, canonical, one posture per clip, then x4 | 79.6 ± 0.1 | 28.0 ± 2.2 | 13.0 | 2 |
 | pose, canonical, one posture per clip, then x8 | 75.0 | 23.3 | 12.0 | 1 |
 | **pose, canonical, one posture per clip, then x16** | 73.3 ± 0.3 | 18.7 ± 0.5 | 11.0 ± 0.5 | 2 |
-| pose, canonical, one posture per clip, then x32 | 66.3 | 13.3 | 8.0 | 1 |
+| pose, canonical, one posture per clip, then x32 | 67.5 ± 1.2 | 13.8 ± 0.5 | 10.0 ± 2.0 | 2 |
+| pose, canonical, one posture per clip, then x64 | 49.7 | 8.3 | 6.5 | 1 |
 | pose, canonical, one posture per clip, 24-epoch attackers | 79.2 | 31.0 | 16.5 | 1 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
@@ -93,7 +95,8 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | BDQ a3 ens | 5.8 ± 0.1 | 22.4 ± 1.3 | 3 |
 | BDQ a0.5 ens | 7.1 | 45.6 | 1 |
 | **pose: stick figures** | 8.2 | 32.5 | 1 |
-| **pose, canonical, one posture per clip** | 6.5 | 16.8 | 1 |
+| **pose, canonical, one posture per clip** | 6.6 ± 0.1 | 16.5 ± 0.3 | 2 |
+| pose, canonical, one posture per clip, then x4 | 6.4 | 16.0 | 1 |
 
 Floors: action mAP 4.4 (blind predictor), identity 3.6 (most frequent person). Runs that collapsed exactly to these floors (content-free output) are excluded; the collapse guard was fixed and they are being rerun.
 
