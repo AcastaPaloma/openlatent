@@ -1,0 +1,26 @@
+{
+ "name": "p10_kth_pose_canon_e16_down16_scenario_xh_s1",
+ "dataset": "kth",
+ "split": "scenario",
+ "seed": 1,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "pose",
+    "every": 16,
+    "width": 2,
+    "canonical": 0.5
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "priv_split": "xaction_heldout",
+ "eval": {
+  "action": []
+ },
+ "note": "attackers train on seen scenarios and seen actions, tested on the unseen scenario with unseen actions"
+}

@@ -121,7 +121,7 @@ scen = [
     ("pose, canonical, one posture per 8 frames", ["p12_kth_pose_canon_e8_scenario"], ["p10_kth_pose_canon_e8_scenario_xh"]),
     ("pose, canonical, one posture per clip, then x4", ["p12_kth_pose_canon_e16_down4_scenario", "p12_kth_pose_canon_e16_down4_scenario_s1"], ["p10_kth_pose_canon_e16_down4_scenario_xh"]),
     ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8_scenario"], ["p10_kth_pose_canon_e16_down8_scenario_xh"]),
-    ("**pose, canonical, one posture per clip, then x16**", ["p12_kth_pose_canon_e16_down16_scenario", "p12_kth_pose_canon_e16_down16_scenario_s1"], ["p10_kth_pose_canon_e16_down16_scenario_xh"]),
+    ("**pose, canonical, one posture per clip, then x16**", ["p12_kth_pose_canon_e16_down16_scenario", "p12_kth_pose_canon_e16_down16_scenario_s1"], ["p10_kth_pose_canon_e16_down16_scenario_xh", "p10_kth_pose_canon_e16_down16_scenario_xh_s1"]),
     ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32_scenario"], ["p10_kth_pose_canon_e16_down32_scenario_xh"]),
     ("pose, canonical, one posture per clip, 24-epoch attackers", ["p12_kth_pose_canon_e16_scenario_e24"], ["p10_kth_pose_canon_e16_scenario_xh_e24"]),
 ]
