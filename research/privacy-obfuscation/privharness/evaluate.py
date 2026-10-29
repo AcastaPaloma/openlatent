@@ -149,6 +149,7 @@ def evaluate(root, cand_name, seed=0, epochs=12, attackers=None, tag="", log=pri
 
     # 4. secrets
     att = attackers or plan["attackers"]
+    skel = {"rate": None}  # skeleton keypoints per item id, shared by every protocol of this candidate
     for s in spec.secrets:
         cond_metric = plan["metrics"][s.name] == "conditional"
         res["secrets"][s.name] = {}
@@ -186,8 +187,23 @@ def evaluate(root, cand_name, seed=0, epochs=12, attackers=None, tag="", log=pri
             profile = json.load(open(os.path.join(root, "profile.json")))
             if s.kind == "multiclass" and video and profile["stats"]["skeleton_rate"] >= 0.5 and not (attackers and "skeleton" not in attackers):
                 t1 = time.time()
-                Xa = A.keypoint_sequences(anon, p["train"], log=log)
-                Xb = A.keypoint_sequences(anon, p["test"], log=log)
+                if skel["rate"] is None:
+                    # a 64-item probe first: on outputs with no detectable people (black frames, stick figures, coarse
+                    # pools) the attacker is at chance by construction and detection over the whole dataset is wasted
+                    probe = [spec.items[i] for i in np.random.default_rng(0).choice(len(spec.items), min(64, len(spec.items)), replace=False)]
+                    Xp = A.keypoint_sequences(anon, probe, log=log)
+                    skel["rate"] = float((np.abs(Xp).sum(-1) > 0).mean())
+                    skel.update({it["id"]: x for it, x in zip(probe, Xp)})
+                if skel["rate"] < 0.02:
+                    r["skeleton_skipped"] = f"people detected in {skel['rate']:.1%} of probed frames"
+                    log(f"  {s.name}/{pname}/retrained skeleton: skipped, people detected in {skel['rate']:.1%} of probed frames")
+                    res["secrets"][s.name][pname] = r
+                    continue
+                missing = [it for it in p["train"] + p["test"] if it["id"] not in skel]
+                if missing:  # keypoints are per item, so every protocol after the first reuses them
+                    skel.update({it["id"]: x for it, x in zip(missing, A.keypoint_sequences(anon, missing, log=log))})
+                Xa = np.stack([skel[it["id"]] for it in p["train"]])
+                Xb = np.stack([skel[it["id"]] for it in p["test"]])
                 ya = np.array([it["labels"][s.name] for it in p["train"]])
                 probs = A.train_skeleton(Xa, ya, Xb, s.kind, s.n, seed=seed)
                 preds[f"secret/{s.name}/{pname}/retrained/skeleton"] = probs
