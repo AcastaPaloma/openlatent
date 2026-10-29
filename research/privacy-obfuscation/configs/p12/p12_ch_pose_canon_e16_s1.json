@@ -1,0 +1,17 @@
+{
+ "name": "p12_ch_pose_canon_e16_s1",
+ "dataset": "charades",
+ "seed": 1,
+ "anonymizer": {
+  "type": "pose",
+  "every": 16,
+  "width": 2,
+  "canonical": 0.5
+ },
+ "eval": {
+  "epochs": 10,
+  "repeats": 1,
+  "batch": 16
+ },
+ "note": "canonical stick figures on Charades (fixed size and proportions), one posture per clip"
+}

@@ -1285,3 +1285,15 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   One posture per 8 frames: Ilic 96.3 / 37.5, scenario 86.2 / 36.2 / 17.0: halfway between every 4 (97.3 / 45.2) and every 16
   (91.5 / 29.1); posture refresh rate is a clean action-identity dial.
   Queued: x8 / x16 cross-action and hardest tests, and seed replicates of the x4 version (Ilic, scenario).
+- 01:05 UTC (Oct 29): ticks were delayed ~90 min; 7 VMs sat idle. Pose frontier results:
+  KTH Ilic, canonical one-posture stick figures then downsample (action / identity / identity on unseen actions):
+      none 91.5 / 29.1 / 19.9 | x4 91.8, 90.3 / 25.3, 23.6 / 15.9 | x8 89.1 / 20.1 / 13.2 | x16 89.0 / 13.2 / 12.5
+  The x16 version nearly matches the learned x64 pool's identity (~11.4) with ~8 more action (~81), with no training at all.
+  KTH scenario (action / identity / hardest test): x4 79.7, 79.5 / 25.8, 30.2 / 13.0 | x8 75.0 / 23.3 / 12.0 | x16 73.7 / 18.2 / 11.5.
+  x16 beats the learned x48 pool on both axes (56.8 / 26.0 / 16.0); vs learned x64 (52.0 / 13.3 / 8.3): +21 action, +5 identity.
+  CAVEAT: 24-epoch attackers on the scenario version gain a little (31.0 vs 27.5-29.7; hardest 16.5 vs 13.5-14.0), unlike Ilic
+  (25.1 vs 29.1). Queued 24-epoch attackers on the x16 versions to check the headline.
+  Charades canonical one-posture stick figures: 6.5 mAP / 16.8% identity (plain stick figures 8.2 / 32.5; BDQ a1-a3 ~5.8 / ~20;
+  floors 4.4 / 3.6). Lowest Charades identity with action above BDQ's.
+  Queued: seed replicates (x16 Ilic + scenario, x8 Ilic, Charades canonical), x32 (Ilic, scenario, cross-action, hardest),
+  24-epoch attackers on x16 (Ilic, hardest), DINOv2 on x16, Charades canonical + x4.

@@ -1,0 +1,74 @@
+{
+ "name": "p10_kth_pose_canon_e16_scenario_xh_e24",
+ "config": {
+  "name": "p10_kth_pose_canon_e16_scenario_xh_e24",
+  "dataset": "kth",
+  "split": "scenario",
+  "seed": 0,
+  "anonymizer": {
+   "type": "pose",
+   "every": 16,
+   "width": 2,
+   "canonical": 0.5
+  },
+  "priv_split": "xaction_heldout",
+  "eval": {
+   "action": [],
+   "epochs": 24
+  },
+  "note": "attackers train on seen scenarios and seen actions, tested on the unseen scenario with unseen actions"
+ },
+ "git": "faa3851",
+ "dataset": "kth",
+ "split": "scenario",
+ "n_train": 1791,
+ "n_test": 600,
+ "privacy_metric": "top1",
+ "strong": {
+  "person/frame_r50": 15.000000596046448,
+  "person/r3d": 16.500000655651093
+ },
+ "weak": {
+  "person/frame_r50": 3.999999910593033,
+  "person/r3d": 3.999999910593033
+ },
+ "details": {
+  "strong/person/frame_r50": {
+   "main": 15.000000596046448,
+   "by_action": {
+    "2": 23.999999463558197,
+    "5": 5.999999865889549
+   }
+  },
+  "weak/person/frame_r50": {
+   "main": 3.999999910593033,
+   "by_action": {
+    "2": 3.999999910593033,
+    "5": 3.999999910593033
+   }
+  },
+  "strong/person/r3d": {
+   "main": 16.500000655651093,
+   "by_action": {
+    "2": 28.00000011920929,
+    "5": 5.000000074505806
+   }
+  },
+  "weak/person/r3d": {
+   "main": 3.999999910593033,
+   "by_action": {
+    "2": 3.999999910593033,
+    "5": 3.999999910593033
+   }
+  }
+ },
+ "action_top1": null,
+ "action_metric": "top1",
+ "privacy_main": 16.500000655651093,
+ "privacy_top1": 16.500000655651093,
+ "chance": {
+  "action": 16.666666666666668,
+  "person": 4.0
+ },
+ "minutes": 88.3490491549174
+}

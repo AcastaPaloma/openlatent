@@ -38,7 +38,9 @@ Identity, unseen actions: attackers trained on 4 of the 6 actions and tested on 
 | **pose, canonical skeleton, one posture per clip** | 91.7 ± 0.3 | 28.7 ± 0.4 | 19.9 | 2 |
 | pose, canonical, one posture per 8 frames | 96.3 | 37.5 | – | 1 |
 | pose, canonical, one posture per clip, 24-epoch attackers | 91.6 | 25.1 | – | 1 |
-| pose, canonical, one posture per clip, then x4 downsample | 91.8 | 25.3 | 15.9 | 1 |
+| pose, canonical, one posture per clip, then x4 downsample | 91.1 ± 0.8 | 24.4 ± 0.8 | 15.9 | 2 |
+| pose, canonical, one posture per clip, then x8 | 89.1 | 20.1 | 13.2 | 1 |
+| **pose, canonical, one posture per clip, then x16** | 89.0 | 13.2 | 12.5 | 1 |
 
 Chance: action 16.7, identity 4.0. Controls: brightness only (one number per frame) 22.4 identity; all-black 16.7 / 4.0; shuffled training labels: identity at chance for every attacker.
 
@@ -68,7 +70,10 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | pose, one posture per clip | 84.8 | 31.7 | 17.0 | 1 |
 | **pose, canonical, one posture per clip** | 81.3 ± 0.3 | 28.6 ± 1.1 | 13.8 ± 0.2 | 2 |
 | pose, canonical, one posture per 8 frames | 86.2 | 36.2 | 17.0 | 1 |
-| pose, canonical, one posture per clip, then x4 | 79.7 | 25.8 | 13.0 | 1 |
+| pose, canonical, one posture per clip, then x4 | 79.6 ± 0.1 | 28.0 ± 2.2 | 13.0 | 2 |
+| pose, canonical, one posture per clip, then x8 | 75.0 | 23.3 | 12.0 | 1 |
+| **pose, canonical, one posture per clip, then x16** | 73.7 | 18.2 | 11.5 | 1 |
+| pose, canonical, one posture per clip, 24-epoch attackers | 79.2 | 31.0 | 16.5 | 1 |
 
 ## Charades (90 people filmed in their own homes; action = 157-way multilabel mAP)
 
@@ -85,6 +90,7 @@ Last column: attackers trained on seen scenarios and seen actions, tested on the
 | BDQ a3 ens | 5.8 ± 0.1 | 22.4 ± 1.3 | 3 |
 | BDQ a0.5 ens | 7.1 | 45.6 | 1 |
 | **pose: stick figures** | 8.2 | 32.5 | 1 |
+| **pose, canonical, one posture per clip** | 6.5 | 16.8 | 1 |
 
 Floors: action mAP 4.4 (blind predictor), identity 3.6 (most frequent person). Runs that collapsed exactly to these floors (content-free output) are excluded; the collapse guard was fixed and they are being rerun.
 

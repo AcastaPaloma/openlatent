@@ -79,8 +79,10 @@ kth = [
     ("pose, canonical, one posture per 8 frames", ["p12_kth_pose_canon_e8"], []),
     ("pose, canonical, one posture per clip, 24-epoch attackers", ["p12_kth_pose_canon_e16_e24"], []),
     ("pose, canonical, one posture per clip, then x4 downsample", ["p12_kth_pose_canon_e16_down4", "p12_kth_pose_canon_e16_down4_s1"], ["p10_kth_pose_canon_e16_down4"]),
-    ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8"], ["p10_kth_pose_canon_e16_down8"]),
-    ("pose, canonical, one posture per clip, then x16", ["p12_kth_pose_canon_e16_down16"], ["p10_kth_pose_canon_e16_down16"]),
+    ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8", "p12_kth_pose_canon_e16_down8_s1"], ["p10_kth_pose_canon_e16_down8"]),
+    ("**pose, canonical, one posture per clip, then x16**", ["p12_kth_pose_canon_e16_down16", "p12_kth_pose_canon_e16_down16_s1"], ["p10_kth_pose_canon_e16_down16"]),
+    ("pose, canonical, one posture per clip, then x16, 24-epoch attackers", ["p12_kth_pose_canon_e16_down16_e24"], []),
+    ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32"], ["p10_kth_pose_canon_e16_down32"]),
 ]
 for label, ns, xs in kth:
     g = agg(ns)
@@ -119,7 +121,9 @@ scen = [
     ("pose, canonical, one posture per 8 frames", ["p12_kth_pose_canon_e8_scenario"], ["p10_kth_pose_canon_e8_scenario_xh"]),
     ("pose, canonical, one posture per clip, then x4", ["p12_kth_pose_canon_e16_down4_scenario", "p12_kth_pose_canon_e16_down4_scenario_s1"], ["p10_kth_pose_canon_e16_down4_scenario_xh"]),
     ("pose, canonical, one posture per clip, then x8", ["p12_kth_pose_canon_e16_down8_scenario"], ["p10_kth_pose_canon_e16_down8_scenario_xh"]),
-    ("pose, canonical, one posture per clip, then x16", ["p12_kth_pose_canon_e16_down16_scenario"], ["p10_kth_pose_canon_e16_down16_scenario_xh"]),
+    ("**pose, canonical, one posture per clip, then x16**", ["p12_kth_pose_canon_e16_down16_scenario", "p12_kth_pose_canon_e16_down16_scenario_s1"], ["p10_kth_pose_canon_e16_down16_scenario_xh"]),
+    ("pose, canonical, one posture per clip, then x32", ["p12_kth_pose_canon_e16_down32_scenario"], ["p10_kth_pose_canon_e16_down32_scenario_xh"]),
+    ("pose, canonical, one posture per clip, 24-epoch attackers", ["p12_kth_pose_canon_e16_scenario_e24"], ["p10_kth_pose_canon_e16_scenario_xh_e24"]),
 ]
 for label, ns, xs in scen:
     g = agg(ns)
@@ -133,7 +137,8 @@ for label, ns in [("raw", ["p8_raw"]), ("blur sigma 8", ["p8_blur8"]), ("downsam
                   ("frame difference", ["p8_diff"]), ("BDQ, no adversary", ["p8_bdq_a0"]),
                   ("BDQ a1 ens (non-collapsed)", ["p8_bdq_a1_ens"]), ("BDQ a3 ens", ["p8_bdq_a3_ens", "p8_bdq_a3_ens_s1", "p8_bdq_a3_ens_s2"]),
                   ("BDQ a0.5 ens", ["p8_bdq_a05_ens"]), ("**pose: stick figures**", ["p12_ch_pose"]),
-                  ("pose, canonical skeleton", ["p12_ch_pose_canon"]), ("pose, canonical, one posture per clip", ["p12_ch_pose_canon_e16"])]:
+                  ("pose, canonical skeleton", ["p12_ch_pose_canon"]), ("**pose, canonical, one posture per clip**", ["p12_ch_pose_canon_e16", "p12_ch_pose_canon_e16_s1"]),
+                  ("pose, canonical, one posture per clip, then x4", ["p12_ch_pose_canon_e16_down4"])]:
     g = agg(ns)
     if g:
         L.append(f"| {label} | {g[0]} | {g[1]} | {g[2]} |")

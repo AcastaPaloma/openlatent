@@ -1,0 +1,22 @@
+{
+ "name": "p12_kth_pose_canon_e16_down16_s1",
+ "dataset": "kth",
+ "seed": 1,
+ "anonymizer": {
+  "type": "chain",
+  "stages": [
+   {
+    "type": "pose",
+    "every": 16,
+    "width": 2,
+    "canonical": 0.5
+   },
+   {
+    "type": "down",
+    "factor": 16
+   }
+  ]
+ },
+ "split": "ilic",
+ "note": "one canonical posture per clip: no motion, no body proportions"
+}
