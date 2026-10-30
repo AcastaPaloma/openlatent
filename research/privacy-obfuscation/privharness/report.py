@@ -199,7 +199,9 @@ def build(root):
     rec = max(ok, key=lambda n: main[n]["pus"]) if ok else None
     priv_first = max([n for n in ok if main[n]["utility"]["retention"] >= 0.5], key=lambda n: main[n]["privacy"], default=None)
     util_first = max([n for n in ok if main[n]["privacy"] >= 0.5], key=lambda n: main[n]["utility"]["retention"], default=None)
-    robust = {n: v for n, v in scored.items() if rec and n != rec and n.startswith(rec + "_")}
+    # re-runs of the recommendation: same candidate, different seed / epochs / attackers (matched on the candidate, not
+    # on the name: "pose_canon" is not a re-run of "pose")
+    robust = {n: v for n, v in scored.items() if rec and n != rec and ev[n]["candidate"]["name"] == rec}
     rep = dict(dataset=spec.name, generated_from=sorted(ev), checks=checks(spec, scored, base, raw), baselines=base,
                scored={n: v for n, v in scored.items()}, frontier=front, hypervolume=hv,
                recommendation=dict(best=rec, privacy_first=priv_first, utility_first=util_first, robustness=sorted(robust),
