@@ -46,7 +46,9 @@ def run_evals(root, jobs, parallel, log):
                 continue
             os.makedirs(os.path.join(root, "logs"), exist_ok=True)
             fh = open(os.path.join(root, "logs", f"{name}.log"), "a")
-            p = subprocess.Popen([sys.executable, "-m", "privharness.evaluate", root, *args], cwd=HERE, stdout=fh, stderr=subprocess.STDOUT)
+            # unbuffered, so candidate logs show progress live instead of in 8 KB bursts
+            p = subprocess.Popen([sys.executable, "-m", "privharness.evaluate", root, *args], cwd=HERE, stdout=fh,
+                                 stderr=subprocess.STDOUT, env={**os.environ, "PYTHONUNBUFFERED": "1"})
             procs.append((name, p, fh))
             log(f"evaluate {name}: started (pid {p.pid})")
         for t in list(procs):
