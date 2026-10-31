@@ -1370,3 +1370,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   48.3. Checks pass; screening rank correlation 0.74; frozen attackers understate by a median 57.9 points.
   Fixed during this run: report.py matched robustness re-runs by name prefix, so "pose_canon" was taken for a re-run of
   "pose"; now matched on the candidate (report regenerated). All five harness searches are complete; every VM is retired.
+- 00:20 UTC (Nov 1): SHUTDOWN CHECK. Only 150.136.92.19 still answers; the others time out (already terminated) and
+  158.101.16.146 now presents a different host key (IP reassigned, not contacted). On 150.136.92.19: queue empty, all 29
+  finished runs are in results/runs and on HF; 2 runs without results were deliberately killed (journal Oct 29-30). Harness
+  Charades evals (15) and attacker checkpoints (17 .pt) are on HF under harness/charades; research record re-synced to HF
+  record/. Idle worker stopped, GPU at 0 MiB. The 202 GB of decoded datasets on its disk are not backed up and are
+  rebuildable from the public sources with the ingest scripts. Safe to terminate.
