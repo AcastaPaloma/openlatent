@@ -1364,3 +1364,9 @@ retrained on the obfuscated data** (strong protocol), not only raw-trained ones.
   Harness validation so far: on both KTH splits it independently selects the method we found by hand; on UTD-MHAD it corrected
   a hand-drawn conclusion; on VP-HMDB51 it matches the hand-run pick and its robustness pass caught a stronger attacker
   (DINOv2), which led to the certified-privacy rule. 158.101.125.222 retired; Charades (150.136.92.19) is the last search.
+- 02:20 UTC (Oct 31): HARNESS, Charades report (results/harness/charades/report.md). Pick: plain stick figures (every 4
+  frames): utility 50.9, privacy 63.1 (identity 37% vs raw 94, chance 3.6); canonical stick figures are more private (83.1)
+  but keep 27% of utility. Robustness: seeds 63.9 / 63.7, 24-epoch attackers 64.3, DINOv2 64.5. Certified privacy 63.1, utility
+  48.3. Checks pass; screening rank correlation 0.74; frozen attackers understate by a median 57.9 points.
+  Fixed during this run: report.py matched robustness re-runs by name prefix, so "pose_canon" was taken for a re-run of
+  "pose"; now matched on the candidate (report regenerated). All five harness searches are complete; every VM is retired.

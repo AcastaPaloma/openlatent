@@ -1,3 +1,3 @@
 # Lambda A100 VMs used by the research loop (ssh ubuntu@<ip>). Sourced by status/collect/submit.
-HOSTS="150.136.92.19"
+HOSTS=""
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=15"

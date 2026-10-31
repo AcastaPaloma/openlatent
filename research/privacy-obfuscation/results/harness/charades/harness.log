@@ -1,0 +1,67 @@
+[02:56:42] profiling charades: 4000 of 9072 items
+[02:56:56]   features 64/4000 (9s)
+[02:58:10]   features 704/4000 (83s)
+[02:59:25]   features 1344/4000 (159s)
+[03:00:40]   features 1984/4000 (234s)
+[03:01:54]   features 2624/4000 (307s)
+[03:03:09]   features 3264/4000 (382s)
+[03:04:26]   features 3904/4000 (459s)
+[03:08:03]   actions: chance 4.7, raw 15.5, cues [('person', 0.96), ('scene', 0.48), ('posture', 0.31), ('body', 0.25)]
+[03:08:19]   identity: chance 3.7, raw 75.3, cues [('scene', 0.9), ('person', 0.89), ('lowres', 0.73), ('colour', 0.45)]
+[03:09:03]   screened raw: {"minutes": 0.726}
+[03:09:33]   screened black: {"minutes": 0.497, "utility": -0.003, "privacy": 1.0, "pus": 0.0}
+[03:10:17]   screened gray: {"minutes": 0.741, "utility": 0.888, "privacy": 0.096, "pus": 17.352}
+[03:11:01]   screened blur4: {"minutes": 0.734, "utility": 0.321, "privacy": 0.186, "pus": 23.534}
+[03:11:47]   screened blur8: {"minutes": 0.758, "utility": 0.184, "privacy": 0.271, "pus": 21.916}
+[03:12:31]   screened blur16: {"minutes": 0.744, "utility": 0.134, "privacy": 0.338, "pus": 19.145}
+[03:13:15]   screened down4: {"minutes": 0.723, "utility": 0.479, "privacy": 0.105, "pus": 17.186}
+[03:13:58]   screened down8: {"minutes": 0.719, "utility": 0.221, "privacy": 0.22, "pus": 22.066}
+[03:14:41]   screened down16: {"minutes": 0.714, "utility": 0.135, "privacy": 0.342, "pus": 19.389}
+[03:15:24]   screened down32: {"minutes": 0.718, "utility": 0.109, "privacy": 0.494, "pus": 17.894}
+[03:16:07]   screened down64: {"minutes": 0.718, "utility": 0.056, "privacy": 0.722, "pus": 10.472}
+[03:17:03]   screened personbox_black: {"minutes": 0.935, "utility": 0.452, "privacy": 0.135, "pus": 20.74}
+[03:18:00]   screened personbox_blur16: {"minutes": 0.953, "utility": 0.463, "privacy": 0.167, "pus": 24.505}
+[03:18:44]   screened motion_down8: {"minutes": 0.722, "utility": 0.186, "privacy": 0.389, "pus": 25.197}
+[03:19:27]   screened motion_down16: {"minutes": 0.722, "utility": 0.119, "privacy": 0.479, "pus": 19.012}
+[03:20:11]   screened motion_down32: {"minutes": 0.729, "utility": 0.132, "privacy": 0.641, "pus": 21.827}
+[03:20:55]   screened motion_down64: {"minutes": 0.733, "utility": 0.117, "privacy": 0.823, "pus": 20.546}
+[03:22:50]   screened pose: {"minutes": 1.921, "utility": 0.132, "privacy": 0.872, "pus": 22.901}
+[03:23:55]   screened pose_canon: {"minutes": 1.088, "utility": 0.097, "privacy": 0.957, "pus": 17.642}
+[03:25:02]   screened pose_canon_down4: {"minutes": 1.111, "utility": 0.083, "privacy": 0.947, "pus": 15.256}
+[03:26:07]   screened pose_canon_down8: {"minutes": 1.095, "utility": 0.077, "privacy": 0.964, "pus": 14.263}
+[03:27:14]   screened pose_canon_down16: {"minutes": 1.106, "utility": 0.049, "privacy": 0.974, "pus": 9.322}
+[03:28:21]   screened pose_canon_down32: {"minutes": 1.119, "utility": 0.058, "privacy": 0.972, "pus": 10.908}
+[03:28:21] shortlist: ['raw', 'black', 'motion_down8', 'personbox_blur16', 'blur4', 'pose', 'down8', 'pose_canon', 'gray', 'down4', 'bdq_down32']
+[03:36:35] shortlist: ['raw', 'black', 'motion_down8', 'personbox_blur16', 'blur4', 'pose', 'down8', 'pose_canon', 'gray', 'down4', 'bdq_down32']
+[03:36:35] evaluate raw: started (pid 2204782)
+[06:27:55] evaluate raw: done
+[06:28:05] evaluate black: started (pid 2208356)
+[06:28:05] evaluate motion_down8: started (pid 2208357)
+[10:08:18] evaluate black: done
+[10:08:28] evaluate personbox_blur16: started (pid 2216165)
+[12:40:47] evaluate motion_down8: done
+[12:40:57] evaluate blur4: started (pid 2219086)
+[15:24:47] evaluate personbox_blur16: done
+[15:24:57] evaluate pose: started (pid 2222159)
+[16:49:22] evaluate blur4: done
+[16:49:32] evaluate down8: started (pid 2223534)
+[20:50:06] evaluate down8: done
+[20:50:16] evaluate pose_canon: started (pid 2227700)
+[21:37:19] evaluate pose: done
+[21:37:29] evaluate gray: started (pid 2229368)
+[00:55:00] evaluate pose_canon: done
+[00:55:10] evaluate down4: started (pid 2233927)
+[02:51:07] evaluate gray: done
+[02:51:17] evaluate bdq_down32: started (pid 2236818)
+[05:24:36] evaluate bdq_down32: done
+[06:06:19] evaluate down4: done
+[06:08:04] robustness on pose: attacker seeds 1 and 2, 24-epoch attackers, DINOv2 fine-tune attacker
+[06:08:04] evaluate pose_s1: started (pid 2241998)
+[06:08:04] evaluate pose_s2: started (pid 2241999)
+[13:56:41] evaluate pose_s1: done
+[13:56:41] evaluate pose_s2: done
+[13:56:51] evaluate pose_e24: started (pid 2253057)
+[13:56:51] evaluate pose_dino: started (pid 2253058)
+[20:10:53] evaluate pose_dino: done
+[22:41:42] evaluate pose_e24: done
+[22:44:00] report: /home/ubuntu/work/harness/charades/report.md
