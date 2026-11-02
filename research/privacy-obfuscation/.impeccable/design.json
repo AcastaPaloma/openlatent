@@ -1,0 +1,535 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T15:35:51+00:00",
+  "title": "Design System: privharness",
+  "extensions": {
+    "colorMeta": {
+      "grease": {
+        "role": "primary",
+        "displayName": "Grease Pencil Red",
+        "canonical": "oklch(54% .205 28)",
+        "tonalRamp": [
+          "oklch(15% .072 28)",
+          "oklch(27% .113 28)",
+          "oklch(39% .154 28)",
+          "oklch(51% .195 28)",
+          "oklch(63% .174 28)",
+          "oklch(75% .133 28)",
+          "oklch(85% .099 28)",
+          "oklch(95% .065 28)"
+        ]
+      },
+      "grease-dark": {
+        "role": "primary",
+        "displayName": "Pressed Grease",
+        "canonical": "oklch(46% .18 28)",
+        "tonalRamp": [
+          "oklch(15% .087 28)",
+          "oklch(27% .123 28)",
+          "oklch(39% .159 28)",
+          "oklch(51% .165 28)",
+          "oklch(63% .129 28)",
+          "oklch(75% .093 28)",
+          "oklch(85% .063 28)",
+          "oklch(95% .033 28)"
+        ]
+      },
+      "wax": {
+        "role": "secondary",
+        "displayName": "Yellow Wax",
+        "canonical": "oklch(86% .16 95)",
+        "tonalRamp": [
+          "oklch(15% .024 95)",
+          "oklch(27% .024 95)",
+          "oklch(39% .035 95)",
+          "oklch(51% .067 95)",
+          "oklch(63% .099 95)",
+          "oklch(75% .131 95)",
+          "oklch(85% .157 95)",
+          "oklch(95% .136 95)"
+        ]
+      },
+      "wax-ink": {
+        "role": "secondary",
+        "displayName": "Wax Ink",
+        "canonical": "oklch(45% .09 90)",
+        "tonalRamp": [
+          "oklch(15% .045 90)",
+          "oklch(27% .063 90)",
+          "oklch(39% .081 90)",
+          "oklch(51% .081 90)",
+          "oklch(63% .063 90)",
+          "oklch(75% .045 90)",
+          "oklch(85% .03 90)",
+          "oklch(95% .015 90)"
+        ]
+      },
+      "edge": {
+        "role": "tertiary",
+        "displayName": "Edge Amber",
+        "canonical": "oklch(82% .13 78)",
+        "tonalRamp": [
+          "oklch(15% .019 78)",
+          "oklch(27% .019 78)",
+          "oklch(39% .037 78)",
+          "oklch(51% .063 78)",
+          "oklch(63% .089 78)",
+          "oklch(75% .115 78)",
+          "oklch(85% .123 78)",
+          "oklch(95% .102 78)"
+        ]
+      },
+      "fail": {
+        "role": "status",
+        "displayName": "Report Red",
+        "canonical": "oklch(45% .16 25)",
+        "tonalRamp": [
+          "oklch(15% .08 25)",
+          "oklch(27% .112 25)",
+          "oklch(39% .144 25)",
+          "oklch(51% .144 25)",
+          "oklch(63% .112 25)",
+          "oklch(75% .08 25)",
+          "oklch(85% .053 25)",
+          "oklch(95% .027 25)"
+        ]
+      },
+      "fail-bg": {
+        "role": "status",
+        "displayName": "Report Wash",
+        "canonical": "oklch(95% .02 25)",
+        "tonalRamp": [
+          "oklch(15% .003 25)",
+          "oklch(27% .003 25)",
+          "oklch(39% .003 25)",
+          "oklch(51% .005 25)",
+          "oklch(63% .009 25)",
+          "oklch(75% .013 25)",
+          "oklch(85% .017 25)",
+          "oklch(95% .02 25)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Cool Photo Paper",
+        "canonical": "oklch(97% .002 250)",
+        "tonalRamp": [
+          "oklch(15% 0 250)",
+          "oklch(27% 0 250)",
+          "oklch(39% 0 250)",
+          "oklch(51% 0 250)",
+          "oklch(63% .001 250)",
+          "oklch(75% .001 250)",
+          "oklch(85% .002 250)",
+          "oklch(95% .002 250)"
+        ]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Shaded Paper",
+        "canonical": "oklch(93.5% .003 250)",
+        "tonalRamp": [
+          "oklch(15% 0 250)",
+          "oklch(27% 0 250)",
+          "oklch(39% 0 250)",
+          "oklch(51% .001 250)",
+          "oklch(63% .001 250)",
+          "oklch(75% .002 250)",
+          "oklch(85% .003 250)",
+          "oklch(95% .003 250)"
+        ]
+      },
+      "sheet-white": {
+        "role": "neutral",
+        "displayName": "Clean Sheet",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(85% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(86% .004 250)",
+        "tonalRamp": [
+          "oklch(15% .001 250)",
+          "oklch(27% .001 250)",
+          "oklch(39% .001 250)",
+          "oklch(51% .002 250)",
+          "oklch(63% .002 250)",
+          "oklch(75% .003 250)",
+          "oklch(85% .004 250)",
+          "oklch(95% .003 250)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(21% .008 260)",
+        "tonalRamp": [
+          "oklch(15% .007 260)",
+          "oklch(27% .007 260)",
+          "oklch(39% .006 260)",
+          "oklch(51% .004 260)",
+          "oklch(63% .002 260)",
+          "oklch(75% .001 260)",
+          "oklch(85% .001 260)",
+          "oklch(95% .001 260)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(42% .008 260)",
+        "tonalRamp": [
+          "oklch(15% .004 260)",
+          "oklch(27% .006 260)",
+          "oklch(39% .008 260)",
+          "oklch(51% .007 260)",
+          "oklch(63% .005 260)",
+          "oklch(75% .004 260)",
+          "oklch(85% .002 260)",
+          "oklch(95% .001 260)"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Pale Ink",
+        "canonical": "oklch(52% .008 260)",
+        "tonalRamp": [
+          "oklch(15% .003 260)",
+          "oklch(27% .005 260)",
+          "oklch(39% .006 260)",
+          "oklch(51% .008 260)",
+          "oklch(63% .007 260)",
+          "oklch(75% .005 260)",
+          "oklch(85% .004 260)",
+          "oklch(95% .002 260)"
+        ]
+      },
+      "film": {
+        "role": "neutral",
+        "displayName": "Film Black",
+        "canonical": "oklch(15% .004 60)",
+        "tonalRamp": [
+          "oklch(15% .004 60)",
+          "oklch(27% .003 60)",
+          "oklch(39% .002 60)",
+          "oklch(51% .002 60)",
+          "oklch(63% .001 60)",
+          "oklch(75% .001 60)",
+          "oklch(85% .001 60)",
+          "oklch(95% .001 60)"
+        ]
+      },
+      "film-2": {
+        "role": "neutral",
+        "displayName": "Film Shadow",
+        "canonical": "oklch(24% .005 60)",
+        "tonalRamp": [
+          "oklch(15% .004 60)",
+          "oklch(27% .005 60)",
+          "oklch(39% .004 60)",
+          "oklch(51% .003 60)",
+          "oklch(63% .002 60)",
+          "oklch(75% .001 60)",
+          "oklch(85% .001 60)",
+          "oklch(95% .001 60)"
+        ]
+      },
+      "film-text-dim": {
+        "role": "neutral",
+        "displayName": "Film Light Grey",
+        "canonical": "oklch(68% .01 80)",
+        "tonalRamp": [
+          "oklch(15% .002 80)",
+          "oklch(27% .003 80)",
+          "oklch(39% .005 80)",
+          "oklch(51% .007 80)",
+          "oklch(63% .009 80)",
+          "oklch(75% .009 80)",
+          "oklch(85% .007 80)",
+          "oklch(95% .006 80)"
+        ]
+      },
+      "film-text": {
+        "role": "neutral",
+        "displayName": "Film Light",
+        "canonical": "oklch(88% .01 80)",
+        "tonalRamp": [
+          "oklch(15% .002 80)",
+          "oklch(27% .002 80)",
+          "oklch(39% .002 80)",
+          "oklch(51% .004 80)",
+          "oklch(63% .006 80)",
+          "oklch(75% .008 80)",
+          "oklch(85% .009 80)",
+          "oklch(95% .009 80)"
+        ]
+      },
+      "film-text-bright": {
+        "role": "neutral",
+        "displayName": "Film Bright",
+        "canonical": "oklch(92% .01 80)",
+        "tonalRamp": [
+          "oklch(15% .002 80)",
+          "oklch(27% .002 80)",
+          "oklch(39% .002 80)",
+          "oklch(51% .003 80)",
+          "oklch(63% .005 80)",
+          "oklch(75% .007 80)",
+          "oklch(85% .009 80)",
+          "oklch(95% .009 80)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The verdict sentence on a dataset page."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Dataset names, section headings, the loupe disguise name."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "Named blocks in the loupe and beside the verdict."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Sentences, capped at 68ch where they run long."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Status lines, crumbs, supporting notes."
+      },
+      "score": {
+        "displayName": "Score",
+        "purpose": "Scores under frames and scale legends, tabular numerals."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Logs and raw configuration."
+      },
+      "film-mark": {
+        "displayName": "Film Mark",
+        "purpose": "Frame numbers printed on film."
+      }
+    },
+    "shadows": [
+      {
+        "name": "loupe-lift",
+        "value": "0 8px 26px -14px oklch(21% .008 260 / .35)",
+        "purpose": "The loupe only."
+      },
+      {
+        "name": "selected-frame",
+        "value": "inset 0 0 0 2px var(--edge)",
+        "purpose": "Amber outline inside a selected frame."
+      },
+      {
+        "name": "pressed-choice",
+        "value": "inset 0 0 0 1px var(--grease)",
+        "purpose": "Doubles the grease border of a selected choice."
+      },
+      {
+        "name": "running-halo",
+        "value": "0 0 0 3px oklch(82% .13 78 / .3)",
+        "purpose": "Breathes to 6px around the running status dot."
+      },
+      {
+        "name": "film-mark-halo",
+        "value": "text-shadow: 0 0 2px #000, 0 0 2px #000",
+        "purpose": "Keeps edge numbers legible over a bright frame."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Frame development and map point changes."
+      },
+      {
+        "name": "state",
+        "value": ".15s",
+        "purpose": "Hover and press color changes on controls."
+      },
+      {
+        "name": "develop",
+        "value": "1.8s var(--ease)",
+        "purpose": "A frame clearing when its attacks finish."
+      },
+      {
+        "name": "safelight",
+        "value": "2.4s ease-in-out infinite",
+        "purpose": "The pulse on a frame under attack."
+      },
+      {
+        "name": "breathe",
+        "value": "2.4s ease-in-out infinite",
+        "purpose": "The running status dot. All animation is removed under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stack",
+        "value": "1040px"
+      },
+      {
+        "name": "compact",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action of a view, in grease with hand-cut corners.",
+      "html": "<button class=\"ds-btn-primary\">Test a dataset</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 14px; border: 1px solid var(--grease); border-radius: 5px 3px 6px 3px / 3px 6px 3px 5px; background: var(--grease); color: #fff; font: 600 15px/1.5 var(--sans); cursor: pointer; transition: background .15s, border-color .15s; } .ds-btn-primary:hover { background: var(--grease-dark); border-color: var(--grease-dark); } .ds-btn-primary:focus-visible { outline: 2px solid var(--grease); outline-offset: 2px; }"
+    },
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Ordinary actions, transparent on paper.",
+      "html": "<button class=\"ds-btn\">Check again</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 14px; border: 1px solid var(--ink-3); border-radius: 3px; background: transparent; color: var(--ink); font: 15px/1.5 var(--sans); cursor: pointer; transition: background .15s, color .15s, border-color .15s; } .ds-btn:hover { background: var(--paper-2); border-color: var(--ink); } .ds-btn:active { background: var(--rule); } .ds-btn:focus-visible { outline: 2px solid var(--grease); outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive actions such as stopping a run.",
+      "html": "<button class=\"ds-btn-danger\">Stop</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 14px; border: 1px solid var(--fail); border-radius: 3px; background: transparent; color: var(--fail); font: 15px/1.5 var(--sans); cursor: pointer; transition: background .15s; } .ds-btn-danger:hover { background: var(--fail-bg); } .ds-btn-danger:focus-visible { outline: 2px solid var(--grease); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A white field with a Pale Ink border that turns grease on focus.",
+      "html": "<label class=\"ds-field\"><span>Name</span><input class=\"ds-input\" type=\"text\" value=\"kth-actions\"></label>",
+      "css": ".ds-field { display: block; font: 15px/1.5 var(--sans); color: var(--ink); } .ds-field > span { display: block; font-weight: 600; margin-bottom: 4px; } .ds-input { min-height: 36px; width: 100%; padding: 6px 10px; border: 1px solid var(--ink-3); border-radius: 3px; background: #fff; font: inherit; color: inherit; } .ds-input:focus { outline: 2px solid var(--grease); outline-offset: 0; border-color: var(--grease); }"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "description": "The slim header with an ink underline on the current page.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main\"><a href=\"#\" aria-current=\"page\">Datasets</a><a href=\"#\">VMs</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 18px; font: 15px/1.5 var(--sans); } .ds-nav a { color: var(--ink-2); text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; } .ds-nav a:hover { color: var(--ink); } .ds-nav a[aria-current=page] { color: var(--ink); border-bottom-color: var(--ink); } .ds-nav a:focus-visible { outline: 2px solid var(--grease); outline-offset: 2px; }"
+    },
+    {
+      "name": "Choice",
+      "kind": "custom",
+      "refersTo": "choice",
+      "description": "A selectable white sheet with a bold line and a hint.",
+      "html": "<button class=\"ds-choice\" aria-pressed=\"true\"><b>What to hide</b><span>What must not be recoverable, such as who it is</span></button>",
+      "css": ".ds-choice { display: block; max-width: 300px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 3px; background: #fff; color: var(--ink); font: 15px/1.5 var(--sans); cursor: pointer; text-align: left; transition: border-color .15s; } .ds-choice:hover { border-color: var(--ink); } .ds-choice[aria-pressed=true] { border-color: var(--grease); box-shadow: inset 0 0 0 1px var(--grease); } .ds-choice:focus-visible { outline: 2px solid var(--grease); outline-offset: 2px; } .ds-choice b { display: block; } .ds-choice span { display: block; font-size: .85rem; color: var(--ink-2); }"
+    },
+    {
+      "name": "Status Line",
+      "kind": "chip",
+      "description": "A dot and a plain sentence; only failure takes color.",
+      "html": "<span class=\"ds-status ds-running\"><span class=\"ds-dot\"></span>Running: attacking disguises</span>",
+      "css": ".ds-status { display: inline-flex; align-items: center; gap: 7px; font: .87rem/1.5 var(--sans); color: var(--ink); } .ds-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--ink-3); } .ds-running .ds-dot { background: var(--edge); box-shadow: 0 0 0 3px oklch(82% .13 78 / .3); animation: ds-breathe 2.4s ease-in-out infinite; } @keyframes ds-breathe { 50% { box-shadow: 0 0 0 6px oklch(82% .13 78 / .12); } } @media (prefers-reduced-motion: reduce) { .ds-running .ds-dot { animation: none; } }"
+    },
+    {
+      "name": "Film Frame",
+      "kind": "custom",
+      "refersTo": "film-frame",
+      "description": "The signature frame: film with sprockets, an amber edge number, a grease circle on the pick.",
+      "html": "<div class=\"ds-frame\"><span class=\"ds-film\"><span class=\"ds-img\"></span><span class=\"ds-edge\">1A</span></span><svg class=\"ds-mark\" viewBox=\"0 0 100 75\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M50 4C74 2 96 13 97 36 98 58 75 72 49 71 23 70 3 57 3 36 3 15 24 3 53 5 74 6 92 16 94 34\"/></svg></div>",
+      "css": ".ds-frame { position: relative; width: 220px; } .ds-film { position: relative; display: block; background: var(--film); padding: 15px 4px; } .ds-film::before, .ds-film::after { content: \"\"; position: absolute; left: 0; right: 0; height: 9px; background-image: linear-gradient(90deg, transparent 5px, var(--paper) 5px, var(--paper) 12px, transparent 12px); background-size: 17px 6px; background-repeat: repeat-x; background-position: 0 center; opacity: .92; } .ds-film::before { top: 3px; } .ds-film::after { bottom: 3px; } .ds-img { display: block; width: 100%; aspect-ratio: 4 / 3; background: var(--film-2); } .ds-edge { position: absolute; right: 7px; bottom: 16px; font: 10px/1 var(--mono); color: var(--edge); text-shadow: 0 0 2px #000, 0 0 2px #000; } .ds-mark { position: absolute; inset: 3px -3px; width: calc(100% + 6px); height: calc(100% - 6px); overflow: visible; pointer-events: none; } .ds-mark path { fill: none; stroke: var(--grease); stroke-width: 3.5px; stroke-linecap: round; vector-effect: non-scaling-stroke; }"
+    },
+    {
+      "name": "Stage Bar",
+      "kind": "custom",
+      "refersTo": "stages",
+      "description": "The pipeline as a cut of film, with the active stage in amber.",
+      "html": "<ol class=\"ds-stages\"><li class=\"ds-done\">Profile</li><li class=\"ds-active\">Attack</li><li>Report</li></ol>",
+      "css": ".ds-stages { display: flex; margin: 0; padding: 0; list-style: none; background: var(--film); color: oklch(68% .01 80); font: .8rem/1.25 var(--sans); } .ds-stages li { flex: 1; padding: 9px 10px; border-right: 1px solid var(--film-2); } .ds-stages li:last-child { border-right: 0; } .ds-done { color: oklch(88% .01 80); } .ds-stages .ds-active { background: var(--edge); color: var(--film); font-weight: 600; }"
+    },
+    {
+      "name": "Score Scale",
+      "kind": "custom",
+      "description": "Reference ticks, a translucent interval, and a grease tick for this score.",
+      "html": "<div class=\"ds-scale\" aria-hidden=\"true\"><span class=\"ds-line\"></span><span class=\"ds-span\" style=\"left:12%;width:70%\"></span><span class=\"ds-ci\" style=\"left:56%;width:12%\"></span><i style=\"left:12%\"></i><i style=\"left:82%\"></i><i class=\"ds-this\" style=\"left:63%\"></i></div>",
+      "css": ".ds-scale { position: relative; height: 22px; width: 300px; } .ds-line { position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--rule); } .ds-span { position: absolute; top: 10px; height: 2px; background: var(--ink-3); } .ds-ci { position: absolute; top: 7px; height: 8px; background: oklch(54% .205 28 / .28); } .ds-scale i { position: absolute; top: 3px; width: 2px; height: 16px; background: var(--ink-3); margin-left: -1px; } .ds-scale i.ds-this { background: var(--grease); width: 4px; margin-left: -2px; top: 1px; height: 20px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Editor's Proof Sheet",
+    "overview": "**Creative North Star: \"The Editor's Proof Sheet\"**\n\nChoosing a disguise works like a photo editor choosing a frame. The interface is cool photo paper with black film laid on it: frames butt together into strips with sprocket holes and amber edge numbers, and a red grease pencil circles the pick. Results are read as a sheet of pictures and plain sentences, with the attacker scores, intervals and checks one step away in the loupe.\n\nDensity is that of a working document. Rules and whitespace separate content rather than cards; only the loupe lifts off the paper. Film carries what the machine recorded, paper carries what the tool says about it, and the hand-drawn marks carry the decision. Frames also report progress: they sit undeveloped under a dim safelight while attacks run and develop once those attacks finish.\n\nThe refused look is the metric-card ML dashboard. Scores appear as captions under frames and as ticks on a thin scale, never as tiles of large numbers.",
+    "keyCharacteristics": [
+      "Cool paper, black film, and three hand or machine marks: grease red, wax yellow, edge amber.",
+      "A single Helvetica-style sans at a compact ramp, with monospace for the machine's literal strings.",
+      "Flat by default; the loupe is the one lifted surface.",
+      "Tight, square corners, with a slightly uneven cut on the primary button.",
+      "Hand-drawn SVG marks with deliberately imperfect paths.",
+      "Good news is black ink; bad news gets its own red and extra weight."
+    ],
+    "rules": [
+      {
+        "name": "The Hand and Report Rule",
+        "body": "Grease is a decision someone marks; Report Red is the system saying something went wrong. A failed frame is crossed out in grease because the sheet is being edited, while its status sentence is in Report Red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Black Ink Good News Rule",
+        "body": "Interface chrome has no success color. A passed check, a finished dot and a strong result are all ink, so failure is the only thing that changes color. The drawn scene inside a frame has its own illustration colors, which include greens and are not system tokens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Silver Heat Rule",
+        "body": "Density tables shade from paper to dark in one neutral hue (oklch lightness 96% to 28% at .004 chroma, hue 260), switching to white text below 62% lightness. Red stays free to mean the pick.",
+        "section": "colors"
+      },
+      {
+        "name": "The Machine's Own Words Rule",
+        "body": "Monospace is for strings the machine wrote verbatim and for film markings: file names, logs, JSON, harness names, column names, frame numbers. Scores people read stay in the sans with tabular numerals. Sentences are never mono.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "The build has no uppercase styling and no tracked-out labels. Headings and labels are sentence case and say what they mean.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Lifted Sheet Rule",
+        "body": "Only the loupe casts a shadow into the page. Everything else is flat at rest or shows state through inset lines.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do let film carry the machine's record: frames, progress, logs, file names and VM identity.",
+      "Do keep frames touching horizontally inside a strip, with paper showing only between cut rows.",
+      "Do tie frame appearance to real progress: undeveloped while waiting, safelight while attacking, developed when finished.",
+      "Do caption every drawn frame or strip as a drawing, not the user's footage, for as long as the harness has no real previews.",
+      "Do keep a plain sentence beside every score mark, so nothing depends on reading the scale alone.",
+      "Do make every animation honor reduced motion, as the global rule does."
+    ],
+    "donts": [
+      "Don't build metric cards or tiles of large numbers; scores are captions and scale marks.",
+      "Don't add a success green to interface chrome.",
+      "Don't add uppercase tracked labels or kickers above headings. The drawn pick word is a mark for the pick alone, not a pattern for other headings.",
+      "Don't add shadows to surfaces other than the loupe, or hard offset shadows anywhere.",
+      "Don't spend grease on decoration; every appearance marks a decision, an action, this frame's score, or current focus.",
+      "Don't round frames or film; they are cut stock."
+    ]
+  }
+}

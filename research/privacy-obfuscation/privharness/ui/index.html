@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>privharness</title>
+<style>
+:root {
+  --paper: oklch(97% .002 250); --paper-2: oklch(93.5% .003 250); --rule: oklch(86% .004 250);
+  --ink: oklch(21% .008 260); --ink-2: oklch(42% .008 260); --ink-3: oklch(52% .008 260);
+  --film: oklch(15% .004 60); --film-2: oklch(24% .005 60); --edge: oklch(82% .13 78);
+  --grease: oklch(54% .205 28); --grease-dark: oklch(46% .18 28); --wax: oklch(86% .16 95); --wax-ink: oklch(45% .09 90);
+  --fail: oklch(45% .16 25); --fail-bg: oklch(95% .02 25);
+  --sans: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+::selection { background: var(--grease); color: #fff; }
+body { caret-color: var(--grease); margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--sans); }
+h1, h2, h3, p { margin: 0; text-wrap: pretty; }
+h1, h2 { text-wrap: balance; }
+h1 { font-size: 1.75rem; line-height: 1.2; font-weight: 600; letter-spacing: -.02em; }
+h2 { font-size: 1.15rem; line-height: 1.3; font-weight: 600; letter-spacing: -.01em; }
+h3 { font-size: .95rem; font-weight: 600; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.mono { font-family: var(--mono); font-size: .92em; font-variant-numeric: tabular-nums; }
+.dim { color: var(--ink-2); }
+.small { font-size: .87rem; }
+.measure { max-width: 68ch; }
+:focus-visible { outline: 2px solid var(--grease); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; gap: 22px; padding: 12px 24px; border-bottom: 1px solid var(--rule); }
+.brand { font-weight: 600; letter-spacing: -.01em; text-decoration: none; }
+.top nav { display: flex; gap: 18px; flex: 1; }
+.top nav a { text-decoration: none; color: var(--ink-2); padding: 4px 0; border-bottom: 2px solid transparent; }
+.top nav a:hover { color: var(--ink); }
+.top nav a[aria-current=page] { color: var(--ink); border-bottom-color: var(--ink); }
+main { padding: 28px 24px 72px; max-width: 1360px; margin: 0 auto; }
+
+.btn { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 6px 14px; border: 1px solid var(--ink-3); border-radius: 3px; background: transparent; cursor: pointer; text-decoration: none; transition: background .15s, color .15s, border-color .15s; }
+.btn:hover:not(:disabled) { background: var(--paper-2); border-color: var(--ink); }
+.btn:active:not(:disabled) { background: var(--rule); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.primary { border-radius: 5px 3px 6px 3px / 3px 6px 3px 5px; background: var(--grease); border-color: var(--grease); color: #fff; font-weight: 600; }
+.btn.primary:hover:not(:disabled) { background: var(--grease-dark); border-color: var(--grease-dark); }
+.btn.link { border-color: transparent; padding: 2px 4px; min-height: 0; text-decoration: underline; text-underline-offset: 2px; }
+.btn.danger { color: var(--fail); border-color: var(--fail); }
+.btn.danger:hover:not(:disabled) { background: var(--fail-bg); border-color: var(--fail); }
+label.field { display: block; }
+label.field > span { display: block; font-weight: 600; margin-bottom: 4px; }
+input[type=text], input[type=number], select, textarea { min-height: 36px; padding: 6px 10px; border: 1px solid var(--ink-3); border-radius: 3px; background: #fff; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--grease); outline-offset: 0; border-color: var(--grease); }
+input::placeholder { color: var(--ink-3); }
+textarea { font-family: var(--mono); font-size: .85rem; line-height: 1.45; }
+.inline-form { display: flex; gap: 8px; align-items: stretch; }
+.inline-form input { flex: 1; min-width: 0; }
+
+.err { display: flex; gap: 8px; color: var(--fail); background: var(--fail-bg); padding: 9px 12px; border: 1px solid var(--fail); border-radius: 3px; }
+.note { background: var(--paper-2); padding: 10px 12px; border-radius: 3px; }
+.tick { flex: none; width: 15px; height: 15px; margin-top: 3px; }
+
+/* a strip of film: frames butt together, the paper shows between cut strips */
+.strip { display: grid; gap: 22px 0; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
+.strip.small { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; }
+.frame { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; }
+.film { position: relative; display: block; background: var(--film); padding: 15px 4px; }
+.film::before, .film::after { content: ""; position: absolute; left: 0; right: 0; height: 9px; background-image: linear-gradient(90deg, transparent 5px, var(--paper) 5px, var(--paper) 12px, transparent 12px); background-size: 17px 6px; background-repeat: repeat-x; background-position: 0 center; opacity: .92; }
+.film::before { top: 3px; } .film::after { bottom: 3px; }
+.film img { display: block; width: 100%; aspect-ratio: 4 / 3; image-rendering: pixelated; background: var(--film-2); }
+.small .film { padding: 11px 2px; }
+.small .film::before { top: 1px; } .small .film::after { bottom: 1px; }
+.small .film::before, .small .film::after { background-size: 12px 5px; background-image: linear-gradient(90deg, transparent 3px, var(--paper) 3px, var(--paper) 8px, transparent 8px); }
+.edge { position: absolute; right: 7px; bottom: 16px; font: 10px/1 var(--mono); color: var(--edge); text-shadow: 0 0 2px #000, 0 0 2px #000; pointer-events: none; }
+.frame.pending img { filter: brightness(.2) contrast(.7) sepia(.5); }
+.frame.active img { filter: brightness(.34) contrast(.8) sepia(.7); animation: safelight 2.4s ease-in-out infinite; }
+@keyframes safelight { 50% { filter: brightness(.5) contrast(.85) sepia(.8); } }
+.frame.develop img { animation: develop 1.8s var(--ease); }
+@keyframes develop { from { filter: brightness(.2) contrast(.7) sepia(.5); } }
+.frame.failed img { filter: grayscale(1) brightness(.45); }
+.frame.selected .film { box-shadow: inset 0 0 0 2px var(--edge); }
+.frame:hover:not(.selected) .film img { outline: 1px solid var(--edge); }
+.mark { position: absolute; inset: 3px -3px; width: calc(100% + 6px); height: calc(100% - 6px); overflow: visible; pointer-events: none; z-index: 1; }
+.mark path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.mark.pick path { stroke: var(--grease); stroke-width: 3.5px; }
+.mark.alt path { stroke: var(--wax); stroke-width: 2.5px; }
+.mark.cross path { stroke: var(--grease); stroke-width: 3px; }
+.cap { display: block; padding: 8px 10px 0 2px; }
+.cap b { display: block; font-weight: 600; line-height: 1.25; font-size: .9rem; }
+.scores { display: flex; gap: 10px; margin-top: 3px; font-size: .84rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.scores b { display: inline; font-size: inherit; color: var(--ink); }
+.tag { display: inline-block; margin-top: 3px; font-size: .78rem; color: var(--wax-ink); font-weight: 600; }
+.pickword { display: block; width: 44px; height: 14px; margin-bottom: 3px; }
+.pickword path { fill: none; stroke: var(--grease); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* home */
+.intro { display: flex; align-items: flex-start; gap: 24px; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; }
+.intro p { margin-top: 6px; }
+.row { display: block; text-decoration: none; padding: 16px 0 22px; border-top: 1px solid var(--rule); }
+.row:hover h2 { text-decoration: underline; text-underline-offset: 3px; }
+.rowhead { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr) auto; gap: 4px 18px; margin-bottom: 10px; align-items: baseline; }
+.status { display: inline-flex; align-items: center; gap: 7px; font-size: .87rem; color: var(--ink-2); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.status.running .dot { background: var(--edge); box-shadow: 0 0 0 3px oklch(82% .13 78 / .3); animation: breathe 2.4s ease-in-out infinite; }
+.status.running { color: var(--ink); }
+.status.failed { color: var(--fail); font-weight: 600; } .status.failed .dot { background: var(--fail); }
+.status.finished .dot { background: var(--ink); }
+.status.weak { color: var(--fail); font-weight: 600; } .status.weak .dot { background: var(--fail); }
+.status.partial { color: var(--ink); font-weight: 600; } .status.partial .dot { background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); border: 1.5px solid var(--ink); }
+.status.stopped .dot { background: transparent; border: 1.5px solid var(--ink-3); }
+@keyframes breathe { 50% { box-shadow: 0 0 0 6px oklch(82% .13 78 / .12); } }
+.placeholder { background: var(--film); height: 118px; opacity: .13; margin: 18px 0; }
+
+/* dataset page */
+.crumb { display: inline-flex; align-items: center; gap: 6px; font-size: .87rem; color: var(--ink-2); text-decoration: none; margin-bottom: 14px; }
+.crumb:hover { color: var(--ink); text-decoration: underline; }
+.crumb svg { width: 12px; height: 12px; }
+.pagehead { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
+.pagehead .meta { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.verdict { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; padding-bottom: 26px; align-items: start; }
+.verdict h1 { font-size: 2rem; }
+.verdict p { margin-top: 8px; font-size: 1.03rem; }
+.scale { position: relative; height: 22px; margin: 8px 0 6px; }
+.scale .line { position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--rule); }
+.scale .span { position: absolute; top: 10px; height: 2px; background: var(--ink-3); }
+.scale .ci { position: absolute; top: 7px; height: 8px; background: oklch(54% .205 28 / .28); }
+.scale i { position: absolute; top: 3px; width: 2px; height: 16px; background: var(--ink-3); margin-left: -1px; }
+.scale i.this { background: var(--grease); width: 4px; margin-left: -2px; top: 1px; height: 20px; }
+.legend { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; margin-bottom: 6px; font-size: .82rem; line-height: 1.3; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.legend > :nth-child(2) { text-align: center; } .legend > :last-child { text-align: right; }
+.legend b { color: var(--ink); font-weight: 600; }
+.legend .t { color: var(--grease-dark); }
+.sentence { font-size: .92rem; }
+.limits { font-size: .88rem; }
+.limits ul { margin: 4px 0 0; padding-left: 18px; color: var(--ink-2); }
+
+.stages { display: flex; margin: 0 0 22px; padding: 0; list-style: none; background: var(--film); color: oklch(68% .01 80); font-size: .8rem; line-height: 1.25; }
+.stages li { flex: 1; padding: 9px 10px; border-right: 1px solid var(--film-2); min-width: 0; }
+.stages li:last-child { border-right: 0; }
+.stages .done { color: oklch(88% .01 80); }
+.stages .active { background: var(--edge); color: var(--film); font-weight: 600; }
+.stages .halted { background: var(--fail); color: #fff; font-weight: 600; }
+.stages .skipped { text-decoration: line-through; }
+.stages small { display: block; font: 10px/1.3 var(--mono); opacity: .85; margin-top: 2px; }
+.stagehead { display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+
+.lay { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 0 36px; align-items: start; }
+.lay > .sheetcol { grid-column: 1; grid-row: 1; } .lay > .restcol { grid-column: 1; grid-row: 2; } .lay > .loupe { grid-column: 2; grid-row: 1 / span 2; }
+.loupe { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; padding: 16px; background: #fff; border: 1px solid var(--rule); border-radius: 3px; box-shadow: 0 8px 26px -14px oklch(21% .008 260 / .35); }
+.final { margin-top: 10px; padding: 10px 12px; background: var(--paper-2); border-radius: 3px; font-size: .92rem; }
+.loupe h2 { margin: 10px 0 2px; }
+.illus { font-size: .8rem; color: var(--ink-2); margin-top: 5px; }
+.block { margin-top: 18px; }
+.block > h3 { margin-bottom: 4px; }
+details { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 8px; }
+summary { cursor: pointer; font-weight: 600; font-size: .92rem; }
+summary:hover { text-decoration: underline; text-underline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: .86rem; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 600; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--ink-3); vertical-align: bottom; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+td.n, th.n { text-align: right; padding-right: 0; white-space: nowrap; }
+pre { font: .78rem/1.5 var(--mono); overflow: auto; margin: 8px 0 0; }
+pre.log { background: var(--film); color: oklch(88% .01 80); padding: 12px; max-height: 420px; white-space: pre-wrap; word-break: break-word; }
+
+.section { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.section > p { margin: 4px 0 12px; }
+.mapwrap { max-width: 640px; }
+.map text { font: 11px var(--sans); fill: var(--ink-2); }
+.map .lab { fill: var(--ink); font-weight: 600; }
+.map .pt { cursor: pointer; }
+.map .pt circle { fill: var(--ink-3); transition: r .15s var(--ease); }
+.map .pt.front circle { fill: var(--ink); }
+.map .pt.pick circle { fill: var(--grease); }
+.map .pt.sel circle { stroke: var(--edge); stroke-width: 3; }
+.map .pt:focus-visible { outline: none; } .map .pt:focus-visible circle { stroke: var(--grease); stroke-width: 3; }
+.heat td.c { text-align: center; width: 88px; font-variant-numeric: tabular-nums; border-left: 2px solid var(--paper); border-bottom: 2px solid var(--paper); padding: 6px 4px; }
+.heat th.c { text-align: center; padding: 5px 4px; }
+.checks { list-style: none; margin: 8px 0 0; padding: 0; }
+.checks li { display: flex; gap: 8px; padding: 5px 0; font-size: .9rem; }
+.checks li.bad { color: var(--fail); font-weight: 600; }
+
+/* forms and pages */
+.steps { display: grid; gap: 0; max-width: 860px; }
+.step { padding: 20px 0 24px; border-top: 1px solid var(--rule); }
+.step.off { opacity: .45; pointer-events: none; }
+.step > h2 { margin-bottom: 4px; }
+.step > p { margin-bottom: 12px; }
+.choices { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.choice { display: block; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 3px; background: #fff; cursor: pointer; text-align: left; transition: border-color .15s; }
+.choice:hover:not(:disabled) { border-color: var(--ink); }
+.choice:disabled { opacity: .55; cursor: not-allowed; }
+.choice[aria-pressed=true] { border-color: var(--grease); box-shadow: inset 0 0 0 1px var(--grease); }
+.choice b { display: block; }
+.choice span { display: block; font-size: .85rem; color: var(--ink-2); }
+.browser { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.browser button { padding: 3px 9px; border: 1px solid var(--rule); border-radius: 3px; background: #fff; cursor: pointer; font-size: .86rem; }
+.browser button:hover { border-color: var(--ink); }
+.pathline { background: var(--film); color: oklch(92% .01 80); padding: 18px 14px; border-radius: 2px; font: 1rem/2.1 var(--mono); overflow-x: auto; white-space: nowrap; }
+.tok { border: 0; border-bottom: 2px dashed oklch(70% .01 80); background: none; padding: 1px 3px; margin: 0 1px; cursor: pointer; color: inherit; font: inherit; }
+.tok:hover { background: var(--film-2); }
+.tok.keep { background: oklch(92% .01 80); color: var(--film); border-bottom-color: transparent; font-weight: 600; }
+.tok.hide { outline: 2.5px solid var(--grease); outline-offset: 1px; border-radius: 50% / 40%; border-bottom-color: transparent; font-weight: 600; }
+.tok.recording, .tok.scene { background: var(--wax); color: var(--film); border-bottom-color: transparent; font-weight: 600; }
+.sep { color: oklch(62% .01 80); }
+.pens { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px; margin: 12px 0; }
+.marks { display: grid; gap: 8px; margin-top: 12px; }
+.markrow { display: grid; grid-template-columns: 130px 170px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.good { color: var(--ink); }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.check { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; }
+.check input { margin-top: 4px; accent-color: var(--grease); }
+.vm { padding: 0 0 26px; }
+.vmhead { position: relative; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; background: var(--film); color: oklch(95% .01 80); padding: 17px 14px; }
+.vmhead::before, .vmhead::after { content: ""; position: absolute; left: 0; right: 0; height: 8px; background-image: linear-gradient(90deg, transparent 5px, var(--paper) 5px, var(--paper) 12px, transparent 12px); background-size: 17px 5px; background-repeat: repeat-x; background-position: 0 center; }
+.vmhead::before { top: 3px; } .vmhead::after { bottom: 3px; }
+.edgetext { font: 11px/1 var(--mono); color: var(--edge); }
+.vmgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 26px; margin-top: 10px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.empty { padding: 26px 0; max-width: 62ch; }
+.empty p { margin: 6px 0 14px; }
+
+@media (max-width: 1040px) { .lay { grid-template-columns: minmax(0, 1fr); } .lay > .sheetcol, .lay > .loupe, .lay > .restcol { grid-column: 1; grid-row: auto; } .lay > .loupe { margin-top: 24px; } .loupe { position: static; max-height: none; } .verdict { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 720px) {
+  .rowhead { grid-template-columns: minmax(0, 1fr); }
+  main { padding: 20px 16px 56px; } .top { padding: 10px 16px; gap: 12px; } .top nav { gap: 12px; } .top .btn { padding: 6px 10px; }
+  .choice, .btn { min-height: 44px; }
+  .verdict h1 { font-size: 1.55rem; }
+  .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip.small { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .strip.small .frame:nth-child(n+4) { display: none; }
+  .stages { flex-direction: column; } .stages li { border-right: 0; border-bottom: 1px solid var(--film-2); }
+  .markrow { grid-template-columns: 1fr 1fr; } .markrow .dim { grid-column: 1 / -1; }
+  .heat { display: block; overflow-x: auto; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/">privharness</a>
+  <nav aria-label="Main">
+    <a href="#/" data-nav="home">Datasets</a>
+    <a href="#/vms" data-nav="vms">VMs</a>
+  </nav>
+  <a class="btn primary" href="#/new">Test a dataset</a>
+</header>
+<main id="main" tabindex="-1"></main>
+<script>
+"use strict";
+/* ---------- DOM helpers: all data goes in as text nodes, never as HTML ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function h(tag, attrs, ...kids) {
+  const svg = tag.startsWith("svg:");
+  const el = svg ? document.createElementNS(NS, tag.slice(4)) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "value" && !svg) el.value = v;
+    else if (k === "checked" || k === "disabled" || k === "open") el[k] = !!v;
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(9)) if (c !== null && c !== undefined && c !== false) el.append(c.nodeType ? c : String(c));
+  return el;
+}
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({ error: "The UI server sent an unreadable answer." }));
+  if (!r.ok) throw new Error(j.error || "Something went wrong.");
+  return j;
+}
+const pct = (v, d = 1) => v === null || v === undefined ? "n/a" : Number(v).toFixed(d);
+const of100 = v => v === null || v === undefined ? "n/a" : String(clamp(Math.round(v * 100)));
+const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
+const icon = {
+  back: () => h("svg:svg", { viewBox: "0 0 12 12", "aria-hidden": "true" }, h("svg:path", { d: "M7.5 1.5 3 6l4.5 4.5", fill: "none", stroke: "currentColor", "stroke-width": "1.6", "stroke-linecap": "round", "stroke-linejoin": "round" })),
+  ok: () => h("svg:svg", { class: "tick", viewBox: "0 0 15 15", "aria-label": "Passed" }, h("svg:path", { d: "M2.5 8 6 11.5 12.5 3.5", fill: "none", stroke: "currentColor", "stroke-width": "1.8", "stroke-linecap": "round", "stroke-linejoin": "round" })),
+  warn: () => h("svg:svg", { class: "tick", viewBox: "0 0 15 15", "aria-label": "Worth checking" }, h("svg:path", { d: "M7.5 2.5v6.5M7.5 11.8v.4", fill: "none", stroke: "currentColor", "stroke-width": "1.9", "stroke-linecap": "round" })),
+  bad: () => h("svg:svg", { class: "tick", viewBox: "0 0 15 15", "aria-label": "Failed" }, h("svg:path", { d: "M3 3l9 9M12 3l-9 9", fill: "none", stroke: "currentColor", "stroke-width": "1.8", "stroke-linecap": "round" })),
+};
+
+/* ---------- Plain words for the harness's names ---------- */
+const RERUN = { _s1: "re-attack with a new random start", _s2: "re-attack with a second new random start", _e24: "re-attack with attackers trained twice as long", _dino: "re-attack with a different attacker type (DINOv2)" };
+function baseName(n) { for (const s in RERUN) if (n.endsWith(s)) return n.slice(0, -s.length); return n; }
+function plainName(n) {
+  const b = baseName(n);
+  let m;
+  if (b === "raw") return "Original footage";
+  if (b === "black") return "All-black video";
+  if (b === "gray") return "Black and white";
+  if ((m = b.match(/^blur(\d+)$/))) return `Blur, strength ${m[1]}`;
+  if ((m = b.match(/^down(\d+)$/))) return `Pixelated ×${m[1]}`;
+  if (b === "personbox_black") return "People blacked out";
+  if ((m = b.match(/^personbox_blur/))) return "People blurred";
+  if ((m = b.match(/^motion_down(\d+)$/))) return `Movement only, pixelated ×${m[1]}`;
+  if (b === "pose") return "Stick figures";
+  if (b === "pose_canon") return "Stick figures, identical bodies";
+  if ((m = b.match(/^pose_canon_down(\d+)$/))) return `Stick figures, identical bodies, pixelated ×${m[1]}`;
+  if ((m = b.match(/^bdq_down(\d+)$/))) return `Learned filter, pixelated ×${m[1]}`;
+  if (b.startsWith("bdq")) return "Learned filter";
+  return b;
+}
+function describe(n) {
+  const b = baseName(n);
+  if (b === "raw") return "The untouched video. Every score is measured against it.";
+  if (b === "black") return "Every frame is black. A safety check: no attacker should beat guessing on this.";
+  if (b === "gray") return "Removes colour and keeps everything else.";
+  if (b.startsWith("blur")) return "Blurs the whole picture, so fine detail such as faces is lost.";
+  if (b.startsWith("down")) return "Shrinks the picture so a block of pixels becomes one pixel.";
+  if (b === "personbox_black") return "Finds each person and paints over them. The background stays.";
+  if (b.startsWith("personbox")) return "Finds each person and blurs them. The background stays sharp.";
+  if (b.startsWith("motion")) return "Keeps only what changed between frames, so anything still disappears.";
+  if (b === "pose") return "Replaces the video with a stick figure of each person, drawn with their real body proportions.";
+  if (b.startsWith("pose_canon")) return "Replaces the video with stick figures that all share the same body proportions, so body shape cannot give someone away." + (b.includes("down") ? " The result is then pixelated." : "");
+  if (b.startsWith("bdq")) return "A filter trained by AI to keep the task while actively defeating attackers." + (b.includes("down") ? " The result is then pixelated." : "");
+  return "";
+}
+const VIEWS = { colour: "Overall colours and lighting", lowres: "A tiny, blurry version", scene: "The background, with people removed", person: "The person's appearance", body: "Body shape and posture", posture: "Posture alone", motion: "Movement alone", label: "Knowing only the task's answer" };
+function secretWord(s) { return s === "identity" ? "who is in it" : s === "attributes" ? "personal attributes" : s; }
+function taskWord(t) { return t === "action" || t === "actions" ? "the action" : t; }
+function attackerLabel(a) {
+  const [how, m] = a.split("/");
+  const kind = { frame_r50: "Single-frame attacker", r3d: "Video attacker", skeleton: "Body-movement attacker", frame_dino_probe: "Single-frame attacker (DINOv2 probe)", frame_dino_ft: "Single-frame attacker (DINOv2 fine-tuned)" }[m] || m;
+  return kind + (how === "frozen" ? ", trained on original footage" : ", trained on disguised footage");
+}
+function protoLabel(p) {
+  if (p === "within") return "New clips of what it trained on";
+  if (p === "cross_utility") return "Activities it never trained on";
+  if (p === "hardest") return "Never-seen activities, unseen test footage only";
+  if (p.startsWith("cross_")) return `A ${p.slice(6)} it never trained on`;
+  return p;
+}
+const overall = (p, u) => [p, u].map(band).includes("weak") ? "weak" : [p, u].map(band).includes("moderate") ? "moderate" : "strong";
+const band = p => p === null || p === undefined ? "unknown" : p >= .8 ? "strong" : p >= .5 ? "moderate" : "weak";
+function secretsOf(run) { return Object.keys(run.plan?.metrics || {}); }
+function taskOf(run) { const s = new Set(secretsOf(run)); return Object.keys(run.profile?.predictability || {}).find(k => !s.has(k)) || "the task"; }
+
+/* ---------- Frame illustrations: the harness's own config applied to one drawn scene ---------- */
+const W = 160, H = 120, TWO_PI = Math.PI * 2;
+const newCanvas = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; return c; };
+function joints(t, canon) {
+  const hipX = 84 + t * 7, hipY = 76, swing = .5 * Math.sin(TWO_PI * t), raise = 1.05 + .6 * Math.sin(TWO_PI * t);
+  const [torso, thigh, shin, upper, fore, head] = canon ? [25, 16, 16, 13, 13, 7] : [20, 13, 12, 15, 15, 9.5];
+  const neck = [hipX + 1, hipY - torso], polar = (o, len, a) => [o[0] + len * Math.sin(a), o[1] + len * Math.cos(a)];
+  const lk = polar([hipX, hipY], thigh, swing), rk = polar([hipX, hipY], thigh, -swing);
+  const le = polar(neck, upper, Math.PI - raise - .15), re = polar(neck, upper, -.45 + swing * .5);
+  return { hip: [hipX, hipY], neck, head, headC: [neck[0] + 1, neck[1] - head - 1], lk, rk, la: polar(lk, shin, swing - .12), ra: polar(rk, shin, -swing - .12), le, re, lh: polar(le, fore, Math.PI - raise * .55), rh: polar(re, fore, .15 + swing) };
+}
+function limb(c, pts, w, col) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = "round"; c.lineJoin = "round"; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); }
+function drawScene(t) {
+  const cv = newCanvas(), c = cv.getContext("2d");
+  c.fillStyle = "#c4ccc6"; c.fillRect(0, 0, W, H);
+  c.fillStyle = "#7d6a58"; c.fillRect(0, 92, W, 28);
+  c.fillStyle = "#5e4f43"; c.fillRect(0, 90, W, 3);
+  c.fillStyle = "#e9f1f6"; c.fillRect(14, 18, 34, 42); c.fillStyle = "#88a8bd"; c.fillRect(16, 42, 30, 16); c.fillStyle = "#f8f8f4"; c.fillRect(30, 18, 2, 42); c.fillRect(14, 38, 34, 2);
+  c.fillStyle = "#3e5c46"; c.fillRect(126, 22, 22, 15); c.fillStyle = "#b28a3f"; c.fillRect(131, 26, 12, 7); c.strokeStyle = "#2d2a26"; c.lineWidth = 1.5; c.strokeRect(126, 22, 22, 15);
+  c.fillStyle = "#955f3e"; c.fillRect(21, 82, 15, 13); c.fillStyle = "#3f7a4a"; [[28, 72, 9], [21, 77, 7], [35, 76, 7]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, TWO_PI); c.fill(); });
+  const j = joints(t, false);
+  limb(c, [j.hip, j.lk, j.la], 7, "#2b3a57"); limb(c, [j.hip, j.rk, j.ra], 7, "#25324c");
+  limb(c, [j.neck, j.re, j.rh], 5, "#963525");
+  limb(c, [j.neck, j.hip], 14, "#b3412f");
+  limb(c, [j.neck, j.le, j.lh], 5, "#b3412f");
+  c.fillStyle = "#d9a77f"; c.beginPath(); c.arc(j.headC[0], j.headC[1], j.head, 0, TWO_PI); c.fill();
+  c.fillStyle = "#35261c"; c.beginPath(); c.arc(j.headC[0], j.headC[1] - 2, j.head, Math.PI, TWO_PI); c.fill();
+  return cv;
+}
+const personBox = t => { const j = joints(t, false); const xs = [j.hip, j.lk, j.rk, j.la, j.ra, j.le, j.re, j.lh, j.rh].map(p => p[0]), ys = [j.hip, j.la, j.ra, j.lh, j.rh].map(p => p[1]); const x = Math.min(...xs) - 9, y = Math.min(j.headC[1] - j.head, ...ys) - 7; return [x, y, Math.max(...xs) + 9 - x, Math.max(...ys) + 7 - y]; };
+function boxBlur(cv, sigma) {
+  const c = cv.getContext("2d"), im = c.getImageData(0, 0, W, H), r = Math.max(1, Math.round(sigma)), d = im.data, t = new Uint8ClampedArray(d.length);
+  for (let pass = 0; pass < 3; pass++) for (const horiz of [true, false]) {
+    const n = horiz ? W : H, m = horiz ? H : W, step = horiz ? 4 : 4 * W, line = horiz ? 4 * W : 4;
+    for (let a = 0; a < m; a++) for (let ch = 0; ch < 3; ch++) {
+      const o = a * line + ch; let s = 0;
+      for (let i = -r; i <= r; i++) s += d[o + clamp(i, 0, n - 1) * step];
+      for (let i = 0; i < n; i++) { t[o + i * step] = s / (2 * r + 1); s += d[o + clamp(i + r + 1, 0, n - 1) * step] - d[o + clamp(i - r, 0, n - 1) * step]; }
+    }
+    for (let i = 0; i < d.length; i += 4) { d[i] = t[i]; d[i + 1] = t[i + 1]; d[i + 2] = t[i + 2]; }
+  }
+  const out = newCanvas(); out.getContext("2d").putImageData(im, 0, 0); return out;
+}
+function mapPixels(cv, fn) { const c = cv.getContext("2d"), im = c.getImageData(0, 0, W, H); for (let i = 0; i < im.data.length; i += 4) fn(im.data, i); const out = newCanvas(); out.getContext("2d").putImageData(im, 0, 0); return out; }
+function downsample(cv, f) { const sw = Math.max(1, Math.round(W / f)), sh = Math.max(1, Math.round(H / f)), s = document.createElement("canvas"); s.width = sw; s.height = sh; const sc = s.getContext("2d"); sc.imageSmoothingQuality = "high"; sc.drawImage(cv, 0, 0, sw, sh); const out = newCanvas(), oc = out.getContext("2d"); oc.imageSmoothingEnabled = false; oc.drawImage(s, 0, 0, W, H); return out; }
+function drawPose(t, canon) {
+  const cv = newCanvas(), c = cv.getContext("2d"), j = joints(t, canon);
+  c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
+  const cols = ["#f4f4f0", "#f0c060", "#70c0e0"];
+  limb(c, [j.neck, j.hip], 2.5, cols[0]); limb(c, [j.hip, j.lk, j.la], 2.5, cols[1]); limb(c, [j.hip, j.rk, j.ra], 2.5, cols[2]); limb(c, [j.neck, j.le, j.lh], 2.5, cols[1]); limb(c, [j.neck, j.re, j.rh], 2.5, cols[2]);
+  c.strokeStyle = cols[0]; c.lineWidth = 2; c.beginPath(); c.arc(j.headC[0], j.headC[1], canon ? 6 : j.head - 1, 0, TWO_PI); c.stroke();
+  return cv;
+}
+function diffPair(a, b, gain) { const da = a.getContext("2d").getImageData(0, 0, W, H).data, im = b.getContext("2d").getImageData(0, 0, W, H), d = im.data; for (let i = 0; i < d.length; i += 4) { const v = Math.min(255, gain * (Math.abs(d[i] - da[i]) + Math.abs(d[i + 1] - da[i + 1]) + Math.abs(d[i + 2] - da[i + 2])) / 3); d[i] = d[i + 1] = d[i + 2] = v; } const out = newCanvas(); out.getContext("2d").putImageData(im, 0, 0); return out; }
+function applyStage(cfg, pair, ts) {
+  const both = fn => [fn(pair[0], ts[0]), fn(pair[1], ts[1])];
+  switch (cfg.type) {
+    case "raw": return pair;
+    case "const": return both(() => { const k = newCanvas(), c = k.getContext("2d"); c.fillStyle = "#000"; c.fillRect(0, 0, W, H); return k; });
+    case "gray": return both(cv => mapPixels(cv, (d, i) => { d[i] = d[i + 1] = d[i + 2] = .299 * d[i] + .587 * d[i + 1] + .114 * d[i + 2]; }));
+    case "blur": return both(cv => boxBlur(cv, (cfg.sigma || 4) * .9));
+    case "down": case "pixelate": return both(cv => downsample(cv, cfg.factor || 8));
+    case "person_box": return both((cv, t) => { const out = newCanvas(), c = out.getContext("2d"); c.drawImage(cv, 0, 0); const [x, y, w, ht] = personBox(t); if (cfg.mode === "blur") { c.save(); c.beginPath(); c.rect(x, y, w, ht); c.clip(); c.drawImage(boxBlur(cv, (cfg.sigma || 16) * .55), 0, 0); c.restore(); } else { c.fillStyle = "#000"; c.fillRect(x, y, w, ht); } return out; });
+    case "diff": { const d = diffPair(pair[0], pair[1], cfg.gain || 4); return [d, d]; }
+    case "pose": return both((cv, t) => drawPose(t, !!cfg.canonical));
+    case "bdq": { const b = both(cv => boxBlur(cv, 1.5)), d = mapPixels(diffPair(b[0], b[1], 6), (px, i) => { const v = Math.round(px[i] / 64) * 64; px[i] = px[i + 1] = px[i + 2] = Math.min(255, v); }); return [d, d]; }
+    case "chain": return (cfg.stages || []).reduce((p, s) => applyStage(s, p, ts), pair);
+    default: return pair;
+  }
+}
+const frameCache = new Map();
+function frameURL(config) {
+  const key = JSON.stringify(config || { type: "raw" });
+  if (!frameCache.has(key)) { const ts = [.12, .2]; frameCache.set(key, applyStage(config || { type: "raw" }, [drawScene(ts[0]), drawScene(ts[1])], ts)[1].toDataURL()); }
+  return frameCache.get(key);
+}
+
+/* ---------- Grease-pencil marks ---------- */
+function markSVG(cls, d) { return h("svg:svg", { class: `mark ${cls}`, viewBox: "0 0 100 75", preserveAspectRatio: "none", "aria-hidden": "true" }, h("svg:path", { d })); }
+const pickCircle = () => markSVG("pick", "M50 4C74 2 96 13 97 36 98 58 75 72 49 71 23 70 3 57 3 36 3 15 24 3 53 5 74 6 92 16 94 34");
+const altCircle = () => markSVG("alt", "M10 67C28 70 52 70 74 66");
+const crossOut = () => markSVG("cross", "M8 8 92 68M90 7 10 69");
+const pickWord = () => h("svg:svg", { class: "pickword", viewBox: "0 0 36 12", role: "img", "aria-label": "The pick" },
+  ["M2 11 3 1Q9 0 9 4 9 7 3 7", "M13 1 12.5 11", "M23 2Q17 0 16.5 6 16.5 12 23 10", "M27 1 26.5 11M33 1 27 6.5 34 11"].map(d => h("svg:path", { d })));
+
+/* ---------- App state and routing ---------- */
+const S = { state: null, run: null, runKey: null, sel: null, open: {}, seen: {}, lastJSON: "", log: null, stopConfirm: false, busy: false, error: null };
+const main = document.getElementById("main");
+function route() { const p = location.hash.replace(/^#\/?/, "").split("/").map(decodeURIComponent); return { page: p[0] || "home", a: p[1], b: p[2] }; }
+function det(key, title, ...kids) { return h("details", { open: !!S.open[key], ontoggle: e => { S.open[key] = e.target.open; } }, h("summary", {}, title), ...kids); }
+function render(keepScroll = true) {
+  const r = route(), y = window.scrollY;
+  document.querySelectorAll("[data-nav]").forEach(a => { const on = a.dataset.nav === (r.page === "sheet" ? "home" : r.page); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  const view = r.page === "sheet" ? viewSheet : r.page === "vms" ? viewVMs : r.page === "new" ? viewNew : viewHome;
+  main.replaceChildren(view(r));
+  if (keepScroll) window.scrollTo(0, y);
+}
+function statusLine(s) {
+  const cur = s.stages.find(x => x.id === s.current);
+  const where = cur ? `${cur.label}${cur.detail ? `, ${cur.detail}` : ""}` : "";
+  if (s.status === "running") return `Running: ${where || "starting up"}`;
+  if (s.status === "failed") return `Failed at: ${where}`;
+  if (s.status === "stopped") return `Stopped at: ${where}`;
+  if (s.status === "starting") return "Starting";
+  return "Finished";
+}
+const statusEl = s => h("span", { class: `status ${s.status}` }, h("span", { class: "dot" }), statusLine(s));
+
+/* ---------- Home ---------- */
+function frameEl(f, run, opts = {}) {
+  const done = run.evaluated.includes(f.name), failed = run.failed.includes(f.name);
+  const running = run.status === "running" && !done && (run.current === "evaluate" || run.current === "robustness");
+  const cls = ["frame", failed ? "failed" : !done && run.status !== "finished" ? (running && opts.activeOK ? "active" : "pending") : "", opts.selected ? "selected" : "", opts.develop ? "develop" : ""].join(" ");
+  const inner = [h("span", { class: "film" }, h("img", { src: frameURL(f.config), alt: "" }), opts.edge ? h("span", { class: "edge" }, opts.edge) : null), run.best === f.name ? pickCircle() : opts.alt ? altCircle() : failed ? crossOut() : null];
+  return { cls, inner };
+}
+function viewHome() {
+  const st = S.state;
+  const head = h("div", { class: "intro" }, h("div", {}, h("h1", {}, "Datasets"), h("p", { class: "dim measure" }, "Each strip is a dataset. Every frame is one way of disguising it, and the red circle marks the best one found after attacking them all. The frames are drawings of what each disguise does, not your footage.")));
+  if (!st) return h("div", {}, head, h("div", { class: "placeholder" }), h("div", { class: "placeholder" }));
+  const rank = { running: 0, failed: 1, stopped: 2, starting: 0, finished: 3 };
+  const runs = [...st.runs].sort((a, b) => rank[a.status] - rank[b.status] || a.name.localeCompare(b.name));
+  if (!runs.length) return h("div", {}, head, h("div", { class: "empty" }, h("h2", {}, "No datasets tested yet"), h("p", { class: "dim" }, "Add a GPU machine you can reach over SSH, then point the harness at your videos. It works out what to try and tells you what it finds."), h("a", { class: "btn primary", href: "#/new" }, "Test a dataset")));
+  return h("div", {}, head, runs.map(run => {
+    const grade = run.status === "finished" && run.best ? overall(run.privacy, run.utility) : null;
+    const sentence = grade ? `${{ strong: "Strong", moderate: "Partial", weak: "Weak" }[grade]} result: ${plainName(run.best).charAt(0).toLowerCase() + plainName(run.best).slice(1)}. Hides ${of100(run.privacy)}, keeps ${of100(run.utility)}.` : statusLine(run);
+    return h("a", { class: "row", href: `#/sheet/${encodeURIComponent(run.host)}/${encodeURIComponent(run.name)}` },
+      h("div", { class: "rowhead" }, h("h2", {}, run.name), h("span", { class: `status ${run.status} ${grade === "weak" ? "weak" : grade === "moderate" ? "partial" : ""}` }, h("span", { class: "dot" }), sentence), h("span", { class: "small dim" }, run.place, run.reachable ? null : ", not answering")),
+      h("div", { class: "strip small" }, run.frames.map(f => { const e = frameEl(f, run); return h("span", { class: e.cls }, e.inner); })));
+  }));
+}
+
+/* ---------- Dataset page ---------- */
+function scaleView({ low, high, value, lo, hi }) {
+  const left = clamp(Math.min(low, high)), right = clamp(Math.max(low, high));
+  return h("div", { class: "scale", "aria-hidden": "true" }, h("span", { class: "line" }), h("span", { class: "span", style: `left:${left}%;width:${right - left}%` }),
+    lo !== undefined ? h("span", { class: "ci", style: `left:${clamp(lo)}%;width:${Math.max(.5, clamp(hi) - clamp(lo))}%` }) : null,
+    h("i", { style: `left:${clamp(low)}%` }), h("i", { style: `left:${clamp(high)}%` }), h("i", { class: "this", style: `left:${clamp(value)}%` }));
+}
+function secretBlock(run, s, row, head) {
+  const metric = run.plan?.metrics?.[s], top1 = metric === "top1", task = taskWord(taskOf(run));
+  const guess = row.label_only > row.chance + .5 ? `Knowing only ${task}` : "Random guessing";
+  const sentence = top1
+    ? `That is because the strongest attacker was right ${pct(row.score)}% of the time (likely between ${pct(row.lo)} and ${pct(row.hi)}), against ${pct(row.base)} by ${guess.toLowerCase()} and ${pct(row.raw)} on the original footage.`
+    : `That is because the strongest attacker scored ${pct(row.score)} of 100 (likely between ${pct(row.lo)} and ${pct(row.hi)}), against ${pct(row.base)} by ${guess.toLowerCase()} and ${pct(row.raw)} on the original footage${metric === "conditional" ? `, counting only what goes beyond ${task}` : ""}.`;
+  return h("div", {}, h("h3", {}, head || `Hiding ${secretWord(s)}: ${band(row.privacy)}, ${of100(row.privacy)} of 100`),
+    scaleView({ low: row.base, high: row.raw, value: row.score, lo: row.lo, hi: row.hi }),
+    h("div", { class: "legend" }, h("span", {}, `Best: ${guess.toLowerCase()} `, h("b", {}, pct(row.base))), h("span", { class: "t" }, "This disguise ", h("b", {}, pct(row.score))), h("span", {}, "Worst: original footage ", h("b", {}, pct(row.raw)))),
+    h("p", { class: "sentence dim" }, sentence));
+}
+function taskBlock(run, u, head) {
+  const t = taskOf(run);
+  return h("div", {}, h("h3", {}, head || `Keeping ${taskWord(t)} usable: ${band(u.retention)}, ${of100(u.retention)} of 100`),
+    scaleView({ low: u.chance, high: u.raw, value: u.score, lo: u.lo, hi: u.hi }),
+    h("div", { class: "legend" }, h("span", {}, "Worst: random guessing ", h("b", {}, pct(u.chance))), h("span", { class: "t" }, "This disguise ", h("b", {}, pct(u.score))), h("span", {}, "Best: original footage ", h("b", {}, pct(u.raw)))),
+    h("p", { class: "sentence dim" }, `That is because a model trained on the disguised video scored ${pct(u.score)} (likely between ${pct(u.lo)} and ${pct(u.hi)}), against ${pct(u.chance)} by random guessing and ${pct(u.raw)} on the original footage.`));
+}
+function explainFailure(lines) {
+  const t = lines.join("\n");
+  if (/out of memory/i.test(t)) return { cause: "The VM ran out of graphics memory.", fix: "Resume it to run one attack at a time, which uses less memory.", parallel: 1 };
+  if (/no space left/i.test(t)) return { cause: "The VM ran out of disk space.", fix: "Free some space on the VM, then resume." };
+  if (/no rows matched/i.test(t)) return { cause: "None of the files matched the labels you set up.", fix: "Start a new test and check the file naming." };
+  if (/nothing decoded|unsupported media/i.test(t)) return { cause: "The video files could not be read.", fix: "Check that the files open normally on the VM, then start a new test." };
+  if (/ModuleNotFoundError|No module named/.test(t)) return { cause: "The VM is missing a library the harness needs.", fix: "Set the VM up again from the VMs page, then resume." };
+  return { cause: "The harness hit an error it could not recover from.", fix: "Its last output is below. You can try resuming." };
+}
+function viewVerdict(run) {
+  const rep = run.report, rec = rep?.recommendation;
+  if (!rec?.best) {
+    const cur = run.stages.find(x => x.id === run.current), why = run.status === "failed" ? explainFailure(run.console_tail) : null;
+    const title = why ? why.cause : run.status === "stopped" ? "This test is not running, so there is no verdict yet." : "No verdict yet.";
+    const next = why ? why.fix : run.status === "running" ? `It is working on: ${cur?.label.toLowerCase() || "starting up"}. You can close this page or your laptop, and the VM keeps going.` : run.status === "starting" ? "The VM is getting started." : run.shortlist.length ? `It chose ${run.shortlist.length} disguises for full attacks, but ${run.evaluated.length ? `only ${run.evaluated.length} finished` : "none of those attacks have finished"}.` : "";
+    return h("section", { class: "verdict" }, h("div", {}, h("h1", {}, title), h("p", { class: "dim measure" }, next)));
+  }
+  const name = plainName(rec.best), low = name.charAt(0).toLowerCase() + name.slice(1), hides = band(run.privacy), keeps = band(run.utility);
+  const hidesWell = Object.entries(rep.scored).some(([n, v]) => n !== "black" && band(v.privacy) === "strong");
+  const title = hides === "weak" ? (hidesWell ? `Nothing tried both hides this well and stays useful. The closest is ${low}.` : `Nothing tried hides this well. The closest is ${low}.`) : hides === "moderate" ? `The best disguise found, ${low}, only partly hides this.` : keeps === "weak" ? `${name} hides this, but much of the data's use is lost.` : `The best disguise found is ${low}.`;
+  const line = hides === "strong" ? "It hides this well" : hides === "moderate" ? "It hides part of this, not all of it" : "Attackers can still recover much of what should be hidden";
+  const line2 = keeps === "strong" ? "and the data stays useful." : keeps === "moderate" ? "and the data stays partly useful." : "and much of the data's usefulness is lost.";
+  const reran = (rec.robustness || []).length > 0 && run.stages.find(x => x.id === "robustness")?.state === "done";
+  return h("section", { class: "verdict" },
+    h("div", {}, h("h1", {}, title),
+      h("p", {}, reran ? `${line}, ${line2} After being attacked again from new angles, it hides ${of100(run.privacy)} of 100 and keeps ${of100(run.utility)} of 100.` : `${line}, ${line2} It hides ${of100(run.privacy)} of 100 and keeps ${of100(run.utility)} of 100, ${run.status === "running" ? "so far. Re-attacks are under way, so these scores may still drop." : "but it has not been re-attacked, so this result is not certified."}`)),
+    h("div", { class: "limits" }, h("h3", {}, "What this does not prove"), h("ul", {},
+      h("li", {}, "A cleverer attacker than the ones tried here could do better. \u201cCertified\u201d means it held up against these attackers, not all attackers."),
+      h("li", {}, "No attacker tried to rebuild the original video. They only tried to recognise what should be hidden."),
+      h("li", {}, "The winner was chosen using the same test footage it is scored on, so these numbers may be slightly optimistic."))));
+}
+function viewStages(run) {
+  return h("ol", { class: "stages", "aria-label": "Progress" }, run.stages.map(s => h("li", { class: s.state, "aria-current": s.state === "active" ? "step" : null }, s.label, s.detail ? h("small", {}, s.detail) : null, s.state === "skipped" ? h("small", {}, "skipped") : null, s.state === "halted" ? h("small", {}, run.status === "failed" ? "failed here" : "stopped here") : null)));
+}
+function sheetFrames(run) {
+  const cand = run.plan?.candidates || {}, scored = run.report?.scored || {}, rec = run.report?.recommendation || {};
+  const main = Object.keys(scored).filter(n => cand[n]);
+  const rest = run.shortlist.filter(n => !scored[n] && cand[n]);
+  const order = [...main.filter(n => n !== "raw" && n !== "black").sort((a, b) => (scored[b].pus || 0) - (scored[a].pus || 0)), ...rest.filter(n => n !== "raw" && n !== "black"), ...["raw", "black"].filter(n => scored[n] || run.shortlist.includes(n))];
+  return { order, cand, scored, rec };
+}
+function selectFrame(n) {
+  S.sel = n; render();
+  if (window.matchMedia("(max-width: 1040px)").matches) document.querySelector(".loupe")?.scrollIntoView({ block: "start" });
+}
+function viewSheetGrid(run) {
+  const { order, cand, scored, rec } = sheetFrames(run);
+  if (!order.length && !["running", "starting"].includes(run.status)) return h("p", { class: "dim" }, "It stopped before choosing which disguises to attack, so there is nothing to show yet.");
+  if (!order.length) return h("div", { class: "empty" }, h("h2", {}, "The sheet fills in here"), h("p", { class: "dim" }, "Once the harness has chosen which disguises to attack, each one appears as an undeveloped frame and develops when its attacks finish."));
+  const seen = S.seen[run.name] = S.seen[run.name] || null;
+  const fresh = seen ? run.evaluated.filter(n => !seen.includes(n)) : [];
+  S.seen[run.name] = run.evaluated;
+  return h("div", { class: "strip" }, order.map((n, i) => {
+    const v = scored[n], tag = n !== rec.best && n === rec.privacy_first ? "Hides the most (still usable)" : n !== rec.best && n === rec.utility_first ? "Keeps the most (still hides)" : null;
+    const e = frameEl({ name: n, config: cand[n].config }, run, { edge: `${i + 1}A`, selected: S.sel === n, develop: fresh.includes(n), alt: !!tag, activeOK: true });
+    const state = run.failed.includes(n) ? "Attack run failed" : v ? null : run.evaluated.includes(n) ? "Attacked, waiting for the report" : run.status === "running" ? "Waiting for attacks" : "Not attacked";
+    const label = `${plainName(n)}. ${v ? `Hides ${of100(n === rec.best ? run.privacy : v.privacy)}, keeps ${of100(n === rec.best ? run.utility : v.utility.retention)}.` : state}${n === rec.best ? " The pick." : ""}`;
+    return h("div", {}, h("button", { class: e.cls, type: "button", "aria-pressed": String(S.sel === n), "aria-label": label, onclick: () => selectFrame(n) }, e.inner),
+      h("div", { class: "cap" }, n === rec.best ? pickWord() : null, h("b", {}, plainName(n)),
+        v ? h("span", { class: "scores" }, h("span", {}, "Hides ", h("b", {}, of100(n === rec.best ? run.privacy : v.privacy))), h("span", {}, "Keeps ", h("b", {}, of100(n === rec.best ? run.utility : v.utility.retention)))) : h("span", { class: "scores" }, state),
+        tag ? h("span", { class: "tag" }, tag) : null, n === "raw" || n === "black" ? h("span", { class: "scores" }, n === "raw" ? "Reference" : "Safety check") : null));
+  }));
+}
+function viewMap(run) {
+  const rep = run.report, scored = rep?.scored || {}, cand = run.plan?.candidates || {};
+  const pts = Object.keys(scored).filter(n => cand[n] && !["raw", "black"].includes(n) && baseName(n) === n && scored[n].privacy !== null && scored[n].utility.retention !== null);
+  if (pts.length < 2) return null;
+  const w = 620, ht = 400, pad = 46, x = v => pad + clamp(v, 0, 1) * (w - pad - 18), y = v => ht - pad - clamp(v, 0, 1) * (ht - pad - 14);
+  const front = (rep.frontier || []).filter(n => pts.includes(n)).sort((a, b) => scored[a].utility.retention - scored[b].utility.retention);
+  const labelled = new Set([rep.recommendation.best, S.sel]);
+  const axis = [0, .25, .5, .75, 1];
+  return h("section", { class: "section mapwrap" }, h("h2", {}, "The trade-off"), h("p", { class: "dim small" }, "Higher hides more. Further right keeps more. The top right corner would be perfect, and the dashed line joins the disguises nothing else beats on both."),
+    h("svg:svg", { class: "map", viewBox: `0 0 ${w} ${ht}`, role: "group", "aria-label": "Each disguise by how much it hides and keeps" },
+      axis.map(a => [h("svg:line", { x1: x(a), x2: x(a), y1: y(0), y2: y(1), stroke: "var(--rule)" }), h("svg:line", { x1: x(0), x2: x(1), y1: y(a), y2: y(a), stroke: "var(--rule)" }), h("svg:text", { x: x(a), y: ht - pad + 16, "text-anchor": "middle" }, String(a * 100)), h("svg:text", { x: pad - 8, y: y(a) + 4, "text-anchor": "end" }, String(a * 100))]),
+      h("svg:text", { x: x(.5), y: ht - 8, "text-anchor": "middle", class: "lab" }, "Keeps"), h("svg:text", { x: 13, y: y(.5), "text-anchor": "middle", class: "lab", transform: `rotate(-90 13 ${y(.5)})` }, "Hides"),
+      front.length > 1 ? h("svg:polyline", { points: front.map(n => `${x(scored[n].utility.retention)},${y(scored[n].privacy)}`).join(" "), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1.2, "stroke-dasharray": "4 4" }) : null,
+      pts.map(n => { const v = scored[n], px = x(v.utility.retention), py = y(v.privacy), isPick = n === rep.recommendation.best;
+        return h("svg:g", { class: `pt ${front.includes(n) ? "front" : ""} ${isPick ? "pick" : ""} ${S.sel === n ? "sel" : ""}`, tabindex: 0, role: "button", "aria-label": `${plainName(n)}: hides ${of100(v.privacy)}, keeps ${of100(v.utility.retention)}`, onclick: () => selectFrame(n), onkeydown: e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectFrame(n); } } },
+          h("svg:title", {}, `${plainName(n)}: hides ${of100(v.privacy)}, keeps ${of100(v.utility.retention)}`), h("svg:circle", { cx: px, cy: py, r: isPick ? 7 : 5 }),
+          labelled.has(n) ? h("svg:text", { x: px > w * .62 ? px - 11 : px + 11, y: py + 4, "text-anchor": px > w * .62 ? "end" : "start", class: "lab" }, plainName(n)) : null); })));
+}
+function viewLoupe(run) {
+  const { cand, scored, rec } = sheetFrames(run), n = S.sel, c = cand[n];
+  if (!c) return null;
+  const v = scored[n], screen = run.screen?.[n], prof = secretsOf(run);
+  const reruns = n === rec.best ? (rec.robustness || []).filter(r => scored[r]) : [];
+  const attackerRows = v ? prof.flatMap(s => Object.entries(v.secrets[s]?.within?.attackers || {}).sort((a, b) => b[1] - a[1]).map(([a, sc]) => h("tr", {}, h("td", {}, attackerLabel(a), prof.length > 1 ? ` (${secretWord(s)})` : ""), h("td", { class: "n" }, pct(sc))))) : [];
+  return h("aside", { class: "loupe", "aria-label": `Details for ${plainName(n)}` },
+    h("span", { class: "film" }, h("img", { src: frameURL(c.config), alt: `Illustration of ${plainName(n)} applied to a drawn scene` })),
+    h("p", { class: "illus" }, "A drawn scene with this disguise applied, not your footage."),
+    h("h2", {}, plainName(n)), h("p", { class: "small dim" }, describe(n)),
+    v && n === rec.best && reruns.length ? h("p", { class: "final" }, "Final scores: ", h("b", {}, `hides ${of100(run.privacy)}, keeps ${of100(run.utility)}`), ". These are the worst results across every re-attack, so they can sit below the first round shown here.") : null,
+    v ? h("div", {},
+      prof.map(s => { const r = v.secrets[s]?.within; return r && "score" in r ? h("div", { class: "block" }, secretBlock(run, s, r, n === rec.best ? `Hiding ${secretWord(s)}: ${of100(r.privacy)} of 100 in the first round` : null)) : h("p", { class: "block small dim" }, `${secretWord(s)} could not be scored: ${r?.skip || "no result"}.`); }),
+      h("div", { class: "block" }, taskBlock(run, v.utility, n === rec.best ? `Keeping ${taskWord(taskOf(run))} usable: ${of100(v.utility.retention)} of 100 in the first round` : null)),
+      reruns.length ? h("div", { class: "block" }, h("h3", {}, "Attacked again"), h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Re-attack"), h("th", { class: "n" }, "Hides"), h("th", { class: "n" }, "Keeps"))), h("tbody", {}, reruns.map(r => h("tr", {}, h("td", {}, RERUN[r.slice(baseName(r).length)].replace(/^re-attack with /, "").replace(/^./, m => m.toUpperCase())), h("td", { class: "n" }, of100(scored[r].privacy)), h("td", { class: "n" }, of100(scored[r].utility.retention))))))) : null,
+      det("proto", "Harder tests", h("p", { class: "small dim" }, "How much it still hides when the attacker faces something it did not train on."), h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Test"), h("th", { class: "n" }, "Hides"))), h("tbody", {}, prof.flatMap(s => Object.entries(v.secrets[s] || {}).map(([p, r]) => h("tr", {}, h("td", {}, protoLabel(p), prof.length > 1 ? ` (${secretWord(s)})` : ""), h("td", { class: "n" }, "score" in r ? of100(r.privacy) : `skipped: ${r.skip}`))))))),
+      attackerRows.length ? det("att", "Every attacker", h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Attacker"), h("th", { class: "n" }, "Score"))), h("tbody", {}, attackerRows))) : null,
+      det("cfg", "Technical details", h("p", { class: "small" }, "Hides is the privacy score and Keeps is the utility score. Overall trade-off (PUS): ", h("b", {}, pct(v.pus)), ". Our wording: 80 and up is strong, 50 to 79 moderate, below 50 weak."), h("p", { class: "small" }, "Harness name: ", h("span", { class: "mono" }, n)), h("pre", {}, JSON.stringify(c.config, null, 1)))
+    ) : h("div", { class: "block" }, h("p", { class: "small" }, run.failed.includes(n) ? "Its attack run failed, so it has no scores. Check its log below." : run.evaluated.includes(n) ? "Its attacks have finished. Scores appear when the report is written." : "It has not been fully attacked yet."),
+      screen?.privacy !== undefined ? h("p", { class: "small dim" }, `The quick test estimated hides ${of100(screen.privacy)}, keeps ${of100(screen.utility)}. Quick estimates are not final scores.`) : null));
+}
+function viewInfoMap(run) {
+  const pr = run.profile?.predictability; if (!pr) return null;
+  const secrets = secretsOf(run), targets = Object.keys(pr).sort(a => secrets.includes(a) ? 1 : -1);
+  const pick = t => Object.entries(pr[t]).filter(([k]) => VIEWS[k] && k !== "label").sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => VIEWS[k].toLowerCase());
+  const shade = v => { const a = clamp(v, 0, 1), l = 96 - a * 68; return `background:oklch(${l}% .004 260);color:${l < 62 ? "#fff" : "var(--ink)"}`; };
+  return h("section", { class: "section" }, h("h2", {}, "Where the information lives"),
+    h("p", { class: "dim measure" }, targets.map(t => `${secrets.includes(t) ? secretWord(t) : taskWord(t)} ${t === "attributes" ? "show" : "shows"} most in ${pick(t).join(" and ")}`.replace(/^./, m => m.toUpperCase())).join(". ") + ". This is why some disguises were tried before others."),
+    h("table", { class: "heat", style: "max-width:720px" }, h("thead", {}, h("tr", {}, h("th", {}, "If you could see only…"), targets.map(t => h("th", { class: "c" }, secrets.includes(t) ? secretWord(t) : taskWord(t))))),
+      h("tbody", {}, Object.keys(VIEWS).map(k => h("tr", {}, h("td", {}, VIEWS[k]), targets.map(t => { const v = pr[t][k]; return v === undefined ? h("td", { class: "c dim" }, "n/a") : h("td", { class: "c", style: shade(v) }, `${Math.round(clamp(v, 0, 1) * 100)}%`); }))))),
+    h("p", { class: "small dim", style: "margin-top:8px" }, "How much of it can be told from that part of the video alone, compared with the whole video. A rough guide used to plan the search, not a privacy score."),
+    run.plan?.reasons?.length ? det("reasons", "The harness's reasoning", h("ul", { class: "small" }, run.plan.reasons.map(r => h("li", {}, r)))) : null);
+}
+function viewChecks(run) {
+  const rep = run.report, ing = run.ingest || {}, warn = [...(ing.warnings || []), ...(run.plan?.warnings || [])];
+  if (!rep && !warn.length && !run.ingest) return null;
+  const notes = (run.plan?.warnings || []).filter(w => /^R3\b/.test(w)), warned = warn.filter(w => !notes.includes(w));
+  const dups = ing.near_duplicates_across_split || 0, dropped = ing.decode_failed || 0, problems = warned.length + (dups ? 1 : 0) + (dropped ? 1 : 0) + run.failed.length;
+  const checks = rep?.checks || [], bad = checks.filter(c => !c.ok), name = { measurable: "Original footage leaks measurably more than guessing", "black control": "All-black video scores no better than guessing" };
+  const frozen = rep ? Object.entries(rep.scored).flatMap(([n, v]) => Object.values(v.secrets).map(s => s.within?.frozen_understates_by).filter(g => g !== undefined)) : [];
+  const med = frozen.length ? [...frozen].sort((a, b) => a - b)[Math.floor(frozen.length / 2)] : null;
+  return h("section", { class: "section" }, h("h2", {}, "Were the tests sound?"),
+    h("p", { class: "dim measure" }, [rep ? (bad.length ? `${bad.length} of ${checks.length} final checks failed, so treat these results with care.` : `The ${checks.length} final checks passed.`) : "The final checks run when the report is written.", problems ? ` ${problems} other problem${problems === 1 ? "" : "s"} to weigh:` : ""].join("")),
+    h("ul", { class: "checks" }, run.failed.map(n => h("li", { class: "bad" }, icon.bad(), `The attack run for ${plainName(n)} failed, so it is missing from the results.`)),
+      bad.map(c => h("li", { class: "bad" }, icon.bad(), `${name[c.check] || c.check} (${secretWord(c.secret)}, ${protoLabel(c.protocol).toLowerCase()}): ${c.detail}`)),
+      warned.map(w => h("li", { class: "bad" }, icon.bad(), w.replace(/^R\d+:\s*/, ""))),
+      notes.map(() => h("li", {}, icon.warn(), `Knowing only ${taskWord(taskOf(run))} already predicts ${secretsOf(run).map(secretWord).join(" and ")}, so scores count only what the footage reveals beyond that.`)),
+      run.ingest ? h("li", { class: ing.near_duplicates_across_split ? "bad" : "" }, ing.near_duplicates_across_split ? icon.bad() : icon.ok(), ing.near_duplicates_across_split ? `${ing.near_duplicates_across_split} near-duplicate recordings appear on both the training and test sides, which can make attackers look stronger or weaker than they are.` : "No near-duplicate footage across training and test.") : null,
+      ing.decode_failed ? h("li", { class: "bad" }, icon.bad(), `${ing.decode_failed} files could not be read and were left out.`) : null,
+      checks.length && !bad.length ? h("li", {}, icon.ok(), "All-black and original footage behaved as they should.") : null,
+      rep?.screen_rank_correlation !== undefined ? h("li", {}, icon.ok(), `The quick test agreed with the full attacks (rank correlation ${pct(rep.screen_rank_correlation, 2)}).`) : null,
+      med !== null ? h("li", {}, icon.ok(), `Attackers trained only on original footage would have understated the leak by a median of ${pct(med)} points, which is why they are not the headline.`) : null),
+    checks.length ? det("checks", `Every check (${checks.length})`, h("ul", { class: "checks" }, checks.map(c => h("li", { class: c.ok ? "" : "bad" }, c.ok ? icon.ok() : icon.bad(), `${name[c.check] || c.check}, ${secretWord(c.secret)}, ${protoLabel(c.protocol).toLowerCase()}: ${c.detail}`)))) : null);
+}
+function viewLogs(run) {
+  const log = S.log && S.log.key === run.host + run.name ? S.log : null;
+  const pick = async file => { try { const r = await api(`/api/log?host=${encodeURIComponent(run.host)}&name=${encodeURIComponent(run.name)}&file=${encodeURIComponent(file)}`); S.log = { key: run.host + run.name, ...r }; } catch (e) { S.log = { key: run.host + run.name, file, lines: [e.message] }; } render(); };
+  return h("section", { class: "section" }, h("h2", {}, "Logs"), h("p", { class: "dim small" }, "The harness's own record of what it did."), run.status === "finished" ? viewStages(run) : null,
+    h("label", { class: "field", style: "max-width:320px" }, h("span", { class: "small" }, "Show"), h("select", { onchange: e => pick(e.target.value) }, h("option", { value: "" }, "Choose a log"), run.logs.map(f => h("option", { value: f, selected: log?.file === f ? "selected" : null }, f)))),
+    log ? h("pre", { class: "log", tabindex: 0, "aria-label": `Contents of ${log.file}` }, log.lines.length ? log.lines.join("\n") : "This log is empty or has not arrived yet.") : null);
+}
+function viewSheet(r) {
+  const key = `${r.a}/${r.b}`, run = S.runKey === key ? S.run : null;
+  const crumb = h("a", { class: "crumb", href: "#/" }, icon.back(), "All datasets");
+  if (S.error && !run) return h("div", {}, crumb, h("div", { class: "err" }, S.error));
+  if (!run) return h("div", {}, crumb, h("h1", {}, r.b), h("div", { class: "placeholder" }));
+  const rec = run.report?.recommendation;
+  if (!S.sel || !(run.plan?.candidates || {})[S.sel]) S.sel = rec?.best || sheetFrames(run).order[0] || null;
+  const vmHost = run.host !== "local";
+  const canResume = vmHost && ["stopped", "failed"].includes(run.status);
+  const act = async (path, body, msg) => { S.busy = true; S.actionErr = null; render(); try { await api(path, body); S.stopConfirm = false; await refreshRun(); } catch (e) { S.actionErr = e.message; } S.busy = false; render(); };
+  const lastErr = vmHost && !run.reachable ? (S.state?.hosts || []).find(x => x.host === run.host)?.error : null;
+  return h("div", {}, crumb,
+    h("div", { class: "pagehead" }, h("div", { class: "meta" }, h("b", {}, run.name), h("span", { class: "small dim" }, run.place), statusEl(run)),
+      h("div", { class: "meta" },
+        run.status === "running" ? (S.stopConfirm
+          ? [h("span", { class: "small" }, "Stop all work on this test? Finished attacks are kept."), h("button", { class: "btn danger", disabled: S.busy, onclick: () => act("/api/stop", { host: run.host, name: run.name }) }, S.busy ? "Stopping" : "Yes, stop it"), h("button", { class: "btn", onclick: () => { S.stopConfirm = false; render(); } }, "Keep running")]
+          : h("button", { class: "btn", onclick: () => { S.stopConfirm = true; render(); } }, "Stop")) : null,
+        canResume ? h("button", { class: "btn", disabled: S.busy, onclick: () => act("/api/launch", { host: run.host, name: run.name, resume: true, options: { parallel: run.status === "failed" ? explainFailure(run.console_tail).parallel || 2 : 2 } }) }, S.busy ? "Resuming" : "Resume where it stopped") : null)),
+    lastErr ? h("div", { class: "err", style: "margin-bottom:16px" }, `This VM is not answering, so what you see is the last copy. ${lastErr}`) : null,
+    S.actionErr ? h("div", { class: "err", style: "margin-bottom:16px" }, S.actionErr) : null,
+    run.status === "finished" ? null : viewStages(run), viewVerdict(run),
+    run.status === "failed" && run.console_tail.length ? h("div", { style: "margin:-14px 0 24px" }, det("failure", "The last thing it printed", h("pre", { class: "log" }, run.console_tail.join("\n")))) : null,
+    h("div", { class: "lay" }, h("div", { class: "sheetcol" }, h("h2", {}, "The disguises"), sheetFrames(run).order.length ? h("p", { class: "small dim", style: "margin:2px 0 12px" }, "Drawings of what each disguise does, not your footage. Click one for its evidence.") : null, viewSheetGrid(run)), viewLoupe(run), h("div", { class: "restcol" }, viewMap(run), viewInfoMap(run), viewChecks(run), viewLogs(run))));
+}
+async function refreshRun() {
+  const r = route(); if (r.page !== "sheet") return;
+  const key = `${r.a}/${r.b}`;
+  try {
+    const run = await api(`/api/run?host=${encodeURIComponent(r.a)}&name=${encodeURIComponent(r.b)}`);
+    const js = JSON.stringify(run);
+    if (S.runKey === key && js === S.lastJSON) return;
+    if (S.runKey !== key) { S.sel = null; S.stopConfirm = false; S.actionErr = null; }
+    S.run = run; S.runKey = key; S.lastJSON = js; S.error = null;
+    render();
+  } catch (e) { S.error = e.message; if (S.runKey !== key) { S.run = null; render(); } }
+}
+
+/* ---------- VMs ---------- */
+function vmReady(st) { const p = st?.probe; return !!p && !st.error && p.harness && p.tmux && p.libraries; }
+function checkRow(ok, text) { return h("li", { class: ok ? "" : "bad" }, ok ? icon.ok() : icon.bad(), text); }
+function hostDetail(st) {
+  const p = st.probe;
+  if (!p) return st.error ? h("div", { class: "err", style: "margin-top:10px" }, st.error) : h("p", { class: "dim small" }, "Checking this VM…");
+  const g = p.gpus[0];
+  return h("div", {}, st.error ? h("div", { class: "err", style: "margin-top:10px" }, `Not answering now, so these details are from the last check. ${st.error}`) : null,
+    h("div", { class: "vmgrid" }, h("ul", { class: "checks" }, checkRow(!st.error, st.error ? "Not reachable" : `Connected to ${p.hostname}`), checkRow(p.gpus.length > 0, g ? `${p.gpus.length > 1 ? `${p.gpus.length} × ` : ""}${g.name}, ${g.util}% busy, ${Math.round(g.mem_used / 1024)} of ${Math.round(g.mem_total / 1024)} GB in use` : "No GPU found. The attacks need one."), checkRow(p.disk_free_gb >= 50, `${p.disk_free_gb} GB of disk free`)),
+      h("ul", { class: "checks" }, checkRow(p.harness, p.harness ? `Harness installed${p.commit ? ` (${p.commit})` : ""}` : "Harness not installed"), checkRow(p.libraries, p.libraries ? "Video and AI libraries installed" : "Video and AI libraries missing"), checkRow(p.tmux, p.tmux ? "Can keep working after you disconnect (tmux)" : "tmux missing, so work would stop on disconnect"))),
+    p.running.length ? h("p", { class: "small", style: "margin-top:6px" }, `Running now: ${p.running.join(", ")}`) : null,
+    p.setup?.running ? h("div", {}, h("p", { class: "status running", style: "margin-top:8px" }, h("span", { class: "dot" }), "Setting up this VM. This can take several minutes."), h("pre", { class: "log" }, p.setup.log.join("\n"))) : null,
+    !p.setup?.running && p.setup?.exit?.length && p.setup.exit[0] !== "0" ? h("div", {}, h("div", { class: "err", style: "margin-top:8px" }, "Setup did not finish. The VM's last messages:"), h("pre", { class: "log" }, p.setup.log.join("\n"))) : null);
+}
+const vm = { input: "", busy: {}, err: null, confirm: null };
+function viewVMs() {
+  const hosts = S.state?.hosts || [];
+  const add = async e => { e.preventDefault(); vm.err = null; vm.busy._add = true; render(); try { await api("/api/hosts/add", { host: vm.input.trim() }); vm.input = ""; await poll(); } catch (x) { vm.err = x.message; } vm.busy._add = false; render(); };
+  const act = (host, path) => async () => { vm.busy[host] = path; render(); try { await api(path, { host }); await poll(); } catch (x) { vm.err = x.message; } delete vm.busy[host]; vm.confirm = null; render(); };
+  return h("div", {}, h("div", { class: "intro" }, h("div", {}, h("h1", {}, "VMs"), h("p", { class: "dim measure" }, "The attacks need a GPU, so they run on machines you reach over SSH. They keep going when this computer sleeps or this page closes."))),
+    h("form", { class: "inline-form", style: "max-width:620px", onsubmit: add }, h("input", { type: "text", "aria-label": "VM address", placeholder: "ubuntu@203.0.113.7, or a name from your ssh config", value: vm.input, oninput: e => { vm.input = e.target.value; }, autocomplete: "off", spellcheck: "false" }), h("button", { class: "btn primary", disabled: !!vm.busy._add }, vm.busy._add ? "Connecting" : "Add VM")),
+    h("p", { class: "small dim measure", style: "margin:8px 0 18px" }, "It uses the SSH keys already on this computer, and never asks for or stores a password. If plain ssh to the VM logs you in without a password, this will work too. Results copied back contain scores and logs only. Your videos stay on the VM."),
+    vm.err ? h("div", { class: "err", style: "margin-bottom:14px;max-width:620px" }, vm.err) : null,
+    hosts.length ? hosts.map(st => { const b = vm.busy[st.host], p = st.probe, needs = p && (!p.harness || !p.tmux || !p.libraries);
+      return h("div", { class: "vm" }, h("div", { class: "vmhead" }, h("h2", {}, st.host), st.checked ? h("span", { class: "edgetext" }, `Checked ${new Date(st.checked * 1000).toLocaleTimeString()}`) : null), hostDetail(st),
+        h("div", { class: "actions" }, needs && !p.setup?.running && !st.error ? h("button", { class: "btn primary", disabled: !!b, onclick: act(st.host, "/api/hosts/setup") }, b === "/api/hosts/setup" ? "Starting setup" : "Set up this VM") : null,
+          vmReady(st) ? h("a", { class: "btn", href: "#/new" }, "Test a dataset here") : null,
+          h("button", { class: "btn", disabled: !!b, onclick: act(st.host, "/api/hosts/refresh") }, b === "/api/hosts/refresh" ? "Checking" : "Check again"),
+          vm.confirm === st.host ? [h("span", { class: "small" }, "Remove from this list? Nothing on the VM changes."), h("button", { class: "btn danger", onclick: act(st.host, "/api/hosts/remove") }, "Remove"), h("button", { class: "btn", onclick: () => { vm.confirm = null; render(); } }, "Cancel")] : h("button", { class: "btn link", onclick: () => { vm.confirm = st.host; render(); } }, "Remove")),
+        needs && !p.setup?.running ? h("p", { class: "small dim", style: "margin-top:8px" }, "Setup installs ffmpeg, tmux and Python libraries, and copies the harness from GitHub to ~/openlatent on the VM.") : null); })
+    : h("div", { class: "empty" }, h("h2", {}, "No VMs yet"), h("p", { class: "dim" }, "Rent or start a GPU machine, check you can reach it with ssh, then add its address above.")));
+}
+
+/* ---------- Guided setup ---------- */
+const ROLES = { keep: { label: "What to keep", hint: "What the disguised data must still be good for, such as the action", name: "action" }, hide: { label: "What to hide", hint: "What must not be recoverable, such as who it is", name: "identity" }, recording: { label: "Same recording", hint: "Clips with the same value were cut from one recording, so they stay together", name: "recording" }, scene: { label: "Scene or session", hint: "Optional: used for a harder test on scenes the attacker never saw", name: "scene" } };
+const W_INIT = () => ({ host: null, source: null, path: "", listing: null, loading: false, err: null, sampleIdx: 0, marks: [], pen: "keep", table: null, tableRoles: {}, adapt: null, split: "ilic", json: "", name: "", options: { budget: 8, parallel: 2, robustness: true }, starting: false });
+let wiz = W_INIT();
+function tokens(rel) {
+  const parts = rel.split("/"), file = parts.pop(), out = [];
+  parts.forEach(p => { out.push({ t: p, folder: true }); out.push({ sep: "/" }); });
+  const dot = file.lastIndexOf("."), stem = dot > 0 ? file.slice(0, dot) : file, ext = dot > 0 ? file.slice(dot + 1) : "";
+  stem.split(/([_\-. ])/).forEach((x, i) => { if (i % 2) out.push({ sep: x }); else if (x) out.push({ t: x }); });
+  if (ext) { out.push({ sep: "." }); out.push({ ext }); }
+  return out;
+}
+const esc = s => s.replace(/[.*+?^${}()|[\]\\\/-]/g, "\\$&");
+function buildPattern(toks, marks, py) {
+  const by = new Map(marks.map(m => [m.tok, m])), cap = n => py ? `(?P<${n}>` : `(?<${n}>`;
+  const lastMarked = marks.length ? Math.max(...marks.map(m => m.tok)) : -1;
+  const firstFile = toks.findIndex((t, i) => !t.folder && !t.sep && i > toks.map(x => x.sep === "/").lastIndexOf(true));
+  let out = "", i = 0;
+  while (i < toks.length) {
+    const t = toks[i], m = by.get(i);
+    if (t.ext !== undefined) { out += "[A-Za-z0-9]+"; i++; continue; }
+    if (t.sep !== undefined) {
+      // everything after the last marked piece of the filename may vary in shape
+      if (t.sep !== "/" && i > lastMarked && i > firstFile) { const extAt = toks.findIndex(x => x.ext !== undefined); out += extAt >= 0 ? "[^/]*\\.[A-Za-z0-9]+" : "[^/]*"; break; }
+      out += esc(t.sep); i++; continue;
+    }
+    const cls = t.folder ? "[^/]+" : "[^/_\\-. ]+";
+    out += m ? `${cap(m.name)}${cls})` : cls; i++;
+  }
+  return out;
+}
+function folderCheck(w) {
+  const files = w.listing?.files || [], sample = files[w.sampleIdx] || files[0];
+  if (!sample) return null;
+  const toks = tokens(sample);
+  const dup = new Set(), names = w.marks.map(m => m.name);
+  names.forEach((n, i) => { if (names.indexOf(n) !== i) dup.add(n); });
+  if (dup.size || names.some(n => !/^[a-z][a-z0-9_]*$/.test(n))) return { toks, sample, invalid: "Label names must be different, and use lowercase letters, numbers or underscores." };
+  let re;
+  try { re = new RegExp(`^(?:${buildPattern(toks, w.marks, false)})$`); } catch (e) { return { toks, sample, invalid: "Those marks could not be turned into a file pattern. Try marking different pieces." }; }
+  const vals = Object.fromEntries(w.marks.map(m => [m.name, new Map()]));
+  let matched = 0; const missed = [];
+  for (const f of files) { const m = re.exec(f); if (m) { matched++; for (const k in vals) { const v = m.groups[k]; vals[k].set(v, (vals[k].get(v) || 0) + 1); } } else if (missed.length < 4) missed.push(f); }
+  return { toks, sample, matched, missed, vals, total: files.length };
+}
+function describeFolder(w, chk) {
+  const pattern = buildPattern(chk.toks, w.marks, true), targets = [], groups = {};
+  w.marks.forEach(m => { if (m.role === "keep") targets.push({ name: m.name, role: "utility", kind: "multiclass", column: m.name }); else if (m.role === "hide") targets.push({ name: m.name, role: "secret", kind: "multiclass", column: m.name }); else if (m.role === "recording") groups.source = m.name; else groups[m.name] = m.name; });
+  targets.sort((a, b) => a.role === "utility" ? -1 : b.role === "utility" ? 1 : 0);
+  return { folder: { root: w.listing.path, pattern }, targets, groups, split: { mode: "stratified", test_fraction: .25 } };
+}
+function describeTable(w) {
+  const roles = w.tableRoles, targets = [], groups = {}; let pathCol = null;
+  for (const [c, r] of Object.entries(roles)) { if (r === "path") pathCol = c; else if (r === "keep") targets.push({ name: slug(c), role: "utility", kind: "multiclass", column: c }); else if (r === "hide") targets.push({ name: slug(c), role: "secret", kind: "multiclass", column: c }); else if (r === "recording") groups.source = c; else if (r === "scene") groups[slug(c)] = c; }
+  targets.sort((a, b) => a.role === "utility" ? -1 : b.role === "utility" ? 1 : 0);
+  const dir = w.table.path.slice(0, w.table.path.lastIndexOf("/"));
+  return { table: w.table.path, path_column: pathCol, media_root: dir, targets, groups, split: { mode: "stratified", test_fraction: .25 } };
+}
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^[^a-z]+/, "").slice(0, 40) || "label";
+function wizPayload() {
+  const w = wiz;
+  if (w.source === "prepared") return w.adapt ? { adapt: w.adapt, split: w.adapt === "kth" ? w.split : null } : null;
+  if (w.source === "folder") { const c = folderCheck(w); if (!c || c.invalid || !c.matched) return null; const roles = w.marks.map(m => m.role); if (!roles.includes("keep") || !roles.includes("hide")) return null; return { description: describeFolder(w, c) }; }
+  if (w.source === "table") { const r = Object.values(w.tableRoles); if (!w.table || !r.includes("path") || !r.includes("keep") || !r.includes("hide")) return null; return { description: describeTable(w) }; }
+  if (w.source === "json") { try { const d = JSON.parse(w.json); return d && typeof d === "object" ? { description: d } : null; } catch { return null; } }
+  return null;
+}
+// the example shown should look like most files, not like the odd one that happens to sort first
+function typicalFile(files) {
+  const shape = f => tokens(f).map(t => t.sep ?? "x").join(""), counts = new Map();
+  files.forEach(f => counts.set(shape(f), (counts.get(shape(f)) || 0) + 1));
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  return top ? files.findIndex(f => shape(f) === top[0]) : 0;
+}
+async function wizList(path) {
+  wiz.loading = true; wiz.err = null; render();
+  try { wiz.listing = await api("/api/files", { host: wiz.host, path }); wiz.path = wiz.listing.path; wiz.sampleIdx = typicalFile(wiz.listing.files); wiz.marks = []; if (!wiz.name) wiz.name = slug(wiz.listing.path.split("/").pop() || "").replace(/_/g, "-"); } catch (e) { wiz.err = e.message; }
+  wiz.loading = false; render();
+}
+function viewFolderStep() {
+  const w = wiz, l = w.listing, chk = l?.files?.length ? folderCheck(w) : null;
+  const hit = (idx) => { if (w.marks.some(m => m.tok === idx)) w.marks = w.marks.filter(m => m.tok !== idx); else { const base = ROLES[w.pen].name; let name = base, k = 2; while (w.marks.some(m => m.name === name)) name = `${base}${k++}`; if (w.pen === "recording" || w.pen === "keep") w.marks = w.marks.filter(m => m.role !== w.pen); w.marks.push({ tok: idx, role: w.pen, name }); } render(); };
+  return [h("section", { class: "step" }, h("h2", {}, "Where are the videos?"), h("p", { class: "dim" }, "Give the folder on the VM that holds them. It can have sub-folders."),
+      h("form", { class: "inline-form", onsubmit: e => { e.preventDefault(); wizList(w.path); } }, h("input", { type: "text", "aria-label": "Folder on the VM", placeholder: "/home/ubuntu/my_videos", value: w.path, oninput: e => { w.path = e.target.value; }, spellcheck: "false" }), h("button", { class: "btn", disabled: w.loading }, w.loading ? "Looking" : "Look")),
+      w.err ? h("div", { class: "err", style: "margin-top:10px" }, w.err) : null,
+      l ? h("div", {}, h("p", { class: "small", style: "margin-top:10px" }, h("b", {}, `${l.total.toLocaleString()} video or image files`), ` in ${l.path}`, l.total > l.files.length ? `. Checking your labels against the first ${l.files.length.toLocaleString()}.` : "."),
+        h("div", { class: "browser" }, l.parent !== l.path ? h("button", { type: "button", onclick: () => wizList(l.parent) }, "Up one folder") : null, l.dirs.slice(0, 40).map(d => h("button", { type: "button", onclick: () => wizList(`${l.path}/${d}`) }, d)))) : null),
+    chk ? h("section", { class: "step" }, h("h2", {}, "What do the file names tell us?"),
+      h("p", { class: "dim measure" }, "Here is one of your files. Choose a pen, then click the piece of the name that holds that label. Labels must be in the file or folder names. If yours are in a spreadsheet, go back and choose that option."),
+      h("div", { class: "pens", role: "radiogroup", "aria-label": "Pen" }, Object.entries(ROLES).map(([k, r]) => h("button", { type: "button", class: "choice", role: "radio", "aria-checked": String(w.pen === k), "aria-pressed": String(w.pen === k), onclick: () => { w.pen = k; render(); } }, h("b", {}, r.label), h("span", {}, r.hint)))),
+      h("div", { class: "pathline", role: "group", "aria-label": "Pieces of the example file name" }, chk.toks.map((t, i) => { if (t.sep !== undefined) return h("span", { class: "sep" }, t.sep); if (t.ext !== undefined) return h("span", { class: "sep" }, t.ext); const m = w.marks.find(x => x.tok === i); return h("button", { type: "button", class: `tok ${m?.role || ""}`, "aria-label": m ? `${t.t}, marked as ${ROLES[m.role].label}. Click to unmark.` : `Mark ${t.t} as ${ROLES[w.pen].label}`, onclick: () => hit(i) }, t.t); })),
+      h("div", { class: "actions" }, h("button", { type: "button", class: "btn link", onclick: () => { w.sampleIdx = (w.sampleIdx + Math.max(1, Math.floor(l.files.length / 7))) % l.files.length; w.marks = []; render(); } }, "Show a different file (clears marks)")),
+      chk.invalid ? h("div", { class: "err" }, chk.invalid) : null,
+      w.marks.length ? h("div", { class: "marks" }, w.marks.map(m => { const vs = chk.vals?.[m.name], vals = vs ? [...vs.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })) : [];
+        return h("div", { class: "markrow" }, h("b", {}, ROLES[m.role].label), h("input", { type: "text", "aria-label": `Name for ${ROLES[m.role].label}`, value: m.name, onchange: e => { m.name = e.target.value.trim().toLowerCase(); render(); } }), h("span", { class: "small dim" }, vs ? `${vals.length} different value${vals.length === 1 ? "" : "s"}: ${vals.slice(0, 6).join(", ")}${vals.length > 6 ? "…" : ""}` : ""), h("button", { type: "button", class: "btn link", onclick: () => { w.marks = w.marks.filter(x => x !== m); render(); } }, "Remove")); })) : null,
+      chk.matched !== undefined && w.marks.length ? labelFeedback(w, chk) : null) : (l && !l.files.length ? h("section", { class: "step" }, h("div", { class: "err" }, "No video or image files in this folder or below it. Try another folder.")) : null)];
+}
+function labelFeedback(w, chk) {
+  const msgs = [], miss = chk.total - chk.matched;
+  const keeps = w.marks.filter(m => m.role === "keep"), hides = w.marks.filter(m => m.role === "hide");
+  if (!keeps.length) msgs.push(["bad", "Still needed: mark what to keep."]);
+  if (!hides.length) msgs.push(["bad", "Still needed: mark what to hide."]);
+  for (const m of [...keeps, ...hides]) { const n = chk.vals[m.name].size; if (n < 2) msgs.push(["bad", `${ROLES[m.role].label} has only one value across your files, so there is nothing to tell apart. Try another piece of the name.`]); else if (m.role === "hide" && n < 10) msgs.push(["warn", `Only ${n} different values to hide. With so few, attackers often recognise them from almost anything, so scores may be low.`]); }
+  if (!w.marks.some(m => m.role === "recording")) msgs.push(["warn", "No recording marked, so each file counts as its own recording. If several files were cut from one video, mark what they share, or the test could look better than it is."]);
+  return h("ul", { class: "checks" }, h("li", { class: chk.matched ? "" : "bad" }, !chk.matched ? icon.bad() : miss ? icon.warn() : icon.ok(), `${chk.matched.toLocaleString()} of ${chk.total.toLocaleString()} files follow this naming${miss ? `. These do not and would be left out: ${chk.missed.join(", ")}${miss > 4 ? ", and more" : ""}` : "."}`), msgs.map(([k, t]) => h("li", { class: k === "bad" ? "bad" : "" }, k === "bad" ? icon.bad() : icon.warn(), t)));
+}
+function viewTableStep() {
+  const w = wiz, peek = async p => { w.loading = true; w.err = null; render(); try { w.table = await api("/api/table", { host: w.host, path: p }); w.path = w.table.path; w.tableRoles = {}; if (!w.name) w.name = slug(p.split("/").pop().replace(/\.[^.]+$/, "")).replace(/_/g, "-"); } catch (e) { w.err = e.message; } w.loading = false; render(); };
+  const opts = [["", "Not used"], ["path", "Path to the video"], ["keep", "What to keep"], ["hide", "What to hide"], ["recording", "Same recording"], ["scene", "Scene or session"]];
+  return [h("section", { class: "step" }, h("h2", {}, "Where is the spreadsheet?"), h("p", { class: "dim" }, "A CSV file on the VM with one row per video. Paths in it can be full paths, or relative to the CSV's folder."),
+      h("form", { class: "inline-form", onsubmit: e => { e.preventDefault(); peek(w.path); } }, h("input", { type: "text", "aria-label": "Path to the CSV on the VM", placeholder: "/home/ubuntu/my_videos/labels.csv", value: w.path, oninput: e => { w.path = e.target.value; }, spellcheck: "false" }), h("button", { class: "btn", disabled: w.loading }, w.loading ? "Reading" : "Read it")),
+      w.err ? h("div", { class: "err", style: "margin-top:10px" }, w.err) : null),
+    w.table ? h("section", { class: "step" }, h("h2", {}, "What does each column hold?"), h("p", { class: "dim" }, `${w.table.rows.toLocaleString()} rows. Mark the video path, what to keep, and what to hide.`),
+      h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Column"), h("th", {}, "Holds"), h("th", {}, "Examples"))), h("tbody", {}, Object.entries(w.table.columns).map(([c, info]) => h("tr", {}, h("td", { class: "mono" }, c), h("td", { style: "min-width:170px" }, h("select", { "aria-label": `What ${c} holds`, onchange: e => { if (e.target.value) w.tableRoles[c] = e.target.value; else delete w.tableRoles[c]; render(); } }, opts.map(([v, t]) => h("option", { value: v, selected: (w.tableRoles[c] || "") === v ? "selected" : null }, t)))), h("td", { class: "small dim" }, `${info.distinct} different: ${info.sample.join(", ")}`))))),
+      (() => { const r = Object.values(w.tableRoles), need = [["path", "the video path"], ["keep", "what to keep"], ["hide", "what to hide"]].filter(([k]) => !r.includes(k)).map(([, t]) => t); return need.length ? h("p", { class: "small", style: "margin-top:8px" }, `Still needed: ${need.join(", ")}.`) : null; })()) : null];
+}
+function viewNew() {
+  const w = wiz, hosts = S.state?.hosts || [];
+  if (!w.host && hosts.length === 1) w.host = hosts[0].host;  // nothing to choose with one VM
+  const chosen = hosts.find(x => x.host === w.host), ready = vmReady(chosen), probe = chosen?.probe;
+  const set = (patch) => { Object.assign(w, patch); render(); };
+  const SOURCES = [["folder", "A folder of videos", "Labels are in the file or folder names"], ["table", "A spreadsheet of videos", "A CSV lists each video and its labels"], ["prepared", "A prepared research dataset", "KTH, VP-UCF101, VP-HMDB51, Charades or UTD-MHAD, already on the VM"], ["json", "A description file", "For people who already wrote one (see ingest.py)"]];
+  const payload = wizPayload();
+  const start = async () => {
+    w.starting = true; w.err2 = null; render();
+    try { await api("/api/launch", { host: w.host, name: w.name, options: w.options, ...payload }); const dest = `#/sheet/${encodeURIComponent(w.host)}/${encodeURIComponent(w.name)}`; wiz = W_INIT(); await poll(); location.hash = dest; }
+    catch (e) { w.err2 = e.message; w.starting = false; render(); }
+  };
+  const taken = probe?.runs?.includes(w.name), nameOK = /^[a-z0-9][a-z0-9_-]{0,63}$/.test(w.name);
+  return h("div", {}, h("div", { class: "intro" }, h("div", {}, h("h1", {}, "Test a dataset"), h("p", { class: "dim measure" }, "Tell the harness where your videos are, what must stay usable, and what must stay hidden. It tries many disguises, attacks each one, and reports what held up."))),
+    h("div", { class: "steps" },
+      h("section", { class: "step" }, h("h2", {}, "Which machine should run it?"), h("p", { class: "dim" }, "Your videos must already be on this machine."),
+        hosts.length ? h("div", { class: "choices" }, hosts.map(st => h("button", { type: "button", class: "choice", "aria-pressed": String(w.host === st.host), onclick: () => set({ host: st.host, listing: null, table: null, err: null }) }, h("b", {}, st.host), h("span", {}, st.error ? "Not answering" : !st.probe ? "Checking" : vmReady(st) ? (st.probe.gpus[0] ? `${st.probe.gpus[0].name}, ${st.probe.gpus[0].util}% busy` : "No GPU found") : "Needs setting up"))))
+          : h("div", { class: "note" }, "There are no VMs yet. ", h("a", { href: "#/vms" }, "Add one"), " first."),
+        chosen && !ready ? h("p", { class: "small", style: "margin-top:10px" }, chosen.error ? chosen.error : "This VM is missing what it needs. ", h("a", { href: "#/vms" }, chosen.error ? "Check it" : "Set it up")) : null,
+        chosen && ready && !probe.gpus.length ? h("p", { class: "small", style: "margin-top:10px;color:var(--fail)" }, "This machine has no GPU. The attacks would be far too slow to finish.") : null),
+      h("section", { class: `step ${ready ? "" : "off"}`, "aria-disabled": ready ? null : "true" }, h("h2", {}, "How is your data organised?"),
+        h("div", { class: "choices" }, SOURCES.map(([k, a, b]) => h("button", { type: "button", class: "choice", disabled: !ready, "aria-pressed": String(w.source === k), onclick: () => set({ source: k, err: null, path: k === "folder" && !w.path ? "" : w.path }) }, h("b", {}, a), h("span", {}, b))))),
+      ready && w.source === "folder" ? viewFolderStep() : null,
+      ready && w.source === "table" ? viewTableStep() : null,
+      ready && w.source === "prepared" ? h("section", { class: "step" }, h("h2", {}, "Which one?"), h("div", { class: "choices" }, (S.state?.adapters || []).map(a => h("button", { type: "button", class: "choice", disabled: !probe.data?.[a], "aria-pressed": String(w.adapt === a), onclick: () => set({ adapt: a, name: w.name || (a === "kth" ? `kth-${w.split}` : a.replace(/_/g, "-")) }) }, h("b", {}, a), h("span", {}, probe.data?.[a] ? "On this VM" : "Not on this VM. See scripts/download_data.sh")))),
+        w.adapt === "kth" ? h("label", { class: "field", style: "margin-top:12px;max-width:320px" }, h("span", {}, "Split"), h("select", { onchange: e => set({ split: e.target.value }) }, [["ilic", "Every person in training and test"], ["scenario", "Held-out scenario"]].map(([v, t]) => h("option", { value: v, selected: w.split === v ? "selected" : null }, t)))) : null) : null,
+      ready && w.source === "json" ? h("section", { class: "step" }, h("h2", {}, "Paste the description"), h("textarea", { rows: 12, "aria-label": "Description JSON", spellcheck: "false", value: w.json, onchange: e => set({ json: e.target.value }) }), w.json && !wizPayload() ? h("div", { class: "err", style: "margin-top:8px" }, "That is not valid JSON.") : null) : null,
+      ready && payload ? h("section", { class: "step" }, h("h2", {}, "Name it and start"),
+        h("label", { class: "field", style: "max-width:320px" }, h("span", {}, "Name"), h("input", { type: "text", value: w.name, spellcheck: "false", onchange: e => set({ name: e.target.value.trim() }) })),
+        det("advanced", "Advanced settings (the defaults suit most datasets)", h("div", { class: "opts", style: "margin-top:10px" },
+          h("label", { class: "field" }, h("span", {}, "Disguises to fully attack"), h("input", { type: "number", min: 2, max: 30, value: w.options.budget, onchange: e => { w.options.budget = +e.target.value; } })),
+          h("label", { class: "field" }, h("span", {}, "Attacks at once"), h("input", { type: "number", min: 1, max: 8, value: w.options.parallel, onchange: e => { w.options.parallel = +e.target.value; } })))),
+        h("label", { class: "check", style: "margin-top:12px" }, h("input", { type: "checkbox", checked: w.options.robustness, onchange: e => { w.options.robustness = e.target.checked; } }), h("span", {}, "Re-attack the winner from new angles before giving a final score. Takes longer, and without it the result is not certified.")),
+        h("p", { class: "note small", style: "margin-top:14px" }, `This starts work on ${w.host} that usually takes many hours and keeps its GPU busy. It keeps running if you close this page, and you can stop it at any time.`),
+        !nameOK ? h("div", { class: "err", style: "margin-top:10px" }, "Use a short name with lowercase letters, numbers, dashes or underscores.") : taken ? h("div", { class: "err", style: "margin-top:10px" }, "This VM already has a test with that name. Pick another.") : null,
+        w.err2 ? h("div", { class: "err", style: "margin-top:10px" }, w.err2) : null,
+        h("div", { class: "actions" }, h("button", { class: "btn primary", disabled: w.starting || !nameOK || taken, onclick: start }, w.starting ? "Starting" : `Start on ${w.host}`)),
+        det("desc", "What will be sent to the VM", h("pre", {}, JSON.stringify(payload, null, 1)))) : null));
+}
+
+/* ---------- Refresh loop ---------- */
+async function poll() {
+  try {
+    const st = await api("/api/state"), js = JSON.stringify(st), changed = js !== S.stateJSON;
+    S.state = st; S.stateJSON = js;
+    const r = route();
+    // the forms re-render only when the VM list itself changes, so typing is never interrupted
+    if (changed && (r.page === "home" || r.page === "vms")) render();
+    if (changed && r.page === "new" && JSON.stringify(st.hosts.map(x => [x.host, !!x.probe, x.error, vmReady(x)])) !== S.wizKey) { S.wizKey = JSON.stringify(st.hosts.map(x => [x.host, !!x.probe, x.error, vmReady(x)])); render(); }
+  } catch (e) { /* the next tick retries; the server may be restarting */ }
+}
+window.addEventListener("hashchange", () => { S.log = null; render(false); window.scrollTo(0, 0); refreshRun(); });
+render(false); poll().then(() => render()); refreshRun();
+setInterval(poll, 5000);
+setInterval(() => { const r = route(); if (r.page === "sheet" && S.run && S.run.host !== "local") refreshRun(); }, 5000);
+</script>
+</body>
+</html>

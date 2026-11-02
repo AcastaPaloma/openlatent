@@ -9,6 +9,7 @@
     python -m privharness search <root> [--parallel 2]          profile -> plan -> screen -> evaluate the
                                                                 shortlist -> robustness -> report (one GPU host)
     python -m privharness report <root>                         scores, checks, frontier, recommendation
+    python -m privharness ui [--port 8765] [--no-open]          web UI: guided setup, SSH VMs, live runs, results
 
 Run from research/privacy-obfuscation (privharness reuses ppv's models, obfuscators and training loops).
 """
@@ -121,6 +122,9 @@ def main():
     a.add_argument("--budget", type=int, default=None)
     a.add_argument("--no-robustness", action="store_true")
     a.add_argument("--until", choices=["screen"], default=None, help="stop after screening (no full evaluation)")
+    a = sub.add_parser("ui")
+    a.add_argument("--port", type=int, default=8765)
+    a.add_argument("--no-open", action="store_true")
     args = ap.parse_args()
 
     if args.cmd == "ingest":
@@ -152,6 +156,9 @@ def main():
     elif args.cmd == "report":
         from .report import build
         print(json.dumps(build(args.root)["recommendation"], indent=1))
+    elif args.cmd == "ui":
+        from .ui.server import serve
+        serve(args.port, not args.no_open)
 
 
 if __name__ == "__main__":

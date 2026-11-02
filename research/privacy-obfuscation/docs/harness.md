@@ -179,6 +179,22 @@ All scores run 0–100; higher is better for privacy, utility and the trade-offs
 
 **Recommendation:** the highest PUS. The privacy-first pick (highest P with U ≥ 0.5) and utility-first pick (highest U with P ≥ 0.5) are also given.
 
+## Web UI and SSH VMs
+
+`python -m privharness ui` opens a local web app (standard library only, nothing to install on the laptop). It does three jobs:
+
+- **Bring a dataset (guided):** pick a VM and a folder on it, then click the parts of a file name that hold the task, the secret and the recording. The UI writes the description file `ingest` expects and checks it against the real file list first. CSV tables, the prepared research datasets and a pasted description also work.
+- **Run on a VM:** add a VM by `user@address` or ssh-config name. The UI checks its GPU, disk, tmux and libraries, can run `scripts/setup_vm.sh`, and starts or resumes `search` in tmux, so the run survives the laptop closing.
+- **Read the outcome:** one frame per obfuscator, with the pick circled, the evidence behind it, per-attacker scores, checks and logs.
+
+**What crosses SSH:** key-based login only (`BatchMode`), and new host keys are trusted on first use (`accept-new`). Scores, plans and logs are copied to `~/.privharness/mirror/<host>/`. Frames, weights, predictions and `dataset.json` stay on the VM. The VM list lives in `~/.privharness/hosts.json`, outside the repo.
+
+**Assumptions about a VM:** the layout every earlier run used, `~/openlatent` and `~/work/harness/<name>`, with `python3` on the PATH. Harness code on the VM comes from the pushed `privacy-research` branch, so unpushed harness changes do not reach it.
+
+**Frames are illustrations:** the harness saves no sample output yet, so each frame applies the candidate's config to one drawn scene and says so.
+
+**Local safety:** binds to 127.0.0.1 and refuses requests whose Host or Origin is not its own, so another site open in the browser cannot start work on a VM.
+
 ## Known limits of this first iteration
 
 - **Learned obfuscators are video-only** (BDQ uses frame differences). Image datasets get fixed families only.
