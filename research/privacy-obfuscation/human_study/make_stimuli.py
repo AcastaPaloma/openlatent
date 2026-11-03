@@ -1,7 +1,8 @@
-"""Stimuli for the human re-identification study (KTH; raw vs four obfuscators).
+"""Stimuli for the human re-identification study (KTH; four obfuscators, every query masked).
 
-Each trial shows a "mystery person" clip (raw or obfuscated) and a raw lineup of four people
-(walking, d4 indoors, so the background never matches the query's outdoor d1/d3 scene).
+Each trial shows an obfuscated "mystery person" clip and a raw lineup of four people
+(walking, d4 indoors). Queries come from d1/d2, where actors wear the same clothes as in d4,
+so the background differs but the person does not: only the obfuscator hides identity.
 Only the AVIs the trials need are read from the official KTH zips with HTTP range requests.
 
 Needs the privacy-research branch's ppv (Pose, UNet3d, BDQ) on PYTHONPATH and its
@@ -37,49 +38,57 @@ HF_REPO = "KuanKuanKuan/openlatent-privacy"
 STRIDE, N_FRAMES, MS = 2, 32, 80  # the attackers' clip stride; 2.6 s at 12.5 fps
 SPAN = (N_FRAMES - 1) * STRIDE + 1
 VISIBLE = 0.001  # a frame "shows something" when this fraction of pixels is off the background level
-CTX = 8  # context frames each side, as train.materialize (covers the VAE edit's receptive field)
+CTX = 8  # context frames each side, as train.materialize
 LINEUP = ("walking", 4)  # every lineup clip: raw, walking, d4
 
 # Condition -> (repo run, anonymizer config, has checkpoint, label shown in the intro).
-# Strong-protocol machine identity (KTH, chance 4): raw 99.5, blur 95.0, unet 89.1, bdq 46.2, pose 29.1.
-# Not used: p2_vae_a1_ens (82.6) releases a flat grey frame with border artifacts (as its gallery GIF
-# shows), so a person sees nothing while the attacker still reads identity from the residual signal.
+# Strong-protocol machine identity (KTH, chance 4; raw 99.5): blur 95.0, unet 89.1, bdq 68.6, pose 29.1.
+# Chosen from preview/ (every candidate on all six actions): these four keep every action visible.
+# Not used: p2_bdq_a3_lr3e-3 (46.2) blanks boxing/waving/clapping; p11_kth_mask_k25_bdq_a1 shows the
+# mask's patch grid, not the person; p11_kth_mask_k25_a1 pastes the real person; p2_vae_a1_ens
+# releases a flat grey frame.
 CONDS = {
-    "raw": ("p1_raw", None, False, "Original"),
     "blur": ("p1_blur8", {"type": "blur", "sigma": 8}, False, "Blur"),
     "unet": ("p2_unet_a1_ens", {"type": "unet3d"}, True, "Silhouette"),
-    "bdq": ("p2_bdq_a3_lr3e-3", {"type": "bdq"}, True, "Motion edges"),
+    "bdq": ("p2_bdq_a3_ens", {"type": "bdq"}, True, "Motion patches"),
     "pose": ("p12_kth_pose_canon_e16", {"type": "pose", "every": 16, "width": 2, "canonical": 0.5}, False, "Stick figure"),
 }
 TARGETS = [2, 3, 6, 8, 11, 12, 15, 17, 20, 22]
 EXAMPLE = (25, "jogging", 1)  # intro example; person 25 is in no trial
-# Queries are walking/jogging/running outdoors (d1, d3) in every condition: BDQ erases
-# boxing, handwaving and handclapping (0.0-0.4% of pixels active) and the far d2 clips,
-# and the same action mix keeps conditions comparable.
-QUERY_CLIPS = [(a, d) for a in ("walking", "jogging", "running") for d in (1, 3)]
+ACTIONS = ("boxing", "handclapping", "handwaving", "walking", "jogging", "running")
+QUERY_CLIPS = [(a, d) for a in ACTIONS for d in (1, 2)]  # d1/d2: same clothes as the d4 lineup
 
 
 def design(seed=0):
-    """20 trials: each target in two conditions; the 10 targets cover the 10 condition pairs.
-    Trials 1-10 show every target once, 11-20 the other condition. Conditions lead a pair by a
-    regular tournament (i beats i+1, i+2 mod 5), so each condition has 2 trials in each half."""
+    """20 trials, every query obfuscated: 10 targets, each seen under two different filters.
+    The 10 filter pairs are all 6 pairs of the 4 filters plus a 4-cycle, so every filter has
+    5 trials and every pair of filters is compared within at least one person.
+    Trials 1-10 show every target once, 11-20 the other filter (5+ trials later); each filter
+    has 2-3 trials in each half; no filter twice in a row."""
     names = list(CONDS)
-    pairs = [(names[i], names[(i + k) % 5]) for i in range(5) for k in (1, 2)]
+    pairs = [(a, b) for i, a in enumerate(names) for b in names[i + 1:]]
+    pairs += [(names[i], names[(i + 1) % 4]) for i in range(4)]
     rng = random.Random(seed)
-    while True:  # no condition twice in a row; a target's two trials >= 5 apart
+    while True:
+        flip = [rng.random() < 0.5 for _ in pairs]
+        lead = [(b, a) if f else (a, b) for (a, b), f in zip(pairs, flip)]
+        if not all(sum(p[0] == c for p in lead) in (2, 3) for c in names):
+            continue
         order, order2 = rng.sample(range(10), 10), rng.sample(range(10), 10)
-        conds = [pairs[i][0] for i in order] + [pairs[i][1] for i in order2]
+        conds = [lead[i][0] for i in order] + [lead[i][1] for i in order2]
         tgts = [TARGETS[i] for i in order] + [TARGETS[i] for i in order2]
         if all(a != b for a, b in zip(conds, conds[1:])) and all(tgts.index(t, 10) - tgts.index(t) >= 5 for t in TARGETS):
             break
-    while True:  # a target's two clips differ in action and scenario; each condition gets >= 2 actions, both scenarios
+    while True:  # a target's two clips differ in action and scenario; each filter gets >= 4 actions and both
+        # scenarios; every action is used 3-4 times overall
         clips = [None] * 20
         for t in TARGETS:
             i, j = tgts.index(t), tgts.index(t, 10)
             while clips[i] is None or clips[i][0] == clips[j][0] or clips[i][1] == clips[j][1]:
                 clips[i], clips[j] = rng.sample(QUERY_CLIPS, 2)
         per = {c: [clips[k] for k in range(20) if conds[k] == c] for c in names}
-        if all(len({a for a, _ in v}) >= 2 and len({d for _, d in v}) == 2 for v in per.values()):
+        counts = [sum(a == x for x, _ in clips) for a in ACTIONS]
+        if all(len({a for a, _ in v}) >= 4 and len({d for _, d in v}) == 2 for v in per.values()) and min(counts) >= 3:
             break
     while True:  # 5 answers per letter; a target's two answers differ
         letters = rng.sample(list("AAAAABBBBBCCCCCDDDDD"), 20)
@@ -276,17 +285,18 @@ def main():
         return window(run(fs[cond], raw[a:b]), s - a)
 
     _, _, s, raw, _, _, _ = query(*EXAMPLE, "pose")
-    save_gif(os.path.join(out_dir, "example.gif"), grid([render(c, raw, s) for c in CONDS], [CONDS[c][3] for c in CONDS], cols=3))
+    save_gif(os.path.join(out_dir, "example.gif"),
+             grid([window(raw, s)] + [render(c, raw, s) for c in CONDS], ["Original"] + [CONDS[c][3] for c in CONDS], cols=3))
 
     key = []
     trials = design()
     for tr in trials:
         t, cond = tr["trial"], tr["condition"]
-        # if no window of the assigned clip shows the person (the U-Net erases some far runners),
-        # try the target's other locomotion clips in the same scenario, never its other trial's action
+        # if no window of the assigned clip shows the person (the U-Net can erase a far runner),
+        # try the target's other clips in the same scenario, never its other trial's action
         other = next(x["action"] for x in trials if x["target"] == tr["target"] and x is not tr)
         best = None
-        for action in [tr["action"]] + [a for a in ("walking", "jogging", "running") if a not in (tr["action"], other)]:
+        for action in [tr["action"]] + [a for a in ACTIONS if a not in (tr["action"], other)]:
             res = query(tr["target"], action, tr["scenario"], cond)
             if best is None or res[-1] > best[-1]:
                 best = res
