@@ -1,0 +1,11 @@
+trial,case,condition,target_person,query,lineup,answer
+1,C1,obf,3,person03_boxing_d2 seq2,A=p03 B=p09 C=p15 D=p21,A
+2,C2,raw,8,person08_handwaving_d3 seq1,A=p14 B=p08 C=p01 D=p19,B
+3,C3,obf,12,person12_walking_d3 seq2,A=p06 B=p20 C=p12 D=p04,C
+4,C4,raw,17,person17_running_d2 seq3,A=p10 B=p05 C=p23 D=p17,D
+5,C5,obf,22,person22_jogging_d2 seq1,A=p22 B=p13 C=p03 D=p07,A
+6,C2,obf,8,person08_running_d1 seq2,A=p24 B=p12 C=p08 D=p16,C
+7,C1,raw,3,person03_jogging_d1 seq3,A=p18 B=p03 C=p11 D=p02,B
+8,C4,obf,17,person17_handclapping_d1 seq2,A=p17 B=p01 C=p20 D=p22,A
+9,C3,raw,12,person12_boxing_d1 seq1,A=p09 B=p12 C=p17 D=p14,B
+10,C5,raw,22,person22_handclapping_d3 seq2,A=p05 B=p21 C=p24 D=p22,D
