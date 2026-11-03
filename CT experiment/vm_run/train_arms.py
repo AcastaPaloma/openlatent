@@ -126,6 +126,7 @@ def train():
         if ARM == "A5": loss = loss + 1.0 * dcor(Xt[a], z1)
         oe.zero_grad(); oa.zero_grad(); loss.backward(); oe.step(); oa.step()
         if step % 300 == 0: print(f"  step {step} loss {loss.item():.3f}", flush=True)
+    global TASK_HEAD; TASK_HEAD = task
     return enc.eval()
 if ARM == "A0": Z = X.copy()
 elif ARM == "K0": Z = np.zeros((len(X), 256), np.float32)
@@ -136,6 +137,12 @@ elif ARM == "B3": Z = X + float(sys.argv[4]) * np.random.RandomState(SEED).randn
 else:
     enc = train()
     with torch.no_grad(): Z = enc(Xt).cpu().numpy()
+    if os.environ.get("SAVEW"):  # export the trained adapter (safetensors, no pickle) with the input standardisation it needs
+        from safetensors.torch import save_file
+        tens = {"encoder." + k: v.detach().cpu().contiguous() for k, v in enc.state_dict().items()}
+        tens.update({"task_head." + k: v.detach().cpu().contiguous() for k, v in TASK_HEAD.state_dict().items()})
+        tens["input_mean"] = torch.tensor(mu, dtype=torch.float32); tens["input_std"] = torch.tensor(sd, dtype=torch.float32)
+        os.makedirs(f"{D}/weights", exist_ok=True); save_file(tens, f"{D}/weights/{ARM}_s{SEED}_{STEPS}steps.safetensors"); print("saved weights", ARM, SEED, flush=True)
 if ATTX:  # switch to the strong-attacker regime: attackers/probes see fit + extra patients; adapter is already frozen
     fit = fit0 | isx; ev = ev0
     fi = np.where(fit)[0]; by_p = {}

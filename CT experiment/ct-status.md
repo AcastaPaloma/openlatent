@@ -27,3 +27,6 @@ Identity-direction erasure (L*), contrastive adversary as a free win (A12/A13), 
 
 ## Suggested next steps
 1. Decide on TAP-CT (allow/skip). 2. Mutual-information (CLUB) penalty arm. 3. Explicit scanner-adversary + stronger head at kept >= 0.95. 4. Pixel-space reconstruction attack if a reviewer insists. 5. Second hospital data if obtainable.
+
+## Weights
+Adapter checkpoints (A3 / A14 / A21, seeds 0-2, safetensors) and a loader are in the **private** Hugging Face repo `Abby012/openlatent-ct-adapters` (CC BY-NC-SA 4.0, derived from CT-RATE). Latent files and CT-RATE data are not included. `vm_run/train_arms.py` with `SAVEW=1` exports them; `vm_run/load_adapter.py` + `verify_export.py` show loading and the round-trip check.
