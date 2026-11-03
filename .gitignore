@@ -4,3 +4,13 @@ __pycache__/
 .pytest_cache/
 /data/
 /runs/
+
+# model weights and latent arrays live on Hugging Face / local disk only, never in git
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.onnx
+*.npz
+*.npy
