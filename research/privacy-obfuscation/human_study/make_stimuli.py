@@ -1,14 +1,15 @@
-"""Stimuli for the human re-identification study (KTH, raw vs learned BDQ).
+"""Stimuli for the human re-identification study (KTH; raw vs four obfuscators).
 
-Each trial shows a "mystery person" clip (raw or BDQ) and a raw lineup of four people
-(walking, d4, so the background never matches the query's d1-d3 scene). Only the AVIs
-the trials need are read from the official KTH zips with HTTP range requests.
+Each trial shows a "mystery person" clip (raw or obfuscated) and a raw lineup of four people
+(walking, d4 indoors, so the background never matches the query's outdoor d1/d3 scene).
+Only the AVIs the trials need are read from the official KTH zips with HTTP range requests.
 
-    uv run --with torch --with pillow python human_study/make_stimuli.py --cache <dir> \
-        --checkpoint <anonymizer.pt>
+Needs the privacy-research branch's ppv (Pose, UNet3d, BDQ) on PYTHONPATH and its
+checkpoints from the HF repo (runs/<run>/anonymizer.pt):
 
-The obfuscator is the learned BDQ of run p2_bdq_a3_lr3e-3 (privacy-research branch; its
-anonymizer.pt is in the HF checkpoint repo under runs/p2_bdq_a3_lr3e-3/).
+    PYTHONPATH=<privacy-research>/research/privacy-obfuscation \\
+    uv run --no-project --with torch --with torchvision --with huggingface_hub \\
+        --with pillow --with numpy python human_study/make_stimuli.py --cache <dir>
 
 Writes human_study/stimuli/*.gif and human_study/answer_key.csv.
 """
@@ -17,7 +18,7 @@ import argparse
 import csv
 import io
 import os
-import subprocess
+import random
 import sys
 import urllib.request
 import zipfile
@@ -27,35 +28,77 @@ import torch
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))
-from ppv.anonymizers import BDQ  # noqa: E402
+sys.path.append(os.path.dirname(HERE))  # PYTHONPATH (privacy-research's ppv) wins
+from ppv.anonymizers import build, frozen_key  # noqa: E402
 from ppv.kth import decode_avi, parse_sequences  # noqa: E402
 
 BASE = "https://www.csc.kth.se/cvap/actions/"
+HF_REPO = "KuanKuanKuan/openlatent-privacy"
 STRIDE, N_FRAMES, MS = 2, 32, 80  # the attackers' clip stride; 2.6 s at 12.5 fps
+SPAN = (N_FRAMES - 1) * STRIDE + 1
+VISIBLE = 0.001  # a frame "shows something" when this fraction of pixels is off the background level
+CTX = 8  # context frames each side, as train.materialize (covers the VAE edit's receptive field)
 LINEUP = ("walking", 4)  # every lineup clip: raw, walking, d4
 
-# Case = target person. Each case appears once raw and once obfuscated, with a different
-# action, scenario, lineup subsequence, distractors and answer letter in the two trials.
-# Order: trials 1-5 show every case once (3 obfuscated first, 2 raw first); 6-10 the
-# other condition, 3-6 trials later.
-# Queries are locomotion in both conditions (obfuscated ones in d1/d3): the learned BDQ erases boxing,
-# handwaving and handclapping almost entirely (0.0-0.4% of pixels active) and the far
-# d2 clips too, so those would test nothing. Raw and obfuscated get the same action mix.
-# (trial, case, target, condition, query action, query scenario, lineup seq, lineup A-D)
-TRIALS = [
-    (1, "C1", 3, "obf", "running", 3, 1, [3, 9, 15, 21]),
-    (2, "C2", 8, "raw", "walking", 3, 1, [14, 8, 1, 19]),
-    (3, "C3", 12, "obf", "walking", 3, 2, [6, 20, 12, 4]),
-    (4, "C4", 17, "raw", "running", 2, 1, [10, 5, 23, 17]),
-    (5, "C5", 22, "obf", "jogging", 3, 1, [22, 13, 3, 7]),
-    (6, "C2", 8, "obf", "running", 1, 3, [24, 12, 8, 16]),
-    (7, "C1", 3, "raw", "jogging", 1, 3, [18, 3, 11, 2]),
-    (8, "C4", 17, "obf", "jogging", 1, 3, [17, 1, 20, 22]),
-    (9, "C3", 12, "raw", "jogging", 1, 4, [9, 12, 17, 14]),
-    (10, "C5", 22, "raw", "running", 3, 3, [5, 21, 24, 22]),
-]
-EXAMPLE = (25, "jogging", 1)  # intro example (raw vs BDQ); person 25 is in no trial
+# Condition -> (repo run, anonymizer config, has checkpoint, label shown in the intro).
+# Strong-protocol machine identity (KTH, chance 4): raw 99.5, blur 95.0, unet 89.1, bdq 46.2, pose 29.1.
+# Not used: p2_vae_a1_ens (82.6) releases a flat grey frame with border artifacts (as its gallery GIF
+# shows), so a person sees nothing while the attacker still reads identity from the residual signal.
+CONDS = {
+    "raw": ("p1_raw", None, False, "Original"),
+    "blur": ("p1_blur8", {"type": "blur", "sigma": 8}, False, "Blur"),
+    "unet": ("p2_unet_a1_ens", {"type": "unet3d"}, True, "Silhouette"),
+    "bdq": ("p2_bdq_a3_lr3e-3", {"type": "bdq"}, True, "Motion edges"),
+    "pose": ("p12_kth_pose_canon_e16", {"type": "pose", "every": 16, "width": 2, "canonical": 0.5}, False, "Stick figure"),
+}
+TARGETS = [2, 3, 6, 8, 11, 12, 15, 17, 20, 22]
+EXAMPLE = (25, "jogging", 1)  # intro example; person 25 is in no trial
+# Queries are walking/jogging/running outdoors (d1, d3) in every condition: BDQ erases
+# boxing, handwaving and handclapping (0.0-0.4% of pixels active) and the far d2 clips,
+# and the same action mix keeps conditions comparable.
+QUERY_CLIPS = [(a, d) for a in ("walking", "jogging", "running") for d in (1, 3)]
+
+
+def design(seed=0):
+    """20 trials: each target in two conditions; the 10 targets cover the 10 condition pairs.
+    Trials 1-10 show every target once, 11-20 the other condition. Conditions lead a pair by a
+    regular tournament (i beats i+1, i+2 mod 5), so each condition has 2 trials in each half."""
+    names = list(CONDS)
+    pairs = [(names[i], names[(i + k) % 5]) for i in range(5) for k in (1, 2)]
+    rng = random.Random(seed)
+    while True:  # no condition twice in a row; a target's two trials >= 5 apart
+        order, order2 = rng.sample(range(10), 10), rng.sample(range(10), 10)
+        conds = [pairs[i][0] for i in order] + [pairs[i][1] for i in order2]
+        tgts = [TARGETS[i] for i in order] + [TARGETS[i] for i in order2]
+        if all(a != b for a, b in zip(conds, conds[1:])) and all(tgts.index(t, 10) - tgts.index(t) >= 5 for t in TARGETS):
+            break
+    while True:  # a target's two clips differ in action and scenario; each condition gets >= 2 actions, both scenarios
+        clips = [None] * 20
+        for t in TARGETS:
+            i, j = tgts.index(t), tgts.index(t, 10)
+            while clips[i] is None or clips[i][0] == clips[j][0] or clips[i][1] == clips[j][1]:
+                clips[i], clips[j] = rng.sample(QUERY_CLIPS, 2)
+        per = {c: [clips[k] for k in range(20) if conds[k] == c] for c in names}
+        if all(len({a for a, _ in v}) >= 2 and len({d for _, d in v}) == 2 for v in per.values()):
+            break
+    while True:  # 5 answers per letter; a target's two answers differ
+        letters = rng.sample(list("AAAAABBBBBCCCCCDDDDD"), 20)
+        if all(letters[tgts.index(t)] != letters[tgts.index(t, 10)] for t in TARGETS):
+            break
+    # distractors: least-used first (random tie-break), never repeated across a target's two lineups;
+    # targets start at 2 uses, so "seen before" says nothing about who the target is
+    used = {p: 2 if p in TARGETS else 0 for p in range(1, 25)}
+    trials = []
+    for k in range(20):
+        t = tgts[k]
+        avoid = {t}.union(*(x["lineup"] for x in trials if x["target"] == t))
+        lineup = sorted((p for p in used if p not in avoid), key=lambda p: (used[p], rng.random()))[:3]
+        for p in lineup:
+            used[p] += 1
+        lineup.insert("ABCD".index(letters[k]), t)
+        trials.append(dict(trial=k + 1, target=t, condition=conds[k], action=clips[k][0], scenario=clips[k][1],
+                           lineup_seq=k % 4 + 1, lineup=lineup, answer=letters[k]))
+    return trials
 
 
 class RangeFile(io.RawIOBase):
@@ -107,14 +150,23 @@ def fetch(cache, video):
     return decode_avi(path)
 
 
-SPAN = (N_FRAMES - 1) * STRIDE + 1
+def load(cond):
+    run, cfg, ckpt, _ = CONDS[cond]
+    if cfg is None:
+        return None
+    f = build(cfg, in_ch=1).eval()
+    if ckpt:
+        from huggingface_hub import hf_hub_download
+        sd = torch.load(hf_hub_download(HF_REPO, f"runs/{run}/anonymizer.pt"), map_location="cpu")
+        missing, unexpected = f.load_state_dict(sd, strict=False)
+        assert not [k for k in missing if not frozen_key(k)] and not unexpected, (missing, unexpected)
+    return f
 
 
-def obfuscate(obf, frames):
-    """Whole video at full frame rate, as train.materialize applies f."""
+def run(f, frames):
     x = torch.from_numpy(frames.copy()).float().div(255)[None, None]
     with torch.no_grad():
-        return (obf(x).clamp(0, 1)[0, 0] * 255).round().byte().numpy()
+        return (f(x).clamp(0, 1)[0, 0] * 255).round().byte().numpy()
 
 
 def window(frames, s):
@@ -123,22 +175,26 @@ def window(frames, s):
 
 def centre(seqs, video, seq):
     a, b = seqs[video][seq - 1]
-    return seq, max(a - 1, (a - 1 + b - SPAN) // 2)
+    return max(a - 1, (a - 1 + b - SPAN) // 2)
 
 
-def activity(obfuscated):
-    """Per-frame fraction of pixels off BDQ's static (background) level."""
-    return (obfuscated != np.bincount(obfuscated.ravel()).argmax()).mean((1, 2))
+def activity(frames):
+    """Per-frame fraction of pixels off the most common (background) level, ignoring a 4-pixel
+    border (the U-Net draws a thin line along the frame edge)."""
+    inner = frames[:, 4:-4, 4:-4]
+    return (inner != np.bincount(inner.ravel()).argmax()).mean((1, 2))
 
 
-def busiest(seqs, video, obfuscated):
-    """(seq, start) of the window where the most pixels leave BDQ's static level. The same
-    rule picks raw and obfuscated queries: the attacker's best case in both conditions."""
-    active = activity(obfuscated)
-    return max(((window(active, s).mean(), i, s) for i, (a, b) in enumerate(seqs[video], 1)
-                for s in range(a - 1, max(a, b - SPAN + 1), 2)))[1:]
+def ranked(seqs, video, motion):
+    """(seq, start) of every window, most BDQ activity first. One motion measure ranks the
+    windows in every condition: the attacker's best case."""
+    act = activity(motion)
+    return [w[1:] for w in sorted(((window(act, s).mean(), i, s) for i, (a, b) in enumerate(seqs[video], 1)
+                                   for s in range(a - 1, max(a, b - SPAN + 1), 2)), reverse=True)]
 
 
+GREYS = 32  # fixed palette keeps GIFs small
+PALETTE = [v for i in range(GREYS) for v in [i * 255 // (GREYS - 1)] * 3]
 FONT = ImageFont.load_default(size=18)
 
 
@@ -147,10 +203,6 @@ def label(img, text):
     x0, y0, x1, y1 = d.textbbox((0, 0), text, font=FONT)
     d.rectangle((4, 4, 4 + x1 - x0 + 10, 4 + y1 + 6), fill=255)
     d.text((9, 5), text, fill=0, font=FONT)
-
-
-GREYS = 32  # fixed palette keeps GIFs small; BDQ's two levels (109, 146) stay distinct
-PALETTE = [v for i in range(GREYS) for v in [i * 255 // (GREYS - 1)] * 3]
 
 
 def save_gif(path, frames):
@@ -189,7 +241,6 @@ def grid(clips, labels, scale=2, gap=6, cols=2):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", required=True, help="where downloaded KTH AVIs are kept")
-    ap.add_argument("--checkpoint", required=True, help="anonymizer.pt of p2_bdq_a3_lr3e-3")
     args = ap.parse_args()
     os.makedirs(args.cache, exist_ok=True)
     out_dir = os.path.join(HERE, "stimuli")
@@ -198,36 +249,62 @@ def main():
     if not os.path.exists(seq_path):
         urllib.request.urlretrieve(BASE + "00sequences.txt", seq_path)
     seqs = parse_sequences(seq_path)
-    obf = BDQ()
-    obf.load_state_dict(torch.load(args.checkpoint, map_location="cpu"))
-    obf.eval()
+    fs = {c: load(c) for c in CONDS}
 
-    def query(person, action, d):
+    def query(person, action, d, cond):
+        """The highest-ranked window whose `cond` output shows something (>= 0.1% of pixels off the
+        background level) in at least half its frames: the pose detector can miss a person on every
+        keyframe of a window, a runner can leave the frame, the U-Net can shrink a far person to
+        specks. Failing that, the top-40 window where the most frames show something."""
         video = f"person{person:02d}_{action}_d{d}"
         raw = fetch(args.cache, video)
-        o = obfuscate(obf, raw)
-        seq, s = busiest(seqs, video, o)
-        return video, seq, window(raw, s), window(o, s)
+        best = None
+        for k, (seq, s) in enumerate(ranked(seqs, video, run(fs["bdq"], raw))[:40]):
+            q = render(cond, raw, s)
+            seen = (activity(q) >= VISIBLE).mean()
+            if seen >= 0.5:
+                return video, seq, s, raw, q, k, seen
+            if best is None or seen > best[-1]:
+                best = (video, seq, s, raw, q, k, seen)
+        return best
 
-    _, _, ex_raw, ex_obf = query(*EXAMPLE)
-    save_gif(os.path.join(out_dir, "example.gif"), grid([ex_raw, ex_obf], ["Original", "Obfuscated"]))
+    def render(cond, raw, s):
+        """The window at full frame rate plus CTX frames of context each side (as materialize), then strided."""
+        if fs[cond] is None:
+            return window(raw, s)
+        a, b = max(0, s - CTX), min(len(raw), s + SPAN + CTX)
+        return window(run(fs[cond], raw[a:b]), s - a)
+
+    _, _, s, raw, _, _, _ = query(*EXAMPLE, "pose")
+    save_gif(os.path.join(out_dir, "example.gif"), grid([render(c, raw, s) for c in CONDS], [CONDS[c][3] for c in CONDS], cols=3))
 
     key = []
-    for t, case, target, cond, action, d, lseq, lineup in TRIALS:
-        assert lineup.count(target) == 1 and len(set(lineup)) == 4
-        video, seq, q_raw, q_obf = query(target, action, d)
-        q = q_obf if cond == "obf" else q_raw
+    trials = design()
+    for tr in trials:
+        t, cond = tr["trial"], tr["condition"]
+        # if no window of the assigned clip shows the person (the U-Net erases some far runners),
+        # try the target's other locomotion clips in the same scenario, never its other trial's action
+        other = next(x["action"] for x in trials if x["target"] == tr["target"] and x is not tr)
+        best = None
+        for action in [tr["action"]] + [a for a in ("walking", "jogging", "running") if a not in (tr["action"], other)]:
+            res = query(tr["target"], action, tr["scenario"], cond)
+            if best is None or res[-1] > best[-1]:
+                best = res
+            if res[-1] >= 0.5:
+                break
+        video, seq, s, raw, q, rank, seen = best
         save_gif(os.path.join(out_dir, f"t{t:02d}_query.gif"), tile(q, 2))
         cands = []
-        for p in lineup:
+        for p in tr["lineup"]:
             v = f"person{p:02d}_{LINEUP[0]}_d{LINEUP[1]}"
-            cands.append(window(fetch(args.cache, v), centre(seqs, v, lseq)[1]))
+            cands.append(window(fetch(args.cache, v), centre(seqs, v, tr["lineup_seq"])))
         save_gif(os.path.join(out_dir, f"t{t:02d}_lineup.gif"), grid(cands, list("ABCD")))
-        key.append(dict(trial=t, case=case, condition=cond, target_person=target,
-                        query=f"{video} seq{seq}", obf_active_pct=round(100 * activity(q_obf).mean(), 2),
-                        lineup=" ".join(f"{l}=p{p:02d}" for l, p in zip("ABCD", lineup)),
-                        answer="ABCD"[lineup.index(target)]))
-        print(f"trial {t}: {cond} {action} d{d} -> {key[-1]['answer']}")
+        bdq_act = activity(render("bdq", raw, s)).mean()
+        key.append(dict(trial=t, target_person=tr["target"], condition=cond, run=CONDS[cond][0],
+                        query=f"{video} seq{seq} start{s}", window_rank=rank, bdq_active_pct=round(100 * bdq_act, 2),
+                        lineup=" ".join(f"{l}=p{p:02d}" for l, p in zip("ABCD", tr["lineup"])),
+                        lineup_seq=tr["lineup_seq"], answer=tr["answer"]))
+        print(f"trial {t:2d}: p{tr['target']:02d} {cond:5s} {video} -> {tr['answer']}  (window rank {rank}, bdq {100 * bdq_act:.2f}%)", flush=True)
     with open(os.path.join(HERE, "answer_key.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(key[0]))
         w.writeheader()

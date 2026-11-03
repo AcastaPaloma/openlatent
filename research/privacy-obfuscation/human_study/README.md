@@ -1,67 +1,81 @@
-# Human re-identification study (KTH, raw vs learned BDQ)
+# Human re-identification study (KTH; raw vs four obfuscators)
 
-Can people re-identify someone from our obfuscated video as well as from raw video?
-Obfuscator: the learned BDQ of run `p2_bdq_a3_lr3e-3` (privacy-research branch; alpha 3,
-frame adversary, learned sigma 2.69). Machine reference, strong protocol: identity 46.2%
-(R3D video attacker) / 18.7% (frame attacker), action 89.1%; raw 99.5%, chance 4%.
+Can people re-identify someone from obfuscated video, and does that track what the machine
+attackers manage? Five conditions, from the repo's KTH runs (strong protocol, ilic split;
+identity top-1 of the best retrained attacker, chance 4%):
+
+| condition | run | what it is | machine identity | action |
+|---|---|---|---|---|
+| raw | `p1_raw` | original video | 99.5 | 97.5 |
+| blur | `p1_blur8` | Gaussian blur, sigma 8 | 95.0 | 94.5 |
+| unet | `p2_unet_a1_ens` | learned residual 3D U-Net (frame + video adversaries); outputs a silhouette | 89.1 | 91.8 |
+| bdq | `p2_bdq_a3_lr3e-3` | learned blur-difference-quantise | 46.2 | 89.1 |
+| pose | `p12_kth_pose_canon_e16` | canonical stick figure (template limb lengths), keyframe every 16 | 29.1 | 91.5 |
+
+Not used, because a person would see nothing:
+- `p2_vae_a1_ens` (82.6): releases a flat grey frame with border artifacts (its gallery GIF too);
+  the attacker reads identity from a residual signal no viewer can see. Worth reporting on its
+  own: a large human/machine gap, but a human trial would only measure chance.
+- `bdq_down*` chains: the output ends at 5x3 to 20x15 pixels.
+- BDQ on d2 or upper-body clips: a blank grey screen.
 
 ## Task
 
-Each trial shows a "mystery person" clip and a lineup of four people (A-D). The
-participant picks who it is (forced choice, chance 25%) and rates confidence 1-5.
+Each trial shows a "mystery person" clip and a lineup of four people (A-D). The participant
+picks who it is (forced choice, chance 25%) and rates confidence 1-5.
 
-- Query: raw or BDQ, 32 frames at stride 2 (the attackers' clip stride), outdoors (d1-d3).
-- Lineup: always raw, walking, d4 (indoors), so the background never matches the query and
-  the match must come from the person. This is the attacker's view: a raw gallery, an obfuscated probe.
+- Query: one condition, 32 frames at stride 2 (the attackers' clip stride), outdoors (d1/d3),
+  walking, jogging or running.
+- Lineup: always raw, walking, d4 (indoors), so the background never matches the query and the
+  match must come from the person. This is the attacker's view: a raw gallery, an obfuscated probe.
 
-## Design choices (and why)
+## Design (20 trials)
 
-- 5 cases (target people 3, 8, 12, 17, 22), each seen once raw and once obfuscated: 10 trials.
-- The two trials of a case are never adjacent (3-6 trials apart) and differ in action or
-  scenario, query window, lineup subsequence, distractors and answer letter, so the
-  second trial is not a memory test of the first.
-- Trials 1-5 show each case once (3 obfuscated, 2 raw); trials 6-10 show the other condition.
-  The first half is a carryover-free comparison; the full set gives the within-case comparison.
-  Obfuscated-first in 3 cases and raw-first in 2 keeps practice effects from favouring one condition.
-- Targets also appear as distractors in other trials, so "I've seen this person before" is not
-  a usable cue. Answers are spread A3 B3 C2 D2.
-- Queries are walking, jogging and running only, in the same mix for both conditions
-  (raw J W J R R, obfuscated R R W J J). The learned BDQ keeps only strong brightening motion:
-  boxing, handwaving and handclapping come out at 0.0-0.4% active pixels and the far d2 clips
-  at 0.01-0.25%, i.e. a blank grey screen, which would test nothing.
-- Query windows are chosen by one rule in both conditions: the 32-frame window with the most
-  BDQ activity in that video. This is the attacker's best case, so a "humans can't" result is
-  conservative. `answer_key.csv` records the active-pixel fraction of every query.
-- The intro example (person 25 jogging) appears in no trial.
+- 10 target people, each seen in two conditions. The 10 targets cover the 10 condition pairs
+  exactly once, so every pair of conditions has a within-person comparison and each condition
+  has 4 trials.
+- Trials 1-10 show every target once, trials 11-20 the other condition (5-13 trials later).
+  Which condition of a pair comes first follows a regular tournament, so every condition has
+  2 trials in each half: practice and memory effects hit all conditions equally, and the first
+  half is a carryover-free comparison on its own.
+- No condition twice in a row. A target's two trials differ in action, scenario, lineup
+  subsequence, distractors and answer letter.
+- Every person appears in 3-4 lineups (targets included), so "I've seen this one before" carries
+  no information. Answers: 5 per letter.
+- Query windows: windows are ranked by BDQ activity (the same motion measure in every condition)
+  and each trial takes the top-ranked one whose output shows something in at least half its
+  frames. This is the attacker's best case, so a "people can't" result is conservative. The pose
+  detector misses some people on every keyframe of a window; `window_rank` in the key records
+  how far down the ranking a trial went.
+- The intro shows all five conditions on person 25, who appears in no trial.
+- `design(seed=0)` in `make_stimuli.py` builds all of this deterministically.
 
 ## Files
 
-- `make_stimuli.py`: reads only the needed AVIs from the official KTH zips (HTTP range
-  requests), applies the learned BDQ at full frame rate (as `train.materialize` does),
-  writes `stimuli/*.gif` and `answer_key.csv`.
-- `answer_key.csv`: per trial: case, condition, target, query clip, BDQ activity, lineup, correct letter.
+- `make_stimuli.py`: design, KTH clip download (HTTP range requests on the official zips),
+  anonymizers built from the privacy-research branch's `ppv` with checkpoints from the HF repo,
+  GIF rendering. Writes `stimuli/*.gif` and `answer_key.csv`.
+- `answer_key.csv`: per trial: target, condition, run, query clip and window, BDQ activity, lineup,
+  correct letter.
 
 ```bash
-# anonymizer.pt: runs/p2_bdq_a3_lr3e-3/anonymizer.pt in the (private) HF checkpoint repo
-uv run --no-project --with torch --with pillow --with numpy python human_study/make_stimuli.py \
-  --cache <dir> --checkpoint <anonymizer.pt>
+PYTHONPATH=<privacy-research>/research/privacy-obfuscation \
+uv run --no-project --with torch --with torchvision --with huggingface_hub \
+  --with safetensors --with pillow --with numpy python human_study/make_stimuli.py --cache <dir>
 ```
 
-## What the obfuscator outputs
+## Notes on what people see
 
-Learned thresholds: 6 below -1, 2 at +0.47, 7 at +0.89 (on 4x the blurred frame difference).
-So the static background is one constant grey (6/15), and a pixel lights up only when it
-brightens by more than ~30 grey levels between frames: the trailing edge of a dark figure
-moving over a bright background. A frame shows a few slivers; the moving sequence shows a
-sparse silhouette.
-
-The earlier draft used fixed BDQ (`p1_bdqfixed_s2_l8`, 87.8% machine identity). With an
-even number of levels its quantisation boundary sits at zero difference, so sensor noise
-turns the whole frame into flickering blotches; that output looked like pure noise to people.
+- BDQ (learned thresholds 6 below -1, 2 at +0.47, 7 at +0.89 on 4x the blurred frame difference):
+  the static background is one constant grey; a pixel lights up only when it brightens by more
+  than ~30 grey levels between frames, so a moving person leaves a sparse trailing-edge silhouette.
+- Fixed BDQ (`p1_bdqfixed_s2_l8`, 87.8% machine identity) was dropped: with an even number of
+  levels its quantisation boundary sits at zero difference, so sensor noise turns the frame into
+  flickering blotches that look like pure noise to a person.
 
 ## Analysis
 
-Score each trial against `answer_key.csv`. Report accuracy and mean confidence per condition
-(raw vs obfuscated), per case (better / equal / worse after obfuscation), and the first-half-only
-comparison. With 5 cases, use a per-participant paired test (e.g. a mixed logistic model
-with participant and case effects) rather than per-case significance.
+Score each trial against `answer_key.csv`. Per condition: accuracy and mean confidence, next to the
+machine identity column above. Per target: better / equal / worse between its two conditions.
+Use a mixed logistic model (condition fixed; participant and target random) for the condition
+effects, and report the first-half-only comparison as a check for carryover.
