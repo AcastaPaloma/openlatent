@@ -1,0 +1,77 @@
+{
+ "arm": "K0",
+ "seed": 0,
+ "steps": 1500,
+ "n_scans": 4492,
+ "n_gallery": 169,
+ "n_query": 240,
+ "chance_top1": 0.005917159763313609,
+ "metadata_floor_top1": 0.041666666666666664,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.0,
+   "top5": 0.0,
+   "mrr": 0.011764705882352944
+  },
+  "knn_pca_white": {
+   "top1": 0.0,
+   "top5": 0.0,
+   "mrr": 0.011764705882352944
+  },
+  "pair_logistic": {
+   "top1": 0.0,
+   "top5": 0.0,
+   "mrr": 0.011764705882352944
+  },
+  "pair_mlp": {
+   "top1": 0.0,
+   "top5": 0.0,
+   "mrr": 0.011764705882352944
+  },
+  "siamese_contrastive": {
+   "top1": 0.0,
+   "top5": 0.0,
+   "mrr": 0.011764705882352944
+  }
+ },
+ "best_attacker": "knn_cosine",
+ "best_top1": 0.0,
+ "inversion_top1": 0.0,
+ "inversion_top5": 0.4875,
+ "best_top1_ci95": [
+  0.0,
+  0.0
+ ],
+ "utility_auc_mean": 0.5,
+ "same_scanner_top1": 0.0125,
+ "same_scanner_chance": 0.0612813336623742,
+ "utility_C": 0.001,
+ "utility_ci95": [
+  0.5,
+  0.5
+ ],
+ "utility_mlp_auc": 0.5,
+ "utility_per_label": {
+  "Medical material": 0.5,
+  "Arterial wall calcification": 0.5,
+  "Cardiomegaly": 0.5,
+  "Pericardial effusion": 0.5,
+  "Coronary artery wall calcification": 0.5,
+  "Hiatal hernia": 0.5,
+  "Lymphadenopathy": 0.5,
+  "Emphysema": 0.5,
+  "Atelectasis": 0.5,
+  "Lung nodule": 0.5,
+  "Lung opacity": 0.5,
+  "Pulmonary fibrotic sequela": 0.5,
+  "Pleural effusion": 0.5,
+  "Mosaic attenuation pattern": 0.5,
+  "Peribronchial thickening": 0.5,
+  "Consolidation": 0.5,
+  "Bronchiectasis": 0.5,
+  "Interlobular septal thickening": 0.5
+ },
+ "sex_auc": 0.5,
+ "seconds": 42.809590101242065,
+ "config_hash": "a34cd4e5"
+}

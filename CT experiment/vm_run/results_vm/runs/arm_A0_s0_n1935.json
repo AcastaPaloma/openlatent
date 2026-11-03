@@ -1,0 +1,75 @@
+{
+ "arm": "A0",
+ "seed": 0,
+ "steps": 1500,
+ "n_scans": 1935,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.02809917355371901,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.12231404958677686,
+   "top5": 0.2644628099173554,
+   "mrr": 0.20181208371545226
+  },
+  "knn_pca_white": {
+   "top1": 0.19669421487603306,
+   "top5": 0.3752066115702479,
+   "mrr": 0.2898062743930458
+  },
+  "pair_logistic": {
+   "top1": 0.15206611570247933,
+   "top5": 0.3338842975206612,
+   "mrr": 0.24811349976900238
+  },
+  "pair_mlp": {
+   "top1": 0.18016528925619835,
+   "top5": 0.3504132231404959,
+   "mrr": 0.2697541975055959
+  },
+  "siamese_contrastive": {
+   "top1": 0.2066115702479339,
+   "top5": 0.3933884297520661,
+   "mrr": 0.29985733445197527
+  }
+ },
+ "best_attacker": "siamese_contrastive",
+ "best_top1": 0.2066115702479339,
+ "inversion_top1": 0.10578512396694215,
+ "inversion_top5": 0.25950413223140495,
+ "best_top1_ci95": [
+  0.1748292220113852,
+  0.23736574043426448
+ ],
+ "utility_auc_mean": 0.6477950071733961,
+ "utility_C": 0.003,
+ "utility_ci95": [
+  0.63075140572643,
+  0.6644749546352136
+ ],
+ "utility_mlp_auc": 0.632756865934523,
+ "utility_per_label": {
+  "Medical material": 0.6296010124135123,
+  "Arterial wall calcification": 0.7793743755533715,
+  "Cardiomegaly": 0.769115899940598,
+  "Pericardial effusion": 0.6482501194457716,
+  "Coronary artery wall calcification": 0.7653462603878117,
+  "Hiatal hernia": 0.5793679798326348,
+  "Lymphadenopathy": 0.6248576022048691,
+  "Emphysema": 0.6064783180026281,
+  "Atelectasis": 0.6472629423596137,
+  "Lung nodule": 0.5372392469962036,
+  "Lung opacity": 0.5883777239709442,
+  "Pulmonary fibrotic sequela": 0.5672722547722548,
+  "Pleural effusion": 0.817251461988304,
+  "Mosaic attenuation pattern": 0.6933103089369352,
+  "Peribronchial thickening": 0.5457813646368305,
+  "Consolidation": 0.6275618503879373,
+  "Bronchiectasis": 0.6113308856482917,
+  "Interlobular septal thickening": 0.6225305216426193
+ },
+ "sex_auc": 0.9673811177400865,
+ "seconds": 61.318888664245605,
+ "config_hash": "b2517772"
+}

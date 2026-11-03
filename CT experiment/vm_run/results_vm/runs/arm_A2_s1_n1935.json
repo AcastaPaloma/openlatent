@@ -1,0 +1,75 @@
+{
+ "arm": "A2",
+ "seed": 1,
+ "steps": 1500,
+ "n_scans": 1935,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.02809917355371901,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.04628099173553719,
+   "top5": 0.09752066115702479,
+   "mrr": 0.09132008969231872
+  },
+  "knn_pca_white": {
+   "top1": 0.0859504132231405,
+   "top5": 0.21322314049586777,
+   "mrr": 0.15466466858155856
+  },
+  "pair_logistic": {
+   "top1": 0.01487603305785124,
+   "top5": 0.06776859504132231,
+   "mrr": 0.05532544027078387
+  },
+  "pair_mlp": {
+   "top1": 0.02809917355371901,
+   "top5": 0.09090909090909091,
+   "mrr": 0.07358295561447895
+  },
+  "siamese_contrastive": {
+   "top1": 0.08099173553719008,
+   "top5": 0.1933884297520661,
+   "mrr": 0.1490721023483467
+  }
+ },
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.0859504132231405,
+ "inversion_top1": 0.07272727272727272,
+ "inversion_top5": 0.1834710743801653,
+ "best_top1_ci95": [
+  0.06464334319209585,
+  0.10935606477911201
+ ],
+ "utility_auc_mean": 0.6357366833407798,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.616713408275524,
+  0.6497777478691432
+ ],
+ "utility_mlp_auc": 0.6312555936787849,
+ "utility_per_label": {
+  "Medical material": 0.5796480718355719,
+  "Arterial wall calcification": 0.766016294503245,
+  "Cardiomegaly": 0.7444475612170813,
+  "Pericardial effusion": 0.6527173913043478,
+  "Coronary artery wall calcification": 0.7426656722778606,
+  "Hiatal hernia": 0.5548896910753442,
+  "Lymphadenopathy": 0.626901699586587,
+  "Emphysema": 0.6131169513797634,
+  "Atelectasis": 0.6291155525757877,
+  "Lung nodule": 0.5222261359633673,
+  "Lung opacity": 0.5750200425955769,
+  "Pulmonary fibrotic sequela": 0.535425722925723,
+  "Pleural effusion": 0.7997193688446469,
+  "Mosaic attenuation pattern": 0.662700477835076,
+  "Peribronchial thickening": 0.5943262411347517,
+  "Consolidation": 0.6071036451471234,
+  "Bronchiectasis": 0.5713233012721067,
+  "Interlobular septal thickening": 0.6658964786600746
+ },
+ "sex_auc": 0.8891443322260248,
+ "seconds": 44.13032603263855,
+ "config_hash": "c0cba8c7"
+}

@@ -1,0 +1,7 @@
+FROZEN PLAN "sealed-3" (written 2026-11-03 BEFORE any run on this set).
+Exam set: the 169 CT-RATE validation patients with 2+ scans (409 scans, manifest_valid.csv). They were read once for the ORIGINAL report with the old arm list; no arm below was ever scored, tuned or selected on them.
+Candidate: A21 = A14's adversary (A3 + contrastive adversary w 0.3) with a 2-layer MLP disease head, 1000 steps (chosen on DEV eval, 3 seeds: top1 .083, kept .96).
+Comparators (all fixed, same regime = EXTRA dev fit + extra patients, eval only on the 169): A0 raw, B1 PCA-256, B3 noise sigma 1.5, A3@1000, A14@1000, K0.
+Seeds 0,1,2. Primary claim: A21 beats A3@1000 on best-attacker linkage by >= 0.015 absolute at linear-probe utility kept >= 0.95 (relative to A0 on the same set). Small gallery (169): 95% patient-bootstrap CIs will be about +-0.05, so a point-estimate win is suggestive, not conclusive.
+Also reported: A21 on sealed-2 as a SECOND LOOK (that set was already read once for the other arms; A21 was chosen on dev, so this is not pristine).
+No arm is added or re-tuned after this file. Reported once.

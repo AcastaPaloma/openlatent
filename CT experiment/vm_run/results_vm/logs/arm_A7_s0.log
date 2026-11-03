@@ -1,0 +1,55 @@
+SEAL2: 538 exam patients, 1296 scans
+A7 seed 0: 5379 scans | fit 4083 eval 1296 | scanner classes 10
+  step 0 loss 0.709
+  step 300 loss 0.037
+  step 600 loss 0.020
+  step 900 loss 0.020
+{
+ "arm": "A7",
+ "seed": 0,
+ "steps": 1000,
+ "n_scans": 5379,
+ "n_gallery": 538,
+ "n_query": 758,
+ "chance_top1": 0.0018587360594795538,
+ "metadata_floor_top1": 0.03430079155672823,
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.07783641160949868,
+ "inversion_top1": 0.0158311345646438,
+ "inversion_top5": 0.047493403693931395,
+ "best_top1_ci95": [
+  0.059785007797644646,
+  0.09638658940397349
+ ],
+ "utility_auc_mean": 0.6425902478582682,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.6294093049088098,
+  0.6545570204052752
+ ],
+ "utility_mlp_auc": 0.6413797594217886,
+ "utility_per_label": {
+  "Medical material": 0.6243535095197499,
+  "Arterial wall calcification": 0.7711809365352672,
+  "Cardiomegaly": 0.7805169745331751,
+  "Pericardial effusion": 0.6383252640845072,
+  "Coronary artery wall calcification": 0.7662764032076606,
+  "Hiatal hernia": 0.5654546061266713,
+  "Lymphadenopathy": 0.5791721812786469,
+  "Emphysema": 0.6098681313081681,
+  "Atelectasis": 0.590970896416996,
+  "Lung nodule": 0.5613402123559056,
+  "Lung opacity": 0.5541895210056317,
+  "Pulmonary fibrotic sequela": 0.569819568452381,
+  "Pleural effusion": 0.866981967593937,
+  "Mosaic attenuation pattern": 0.6953494400200215,
+  "Peribronchial thickening": 0.529582866500043,
+  "Consolidation": 0.605465583695886,
+  "Bronchiectasis": 0.5967716208887612,
+  "Interlobular septal thickening": 0.6610047779254191
+ },
+ "sex_auc": 0.6993984571725489,
+ "seconds": 67.01641750335693,
+ "config_hash": "d68ab19b"
+}
+{'knn_cosine': 0.037, 'knn_pca_white': 0.078, 'pair_logistic': 0.03, 'pair_mlp': 0.03, 'siamese_contrastive': 0.034}

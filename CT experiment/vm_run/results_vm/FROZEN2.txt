@@ -1,0 +1,9 @@
+FROZEN ARM LIST for sealed-2 (written 2026-11-03 BEFORE any sealed-2 feature was extracted or scored)
+Sealed-2 = CT-RATE train patients with 2+ scans that were never used in any run (538 patients, up to 4 scans each).
+Regime: adapters and attackers trained on the dev fit set + 1300 extra patients (4083 scans, EXTRA); evaluated only on sealed-2. Dev-eval patients unused.
+Arms and settings (chosen on dev; per baseline the better of 1000/1500 steps by dev linkage at its own utility):
+  A0 raw | B1 PCA256 | B2 random proj | B3 noise sigma 1.0 and 1.5 (1500) | A1@1500 | A2@1500 | A5@1500 | A7@1000
+  A3@1000 | A14@1000 | A8@1000 | K0 constant latent
+Seeds 0,1,2 each. Metrics: best of 5 fresh attackers top-1 (+CI), inversion top-1, metadata floor, utility AUC (linear + MLP probe, patient-bootstrap CI), sex AUC.
+Primary claim to test: A3@1000 keeps >=95% of raw utility AND cuts best-attacker linkage by >=50% vs raw; secondary: beats noise/PCA/NoPeek/LEACE at matched utility. NOT claimed: anonymity (floor).
+No arm is added or re-tuned after this file. Results reported once, whatever they are.

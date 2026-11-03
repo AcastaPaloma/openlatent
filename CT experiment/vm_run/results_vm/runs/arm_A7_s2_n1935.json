@@ -1,0 +1,75 @@
+{
+ "arm": "A7",
+ "seed": 2,
+ "steps": 1500,
+ "n_scans": 1935,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.02809917355371901,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.04462809917355372,
+   "top5": 0.11900826446280992,
+   "mrr": 0.08924576673642651
+  },
+  "knn_pca_white": {
+   "top1": 0.12231404958677686,
+   "top5": 0.22975206611570248,
+   "mrr": 0.18171889309231964
+  },
+  "pair_logistic": {
+   "top1": 0.021487603305785124,
+   "top5": 0.0628099173553719,
+   "mrr": 0.059590258694434455
+  },
+  "pair_mlp": {
+   "top1": 0.013223140495867768,
+   "top5": 0.03966942148760331,
+   "mrr": 0.03749747552522088
+  },
+  "siamese_contrastive": {
+   "top1": 0.02975206611570248,
+   "top5": 0.06611570247933884,
+   "mrr": 0.06151740745304288
+  }
+ },
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.12231404958677686,
+ "inversion_top1": 0.024793388429752067,
+ "inversion_top5": 0.07107438016528926,
+ "best_top1_ci95": [
+  0.09271958921780503,
+  0.1501860163629035
+ ],
+ "utility_auc_mean": 0.5897394175314608,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.5775730040868705,
+  0.6024544301616072
+ ],
+ "utility_mlp_auc": 0.5846845161648719,
+ "utility_per_label": {
+  "Medical material": 0.5576605107855107,
+  "Arterial wall calcification": 0.6871390393878596,
+  "Cardiomegaly": 0.6749513233449937,
+  "Pericardial effusion": 0.5172479694218824,
+  "Coronary artery wall calcification": 0.694873215427232,
+  "Hiatal hernia": 0.5333276152687241,
+  "Lymphadenopathy": 0.5634795590261829,
+  "Emphysema": 0.5641287779237845,
+  "Atelectasis": 0.5998967148060231,
+  "Lung nodule": 0.5142479746389573,
+  "Lung opacity": 0.5738215358701726,
+  "Pulmonary fibrotic sequela": 0.5523058023058023,
+  "Pleural effusion": 0.6987951098403286,
+  "Mosaic attenuation pattern": 0.5712672091592941,
+  "Peribronchial thickening": 0.5618121790168745,
+  "Consolidation": 0.586783988957902,
+  "Bronchiectasis": 0.5606146792153618,
+  "Interlobular septal thickening": 0.6029563111694077
+ },
+ "sex_auc": 0.66963366775724,
+ "seconds": 41.78301954269409,
+ "config_hash": "0e4f33c3"
+}

@@ -1,0 +1,75 @@
+{
+ "arm": "L64",
+ "seed": 0,
+ "steps": 1500,
+ "n_scans": 1935,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.02809917355371901,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.1933884297520661,
+   "top5": 0.3702479338842975,
+   "mrr": 0.28192990862370654
+  },
+  "knn_pca_white": {
+   "top1": 0.16859504132231404,
+   "top5": 0.3239669421487603,
+   "mrr": 0.24703216724168198
+  },
+  "pair_logistic": {
+   "top1": 0.0,
+   "top5": 0.003305785123966942,
+   "mrr": 0.009309816982512013
+  },
+  "pair_mlp": {
+   "top1": 0.10578512396694215,
+   "top5": 0.2,
+   "mrr": 0.15742178419178088
+  },
+  "siamese_contrastive": {
+   "top1": 0.04297520661157025,
+   "top5": 0.12727272727272726,
+   "mrr": 0.09544542754497629
+  }
+ },
+ "best_attacker": "knn_cosine",
+ "best_top1": 0.1933884297520661,
+ "inversion_top1": 0.08099173553719008,
+ "inversion_top5": 0.1652892561983471,
+ "best_top1_ci95": [
+  0.15938854116514203,
+  0.22567593262927793
+ ],
+ "utility_auc_mean": 0.5380133265664893,
+ "utility_C": 0.01,
+ "utility_ci95": [
+  0.5229019790120041,
+  0.5515217676241327
+ ],
+ "utility_mlp_auc": 0.5388999055494718,
+ "utility_per_label": {
+  "Medical material": 0.5366681929181929,
+  "Arterial wall calcification": 0.527727461030469,
+  "Cardiomegaly": 0.6050961982707412,
+  "Pericardial effusion": 0.4950430004777831,
+  "Coronary artery wall calcification": 0.5617941615171532,
+  "Hiatal hernia": 0.5005705634033921,
+  "Lymphadenopathy": 0.5253628847037207,
+  "Emphysema": 0.4720814717477003,
+  "Atelectasis": 0.5400728432420678,
+  "Lung nodule": 0.5033286368439591,
+  "Lung opacity": 0.5508758006915708,
+  "Pulmonary fibrotic sequela": 0.5356832356832357,
+  "Pleural effusion": 0.6662666054808382,
+  "Mosaic attenuation pattern": 0.5638986138051758,
+  "Peribronchial thickening": 0.4900423901524415,
+  "Consolidation": 0.5739381391555305,
+  "Bronchiectasis": 0.534276209190885,
+  "Interlobular septal thickening": 0.5015134698819493
+ },
+ "sex_auc": 0.6049900007530814,
+ "seconds": 24.295417308807373,
+ "config_hash": "ed49b2c3"
+}

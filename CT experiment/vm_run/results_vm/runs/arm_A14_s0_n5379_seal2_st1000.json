@@ -1,0 +1,75 @@
+{
+ "arm": "A14",
+ "seed": 0,
+ "steps": 1000,
+ "n_scans": 5379,
+ "n_gallery": 538,
+ "n_query": 758,
+ "chance_top1": 0.0018587360594795538,
+ "metadata_floor_top1": 0.03430079155672823,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.0158311345646438,
+   "top5": 0.03825857519788918,
+   "mrr": 0.03502032459854341
+  },
+  "knn_pca_white": {
+   "top1": 0.05408970976253298,
+   "top5": 0.13852242744063326,
+   "mrr": 0.10094088410102095
+  },
+  "pair_logistic": {
+   "top1": 0.006596306068601583,
+   "top5": 0.021108179419525065,
+   "mrr": 0.022034199899869825
+  },
+  "pair_mlp": {
+   "top1": 0.010554089709762533,
+   "top5": 0.027704485488126648,
+   "mrr": 0.029905355683140608
+  },
+  "siamese_contrastive": {
+   "top1": 0.051451187335092345,
+   "top5": 0.16754617414248021,
+   "mrr": 0.12028045846344745
+  }
+ },
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.05408970976253298,
+ "inversion_top1": 0.0395778364116095,
+ "inversion_top5": 0.10554089709762533,
+ "best_top1_ci95": [
+  0.040681182100776606,
+  0.06825043491022592
+ ],
+ "utility_auc_mean": 0.6792549533632346,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.6669122533731453,
+  0.6877213200560336
+ ],
+ "utility_mlp_auc": 0.675710711798737,
+ "utility_per_label": {
+  "Medical material": 0.6395282750781472,
+  "Arterial wall calcification": 0.779834338889457,
+  "Cardiomegaly": 0.809581716950413,
+  "Pericardial effusion": 0.667071963028169,
+  "Coronary artery wall calcification": 0.7411600866655349,
+  "Hiatal hernia": 0.6429389779982648,
+  "Lymphadenopathy": 0.6654341799133452,
+  "Emphysema": 0.671088981338924,
+  "Atelectasis": 0.6375122097411535,
+  "Lung nodule": 0.5954129209111911,
+  "Lung opacity": 0.6208773622937002,
+  "Pulmonary fibrotic sequela": 0.5967137896825397,
+  "Pleural effusion": 0.837025959695685,
+  "Mosaic attenuation pattern": 0.7372607906756405,
+  "Peribronchial thickening": 0.6489647074032578,
+  "Consolidation": 0.679095465749119,
+  "Bronchiectasis": 0.578836890292532,
+  "Interlobular septal thickening": 0.6782505442311497
+ },
+ "sex_auc": 0.905074643271114,
+ "seconds": 84.3230710029602,
+ "config_hash": "62cc3abe"
+}

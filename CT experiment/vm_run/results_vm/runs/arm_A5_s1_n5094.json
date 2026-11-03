@@ -1,0 +1,75 @@
+{
+ "arm": "A5",
+ "seed": 1,
+ "steps": 1500,
+ "n_scans": 5094,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.03140495867768595,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.07272727272727272,
+   "top5": 0.16198347107438016,
+   "mrr": 0.12307116474768418
+  },
+  "knn_pca_white": {
+   "top1": 0.12727272727272726,
+   "top5": 0.2462809917355372,
+   "mrr": 0.19182380728043266
+  },
+  "pair_logistic": {
+   "top1": 0.03636363636363636,
+   "top5": 0.10082644628099173,
+   "mrr": 0.08437261084536232
+  },
+  "pair_mlp": {
+   "top1": 0.04462809917355372,
+   "top5": 0.09917355371900827,
+   "mrr": 0.08631597756754474
+  },
+  "siamese_contrastive": {
+   "top1": 0.0628099173553719,
+   "top5": 0.1322314049586777,
+   "mrr": 0.11095924323503073
+  }
+ },
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.12727272727272726,
+ "inversion_top1": 0.04628099173553719,
+ "inversion_top5": 0.11239669421487604,
+ "best_top1_ci95": [
+  0.09983467797967908,
+  0.1561788617886178
+ ],
+ "utility_auc_mean": 0.6207190683165736,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.6065479966121621,
+  0.6335116029687351
+ ],
+ "utility_mlp_auc": 0.6161098310168508,
+ "utility_per_label": {
+  "Medical material": 0.6012572496947497,
+  "Arterial wall calcification": 0.7662884110828616,
+  "Cardiomegaly": 0.7400006600224408,
+  "Pericardial effusion": 0.5572682752030578,
+  "Coronary artery wall calcification": 0.744800767099936,
+  "Hiatal hernia": 0.5721333850445263,
+  "Lymphadenopathy": 0.6084910427193385,
+  "Emphysema": 0.6328541392904072,
+  "Atelectasis": 0.6119738344175258,
+  "Lung nodule": 0.550816015028766,
+  "Lung opacity": 0.5399232307854268,
+  "Pulmonary fibrotic sequela": 0.5413461538461538,
+  "Pleural effusion": 0.7926065162907268,
+  "Mosaic attenuation pattern": 0.5812556181104225,
+  "Peribronchial thickening": 0.543621097252792,
+  "Consolidation": 0.5903209109730849,
+  "Bronchiectasis": 0.6285681042506981,
+  "Interlobular septal thickening": 0.5694178185854102
+ },
+ "sex_auc": 0.7809767465211825,
+ "seconds": 47.43674683570862,
+ "config_hash": "040b0739"
+}

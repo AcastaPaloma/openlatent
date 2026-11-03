@@ -1,0 +1,77 @@
+{
+ "arm": "A14",
+ "seed": 1,
+ "steps": 1000,
+ "n_scans": 4492,
+ "n_gallery": 169,
+ "n_query": 240,
+ "chance_top1": 0.005917159763313609,
+ "metadata_floor_top1": 0.041666666666666664,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.05,
+   "top5": 0.13333333333333333,
+   "mrr": 0.10312331628194601
+  },
+  "knn_pca_white": {
+   "top1": 0.1375,
+   "top5": 0.24583333333333332,
+   "mrr": 0.20480731306950156
+  },
+  "pair_logistic": {
+   "top1": 0.029166666666666667,
+   "top5": 0.08333333333333333,
+   "mrr": 0.08239473270005933
+  },
+  "pair_mlp": {
+   "top1": 0.041666666666666664,
+   "top5": 0.1625,
+   "mrr": 0.11614470792403299
+  },
+  "siamese_contrastive": {
+   "top1": 0.15416666666666667,
+   "top5": 0.4041666666666667,
+   "mrr": 0.28088106866028373
+  }
+ },
+ "best_attacker": "siamese_contrastive",
+ "best_top1": 0.15416666666666667,
+ "inversion_top1": 0.09583333333333334,
+ "inversion_top5": 0.24583333333333332,
+ "best_top1_ci95": [
+  0.11066343225555628,
+  0.19838224523958983
+ ],
+ "utility_auc_mean": 0.6949174962796306,
+ "same_scanner_top1": 0.30416666666666664,
+ "same_scanner_chance": 0.0612813336623742,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.6667757403974699,
+  0.7154665211893106
+ ],
+ "utility_mlp_auc": 0.6954556626816795,
+ "utility_per_label": {
+  "Medical material": 0.6393908834207342,
+  "Arterial wall calcification": 0.7791556027615507,
+  "Cardiomegaly": 0.8115877437325906,
+  "Pericardial effusion": 0.7623604465709729,
+  "Coronary artery wall calcification": 0.8122382308594405,
+  "Hiatal hernia": 0.6626618777822744,
+  "Lymphadenopathy": 0.6039870393761326,
+  "Emphysema": 0.6524984449512752,
+  "Atelectasis": 0.6728952403731164,
+  "Lung nodule": 0.6664270309130123,
+  "Lung opacity": 0.6016860747210092,
+  "Pulmonary fibrotic sequela": 0.6321690140845071,
+  "Pleural effusion": 0.8577775417728688,
+  "Mosaic attenuation pattern": 0.6348911070780399,
+  "Peribronchial thickening": 0.7000172503018802,
+  "Consolidation": 0.6297247649293232,
+  "Bronchiectasis": 0.6421942717166008,
+  "Interlobular septal thickening": 0.7468523676880222
+ },
+ "sex_auc": 0.8530795317798927,
+ "seconds": 108.86501932144165,
+ "config_hash": "62cc3abe"
+}

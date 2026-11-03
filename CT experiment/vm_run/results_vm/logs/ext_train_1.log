@@ -1,0 +1,33 @@
+2026-11-03 01:20:54.984059: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1793668855.003355   20359 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1793668855.009616   20359 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1793668855.028590   20359 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1793668855.028618   20359 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1793668855.028622   20359 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1793668855.028625   20359 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+10 242 85s
+20 242 165s
+30 242 231s
+40 242 339s
+50 242 443s
+60 242 524s
+70 242 576s
+80 242 649s
+90 242 712s
+100 242 783s
+110 242 868s
+120 242 921s
+130 242 986s
+140 242 1014s
+150 242 1042s
+160 242 1076s
+170 242 1108s
+180 242 1142s
+190 242 1162s
+200 242 1196s
+210 242 1232s
+220 242 1263s
+230 242 1283s
+240 242 1314s
+DONE

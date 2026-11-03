@@ -1,0 +1,75 @@
+{
+ "arm": "B3_sigma0.5",
+ "seed": 0,
+ "steps": 1500,
+ "n_scans": 5094,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.03140495867768595,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.12231404958677686,
+   "top5": 0.24462809917355371,
+   "mrr": 0.1988482650423492
+  },
+  "knn_pca_white": {
+   "top1": 0.1834710743801653,
+   "top5": 0.39173553719008264,
+   "mrr": 0.2842090323412288
+  },
+  "pair_logistic": {
+   "top1": 0.12396694214876033,
+   "top5": 0.31735537190082647,
+   "mrr": 0.2246909872535745
+  },
+  "pair_mlp": {
+   "top1": 0.11570247933884298,
+   "top5": 0.3322314049586777,
+   "mrr": 0.22324187253595787
+  },
+  "siamese_contrastive": {
+   "top1": 0.2727272727272727,
+   "top5": 0.49586776859504134,
+   "mrr": 0.37803854103516404
+  }
+ },
+ "best_attacker": "siamese_contrastive",
+ "best_top1": 0.2727272727272727,
+ "inversion_top1": 0.09586776859504133,
+ "inversion_top5": 0.22975206611570248,
+ "best_top1_ci95": [
+  0.24022601457644668,
+  0.3069831376178631
+ ],
+ "utility_auc_mean": 0.6725953612275652,
+ "utility_C": 0.001,
+ "utility_ci95": [
+  0.6562640573142934,
+  0.6854289818642603
+ ],
+ "utility_mlp_auc": 0.6526710088297635,
+ "utility_per_label": {
+  "Medical material": 0.6521354802604803,
+  "Arterial wall calcification": 0.8122964202454734,
+  "Cardiomegaly": 0.7824483532440103,
+  "Pericardial effusion": 0.6646321070234114,
+  "Coronary artery wall calcification": 0.7919198806733433,
+  "Hiatal hernia": 0.6102492578946583,
+  "Lymphadenopathy": 0.6105833716123105,
+  "Emphysema": 0.6988804204993431,
+  "Atelectasis": 0.674388895935637,
+  "Lung nodule": 0.5378693593205746,
+  "Lung opacity": 0.5757407662345024,
+  "Pulmonary fibrotic sequela": 0.5614061614061614,
+  "Pleural effusion": 0.8483356278018991,
+  "Mosaic attenuation pattern": 0.7039433221365378,
+  "Peribronchial thickening": 0.6257846254177876,
+  "Consolidation": 0.6296296296296297,
+  "Bronchiectasis": 0.6638656186437756,
+  "Interlobular septal thickening": 0.6626072041166381
+ },
+ "sex_auc": 0.964508949116803,
+ "seconds": 396.91275668144226,
+ "config_hash": "a190069a"
+}

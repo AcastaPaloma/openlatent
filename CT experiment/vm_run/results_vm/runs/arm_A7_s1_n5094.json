@@ -1,0 +1,75 @@
+{
+ "arm": "A7",
+ "seed": 1,
+ "steps": 1500,
+ "n_scans": 5094,
+ "n_gallery": 406,
+ "n_query": 605,
+ "chance_top1": 0.0024630541871921183,
+ "metadata_floor_top1": 0.03140495867768595,
+ "attackers": {
+  "knn_cosine": {
+   "top1": 0.06611570247933884,
+   "top5": 0.15206611570247933,
+   "mrr": 0.11787028871555864
+  },
+  "knn_pca_white": {
+   "top1": 0.1256198347107438,
+   "top5": 0.22975206611570248,
+   "mrr": 0.1822278610530436
+  },
+  "pair_logistic": {
+   "top1": 0.03801652892561983,
+   "top5": 0.12231404958677686,
+   "mrr": 0.09019725645212702
+  },
+  "pair_mlp": {
+   "top1": 0.03801652892561983,
+   "top5": 0.09256198347107437,
+   "mrr": 0.07700807112960616
+  },
+  "siamese_contrastive": {
+   "top1": 0.05785123966942149,
+   "top5": 0.12727272727272726,
+   "mrr": 0.10418196919949956
+  }
+ },
+ "best_attacker": "knn_pca_white",
+ "best_top1": 0.1256198347107438,
+ "inversion_top1": 0.04297520661157025,
+ "inversion_top5": 0.10413223140495868,
+ "best_top1_ci95": [
+  0.09747899159663866,
+  0.15194692263313236
+ ],
+ "utility_auc_mean": 0.6238048470662866,
+ "utility_C": 0.03,
+ "utility_ci95": [
+  0.6086029383782203,
+  0.6397377075161864
+ ],
+ "utility_mlp_auc": 0.6215605619261051,
+ "utility_per_label": {
+  "Medical material": 0.6301828958078958,
+  "Arterial wall calcification": 0.7699416777002495,
+  "Cardiomegaly": 0.7244571315424724,
+  "Pericardial effusion": 0.5512840420449117,
+  "Coronary artery wall calcification": 0.7380992968250586,
+  "Hiatal hernia": 0.6029065171019854,
+  "Lymphadenopathy": 0.5966146072576941,
+  "Emphysema": 0.6281603153745072,
+  "Atelectasis": 0.6230475474296482,
+  "Lung nodule": 0.5386305819733083,
+  "Lung opacity": 0.5831261590288856,
+  "Pulmonary fibrotic sequela": 0.5322906822906823,
+  "Pleural effusion": 0.7890265570028356,
+  "Mosaic attenuation pattern": 0.5710129157401713,
+  "Peribronchial thickening": 0.5541860275535991,
+  "Consolidation": 0.5906738189346885,
+  "Bronchiectasis": 0.5949382907574033,
+  "Interlobular septal thickening": 0.6099081828271617
+ },
+ "sex_auc": 0.6422717117539265,
+ "seconds": 46.66903305053711,
+ "config_hash": "0e4f33c3"
+}
