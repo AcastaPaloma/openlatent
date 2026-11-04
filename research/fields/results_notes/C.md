@@ -181,10 +181,12 @@ bootstrap, seed 0). U_HE = recall of the never-seen DIS and FEA with the best si
 | learned encoder | U_HE | vs LDA comparator (dU_HE [95% CI]) | identity T1 (x chance) | dID vs comparator | criteria 1/2/3 |
 |---|---|---|---|---|---|
 | rate d4 | 0.279 | vs k5: -0.090 [-0.116,-0.066] | 0.047 (4.3x) | -0.032 | fail / pass / fail |
-| rate d16 | 0.354 | vs k16: -0.096 [-0.128,-0.068] | 0.067 (6.1x) | -0.004 | fail / pass / fail |
-| rate d64 | 0.376 | vs k16: -0.074 [-0.102,-0.048] | 0.081 (7.3x) | +0.010 | fail / pass / fail |
+| rate d16 | 0.354 | vs k16: -0.096 [-0.128,-0.068] | 0.067 (6.1x) | -0.004 [-0.032,+0.025] | fail / fail / fail |
+| rate d64 | 0.376 | vs k16: -0.074 [-0.102,-0.048] | 0.081 (7.3x) | +0.010 [-0.016,+0.031] | fail / fail / fail |
 | adversarial d16 (lambda 1) | 0.301 | vs k5: -0.068 [-0.096,-0.043] | 0.061 (5.5x) | -0.019 | fail / pass / fail |
 | VQ g2k64 (12 bits) | 0.309 | vs k5: -0.060 [-0.088,-0.033] | 0.052 (4.7x) | -0.028 | fail / pass / fail |
+
+Against the weaker 3- and 5-dim comparators the learned encoders are statistically tied rather than worse (d16: -0.009 [-0.035,+0.016] vs k3, -0.015 [-0.041,+0.011] vs k5; d64: +0.014 [-0.010,+0.036] vs k3, +0.007 [-0.015,+0.030] vs k5), but never reach +0.05, and the 16-dim comparator is the width-matched one for d16.
 
 **No learned encoder meets criterion 1 (needs +0.05 and an interval above 0); the best case is d64 vs the 3-dim comparator, +0.014 [-0.010,+0.036].**
 An LDA projection padded to 16 dims with residual PCA directions keeps the most about the unseen emotions (U_HE 0.450 [0.411,0.489] at identity
