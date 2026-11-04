@@ -46,7 +46,7 @@ def verdict_tables(D, R, args):
       f"{js['n_studies']} studies, folds {[list(map(int, f)) for f in D.folds]}, B={B}\n")
     P(f"chance (mean over folds 1/B_f) = {chance:.3f}; label-only floor (batch from true fine type) = {label_only_floor(D, min(D.S)):.3f}\n")
     # --- main table
-    P("| arm | d? | U_fine [95% CI] | U_hold [95% CI] | worst attacker acc [95% CI] | L [95% CI] | lin / mlp / knn / lgbm | retention |")
+    P("| arm | d | U_fine [95% CI] | U_hold [95% CI] | worst attacker acc [95% CI] | L [95% CI] | lin / mlp / knn / lgbm | retention |")
     P("|---|---|---|---|---|---|---|---|")
     order = [a for a in AG.INDUCTIVE + ["ldaF16"] + [x + "_H" for x in ("ldaC", "ldaC_pca16", "ldaC_pca32", "ldaF16")] + AG.REFS +
              ["onehot_oracle", "ctrl_const", "ctrl_noise16", "ctrl_shuffle_batch", "ctrl_shuffle_labels"] if a in arms]
@@ -55,7 +55,7 @@ def verdict_tables(D, R, args):
         m = pt[a]
         ret = [np.mean(list(D.S[s]["ret"][a].values())) for s in D.S if a in D.S[s]["ret"]]
         rtxt = f"{np.mean(ret):.2f}" if ret else ""
-        P(f"| {a} |  | {fmt(m['U'], boot[a]['U'])} | {fmt(m['Uh'], boot[a]['Uh'])} | {fmt(m['worst'], boot[a]['worst'])} | {fmt(m['L'], boot[a]['L'], 2)} | "
+        P(f"| {a} | {D.dims.get(a, '')} | {fmt(m['U'], boot[a]['U'])} | {fmt(m['Uh'], boot[a]['Uh'])} | {fmt(m['worst'], boot[a]['worst'])} | {fmt(m['L'], boot[a]['L'], 2)} | "
           f"{m.get('acc_linear', float('nan')):.3f} / {m.get('acc_mlp', float('nan')):.3f} / {m.get('acc_knn', float('nan')):.3f} / {m.get('acc_lgbm', float('nan')):.3f} | {rtxt} |")
         rows[a] = dict(U=m["U"], Uh=m["Uh"], worst=m["worst"], L=m["L"], U_ci=ci(boot[a]["U"]), Uh_ci=ci(boot[a]["Uh"]), L_ci=ci(boot[a]["L"]),
                        worst_ci=ci(boot[a]["worst"]), ret=float(np.mean(ret)) if ret else None)
@@ -71,8 +71,8 @@ def verdict_tables(D, R, args):
     for c in ("ctrl_const", "ctrl_noise16", "ctrl_shuffle_batch"):
         if c in pt:
             ctrl[c] = pt[c]["worst"] - chance
-    u0 = pt["ctrl_const"]["U"] if "ctrl_const" in pt else np.nan
-    uctrl = {c: pt[c]["U"] - u0 for c in ("ctrl_noise16", "ctrl_shuffle_labels") if c in pt}
+    u0 = pt["_u0"]
+    uctrl = {c: pt[c]["U"] - u0 for c in ("ctrl_const", "ctrl_noise16", "ctrl_shuffle_labels") if c in pt}
     k1["controls_excess_att"] = ctrl
     k1["controls_excess_U"] = uctrl
     k1["controls_ok"] = bool(all(v <= 0.03 for v in ctrl.values()) and all(v <= 0.03 for v in uctrl.values()))
@@ -80,12 +80,14 @@ def verdict_tables(D, R, args):
     js["K1"] = k1
     P(f"\n**K1 measurability**: raw50 worst-attacker accuracy {raw['worst']:.3f} {ci(boot['raw50']['worst'])} vs chance {chance:.3f} (excess {k1['raw_acc'] - chance:.3f}, "
       f"needs >= 0.15 and >= min(3 x chance, 0.85) = {min(3 * chance, 0.85):.3f}): {'ok' if k1['raw_ok'] else 'FAIL'}. "
-      f"Controls (attacker excess over chance; probe U minus u0={u0:.3f}): {ctrl} / {uctrl}; allowed <= 0.03: {'ok' if k1['controls_ok'] else 'FAIL'}. => K1 {'PASS' if k1['pass'] else 'FAIL'}")
+      f"Controls (attacker excess over chance; probe U minus the analytic random-guess macro-F1 u0={u0:.3f}): {ctrl} / {uctrl}; allowed <= 0.03: {'ok' if k1['controls_ok'] else 'FAIL'}. => K1 {'PASS' if k1['pass'] else 'FAIL'}")
 
     # --- K2
-    def ratio(num_arm, key, den_arm, c_arm="ctrl_const"):
-        v = (ar(num_arm, key) - ar(c_arm, key)) / np.maximum(ar(den_arm, key) - ar(c_arm, key), 1e-6)
-        p = (pt[num_arm][key] - pt[c_arm][key]) / max(pt[den_arm][key] - pt[c_arm][key], 1e-6)
+    def ratio(num_arm, key, den_arm):
+        u0v = np.asarray(R["boot_u0" if key == "U" else "boot_u0h"])
+        u0p = pt["_u0" if key == "U" else "_u0h"]
+        v = (ar(num_arm, key) - u0v) / np.maximum(ar(den_arm, key) - u0v, 1e-6)
+        p = (pt[num_arm][key] - u0p) / max(pt[den_arm][key] - u0p, 1e-6)
         return p, v
 
     r_fine, v1 = ratio("ldaC_pca16", "U", "raw50")

@@ -74,7 +74,11 @@ class Data:
 
     def _load_seed(self, paths):
         out = dict(att={}, pr={}, ret={}, types={}, folds_done=set())
+        self.dims = getattr(self, "dims", {})
         for p in paths:
+            mp = p.with_name(p.name.replace("preds_", "meta_").replace(".npz", ".json"))
+            if mp.exists():
+                self.dims.update(json.loads(mp.read_text()).get("dims", {}))
             z = np.load(p)
             for k in z.files:
                 parts = k.split("|")
@@ -102,9 +106,11 @@ class Data:
 
 # ------------------------------------------------------------------------------------------------ metric kernels
 def acc_by_kind(D, S, arm, w, fset):
-    """pooled (mean over folds in fset) weighted balanced accuracy of each attacker; seed-averaged.  returns {kind: acc}, chance"""
+    """pooled (mean over folds in fset) weighted balanced accuracy of each attacker; seed-averaged.  returns {kind: acc}, chance.
+    Classes (held-out batches) with zero weight in the resample are dropped from the accuracy and from chance = mean_f 1/(classes present)."""
     res = {k: [] for k in KINDS}
     den = np.bincount(D.cls, weights=w, minlength=D.nf * 16)
+    chance = float(np.mean([1.0 / max(int((den[f * 16: f * 16 + D.Bf[f]] > 0).sum()), 1) for f in fset]))
     for s, sd in S.items():
         for k in KINDS:
             key = (arm, k)
@@ -119,7 +125,6 @@ def acc_by_kind(D, S, arm, w, fset):
                 if ok.any():
                     accs.append(np.mean(num[sl][ok] / den[sl][ok]))
             res[k].append(np.mean(accs))
-    chance = float(np.mean([1.0 / D.Bf[f] for f in fset]))
     return {k: float(np.mean(v)) for k, v in res.items() if v}, chance
 
 
@@ -135,6 +140,20 @@ def f1_macro(D, p, w, fset, classes=None):
     f1 = np.where(2 * tp + fp + fn > 0, 2 * tp / np.maximum(2 * tp + fp + fn, 1e-12), 0.0)
     sel = sup if classes is None else sup & np.isin(np.arange(K), classes)
     return float(f1[sel].mean()) if sel.any() else np.nan
+
+
+def f1_chance(D, w, fset, classes=None):
+    """macro-F1 of a classifier that predicts uniformly over the K evaluated types: F1_c = 2 pi_c (1/K) / (pi_c + 1/K), mean over (held-out) classes present"""
+    K = len(D.fine_names)
+    m = D.evalm & np.isin(D.fold_of, list(fset))
+    cnt = np.bincount(D.fine[m], weights=w[m], minlength=K)
+    pi = cnt / max(cnt.sum(), 1e-12)
+    ktypes = max(int((cnt > 0).sum()), 1)
+    f1 = 2 * pi * (1.0 / ktypes) / np.maximum(pi + 1.0 / ktypes, 1e-12)
+    sel = cnt > 0
+    if classes is not None:
+        sel = sel & np.isin(np.arange(K), classes)
+    return float(f1[sel].mean())
 
 
 def u_metrics(D, S, arm, w, fset, hold_arm=None):
@@ -173,6 +192,8 @@ def all_metrics(D, S, arms, w, fset):
             pass
     # L of the H versions needs their own attacker numbers (they are arms themselves)
     out["_chance"] = ch
+    out["_u0"] = f1_chance(D, w, fset)
+    out["_u0h"] = f1_chance(D, w, fset, classes=D.held_codes)
     return out
 
 
@@ -245,14 +266,16 @@ def run(D, B, label=""):
     pt = all_metrics(D, S, arms, ones, fall)
     Ws = resamples(D, B)
     boot = {a: {k: [] for k in ("U", "Uh", "L", "worst")} for a in arms}
-    boot_ch = []
+    boot_ch, boot_u0, boot_u0h = [], [], []
     for w in Ws:
         m = all_metrics(D, S, arms, w, fall)
         for a in arms:
             for k in ("U", "Uh", "L", "worst"):
                 boot[a][k].append(m[a][k])
         boot_ch.append(m["_chance"])
-    return dict(arms=arms, pt=pt, boot=boot, Ws=Ws)
+        boot_u0.append(m["_u0"])
+        boot_u0h.append(m["_u0h"])
+    return dict(arms=arms, pt=pt, boot=boot, Ws=Ws, boot_u0=boot_u0, boot_u0h=boot_u0h, boot_chance=boot_ch)
 
 
 def main():

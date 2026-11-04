@@ -150,6 +150,7 @@ def main():
             meta["timings"][f"{f}|{name}"] = round(time.time() - t1, 1)
             if name not in meta["arms"]:
                 meta["arms"].append(name)
+            meta.setdefault("dims", {})[name] = int(X.shape[1])
             print(f"  fold {f} arm {name:14s} d={X.shape[1]:3d} {time.time() - t1:5.1f}s", flush=True)
         if only is None or "raw50" in (only or []):
             do_att("ctrl_shuffle_batch", arms["raw50"], shuffle=True)
