@@ -1,0 +1,16 @@
+{
+ "name": "c_he_adv_d16_l1_s2",
+ "config": {
+  "name": "c_he_adv_d16_l1_s2",
+  "priority": 15,
+  "cmd": "python3 research/fields/src/c_cremad/run_exp.py --name c_he_adv_d16_l1_s2 --method learned --cfg '{\"dz\": 16, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 1.0, \"train_emotions\": [0, 3, 4, 5]}' --seeds 2",
+  "hf_path": "runs/c_he_adv_d16_l1_s2"
+ },
+ "commit": "2b383a8",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 466.6,
+ "finished_utc": "2026-11-04T13:18:03Z",
+ "uploaded": true
+}

@@ -1,0 +1,16 @@
+{
+ "name": "a_p2x_midnight_camelyon_s0",
+ "config": {
+  "name": "a_p2x_midnight_camelyon_s0",
+  "priority": 14,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset camelyon --seed 0 --grid p2",
+  "hf_path": "runs/a_p2x_midnight_camelyon_s0"
+ },
+ "commit": "9b1aacd",
+ "exit_code": -15,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 590.4,
+ "finished_utc": "2026-11-04T13:16:42Z",
+ "uploaded": false
+}
