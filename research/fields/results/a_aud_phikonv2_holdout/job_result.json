@@ -1,0 +1,17 @@
+{
+ "name": "a_aud_phikonv2_holdout",
+ "config": {
+  "name": "a_aud_phikonv2_holdout",
+  "priority": 4,
+  "cmd": "for ds in tcga tolkach_esca; do USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset $ds --seed 0 --grid p4 --holdout; done",
+  "hf_path": "runs/a_aud_phikonv2_holdout"
+ },
+ "commit": "4cd31f3",
+ "commit_after": "95a007b",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 1496.3,
+ "finished_utc": "2026-11-04T19:40:53Z",
+ "uploaded": true
+}

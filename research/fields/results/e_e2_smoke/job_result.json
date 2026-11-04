@@ -1,0 +1,17 @@
+{
+ "name": "e_e2_smoke",
+ "config": {
+  "name": "e_e2_smoke",
+  "priority": 3,
+  "cmd": "export E_CACHE=$HOME/work/cache/e_smoke OMP_NUM_THREADS=8 MKL_NUM_THREADS=8; $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate_e2.py --dataset smoke --seed 0 --configs vae_b10,cvaeadv_b10_l4,vaeplc_b10_l4 --folds 0 --out $OUT",
+  "hf_path": "runs/e_e2_smoke"
+ },
+ "commit": "ce18a19",
+ "commit_after": "ce18a19",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 28.2,
+ "finished_utc": "2026-11-04T18:57:41Z",
+ "uploaded": true
+}
