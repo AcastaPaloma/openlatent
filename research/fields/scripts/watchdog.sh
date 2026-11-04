@@ -22,8 +22,10 @@ for g in $(seq 0 $((ngpu - 1))); do
   fi
 done
 
-# express worker: reserved-priority (<= 4) short jobs never wait behind long runs (shares GPU 0)
-if ! pgrep -f "worker.py --gpu 0 --max_priority 4" >/dev/null; then
-  setsid nohup python3 "$W" --gpu 0 --max_priority 4 >> "$HOME/work/logs/worker_express.log" 2>&1 < /dev/null &
-  echo "$(date -u +%FT%TZ) started express worker" >> "$LOG"
-fi
+# express workers: reserved-priority (<= 4) short jobs never wait behind long runs (they share GPUs 0, 1, 2 with the regular workers)
+for g in 0 1 2; do
+  if ! pgrep -f "worker.py --gpu $g --max_priority 4" >/dev/null; then
+    setsid nohup python3 "$W" --gpu "$g" --max_priority 4 >> "$HOME/work/logs/worker_express$g.log" 2>&1 < /dev/null &
+    echo "$(date -u +%FT%TZ) started express worker on gpu $g" >> "$LOG"
+  fi
+done
