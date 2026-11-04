@@ -137,6 +137,7 @@ def main():
     csv = ["encoder,dataset,cfg,family,n_seeds,label_lin,label_lin_lo,label_lin_hi,label_mlp,worst_centre,worst_lo,worst_hi,leak_norm,leak_lo,leak_hi,"
            "label_V,worst_V,ood_label_lin,onA_linear,rate_bits"]
     verdict = []
+    verdict2 = []
     for enc, ds in cells:
         cell = Cell(enc, ds, recs, a.runs, a.B)
         cfgs = sorted(cell.by)
@@ -172,6 +173,7 @@ def main():
             if cfg.startswith("ctrl_"):
                 wc = cell.metric(cfg, "centre", KC)
                 ctrl.append((cfg, wc, sorted(cell.by[cfg])))
+        ctrl = sorted(ctrl, key=lambda x: x[0])
         lines.append(f"\n### {enc} / {ds}  (seeds {seeds_raw}; chance {chance:.3f}; label-only floor {floor:.3f}; raw label acc {fmt(*raw_lab[:2])}; raw worst-case centre acc {fmt(*raw_worst[:2])})\n")
         if ctrl:
             lines.append("Controls (worst-case over the 4 attackers, centre balanced accuracy on C; must be at chance):  " +
@@ -210,6 +212,14 @@ def main():
             lo, hi = ci(d_b)
             dlab = table[best]["lab"][0] - table[cl]["lab"][0]
             verdict.append((enc, ds, dl, best, cl, d_pt, lo, hi, dlab))
+            bn = [sel_all[(dl, f)] for f in ("vib", "vq") if (dl, f) in sel_all]
+            ad = [sel_all[(dl, f)] for f in ("adv_retrain", "dann", "supcon_xc") if (dl, f) in sel_all]
+            if bn and ad:
+                b0 = min(bn, key=lambda c: table[c]["wv"])
+                a0 = min(ad, key=lambda c: table[c]["wv"])
+                db = table[a0]["wc"][1] - table[b0]["wc"][1]
+                lo2, hi2 = ci(db)
+                verdict2.append((enc, ds, dl, a0, b0, table[a0]["wc"][0] - table[b0]["wc"][0], lo2, hi2, table[a0]["lab"][0] - table[b0]["lab"][0]))
         lines.append("\nFull ladder (C numbers; 95% CI from unit bootstrap):\n")
         lines.append("| config | seeds | label acc (linear) | label acc (mlp) | worst-case centre acc | leak | V label | V worst | unseen-centre label | rate bits |")
         lines.append("|---|---|---|---|---|---|---|---|---|---|")
@@ -220,6 +230,11 @@ def main():
     lines.append("|---|---|---|---|---|---|---|---|")
     for enc, ds, dl, best, cl, d, lo, hi, dlab in verdict:
         lines.append(f"| {enc} | {ds} | {dl:.2f} | {best} | {cl} | {d:+.3f} [{lo:+.3f}, {hi:+.3f}] | {dlab:+.3f} | {'YES' if hi < 0 else 'no'} |")
+    lines.append("\n### Mandatory control: best adversarial/contrastive adapter minus best NO-adversary bottleneck (vib, vq), both selected on V\n")
+    lines.append("| encoder | dataset | delta | best adversarial | best bottleneck | diff worst-case centre acc [95% CI] | label diff | adversary helps (CI < 0)? |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for enc, ds, dl, a0, b0, d, lo, hi, dlab in verdict2:
+        lines.append(f"| {enc} | {ds} | {dl:.2f} | {a0} | {b0} | {d:+.3f} [{lo:+.3f}, {hi:+.3f}] | {dlab:+.3f} | {'YES' if hi < 0 else 'no'} |")
     text = "\n".join(lines)
     if a.out == "-":
         print(text)

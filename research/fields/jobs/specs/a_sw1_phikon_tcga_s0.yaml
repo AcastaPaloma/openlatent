@@ -1,0 +1,4 @@
+name: a_sw1_phikon_tcga_s0
+priority: 20
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset tcga --seed 0 --grid all 
+hf_path: runs/a_sw1_phikon_tcga_s0

@@ -65,7 +65,7 @@ def main():
         try:
             rep, extra = AD.build(method, hp, P, sp, a.seed)
             tfit = time.time() - t0
-            m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=(method == "ctrl_shuffle"))
+            m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=(method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0))
             rec = dict(cfg=cid, method=method, hp=hp, seed=a.seed, encoder=a.encoder, dataset=a.dataset, metrics=m, extra=extra,
                        seconds_fit=round(tfit, 1))
             np.savez_compressed(out / "preds" / f"{tag}__{cid}.npz", **preds)

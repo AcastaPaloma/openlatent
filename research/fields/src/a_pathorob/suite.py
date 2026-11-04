@@ -34,7 +34,7 @@ def remap(c):
     return inv, len(u)
 
 
-def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, do_ood=True, do_onA=True):
+def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True):
     t0 = time.time()
     m, preds, timing = {}, {}, {}
     Kc, Ky = int(P.n_id_centres), len(P.classes)
@@ -42,7 +42,7 @@ def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, 
     zood = np.concatenate([rep["OOD1"], rep["OOD2"]])
     ev = {"V": rep["V"], "C": rep["C"]}
     t = time.time()
-    r = run_suite(rep["B"], cB, uB, ev, Kc, kinds=kinds_centre, seed=seed, secret_shuffle=secret_shuffle)
+    r = run_suite(rep["B"], cB, uB, ev, Kc, kinds=kinds_centre, seed=seed, secret_shuffle=secret_shuffle, shuffle_rep=shuffle_rep)
     timing["centre"] = time.time() - t
     for k, d in r.items():
         for s, p in d.items():

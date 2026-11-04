@@ -356,4 +356,4 @@ GRID = (
     + [("adv_retrain", dict(dl=8, lam=l)) for l in (1.0, 10.0)]
     + [("supcon_xc", dict(dl=dl, tau=0.1)) for dl in (16, 64)]
 )
-CONTROLS = [("ctrl_const", {}), ("ctrl_noise", {}), ("ctrl_shuffle", {})]
+CONTROLS = [("ctrl_const", {}), ("ctrl_noise", {})] + [("ctrl_shuffle", dict(rep=r)) for r in range(3)]

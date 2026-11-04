@@ -161,13 +161,13 @@ def knn_logits(Xtr, ytr, Xte, K, k):
 
 
 # ----------------------------------------------------------------------------- suite
-def run_suite(Xb, yb, ub, evals, K, kinds=KINDS, seed=0, epochs_nn=40, secret_shuffle=False):
+def run_suite(Xb, yb, ub, evals, K, kinds=KINDS, seed=0, epochs_nn=40, secret_shuffle=False, shuffle_rep=0):
     """Train every attacker kind on (Xb, yb) from scratch and predict each array in `evals` (dict name->X).
     Returns {kind: {eval_name: int predictions}}.  Xb numpy float32, yb int, ub unit ids (for the inner split).
     secret_shuffle: permute yb at the unit level (control: must give chance)."""
     yb = np.asarray(yb).copy()
     if secret_shuffle:
-        rng = np.random.RandomState(777 + seed)
+        rng = np.random.RandomState(777 + seed + 1000 * shuffle_rep)
         uu = np.unique(ub)
         # each unit gets the label of another random unit
         lab = {u: yb[ub == u][0] for u in uu}
