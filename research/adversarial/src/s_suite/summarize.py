@@ -199,9 +199,46 @@ def coverage(path):
     return out
 
 
+def v3_acceptance(path):
+    """N1-N3 of S.md section 10 from run_v3_acceptance.py output."""
+    rows = [json.loads(x) for x in open(path) if x.strip()]
+    out = {}
+    nul = [r for r in rows if r["job"]["kind"] == "null"]
+    if nul:
+        out["N1"] = dict(n=len(nul), false_leak=sum(r["brief"]["verdict"] == "LEAK" for r in nul), cover_cons=sum(r["cover_cons"] for r in nul),
+                         below_margin_without_canary=sum(r["brief"]["verdict"] == "BELOW_MARGIN" for r in nul),
+                         bonf_covers_chance=sum(r["bonf_covers_chance"] for r in nul),
+                         by_noise={nz: dict(n=len([r for r in nul if r["job"]["noise"] == nz]),
+                                            false_leak=sum(r["brief"]["verdict"] == "LEAK" for r in nul if r["job"]["noise"] == nz),
+                                            cover_cons=sum(r["cover_cons"] for r in nul if r["job"]["noise"] == nz)) for nz in ("white", "smooth")},
+                         mean_sel_test=float(np.mean([r["brief"]["sel_test"] for r in nul])), mean_baseline=float(np.mean([r["brief"]["baseline"] for r in nul])))
+    can = [r for r in rows if r["job"]["kind"] in ("canary", "pilot")]
+    if can:
+        d = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0]))
+        for r in can:
+            g = r["job"]["group"]
+            key = f"{g}|snr{r['snr']}" if r["job"]["kind"] == "pilot" else g
+            for nz in (r["job"]["noise"], "pooled"):
+                d[key][nz][1] += 1
+                d[key][nz][0] += int(r["brief"]["verdict"] == "LEAK")
+        out["N2_detection"] = {k: {nz: tuple(v) for nz, v in sub.items()} for k, sub in d.items()}
+        out["N2_shuffled_false_leak"] = dict(n=len(can), leak=sum(r["shuffled_verdict"] == "LEAK" for r in can))
+        out["N2_best_in_own_group_vs_base"] = {k: dict(own=float(np.mean([r["best_by_group"][r["job"]["group"]] for r in can if (f"{r['job']['group']}|snr{r['snr']}" if r["job"]["kind"] == "pilot" else r["job"]["group"]) == k])),
+                                                         base=float(np.mean([r["best_base"] for r in can if (f"{r['job']['group']}|snr{r['snr']}" if r["job"]["kind"] == "pilot" else r["job"]["group"]) == k])))
+                                               for k in d}
+    pl = [r for r in rows if r["job"]["kind"] == "planted"]
+    if pl:
+        out["N3"] = {ch: dict(n=len([r for r in pl if r["job"]["channel"] == ch]),
+                              v3_detect=float(np.mean([r["v3"]["verdict"] == "LEAK" for r in pl if r["job"]["channel"] == ch])),
+                              v2_detect=float(np.mean([r["v2"]["verdict"] == "LEAK" for r in pl if r["job"]["channel"] == ch])),
+                              v3_sel=float(np.mean([r["v3"]["sel_test"] for r in pl if r["job"]["channel"] == ch])),
+                              v2_sel=float(np.mean([r["v2"]["sel_test"] for r in pl if r["job"]["channel"] == ch]))) for ch in ("bias", "gain", "spectral")}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("kind", choices=["real", "planted", "coverage"])
+    ap.add_argument("kind", choices=["real", "planted", "coverage", "v3"])
     ap.add_argument("--within"), ap.add_argument("--budget"), ap.add_argument("--select"), ap.add_argument("--hmdb"), ap.add_argument("--jsonl")
     ap.add_argument("--out", default=".")
     a = ap.parse_args()
@@ -209,6 +246,9 @@ def main():
         res = dict(E1=e1([os.path.join(a.within, "rescore_programme1.json")] + ([os.path.join(a.hmdb, "rescore_programme1.json")] if a.hmdb else [])),
                    E2=e2(os.path.join(a.select, "harness_selection_bias.json")), E3=e3(os.path.join(a.budget, "harness_evidence_budget.json")))
         json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_real.json"), "w"), indent=1, sort_keys=True, default=float)
+    elif a.kind == "v3":
+        res = v3_acceptance(a.jsonl)
+        json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_v3_acceptance.json"), "w"), indent=1, sort_keys=True, default=float)
     elif a.kind == "coverage":
         res = coverage(a.jsonl)
         json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_coverage.json"), "w"), indent=1, sort_keys=True, default=float)

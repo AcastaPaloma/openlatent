@@ -23,7 +23,7 @@ def test_view_shapes_and_backward_compatibility():
     X = noise(10, T=32, C=4)
     v = vw.ViewBuilder().fit(X).transform(X)
     assert v["hb"].shape == (10, 2 * 4 * 16) and v["phase"].shape == (10, 6 * 3 * 16)
-    assert v["lvlspec"].shape == (10, 2 * 4 + 8 * 4) and v["inter"].shape == (10, 4 * vw.NLEVEL * 8 * 4)
+    assert v["lvlspec"].shape == (10, 2 * 4 + 4 * 16) and v["inter"].shape == (10, 4 * vw.NLEVEL * vw.NBANDS_INTER * 4)
     assert np.array_equal(v["feat"], planted_features(X))                      # suite v1/v2 view is unchanged
     X1 = noise(10, T=32, C=1)
     assert "phase" not in vw.ViewBuilder().fit(X1).transform(X1)

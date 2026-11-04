@@ -70,6 +70,26 @@ def upload(out, hf_path, hf_allow=None):
         return False
 
 
+def safe_pull():
+    """git pull --ff-only; if untracked files would be overwritten, move them to ~/work/untracked_backup/<ts>/ and retry once.
+    Returns (ok, note). A silent pull failure used to leave jobs on stale code (2026-11-04)."""
+    cmd = ["git", "-C", str(REPO), "pull", "-q", "--ff-only", "origin", "fields-research"]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode == 0:
+        return True, ""
+    paths = [l.strip() for l in r.stderr.splitlines() if l.startswith("\t") and "would be overwritten" not in l]
+    if "untracked working tree files would be overwritten" in r.stderr and paths:
+        dest = WORK / "untracked_backup" / time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+        for rel in paths:
+            src = REPO / rel
+            if src.exists():
+                (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(src), str(dest / rel))
+        r2 = subprocess.run(cmd, capture_output=True, text=True)
+        return r2.returncode == 0, f"moved {len(paths)} untracked file(s) to {dest}; retry rc={r2.returncode}"
+    return False, r.stderr.strip()[:300]
+
+
 def run(job_path, gpu):
     cfg = yaml.safe_load(job_path.read_text())
     name = cfg["name"]
@@ -77,7 +97,7 @@ def run(job_path, gpu):
     out.mkdir(parents=True, exist_ok=True)
     logdir = WORK / "logs"
     logdir.mkdir(parents=True, exist_ok=True)
-    git("pull", "-q", "--ff-only", "origin", "fields-research")
+    pull_ok, pull_note = safe_pull()
     # thread cap enforced for every job (charter rule: <= 8 CPU threads); a job spec may override via its own cmd
     caps = {k: "8" for k in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS")}
     env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(gpu), OUT=str(out), JOB_NAME=name, PYTHONUNBUFFERED="1")
@@ -87,7 +107,7 @@ def run(job_path, gpu):
     t0 = time.time()
     with open(logdir / f"{name}.log", "a") as lf:
         rc = subprocess.call(cfg["cmd"], shell=True, cwd=REPO, env=env, stdout=lf, stderr=subprocess.STDOUT)
-    res = dict(name=name, config=cfg, commit=commit0, commit_after=git("rev-parse", "--short", "HEAD"), exit_code=rc, gpu=gpu,
+    res = dict(name=name, config=cfg, commit=commit0, commit_after=git("rev-parse", "--short", "HEAD"), pull_ok=pull_ok, pull_note=pull_note, exit_code=rc, gpu=gpu,
                host=socket.gethostname(), seconds=round(time.time() - t0, 1), finished_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     shutil.copy(logdir / f"{name}.log", out / "train.log")
     (out / "job_result.json").write_text(json.dumps(res, indent=1))

@@ -7,17 +7,18 @@ Views (all computed from de-meaned windows unless stated; n = number of windows)
            minus the window's mean log power over bins (spectral shape, level-free). 2 * C * (T/2) values.
   phase    cross-channel phase lag at full resolution: for every channel pair (i < j) and every bin k = 1..T/2, with z = F_i[k] * conj(F_j[k]):
            cos(arg z), sin(arg z) and log1p(|z| / T). 3 * C(C-1)/2 * (T/2) values. Empty (view absent) when C < 2.
-  lvlspec  window level x coarse spectrum for tree / network learners: per-channel mean and std, and log1p power in 8 equal-width bands over bins 1..T/2
-           for every channel. 2*C + 8*C values.
+  lvlspec  window level + full-resolution spectrum for tree / network learners: per-channel mean and std, and log1p power at every bin 1..T/2 of every
+           channel (the learner forms the level x frequency interaction itself). 2*C + C*(T/2) values.
   inter    explicit amplitude-frequency interaction for linear learners: for every channel c, the one-hot of the window mean's quantile bin (NLEVEL = 6 bins,
-           edges are the train-split quantiles) crossed with the 8-band log spectra of all channels. C * 6 * (8*C) values.
+           edges are the train-split quantiles) crossed with the log spectra of all channels in 16 equal-width bands over bins 1..T/2. C * 6 * (16*C) values.
 Quantile edges are the only fitted state (ViewBuilder.fit on the train split). Nothing here uses labels, keys or leak parameters.
 """
 from __future__ import annotations
 
 import numpy as np
 
-NBANDS = 8
+NBANDS = 8          # bands of the (unchanged) v1/v2 hand features
+NBANDS_INTER = 16   # bands of the interaction view
 NLEVEL = 6
 
 
@@ -63,10 +64,10 @@ def phase_view(X: np.ndarray):
     return np.concatenate(out, axis=1).astype(np.float32)
 
 
-def _bands(X):
+def _bands(X, nb=NBANDS_INTER):
     T = X.shape[1]
     P = np.abs(_spec(X)[:, 1:, :]) ** 2 / T            # (n, T/2, C)
-    idx = np.array_split(np.arange(P.shape[1]), NBANDS)
+    idx = np.array_split(np.arange(P.shape[1]), nb)
     B = np.stack([P[:, ix, :].sum(1) for ix in idx], axis=1)   # (n, NBANDS, C)
     return np.log1p(B)
 
@@ -85,14 +86,15 @@ class ViewBuilder:
         n, T, C = X.shape
         mu = X.mean(1)
         sd = (X - mu[:, None, :]).std(1)
-        lb = _bands(X).reshape(n, -1)                                 # (n, NBANDS*C)
+        lb = _bands(X).reshape(n, -1)                                 # (n, NBANDS_INTER*C)
+        full = np.log1p(np.abs(_spec(X)[:, 1:, :]) ** 2 / T).reshape(n, -1)   # (n, (T/2)*C)
         lvl = np.stack([np.searchsorted(self.edges[c], mu[:, c]) for c in range(C)], axis=1)   # (n, C) in 0..NLEVEL-1
         inter = []
         for c in range(C):
             onehot = np.eye(NLEVEL, dtype=np.float32)[lvl[:, c]]       # (n, NLEVEL)
             inter.append((onehot[:, :, None] * lb[:, None, :]).reshape(n, -1))
         views = dict(raw=X.reshape(n, -1).astype(np.float32), feat=hand_features(X), hb=hb_view(X),
-                     lvlspec=np.concatenate([mu, sd, lb], axis=1).astype(np.float32), inter=np.concatenate(inter, axis=1).astype(np.float32))
+                     lvlspec=np.concatenate([mu, sd, full], axis=1).astype(np.float32), inter=np.concatenate(inter, axis=1).astype(np.float32))
         ph = phase_view(X)
         if ph is not None:
             views["phase"] = ph
