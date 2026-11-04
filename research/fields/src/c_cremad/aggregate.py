@@ -200,14 +200,24 @@ def row(S):
     f = lambda e: f"{e['point']:.3f} [{e['ci'][0]:.3f},{e['ci'][1]:.3f}]"
     L = f(S["leakage_T1_unseen"]) if "leakage_T1_unseen" in S else "-"
     r = S.get("rate", {})
-    bits = r.get("bits_vq") if r.get("bits_vq") is not None else (r["kl_nats"] / np.log(2) if "kl_nats" in r else float("nan"))
+    cfg = S.get("cfg", {})
+    if cfg.get("release") in ("posterior", "label"):
+        rate = "6 post." if cfg["release"] == "posterior" else f"{np.log2(6):.1f} b"
+    elif cfg.get("bott") == "vq":
+        rate = f"{cfg.get('vq_groups', 1) * np.log2(cfg.get('vq_codes', 64)):.0f} b"
+    elif cfg.get("bott") == "vib" and cfg.get("beta", 0) > 0:
+        rate = f"{r['kl_nats'] / np.log(2):.0f} b KL, d={cfg.get('dz')}"
+    elif cfg.get("dz"):
+        rate = f"d={cfg['dz']}" + (f"/seg{cfg['pool']}" if cfg.get("pool", "utt") != "utt" else "")  # width only, no rate penalty
+    else:
+        rate = "-"
     idp = S["id"]["T1_unseen"]["point"]
     return (f"| {S['name']} | {len(S['seeds'])} | {f(S['emo_uar'])} | {f(S['id']['T1_unseen'])} | {idp * 91:.1f}x | {L} | "
-            f"{S['id']['T1_seen']['point']:.3f} | {S['id']['T3_unseen']['point']:.3f} | {bits:.1f} |")
+            f"{S['id']['T1_seen']['point']:.3f} | {S['id']['T3_unseen']['point']:.3f} | {rate} |")
 
 
 HEAD = ("| run | seeds | emotion UAR [95% CI] | identity top-1, worst attacker, T1 unseen [95% CI] | x chance | leakage L [95% CI] | "
-        "id T1 seen | id T3 unseen | rate (bits) |\n|---|---:|---|---|---:|---|---:|---:|---:|")
+        "id T1 seen | id T3 unseen | release size |\n|---|---:|---|---|---:|---|---:|---:|---:|")
 
 
 def detail(runs):
