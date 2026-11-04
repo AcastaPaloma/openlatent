@@ -128,4 +128,11 @@ State of play at this moment: stage-0 floor jobs (CPU) and the PrivDiffuser R0 /
 
 ## 5. Results
 
-(none yet)
+### 5.1 R0 gate, PrivDiffuser (control), PD's own protocol (job `h_r0_pd_pub`, exit 0, 673 s, 18:12Z; PD loader, 13,344 test windows, shipped Keras MLP evaluators, published point w1 = 7.8, w2 = 0.05, DDIM 50, seed 0, UNet dropout ON as in the notebook). Single generation seed: not yet replicated.
+| quantity | ours | published (paper / artifact appendix) | |diff| | pass (+-2.0; gender PD +-3.0) |
+|---|---:|---:|---:|---|
+| raw gender accuracy (shipped gender MLP on raw windows) | 93.52% | 93.52% | 0.00 | yes |
+| raw HAR accuracy | 97.47% | 97.47% | 0.00 | yes |
+| PD HAR accuracy | 96.84% | 96.32% | 0.52 | yes |
+| PD gender accuracy | 49.87% | 49.96% | 0.09 | yes |
+Also: PD HAR F1 96.25 (published 95.69), raw HAR F1 96.59 (96.59), gender balanced accuracy raw 92.59 / PD 49.04; the majority-class share of the test windows is 56.99% male, so the PD gender number (49.87%) is BELOW the majority baseline and the shipped attacker predicts male for 55.8% of PD windows. Raw-window numbers reproduce the paper to the second decimal, which also validates the data, the loader and the evaluation models. **R0 (PD) PASSES.** Note for the record: the shipped MotionSense evaluators are MLPs on the flat 256-d window (the paper text says CNN) and PD's train trials are the checkpoint's training data.
