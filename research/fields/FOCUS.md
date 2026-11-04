@@ -12,7 +12,15 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   on frozen embeddings; linear erasure fools linear probes but a retrained nonlinear probe keeps 2.2x chance).
 - Learned encoders: adapter E(z_FM) with (i) rate bottleneck, no adversary (mandatory control), (ii) adversarial with retrained
   attackers, (iii) VQ/discrete bottleneck, (iv) centre-aware contrastive. Floors: raw embedding, LEACE/ISP, DANN.
-- Kill: if the best learned adapter does not beat LEACE on worst-case centre-probe accuracy at equal label accuracy (3 seeds, bootstrap over centres/slides), stop A.
+- Kill (REVISED 2026-11-04 11:15Z, see journal): the original comparator (LEACE) is too weak. Gate cells (7 of 36, seed 0) show LEACE leaves
+  L_worst 0.63-0.89 under retrained attackers (headroom exists vs LEACE), but a label-supervised LDA projection (C-1 dims) keeps raw-level label
+  accuracy at L_worst 0.00-0.20. With 2-4 classes a label-only code is 1-3 dimensions and carries no centre signal, so "keep the label,
+  hide the centre" is trivially solved in-distribution. A learned adapter is therefore only worth having if it beats the LDA / label-only arm on
+  something LDA cannot do: (i) utility on label sets NOT used to fit the adapter (held-out classes, finer labels, a second task),
+  (ii) retention of non-label structure (kNN retrieval / probe on held-out attributes) at equal centre leakage, (iii) unseen centres at test time.
+  Stop A if, over 3 seeds with bootstrap over slides/cases, no learned adapter beats the LDA arm at matched dimensionality on (i) or (ii)
+  while holding L_worst within 0.05 of it. The LEACE comparison stays as a floor, not as the kill test.
+- Original kill text (superseded): "does not beat LEACE on worst-case centre-probe accuracy at equal label accuracy".
 
 ## Focus C: identity-free emotion, CREMA-D first   [GO-WITH-CHANGES]
 - Keep: emotion (6 classes).  Hide: actor identity (91 actors), plus sex/age/race attributes as secondary secrets.
