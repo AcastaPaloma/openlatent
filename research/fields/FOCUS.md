@@ -29,7 +29,9 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   adversarial config; the only positive difference is the NO-adversary AE (a reconstruction effect that leaks 34.8x chance and is ineligible under the selection rule).
   By-products worth keeping: full-clip CREMA-D identity is 76% recording-channel signal (non-speech alone 56x chance), LDA is the strongest identity attacker, closed-form LEACE fitted on
   train actors leaves 53x on unseen actors, oracle per-actor prosody normalisation is a strong floor (0.535 UAR at 2x chance, a different threat model).
-- Still running, cannot change the verdict: speech-trimmed AE variant and a noise-dithered label-free control.
+- Also done (Builder C final): speech-trimmed AE variant, 3 seeds: held-out-emotion 0.294 at 3.1x chance vs trimmed matched comparator 0.525 (21.9x), dU_HE -0.231 [-0.261,-0.201], FAIL.
+  Post-hoc noise-dithered label-free control (one seed, not replicated): a dithered no-adversary AE code matches or beats the adversarial AE at equal leakage, so the adversary adds nothing.
+  Seeds 1-2 of the rate/adv d16 cells are still queued; they cannot change the verdict.
 - Original text kept below for the record.
 
 ## Focus C (original text): identity-free emotion, CREMA-D first   [GO-WITH-CHANGES]
