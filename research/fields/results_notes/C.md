@@ -173,7 +173,46 @@ LDA-4 frontier (0.450 at 6.5x).
 Against the hand-built floors in the same metric (DIS+FEA recall at 91-way identity x chance): six prosody numbers 0.268 at 11.6x, 26 numbers 0.346 at 23x, 26 numbers with
 oracle per-actor standardisation 0.459 [0.433,0.485] at 6.0x, six numbers with oracle standardisation 0.373 at 2.0x, label-free PCA-16 of the pooled features 0.431 at 12.8x. The selected AE (0.326
 at 6.6x) is below every one of the three oracle/label-free floors with comparable leakage.
-Trimmed variant and dithered-code control: see 2e (pending at the time of writing this block).
+**Speech-trimmed variant (same validation-selected config, 3 seeds; `--trim`, LDA-4 comparator also trimmed):** U_HE 0.294 [0.276,0.312], identity 0.034 [0.026,0.048] = 3.1x chance
+(per seed 0.301 / 0.287 / 0.293 and 3.3x / 2.4x / 3.4x) against trimmed LDA4 k32 at U_HE 0.525 [0.491,0.562], 21.9x chance: dU_HE = -0.231 [-0.261,-0.201], 0 of 3 seeds, FAIL.
+Trimming lowers every identity number (raw 73x -> 58x, LDA4 k32 36.8x -> 21.9x, AE 6.6x -> 3.1x), i.e. part of what each code leaks is the non-speech channel, but it does not change
+the ordering. Trimmed raw features give U_HE 0.680.
+
+**Post-hoc control (added after the AE grid had been read, so it is not part of the pre-registration): noise-dithered label-free code, no adversary (H2-014 style), seed 0.**
+Release z = z0 + r x std_j(z0) x eps, fixed noise per clip, applied to attacker training, probe training and test; z0 = the lam-0 d32 AE code or the LDA-4 (3 dims) + residual-PCA 32-dim code.
+
+| code | U_HE [95% CI] | identity T1 [95% CI] | x chance | vs selected adversarial AE (0.326 / 6.6x): dU_HE, dID |
+|---|---|---|---:|---|
+| AE d32 lam0, no dither | 0.576 [0.538,0.614] | 0.382 [0.337,0.430] | 34.8x | +0.250 [+0.222,+0.280], +0.309 |
+| AE d32 lam0 + dither r=1 | 0.413 [0.383,0.444] | 0.111 [0.092,0.137] | 10.1x | +0.087 [+0.063,+0.111], +0.038 [+0.019,+0.060] |
+| AE d32 lam0 + dither r=2 | 0.300 [0.276,0.327] | 0.041 [0.030,0.053] | 3.7x | -0.026 [-0.048,-0.005], -0.032 [-0.048,-0.017] |
+| LDA-4 k32, no dither | 0.534 [0.496,0.575] | 0.404 [0.357,0.456] | 36.8x | +0.208, +0.331 |
+| LDA-4 k32 + dither r=1 | 0.369 [0.341,0.397] | 0.116 [0.094,0.142] | 10.5x | +0.043 [+0.021,+0.066], +0.043 |
+| LDA-4 k32 + dither r=2 | 0.253 [0.234,0.273] | 0.042 [0.033,0.056] | 3.8x | -0.073 [-0.091,-0.054], -0.031 |
+
+Dithering the adversary-free AE traces a leakage-utility curve ((3.7x, 0.300) to (10.1x, 0.413)) on which the adversarial AE's point (6.6x, 0.326) lies at or below the
+interpolated value (~0.35 at 6.6x; interpolation between two single-seed points, not a measurement at equal leakage). The adversary therefore buys nothing that a Gaussian
+channel on the same code does not; the AE lead of Builder A does not reproduce on CREMA-D.
+
+## 2e. Focus C closed as a negative result (2026-11-04 ~13:05Z)
+
+Result in one paragraph: on CREMA-D audio with frozen WavLM-Base+ features, with identity measured by a retrained seven-family attacker suite (worst case, unseen
+sentences, unseen actors, bootstrap over actors), a 5-dimensional label-supervised LDA projection keeps 98% of the raw six-way emotion UAR (0.743 vs 0.756) at 7.0x chance identity (raw: 73x), and no
+learned encoder beat it: rate bottlenecks, an adversary (no measurable effect, paired), VQ and a task-agnostic adversarial autoencoder (3 seeds, validation-selected, pre-registered)
+are each at or below the LDA comparator on both axes, and on emotions the encoder never saw (held-out protocol) every learned encoder falls 0.06-0.24 of recall short of the
+width-matched LDA, with the only positive differences coming from adversary-free codes that leak 14-35x chance. Not run: self-supervised (contrastive / masked-frame) encoders, RAVDESS
+transfer, the face-video track, ECAPA as a different-backbone attacker, and seeds 1-2 of the rate/adversary/VQ arms beyond the queued d16 cells (the negative is stated on the cells
+that were run).
+
+Useful by-products (all with intervals and controls above): (1) **channel floor**: 300 ms of non-speech identifies actors at 56x chance (first 150 ms of the file alone: 41x, with emotion at chance), so CREMA-D
+identity is partly a recording-session benchmark and speech-trimmed numbers must be reported next to full-clip numbers; (2) **shrinkage LDA is the strongest identity attacker** on pooled
+embeddings (0.804 vs 0.717 linear, 0.685 MLP, 0.465 TDNN, 0.325 LightGBM, 0.269 kNN on raw features) and no published adversary trains against it; (3) the **oracle per-actor standardisation of
+six prosody numbers** gives UAR 0.535 at 2.0x chance (26 numbers: 0.593 at 6.0x), a floor that is only available with the actor's own statistics; (4) **LEACE fitted on the 56 train actors leaves
+53x chance identity on unseen actors** (oracle LEACE fitted on the attacked actors still leaves 44x); (5) a supervised bottleneck of any width from 4 to 64 dims already cuts raw 73x identity to 5-8x
+at 94-97% of raw UAR, and the adversary adds nothing measurable on top (d16: identity -0.013 [-0.027,+0.003], paired, seed 0); (6) the benchmark itself (splits, attacker suite, controls, per-actor
+bootstrap, `check_data.py`) is reusable for other speech-privacy ideas. Open caveat: single-seed cells in sections 3 and 2b are not replicated; seeds 1-2 of rate d16 / adversarial d16 and of their
+held-out-emotion cells are queued and will upload to HF as they finish.
+
 
 ## 3. Results so far (2026-11-04 ~11:55Z)
 
