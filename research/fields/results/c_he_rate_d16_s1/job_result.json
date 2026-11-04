@@ -1,0 +1,16 @@
+{
+ "name": "c_he_rate_d16_s1",
+ "config": {
+  "name": "c_he_rate_d16_s1",
+  "priority": 13,
+  "cmd": "python3 research/fields/src/c_cremad/run_exp.py --name c_he_rate_d16_s1 --method learned --cfg '{\"dz\": 16, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 0.0, \"train_emotions\": [0, 3, 4, 5]}' --seeds 1",
+  "hf_path": "runs/c_he_rate_d16_s1"
+ },
+ "commit": "a7c3f3f",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 378.7,
+ "finished_utc": "2026-11-04T13:10:15Z",
+ "uploaded": true
+}

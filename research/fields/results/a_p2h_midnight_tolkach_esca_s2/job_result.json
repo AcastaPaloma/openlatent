@@ -1,0 +1,16 @@
+{
+ "name": "a_p2h_midnight_tolkach_esca_s2",
+ "config": {
+  "name": "a_p2h_midnight_tolkach_esca_s2",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tolkach_esca --seed 2 --grid p2 --holdout",
+  "hf_path": "runs/a_p2h_midnight_tolkach_esca_s2"
+ },
+ "commit": "346456c",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 852.3,
+ "finished_utc": "2026-11-04T13:11:25Z",
+ "uploaded": true
+}

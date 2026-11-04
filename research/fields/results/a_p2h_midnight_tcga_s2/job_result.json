@@ -1,0 +1,16 @@
+{
+ "name": "a_p2h_midnight_tcga_s2",
+ "config": {
+  "name": "a_p2h_midnight_tcga_s2",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tcga --seed 2 --grid p2 --holdout",
+  "hf_path": "runs/a_p2h_midnight_tcga_s2"
+ },
+ "commit": "f3fda7a",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 705.3,
+ "finished_utc": "2026-11-04T13:01:31Z",
+ "uploaded": true
+}
