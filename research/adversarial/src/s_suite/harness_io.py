@@ -58,7 +58,8 @@ def _session_of(ds: str, it: dict, secret_label: int) -> str:
     return f"p{secret_label}"
 
 
-def load_cell(root: str, ds: str, release: str, protocol: str = "within", kinds=("retrained",), secret: str = "identity") -> Cell:
+def load_cell(root: str, ds: str, release: str, protocol: str = "within", kinds=("retrained",), secret: str = "identity",
+              multilabel: bool = False) -> Cell:
     d = os.path.join(root, ds, "eval", release)
     z = np.load(os.path.join(d, "preds.npz"))
     r = json.load(open(os.path.join(d, "result.json")))
@@ -67,7 +68,7 @@ def load_cell(root: str, ds: str, release: str, protocol: str = "within", kinds=
     items = [idx[i] for i in ids]
     y = np.array([it["labels"][secret] for it in items], dtype=int)
     record = np.array([it["groups"]["source"] for it in items])
-    session = np.array([_session_of(ds, it, int(lab)) for it, lab in zip(items, y)])
+    session = np.array([f"s{i}" for i in range(len(items))]) if multilabel else np.array([_session_of(ds, it, int(lab)) for it, lab in zip(items, y)])
     probs = {}
     for k in z.files:
         p = k.split("|")
