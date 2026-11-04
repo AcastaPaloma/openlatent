@@ -126,7 +126,7 @@ power audit first. Budget <= 5 GPU-h and one builder-day, one attempt.
 
 ## 3. Amendments (each dated; none may relax a kill condition)
 
-* **A1, 13:50Z VM clock, BEFORE any real-data model number (found while exercising the pipeline on the synthetic set; no real number existed).**
+* **A1, 13:37Z VM clock, BEFORE any real-data model number (found while exercising the pipeline on the synthetic set; no real number existed).**
   (a) Macro-F1 chance reference. Section 2.4 set u0 = macro-F1 of `ctrl_const`; the synthetic run showed that a class-balanced probe fed noise or permuted labels predicts all classes at random and scores about 1/K
   (0.11 with 9 types) while a constant predictor scores about 1/K^2 (0.05), so `ctrl_const` is the wrong zero and would have made the K1 control check fail by construction. **u0 is now the analytic macro-F1 of a classifier that
   predicts uniformly at random over the K evaluated types**, F1_c = 2 pi_c (1/K) / (pi_c + 1/K) averaged over the classes present (pi_c = class share of the evaluated held-out cells; for U_hold averaged over the H classes, K still all
@@ -141,6 +141,10 @@ power audit first. Budget <= 5 GPU-h and one builder-day, one attempt.
   **97,232 cells, 107 donors, 14 datasets, 11 studies, 60 supported fine types** (61 minus nothing: `Lymphatic EC proliferating`, 28 cells, is the only one below 60), 24,869 genes expressed in >= 10 cells.
   Held-out types H for HLCA (20): Basal resting, Deuterosomal, Goblet (subsegmental), Multiciliated (nasal), Suprabasal, AT1, EC aerocyte capillary, EC venous pulmonary, Alveolar fibroblasts, Pericytes,
   Lymphatic EC differentiating, CD4 T cells, Plasma cells, Alveolar Mph CCL3+, Alveolar macrophages, DC2, Migratory DCs, Plasmacytoid DCs, Smooth muscle FAM83D+, SMG serous (bronchial).
-  Cells per held-out fold: F1 32,326 (40 donors), F2 38,897 (37 donors), F3 26,009 (30 donors). Two HLCA coarse classes (`Hematopoietic stem cells`, `Mesothelium`) contain a single finest type each.
+  Cells per held-out fold: F1 32,326 (40 donors), F2 38,887 (37 donors), F3 26,019 (30 donors). Two HLCA coarse classes (`Hematopoietic stem cells`, `Mesothelium`) contain a single finest type each.
   Held-out types: Pancreas {beta, endothelial, macrophage} (endothelial and macrophage are the only members of their coarse class, so `ldaC_*_H` never sees those lineages).
 * 13:34Z pipeline exercised on a SYNTHETIC dataset (CPU, 9,000 cells, 12 donors, 6 batches, 9 types): evaluation job, aggregator, power audit and verdict all run end to end (4.4 min on CPU). Numbers from that run are not reported.
+* 13:40Z queued (all validated with `yaml.safe_load`, specs in `jobs/specs/e_*.yaml`): `e_scvi_{immune,pancreas,hlca}` (scVI reference, GPU), `e_floors_{immune,pancreas,hlca}_s{0,1,2}` (everything in 2.3 except
+  `T_scvi`; the controls `ctrl_shuffle_*` included), `e_tscvi_*` (the `T_scvi` arm for seeds 0-2, waits for the latent). **Priority 4 (reserved band) was used ONCE for the first wave: the three `e_scvi_*` jobs and the three
+  seed-0 floors jobs, as the new-focus rule allows; seeds 1-2 are at 10-11 and `e_tscvi` at 12.** Budget: scVI ~15 GPU-min in total; the floors jobs are CPU-bound attacker evaluation (<= 8 threads) that hold a GPU slot.
+  Encoder-0 warm-up for all folds took 2-9 s per fold on CPU (`warm.py`; finiteness check only, no metric).
