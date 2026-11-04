@@ -1,6 +1,6 @@
 # N: negative-control calibration of Instrument S on real defended IMU releases. Pre-registration (v1) and results
 
-Builder-N (negative-control builder, FOCUS amendments A3/A6, audit F10), programme 2, branch `fields-research`. Code: `research/adversarial/src/n_control/` (CPU only).
+Builder-N (negative-control builder, FOCUS amendments A3/A6, audit F10), programme 2, branch `fields-research`. Status: DONE (pre-registration 8f11607; manifest hash 67b6678; run 2026-11-04; verdict MIXED, section 8). Code: `research/adversarial/src/n_control/` (CPU only).
 Independent of Builder S: I did not write the instrument, I do not edit it, and I grade it on leaks it was not built to find.
 This file is committed BEFORE any certificate exists. Section 5 (criteria) is never edited except by a dated amendment that tightens a criterion; both verdicts are then reported.
 Results are appended under section 8 in later commits. Single-seed statements are labelled "not yet replicated".
@@ -94,8 +94,81 @@ pooled: not detected at levels 1-2, DETECTED at 4-5 (0.70). G1 passes (0.80; the
 - If S's evaluator differs from the frozen sha256, the run is invalid. If S changes (new tag), the old manifest is burned for that new version; a new manifest N2 is required, and results on N2 are a separate pre-registration.
 - A criterion may only be tightened after data, with both verdicts reported (programme-1 lesson); loosening is a labelled deviation and does not change the verdict.
 
-## 8. Results
-(to be appended)
+## 8. Results (unsealed 2026-11-04 ~20:15Z VM clock; one pass of `analyse.py`; all numbers from `results/N/`)
+Provenance checks: manifest sha256 equals the committed `e5a511e1...f912`; digest list equals `fb40e7cc...2a23`; ledger `9c659d20...71ca` clean, 704 entries; every certificate prints `frozen_match = true` and `split_status = "sealed"`; 704/704 certificates, 0 errors.
+Files: `results/N/{manifest.json, release_map.json, oracle.json, INDEX.txt, ledger.jsonl, certificates.tgz, per_release.csv, results.json, tables.md, reference.json, base_record.json}`.
+
+### 8.1 Validity gates (both pass; the design could grade the unseen families)
+- **G1 false alarm of the whole loop: 0 LEAK in 224 nulls** (null 0/80, shuffled twins 0/144; two-sided 95% CP upper bound 1.6%, one-sided 1.3%). The certificate is conservative here: its baseline is the majority-class share (mean 0.056, uniform chance is 0.0417) and the null selected-attacker accuracy is 0.043 (twins 0.041).
+  The price is resolution: on true nulls it prints BELOW_MARGIN in only 45/224 (20%) and NOT_RESOLVED in 179/224 (88 test units). The shuffled twins carry the planted structure with decoupled labels: released-label oracle 0.044 (chance) vs planted-label oracle 0.569.
+- **G2 power on the mechanisms S planted itself: PASS.** bias 32/32 and specin 32/32 detected at the primary levels (CP lower 0.89). Detection starts at Omega_w 0.146 for bias (level 2) and 0.307 for specin (level 3); bias level 1 (Omega_w 0.085) is 8/16.
+
+### 8.2 Detection by family and level (n = 16 per cell; Omega = key-aware matched filter on the release's test split; chance = 0.0417)
+| family | level | n | Omega_w | Omega_s | S selected acc | baseline | detect (CP95) | BELOW_MARGIN | NOT_RESOLVED | printed MDE80 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| bias | 1 | 16 | 0.085 | 0.097 | 0.156 | 0.056 | 8/16 (0.25-0.75) | 0 | 8 | 0.053 |
+| bias | 2 | 16 | 0.146 | 0.184 | 0.415 | 0.057 | 16/16 (0.79-1.00) | 0 | 0 | 0.073 |
+| bias | 3 | 16 | 0.312 | 0.388 | 0.627 | 0.055 | 16/16 (0.79-1.00) | 0 | 0 | 0.060 |
+| bias | 4 | 16 | 0.618 | 0.711 | 0.774 | 0.057 | 16/16 (0.79-1.00) | 0 | 0 | 0.054 |
+| bias | 5 | 16 | 0.890 | 0.922 | 0.971 | 0.057 | 16/16 (0.79-1.00) | 0 | 0 | 0.020 |
+| specin | 1 | 16 | 0.084 | 0.131 | 0.045 | 0.056 | 0/16 (0.00-0.21) | 3 | 13 | 0.026 |
+| specin | 2 | 16 | 0.149 | 0.302 | 0.056 | 0.056 | 0/16 (0.00-0.21) | 0 | 16 | 0.029 |
+| specin | 3 | 16 | 0.307 | 0.595 | 0.124 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.053 |
+| specin | 4 | 16 | 0.617 | 0.844 | 0.274 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.084 |
+| specin | 5 | 16 | 0.908 | 0.980 | 0.695 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.081 |
+| xphase | 1 | 16 | 0.088 | 0.209 | 0.045 | 0.056 | 0/16 (0.00-0.21) | 6 | 10 | 0.024 |
+| xphase | 2 | 16 | 0.167 | 0.531 | 0.041 | 0.056 | 0/16 (0.00-0.21) | 4 | 12 | 0.020 |
+| xphase | 3 | 16 | 0.372 | 0.853 | 0.058 | 0.056 | 2/16 (0.02-0.38) | 1 | 13 | 0.024 |
+| xphase | 4 | 16 | 0.652 | 0.959 | 0.156 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.047 |
+| xphase | 5 | 16 | 0.912 | 0.996 | 0.411 | 0.057 | 16/16 (0.79-1.00) | 0 | 0 | 0.074 |
+| ampfreq | 1 | 16 | 0.083 | 0.224 | 0.039 | 0.055 | 0/16 (0.00-0.21) | 5 | 11 | 0.021 |
+| ampfreq | 2 | 16 | 0.150 | 0.577 | 0.044 | 0.056 | 0/16 (0.00-0.21) | 3 | 13 | 0.024 |
+| ampfreq | 3 | 16 | 0.299 | 0.864 | 0.057 | 0.056 | 1/16 (0.00-0.30) | 3 | 12 | 0.031 |
+| ampfreq | 4 | 16 | 0.621 | 0.968 | 0.123 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.053 |
+| ampfreq | 5 | 16 | 0.913 | 0.995 | 0.235 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.073 |
+| stealth | 1 | 16 | 0.083 | 0.148 | 0.044 | 0.056 | 0/16 (0.00-0.21) | 2 | 14 | 0.024 |
+| stealth | 2 | 16 | 0.158 | 0.435 | 0.042 | 0.056 | 0/16 (0.00-0.21) | 4 | 12 | 0.024 |
+| stealth | 3 | 16 | 0.325 | 0.751 | 0.047 | 0.056 | 0/16 (0.00-0.21) | 1 | 15 | 0.026 |
+| stealth | 4 | 16 | 0.634 | 0.898 | 0.051 | 0.056 | 0/16 (0.00-0.21) | 1 | 15 | 0.029 |
+| stealth | 5 | 16 | 0.916 | 0.991 | 0.114 | 0.055 | 8/16 (0.25-0.75) | 3 | 5 | 0.045 |
+| pooled | 1 | 16 | 0.103 | 0.192 | 0.045 | 0.056 | 0/16 (0.00-0.21) | 3 | 13 | 0.026 |
+| pooled | 2 | 16 | 0.184 | 0.415 | 0.072 | 0.056 | 3/16 (0.04-0.46) | 0 | 13 | 0.038 |
+| pooled | 3 | 16 | 0.415 | 0.710 | 0.174 | 0.057 | 16/16 (0.79-1.00) | 0 | 0 | 0.062 |
+| pooled | 4 | 16 | 0.676 | 0.891 | 0.327 | 0.056 | 16/16 (0.79-1.00) | 0 | 0 | 0.087 |
+| pooled | 5 | 16 | 0.955 | 0.993 | 0.846 | 0.055 | 16/16 (0.79-1.00) | 0 | 0 | 0.075 |
+
+Primary level (levels 4+5 pooled, n = 32), pre-registered statuses: **bias DETECTED 32/32, specin DETECTED 32/32, xphase DETECTED 32/32 [0.89, 1.00], ampfreq DETECTED 32/32 [0.89, 1.00], stealth MISSED 8/32 [0.11, 0.43], pooled DETECTED 32/32.**
+**Verdict (pre-registered rule): MIXED.** Two of the three unseen families are DETECTED, so the YES rule fails only through its assurance clause: stealth prints BELOW_MARGIN in 4/32 primary releases (12.5%, CP [0.04, 0.29]) against a limit of 0.10. NO is not met (one family MISSED, not two).
+
+### 8.3 What the table says that the verdict hides
+- **Unseen families are detected only at much higher doses than seen mechanisms.** Minimum detectable dose (lowest level from which every higher level has detection >= 0.80): bias level 2 (Omega_w 0.15, Omega_s 0.18), specin level 3 (0.31, 0.60), pooled level 3 (0.42, 0.71), **xphase level 4 (Omega_w 0.65, Omega_s 0.96), ampfreq level 4 (0.62, 0.97), stealth not reached** (level 5, Omega_w 0.92, is 8/16 on msda and 0/16 on rep).
+  At level 3 a key-aware filter identifies 85-86% of test SESSIONS for xphase and ampfreq (75% for stealth) while S detects 2/16, 1/16 and 0/16. Unseen-family miss rate at level 3: xphase 0.88, ampfreq 0.94, stealth 1.00; at the primary level: xphase 0 [0, 0.11], ampfreq 0 [0, 0.11], stealth 0.75 [0.57, 0.89].
+- **Reported leakage versus planted level** (primary levels, ratio of means (selected - baseline) / (Omega_w - baseline)): bias 1.17 (S exceeds a lower-bound oracle), pooled 0.70, specin 0.61, xphase 0.31 (selected 0.283 vs Omega_w 0.78), ampfreq 0.17 (0.179 vs 0.77), stealth 0.04 (0.083 vs 0.78). The certificate is correct that "some leak exists" for xphase and ampfreq, but its reported magnitude is a fraction of the planted level.
+- **Which S attackers carry it (mean test accuracy at level 5, exploratory).** xphase: only the raw-view nonlinear attackers (knn1_raw 0.40, knn5_raw 0.41, rf_raw 0.39); every `feat` attacker, LR and LDA sit at chance 0.04-0.05. ampfreq: tree/MLP ensembles on the feature view (rf_feat 0.24, et_feat 0.19, lgbm_feat 0.19) with kNN raw 0.10-0.12; LR/LDA at chance. stealth: rf_raw 0.11, knn1_raw 0.12 only; all `feat` attackers 0.04-0.05.
+  The stealth detections are all msda level 5 (tone amplitude 0.2-0.3 above that release's high-band floor); on the smooth `rep` release the oracle identifies 89-92% of windows and S is at chance (selected 0.034-0.057, verdicts BELOW_MARGIN 3/8, NOT_RESOLVED 5/8).
+- **False assurance.** BELOW_MARGIN while the session-pooled oracle is >= 0.75: bias 0/21, specin 0/32, pooled 0/36, **xphase 1/45, ampfreq 4/49, stealth 5/43**. For stealth, 5 of 45 releases with Omega_w >= 0.30 carry an explicit "below margin" statement. These counts are small; the claim is that the statement is possible, not that it is typical (most misses read NOT_RESOLVED).
+- **Printed MDE80 honesty (secondary).** Among releases with Omega_w - B >= the printed MDE80 of the selected attacker's excess, the detection rate is bias 59/67 (0.88), specin 48/70 (0.69), pooled 51/79 (0.65), xphase 34/73 (0.47), ampfreq 33/76 (0.43), stealth 8/75 (0.11). Only `bias` meets the pre-registered 0.80. This is a statement about what the MDE means: it is the resolution for the attacker S selected, not a promise to detect a leak of that size by any attacker.
+- **Shuffled twins:** 0/144, every family and level 0/8.
+
+### 8.4 Reference attackers (exploratory, key-free, same train/test split; not part of the verdict)
+Window top-1 at levels 4 / 5 (both bases pooled; session-pooled values are in `reference.json`): **stealth 0.43 / 0.82 by the log-spectrum view (S's best: 0.05 / 0.11)**; xphase 0.43 / 0.66 by the phase-lag view (S: 0.16 / 0.41); ampfreq 0.30 / 0.55 by the level x spectrum view (S: 0.12 / 0.24; the marginal log-spectrum view is at 0.06 / 0.07, so the leak is an interaction); specin 0.45 / 0.81 and pooled 0.53 / 0.89 by the log-spectrum; bias 0.35 / 0.52 by the means; null 0.04.
+So every family S under-reports is recoverable from data by an attacker with the matching view: the misses belong to S's declared views, not to the data. These reference attackers were written with knowledge of the families, so this is an existence proof, not a claim that such a suite would have been declared in advance.
+
+### 8.5 Prediction scorecard (section 6)
+Correct: bias DETECTED, specin DETECTED, stealth MISSED, pooled detected at 4-5 and not at 1-2 (3/16 at level 2), G1 pass. **Wrong: xphase (predicted MISSED 0.85, observed DETECTED 32/32) and ampfreq (predicted MISSED 0.55, observed DETECTED 32/32); verdict (predicted NO 0.50, observed MIXED).**
+Why I was wrong on xphase: I asserted that kNN and RF on raw windows cannot form the cross term. They partly do (0.40 at level 5). My untested explanation is that the planted phase space is only a 2-torus (two bins), so with about 6,500 training windows a nearest neighbour often shares both phases and then the channel-1 lag identifies the identity; that would predict the kNN read to collapse as the number of tones grows. I did not test this; treat it as a hypothesis. It also means the xphase detection is partly an accident of memorisation geometry, which the attainment of 0.31 is consistent with.
+
+### 8.6 Deviations, limits, and what the result does not say
+- Deviations: none from the criteria of section 5. The runner was started directly instead of through the queue (section 9); the unused queue spec was removed.
+- Replicates share the two base releases (one defence configuration and one generation seed each): the intervals count replicates as independent although they re-draw only the subject partition, labelling and key. Per cell n = 16, primary n = 32: a 32/32 only bounds the rate below by 0.89.
+- Labels are pseudo-identities; leaks are additive and keyed; the oracle is a lower bound on the Bayes rate; real defences leak differently. Two defences (AAE, replacement AE) on one dataset with 88 test units; the result is about this declaration of S (SUITE12, these two views, 128-sample two-channel windows), not about Builder T's CXR evaluator, S's re-score of programme 1, or its evidence-budget module.
+- The primary level (Omega_w about 0.6 and 0.9) was fixed before data; at level 3 (Omega_w about 0.3) the unseen families are mostly missed. A reader who wants "detects at 30% identification" gets NO for xphase and ampfreq; one who accepts 60% gets YES for them. Both are in the table; the pre-registered one is level 4+5.
+
+### 8.7 Does S earn its place?
+- **As a calibrated detector for leaks its views can read: yes.** 0/224 false alarms, seen mechanisms detected from Omega_w 0.15-0.31, correct-sign magnitudes (attainment 0.6-1.2).
+- **As evidence that a release does NOT leak: no.** A `LEAK` is trustworthy; an absence of `LEAK` is not. It read two unseen mechanisms only at 60%+ planted window identification (0.62-0.65, against 0.15-0.31 for the seen mechanisms: 2-4x) and at 17-31% of their planted level, and it missed a high-band leak entirely on the smooth release (oracle 0.9, S at chance), with explicit BELOW_MARGIN statements on 4/32 (primary) stealth releases.
+  The certificate's own wording is suite-conditional; the measured consequence is that BELOW_MARGIN must not be quoted as "no leakage" unless the suite has a view for the mechanism. Practical rule: quote a certificate only next to a view-complete suite and the printed MDE, never alone.
+- **Recommended amendment (a new tag, a NEW manifest N2; this manifest is burned for any suite that adds these views):** declare a high-band log-spectrum view, a cross-channel phase-lag view and a level x spectrum interaction learner, keep the zero-false-alarm calibration, and re-grade on fresh families (amplitude modulation, phase-amplitude coupling, band-limited noise with identity-specific envelope) that this paper trail has not shown S.
 
 ## 9. Record
 - 2026-11-04 19:09Z (VM clock): MANIFEST COMMITMENT. Pre-registration commit `8f11607` (code + this file) was pushed first; the clean clone `~/n_run/openlatent` on the VM is at that commit
