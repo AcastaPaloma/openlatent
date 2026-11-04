@@ -201,6 +201,71 @@ def t_roles(data, pri):
           f"T {pairs.metadata_floor(ptr, pte, dr, 'all'):.3f} V {pairs.metadata_floor(ptr, pv, dr, 'all'):.3f} device-only T {pairs.metadata_floor(ptr, pte, dr, 'device'):.3f}")
 
 
+def _fake_tree(root, rels, P=500, seed=0, with_f5=True):
+    """results tree with planted (L, U) per release: binormal pair scores for every attacker, 3 images per patient with 14 planted-label scores."""
+    import json
+    from pathlib import Path
+    from scipy.stats import norm
+    rng = np.random.default_rng(seed)
+    pat = np.array([f"p{i:04d}" for i in range(P)])
+    y = np.tile([1, 0], P); cl = np.repeat(pat, 2)
+    yv = np.tile([1, 0], P // 3); clv = np.repeat(pat[: P // 3], 2)
+    Yimg = (rng.random((P * 3, 14)) < 0.25).astype(int); pimg = np.repeat(pat, 3)
+    Yv = (rng.random((300, 14)) < 0.25).astype(int)
+    root = Path(root)
+    for name, (L, Uu, Ff5) in rels.items():
+        d = root / f"{name}_rot0"; d.mkdir(parents=True, exist_ok=True)
+        att = {"f1_match_ens": L, "f1_mismatch_ens": L - 0.03, "f1_anon2_ens": L - 0.02, "f3a_logreg": L - 0.04, "f4_match": max(0.5, L - 0.1)}
+        if with_f5:
+            att["f5a"] = Ff5
+        for nm, a in att.items():
+            sh = np.sqrt(2) * norm.ppf(a)
+            (d / f"preds_{nm}.json").write_text(json.dumps(dict(pair_id=list(range(len(y))), cluster=cl.tolist(), y=y.tolist(), score_test=(rng.normal(0, 1, len(y)) + sh * y).tolist(),
+                                                                score_val=(rng.normal(0, 1, len(yv)) + sh * yv).tolist(), cluster_val=clv.tolist(), y_val=yv.tolist())))
+        (d / "summary.json").write_text("{}")
+        sh = np.sqrt(2) * norm.ppf(Uu)
+        mk = lambda Y: (rng.normal(0, 1, Y.shape) + sh * Y).round(4).tolist()
+        PT = mk(Yimg)
+        (root / f"utility_{name}_rot0.json").write_text(json.dumps(dict(T=dict(patient=pimg.tolist(), Y=Yimg.tolist(), P=PT, P_fixed=PT), V=dict(Y=Yv.tolist(), P=mk(Yv)))))
+    # const control + shuffled-label control
+    return root
+
+
+def t_aggregate():
+    import tempfile
+    from . import aggregate as AG
+    rels = {"raw": (0.90, 0.80, 0.52), "const": (0.50, 0.50, 0.50), "rim_w24": (0.55, 0.52, 0.50), "blur_s2": (0.75, 0.74, 0.50), "down_f4": (0.65, 0.70, 0.50), "rw2_mu0.01": (0.85, 0.79, 0.50),
+            "pcxr_mu0.01": (0.60, 0.78, 0.50), "pcxr_mu0.005": (0.70, 0.70, 0.50)}
+    with tempfile.TemporaryDirectory() as td:
+        root = _fake_tree(td, rels)
+        import json
+        from pathlib import Path
+        g0 = Path(td) / "g0.json"; g0.write_text(json.dumps(dict(rot0=dict(N2=dict(all=dict(auc=0.53))), passes_all_rotations=True)))
+        # shuffled-label control for raw at chance
+        sh = Path(td) / "raw_rot0_shuf"; sh.mkdir()
+        rngc = np.random.default_rng(1); P = 500; y = np.tile([1, 0], P)
+        for nm in ("f1_match_ens", "f3a_logreg", "f5a"):
+            (sh / f"preds_{nm}.json").write_text(json.dumps(dict(pair_id=[], cluster=np.repeat([f"p{i:04d}" for i in range(P)], 2).tolist(), y=y.tolist(), score_test=rngc.normal(0, 1, len(y)).tolist(),
+                                                                 score_val=rngc.normal(0, 1, 2 * (P // 3)).tolist(), cluster_val=np.repeat([f"p{i:04d}" for i in range(P // 3)], 2).tolist(), y_val=np.tile([1, 0], P // 3).tolist())))
+        res = AG.run(td, str(g0), [0], B=300, prereg_commit="test", out=td + "/out")
+        k2 = res["KT"]["KT2"]["verdicts"]
+        check("aggregate: KT1 passes on a planted measurable raw release with controls at chance", not res["KT"]["KT1"]["fires"], f"raw L {res['releases']['raw']['L']:.3f}, controls dev max {max(abs(c['auc'] - 0.5) for c in res['KT']['KT1']['controls']):.3f}")
+        check("aggregate: a defence planted ABOVE the frontier beats the envelope; one BELOW the frontier does not", k2["pcxr_mu0.01"]["primary"]["beats_envelope"] and not k2["pcxr_mu0.005"]["primary"]["beats_envelope"],
+              f"dU {k2['pcxr_mu0.01']['primary']['point_dU']:.3f} vs {k2['pcxr_mu0.005']['primary']['point_dU']:.3f}")
+        check("aggregate: verdict_original is GO and result/ floors_table files exist", res["verdict_original"].startswith("GO") and (Path(td) / "out" / "result.json").exists() and (Path(td) / "out" / "floors_table.md").exists(), res["verdict_original"])
+        check("aggregate: result.json carries evaluator_sha, prereg_commit, verdict_original and verdict_tightened", all(k in res for k in ("evaluator_sha", "prereg_commit", "verdict_original", "verdict_tightened")))
+    with tempfile.TemporaryDirectory() as td:
+        rels2 = {k: v for k, v in rels.items() if k != "pcxr_mu0.01"}
+        _fake_tree(td, rels2)
+        res = AG.run(td, None, [0], B=300, out=td + "/out")
+        check("aggregate: with only a defence ON/below the frontier the verdict is NO-GO (KT2)", res["verdict_original"].startswith("NO-GO") or res["KT"]["KT2"]["fires_primary"], res["verdict_original"])
+    with tempfile.TemporaryDirectory() as td:
+        rels3 = dict(rels); rels3["raw"] = (0.90, 0.80, 0.89)
+        _fake_tree(td, rels3)
+        res = AG.run(td, None, [0], B=300, out=td + "/out")
+        check("aggregate: KT3 fires when the demographic-feature attacker explains >= 90% of the raw excess", res["KT"]["KT3"]["fires"], f"share {res['KT']['KT3']['share']:.2f}")
+
+
 def t_f5_matched():
     rng = np.random.default_rng(0)
     P, d = 900, 32
@@ -285,7 +350,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt")
     a = ap.parse_args()
     torch.set_num_threads(4)
-    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []):
+    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []):
         if nm in a.skip:
             continue
         print(f"== {nm}", flush=True)

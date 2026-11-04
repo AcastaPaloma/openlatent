@@ -148,6 +148,17 @@ def main():
             roleA = d["role"].to_numpy()[need] == "A"
             sv, st = H.fit_f5(FF, dem, np.r_[roleA, roleA], tr_, va_, te_)
             record("f5a", sv, st)
+            sv, st = H.fit_f5(FF, dem, np.r_[roleA, roleA], tr_, va_, te_, true_rows=np.r_[np.zeros(len(Fd), bool), np.ones(len(Fr), bool)])
+            record("f5b", sv, st)
+    if "f2" in todo:                                                     # ConvNeXt-T Siamese, condition match, 1 seed (T.md 3.5)
+        cs = cond_sets("match", Xd, Xr, parts)
+        o = A.train_siamese(cs["tr"], cs["va"], cs["te"], arch="convnext_tiny", pretrained=not a.no_pretrain, seed=0, max_epochs=a.max_epochs, bs=a.bs, device=dev, amp=dev == "cuda", log=lambda *x: None)
+        record("f2_match_s0", o["val_score"], o["test_score"], dict(epochs=o["epochs"])); record("f2_match_ens", o["val_score"], o["test_score"])
+    if "f6" in todo:                                                     # HELD-OUT view: hand statistics + LightGBM (never used for any selection)
+        from . import handstats as HS
+        Dd, Dr = HS.descriptors(Xd.float().cpu()), HS.descriptors(Xr.float().cpu())
+        sv, st = HS.fit_f6(Dd, Dr, parts["tr"], parts["va"], parts["te"])
+        record("f6", sv, st)
     summ["seconds"] = round(time.time() - t0, 1)
     (out / "summary.json").write_text(json.dumps(summ, indent=1, default=float))
     print("done", out, summ["seconds"], "s")

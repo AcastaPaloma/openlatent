@@ -84,7 +84,7 @@ def demo_pair_features(ah, sh, vh, ia, ib):
     return np.c_[ah[ia], ah[ib], np.abs(ah[ia] - ah[ib]), ah[ib] - ah[ia], sh[ia], sh[ib], np.abs(sh[ia] - sh[ib]), vh[ia], vh[ib], np.abs(vh[ia] - vh[ib])]
 
 
-def fit_f5(F, dem, mask, tr, va, te, seed=0) -> tuple[np.ndarray, np.ndarray]:
+def fit_f5(F, dem, mask, tr, va, te, seed=0, true_rows=None) -> tuple[np.ndarray, np.ndarray]:
     """F = features of ALL image rows (defended-A table stacked on the real-B table); dem = dict(pid, age, male, pa) per row; mask = rows of A-role images (the
     only rows the regressors may be fitted on).  Estimates for masked rows are patient-grouped OUT-OF-FOLD, for all other rows they come from regressors fitted on
     the masked rows only (so no V / T image or label ever informs the demographic models).  Pair model: gradient boosting on A pairs.  Returns (val, test) scores."""
@@ -97,5 +97,7 @@ def fit_f5(F, dem, mask, tr, va, te, seed=0) -> tuple[np.ndarray, np.ndarray]:
     A = Z[mask]
     ah, sh, vh = Ridge(alpha=100.0).fit(A, dem["age"][mask]).predict(Z), _logit(A, dem["male"][mask], Z), _logit(A, dem["pa"][mask], Z)
     ah[mask], sh[mask], vh[mask] = oa, os_, ov
+    if true_rows is not None:
+        ah[true_rows], sh[true_rows], vh[true_rows] = dem["age"][true_rows], dem["male"][true_rows].astype(float), dem["pa"][true_rows].astype(float)
     m = HistGradientBoostingClassifier(max_depth=4, max_iter=150, random_state=seed).fit(demo_pair_features(ah, sh, vh, tr["ia"], tr["ib"]), tr["y"])
     return m.predict_proba(demo_pair_features(ah, sh, vh, va["ia"], va["ib"]))[:, 1], m.predict_proba(demo_pair_features(ah, sh, vh, te["ia"], te["ib"]))[:, 1]
