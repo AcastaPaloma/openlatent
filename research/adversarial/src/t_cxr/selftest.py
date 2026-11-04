@@ -201,6 +201,65 @@ def t_roles(data, pri):
           f"T {pairs.metadata_floor(ptr, pte, dr, 'all'):.3f} V {pairs.metadata_floor(ptr, pv, dr, 'all'):.3f} device-only T {pairs.metadata_floor(ptr, pte, dr, 'device'):.3f}")
 
 
+def t_f5_matched():
+    rng = np.random.default_rng(0)
+    P, d = 900, 32
+    age = rng.integers(20, 80, P).astype(float)
+    male = rng.integers(0, 2, P)
+    w = rng.normal(0, 1, (2, d))
+    feat = lambda a, m: np.outer(a - 50, w[0]) / 20 + np.outer(m, w[1]) + rng.normal(0, 1, (len(a), d))
+    ageB = age + rng.integers(0, 2, P)
+    Fa, Fb = feat(age, male), feat(ageB, male)                                   # two images per patient (age differs by 0-1 year)
+    F = np.concatenate([Fa, Fb])                                                  # rows 0..P-1 = element A table, P..2P-1 = element B table
+    dem = dict(pid=np.r_[np.arange(P), np.arange(P)], age=np.r_[age, ageB], male=np.r_[male, male], pa=np.zeros(2 * P))
+    # matched negatives: partner of the same sex and age as the true partner but another patient
+    key = {(a, m): np.where((ageB == a) & (male == m))[0] for a, m in set(zip(ageB, male))}
+    neg = np.array([rng.choice(key[(ageB[i], male[i])][key[(ageB[i], male[i])] != i]) if len(key[(ageB[i], male[i])]) > 1 else i for i in range(P)])
+    rnd = rng.permutation(P)
+    mask = np.r_[np.ones(P // 2, bool), np.zeros(P - P // 2, bool)]
+    mask = np.r_[mask, mask]
+    def pairset(sel, negs):
+        ia = np.r_[sel, sel]; ib = P + np.r_[sel, negs[sel]]
+        return dict(ia=ia, ib=ib, y=np.r_[np.ones(len(sel)), np.zeros(len(sel))])
+    tr, va, te = np.arange(0, P // 2), np.arange(P // 2, P // 2 + 150), np.arange(P // 2 + 150, P)
+    out = {}
+    for nm, negs in (("matched", neg), ("random", rnd)):
+        sv, st = H.fit_f5(F, dem, mask, pairset(tr, negs), pairset(va, negs), pairset(te, negs))
+        out[nm] = S.auc(pairset(te, negs)["y"], st)
+    check("F5 demographic attacker: ~chance on demographically matched negatives, clearly above chance on random negatives",
+          abs(out["matched"] - 0.5) < 0.09 and out["random"] > 0.7, str({k: round(v, 3) for k, v in out.items()}))
+
+
+def t_handstats_utility():
+    import torch.nn as nn
+    from . import handstats as HS, utility as U
+    rng = np.random.default_rng(0)
+    from scipy.ndimage import gaussian_filter
+    n, N = 64, 200
+    base = np.stack([gaussian_filter(rng.normal(0, 1, (n, n)), 4) for _ in range(N // 2)])
+    imgs = np.zeros((N, n, n), np.float32)
+    for k in range(N // 2):
+        imgs[2 * k] = base[k] + 0.3 * rng.normal(0, 1, (n, n)); imgs[2 * k + 1] = np.roll(base[k], (1, 2), (0, 1)) + 0.3 * rng.normal(0, 1, (n, n))
+    imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
+    X = torch.from_numpy(imgs)
+    D = HS.descriptors(X, size=32)
+    ia = np.arange(0, N, 2); ib = ia + 1
+    neg = (ib + 6) % N
+    mk = lambda sl: dict(ia=np.r_[ia[sl], ia[sl]], ib=np.r_[ib[sl], neg[sl]], y=np.r_[np.ones(len(ia[sl])), np.zeros(len(ia[sl]))])
+    sv, st = HS.fit_f6(D, D, mk(slice(0, 60)), mk(slice(60, 80)), mk(slice(80, 100)))
+    t = mk(slice(80, 100))
+    check("F6 hand-statistics attacker links shifted copies of the same texture (AUC > 0.85)", S.auc(t["y"], st) > 0.85, f"{S.auc(t['y'], st):.3f}")
+    # utility smoke: tiny classifier, mean_auc on planted labels
+    Y = (rng.random((N, 14)) < 0.3).astype(np.uint8)
+    X2 = torch.from_numpy((imgs + 0.5 * Y[:, :1, None] ).astype(np.float32)).clamp(0, 1)
+    model = nn.Sequential(nn.AdaptiveAvgPool2d(4), nn.Flatten(), nn.Linear(48, 14), nn.Sigmoid())
+    wrapped = nn.Sequential(*list(model.children()))
+    m = U.finetune(wrapped, X2, Y, epochs=2, bs=32, device="cpu", size=32, log=lambda *a: None)
+    P = U.predict(m, X2, device="cpu", size=32)
+    a, per = U.mean_auc(Y, P)
+    check("utility pipeline runs (fine-tune, predict, macro AUC finite)", np.isfinite(a) and per.shape == (14,), f"mean AUC {a:.3f}")
+
+
 def t_pairs(data):
     P = data
     d = meta.load(f"{P}/Data_Entry_2017_v2020.csv", f"{P}/test_list.txt", f"{P}/train_val_list.txt")
@@ -226,7 +285,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt")
     a = ap.parse_args()
     torch.set_num_threads(4)
-    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []):
+    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []):
         if nm in a.skip:
             continue
         print(f"== {nm}", flush=True)

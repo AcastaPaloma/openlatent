@@ -124,7 +124,9 @@ I1 unit = patient, pairs are not units. I2 roles/rotations as 3.2; the confirmat
 * (none yet). A0 will record the custodian's salt commit id and the nomination table after stage 2a.
 
 ## 5. Status log
-* ~18:40Z (VM clock) pre-gate work complete: evaluator and attackers coded and self-tested on the VM CPU (50/50 checks: stats, generator and releases, structural and Siamese smoke, planted-leak heads, pair design on the real CSV, roles), pair design and roles tested on the real CSV, weights compatibility checked, licence snapshot committed, job specs drafted (not queued). Waiting for: (1) the custodian's salt (after this floor list is frozen), (2) a direct go for the 42 GB download.
+* ~18:20Z (VM clock) pre-gate work complete and committed with this file (pre-registration commit = the commit that adds this file): evaluator and attackers coded and self-tested on the VM CPU (50/50 checks: stats, generator and releases, structural and Siamese smoke, planted-leak heads, pair design on the real CSV, roles); weights compatibility checked; licence snapshot committed; draft job specs (`t_prep`, `t_s1_{raw,const,rim_w24,core_w24}`, YAML validated, NOT queued).
+  Added after the first commit (same day, no model number involved): `prep.py` (bank + integrity), `features.py` (DINOv2), `run_suite.py` (one release x one rotation, hashed-id JSON outputs, ledger), `handstats.py` (F6) and `utility.py` (U), each smoke-tested on synthetic data on the VM CPU; `run_suite.py` was dry-run end to end on a planted-leak synthetic bank (labelled synthetic, not a result). Still to write before first use: F2 wiring (same Siamese class), `U`/`labels14` driver job, the nomination script and the aggregation / verdict script.
+  Waiting for: (1) the custodian's salt (committed AFTER this floor list is frozen: the list is frozen by this commit), (2) a direct go for the 42 GB download.
 
 ## 6. Results
 None. (Section reserved: R0 replication, floors table, KT verdicts with `verdict_original` / `verdict_tightened`.)

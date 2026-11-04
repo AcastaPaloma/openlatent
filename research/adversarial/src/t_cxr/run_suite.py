@@ -131,20 +131,22 @@ def main():
         else:
             from .features import dino_features as feat
         Fd, Fr = feat(Xd), feat(Xr)
-        Fm = lambda ia, ib: (np.concatenate([Fd, Fr]), ia, ib + len(Fd))                  # defended A element vs REAL B element: stack both feature tables
         tr_, va_, te_ = ({**parts[k]} for k in ("tr", "va", "te"))
         FF = np.concatenate([Fd, Fr])
         for k, p in (("tr", tr_), ("va", va_), ("te", te_)):
             p["ib"] = p["ib"] + len(Fd)
         if "f3" in todo:
-            o = H.fit_f3(FF, tr_, FF, va_, FF, te_)
+            roleA = d["role"].to_numpy()[need] == "A"
+            maskA = np.r_[roleA, roleA]
+            o = H.fit_f3(FF, tr_, FF, va_, FF, te_, stats_from=FF[maskA])
             for nm, (sv, st) in o.items():
                 record(nm, sv, st)
         if "f5" in todo:
             dtr = d.set_index("row").loc[need]
             # element A is estimated from the defended image; element B from the real image (F5a) -- both columns of FF are indexed by position
             dem = dict(pid=np.r_[dtr.pid.to_numpy(), dtr.pid.to_numpy()], age=np.r_[dtr.age.to_numpy(), dtr.age.to_numpy()], male=np.r_[dtr.male.to_numpy(), dtr.male.to_numpy()], pa=np.r_[dtr.pa.to_numpy(), dtr.pa.to_numpy()])
-            sv, st = H.fit_f5(FF, dem, tr_, FF, va_, FF, te_)
+            roleA = d["role"].to_numpy()[need] == "A"
+            sv, st = H.fit_f5(FF, dem, np.r_[roleA, roleA], tr_, va_, te_)
             record("f5a", sv, st)
     summ["seconds"] = round(time.time() - t0, 1)
     (out / "summary.json").write_text(json.dumps(summ, indent=1, default=float))

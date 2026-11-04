@@ -1,0 +1,6 @@
+# DRAFT, NOT QUEUED: ChestX-ray14 download gate is closed for Builder-T (T.md section 0); salt not yet committed by the custodian. Queue ONLY after t_prep has finished (the queue has no dependencies).
+name: t_s1_rim_w24
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src $HOME/venvs/t/bin/python -m t_cxr.run_suite --release rim_w24 --rot 0 --attackers f1,f3,f4,f5 --conds mismatch,match,anon2 --seeds 0,1,2 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --work $HOME/work/t_work --out $OUT"
+hf_path: runs/t_s1_rim_w24
+hf_allow: ["*.json","*.log","*.md"]

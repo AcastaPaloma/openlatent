@@ -32,11 +32,12 @@ def retrieval_scores(F, ia, ib, metric: str) -> np.ndarray:
     raise ValueError(metric)
 
 
-def fit_f3(Ftr, tr, Fva, va, Fte, te, seed=0) -> dict:
-    """tr/va/te = dict(ia, ib, y).  Returns {name: (val_score, test_score)} for the learned heads and the no-training retrieval scores."""
+def fit_f3(Ftr, tr, Fva, va, Fte, te, seed=0, stats_from=None) -> dict:
+    """tr/va/te = dict(ia, ib, y).  Returns {name: (val_score, test_score)} for the learned heads and the no-training retrieval scores.
+    `stats_from` = feature rows used for the standardisation statistics (the A-role images only: no V / T image may inform anything)."""
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import roc_auc_score
-    mu, sd = std_fit(Ftr)
+    mu, sd = std_fit(Ftr if stats_from is None else stats_from)
     S = lambda F: (F - mu) / sd
     Ftr, Fva, Fte = S(Ftr), S(Fva), S(Fte)
     Xtr, Xva, Xte = pair_matrix(Ftr, tr["ia"], tr["ib"]), pair_matrix(Fva, va["ia"], va["ib"]), pair_matrix(Fte, te["ia"], te["ib"])
@@ -56,6 +57,14 @@ def fit_f3(Ftr, tr, Fva, va, Fte, te, seed=0) -> dict:
     return out
 
 
+def _logit(Xa, ya, Xb, C=0.01):
+    """P(y=1) from a logistic fit; a constant when the training labels contain one class only (robust for tiny folds / synthetic tests)."""
+    from sklearn.linear_model import LogisticRegression
+    if len(np.unique(ya)) < 2:
+        return np.full(len(Xb), float(ya[0]))
+    return LogisticRegression(C=C, max_iter=300).fit(Xa, ya).predict_proba(Xb)[:, 1]
+
+
 def oof_demographics(F, pid, age, male, pa, folds: int = 4, seed: int = 0):
     """patient-grouped out-of-fold age (ridge), sex and view (logistic) estimates for every image of the TRAIN split."""
     from sklearn.linear_model import LogisticRegression, Ridge
@@ -66,8 +75,8 @@ def oof_demographics(F, pid, age, male, pa, folds: int = 4, seed: int = 0):
         mu, sd = std_fit(F[tr])
         A, B = (F[tr] - mu) / sd, (F[te] - mu) / sd
         ah[te] = Ridge(alpha=100.0).fit(A, age[tr]).predict(B)
-        sh[te] = LogisticRegression(C=0.01, max_iter=300).fit(A, male[tr]).predict_proba(B)[:, 1]
-        vh[te] = LogisticRegression(C=0.01, max_iter=300).fit(A, pa[tr]).predict_proba(B)[:, 1]
+        sh[te] = _logit(A, male[tr], B)
+        vh[te] = _logit(A, pa[tr], B)
     return ah, sh, vh
 
 
@@ -75,18 +84,18 @@ def demo_pair_features(ah, sh, vh, ia, ib):
     return np.c_[ah[ia], ah[ib], np.abs(ah[ia] - ah[ib]), ah[ib] - ah[ia], sh[ia], sh[ib], np.abs(sh[ia] - sh[ib]), vh[ia], vh[ib], np.abs(vh[ia] - vh[ib])]
 
 
-def fit_f5(Ftr, dtr, tr, Fva, va, Fte, te, seed=0) -> tuple[np.ndarray, np.ndarray]:
-    """dtr = dict(pid, age, male, pa) of the training images; (Fx) = features of ALL images of that split indexed by ia/ib.  Returns (val, test) pair scores."""
+def fit_f5(F, dem, mask, tr, va, te, seed=0) -> tuple[np.ndarray, np.ndarray]:
+    """F = features of ALL image rows (defended-A table stacked on the real-B table); dem = dict(pid, age, male, pa) per row; mask = rows of A-role images (the
+    only rows the regressors may be fitted on).  Estimates for masked rows are patient-grouped OUT-OF-FOLD, for all other rows they come from regressors fitted on
+    the masked rows only (so no V / T image or label ever informs the demographic models).  Pair model: gradient boosting on A pairs.  Returns (val, test) scores."""
     from sklearn.ensemble import HistGradientBoostingClassifier
     from sklearn.linear_model import LogisticRegression, Ridge
-    ah, sh, vh = oof_demographics(Ftr, dtr["pid"], dtr["age"], dtr["male"], dtr["pa"], seed=seed)
+    Fm = F[mask]
+    oa, os_, ov = oof_demographics(Fm, dem["pid"][mask], dem["age"][mask], dem["male"][mask], dem["pa"][mask], seed=seed)
+    mu, sd = std_fit(Fm)
+    Z = (F - mu) / sd
+    A = Z[mask]
+    ah, sh, vh = Ridge(alpha=100.0).fit(A, dem["age"][mask]).predict(Z), _logit(A, dem["male"][mask], Z), _logit(A, dem["pa"][mask], Z)
+    ah[mask], sh[mask], vh[mask] = oa, os_, ov
     m = HistGradientBoostingClassifier(max_depth=4, max_iter=150, random_state=seed).fit(demo_pair_features(ah, sh, vh, tr["ia"], tr["ib"]), tr["y"])
-    mu, sd = std_fit(Ftr)
-    A = (Ftr - mu) / sd
-    ra, rs, rv = Ridge(alpha=100.0).fit(A, dtr["age"]), LogisticRegression(C=0.01, max_iter=300).fit(A, dtr["male"]), LogisticRegression(C=0.01, max_iter=300).fit(A, dtr["pa"])
-
-    def est(F):
-        B = (F - mu) / sd
-        return ra.predict(B), rs.predict_proba(B)[:, 1], rv.predict_proba(B)[:, 1]
-    sv, ste = est(Fva), est(Fte)
-    return (m.predict_proba(demo_pair_features(*sv, va["ia"], va["ib"]))[:, 1], m.predict_proba(demo_pair_features(*ste, te["ia"], te["ib"]))[:, 1])
+    return m.predict_proba(demo_pair_features(ah, sh, vh, va["ia"], va["ib"]))[:, 1], m.predict_proba(demo_pair_features(ah, sh, vh, te["ia"], te["ib"]))[:, 1]
