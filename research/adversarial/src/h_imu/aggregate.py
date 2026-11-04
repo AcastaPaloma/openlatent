@@ -103,6 +103,7 @@ def main():
     ap.add_argument("--pred_dirs", required=True); ap.add_argument("--out", required=True)
     ap.add_argument("--learned", default="msda,rep"); ap.add_argument("--control", default="pd_pub_s0,pd_pub_s1,pd_pub_s2,pd_plain_s0,pd_w1_1.8_s0,pd_w2_0.5_s0")
     ap.add_argument("--folds", default="O"); ap.add_argument("--B", type=int, default=2000)
+    ap.add_argument("--exclude", default="", help="comma-separated arms removed from the floor set (used for the frozen-list reading, verdict_original)")
     a = ap.parse_args()
     folds = a.folds.split(",")
     S = C.analysis_set(); st = Store(S)
@@ -130,7 +131,8 @@ def main():
         mde[tgt] = dict(median_se=float(np.median(ses)) if ses else None, mde80=float(2.556 * np.median(ses)) if ses else None, n_pairs=len(ses))
     m_L = max(0.15, mde["L"]["mde80"] or 0); m_U = max(0.02, mde["U"]["mde80"] or 0)
     # ---------- floors set and gates
-    floors = [x for x in R if x not in CONTROLS | ORACLES and not x.startswith(("pd_", "msda", "rep")) and R[x]["U"] is not None]
+    excl = set(a.exclude.split(",")) - {""}
+    floors = [x for x in R if x not in CONTROLS | ORACLES | excl and not x.startswith(("pd_", "msda", "rep")) and R[x]["U"] is not None]
     gates = {}
     if "raw" in R:
         gates["H1_raw_L>=0.40"] = bool(R["raw"]["L"] >= 0.40); gates["raw_L"] = R["raw"]["L"]; gates["raw_U"] = R["raw"]["U"]; gates["H3_raw_U>=0.90"] = bool((R["raw"]["U"] or 0) >= 0.90)
@@ -167,7 +169,7 @@ def main():
     elif "WIN" in labs: verdict_t = "GO"
     elif all(l == "MATCH" for l in labs): verdict_t = "NO-GO-MATCHED"
     else: verdict_t = "NO-GO-UNRESOLVED"
-    res = dict(folds=folds, B=a.B, margins=dict(m_L=m_L, m_U=m_U, mde=mde), K1_power_fires=K1, gates=gates, gates_ok=gate_ok, n_distinct_learned_defences=3, k2_set=learned,
+    res = dict(floor_set=sorted(floors), excluded=sorted(excl), folds=folds, B=a.B, margins=dict(m_L=m_L, m_U=m_U, mde=mde), K1_power_fires=K1, gates=gates, gates_ok=gate_ok, n_distinct_learned_defences=3, k2_set=learned,
                verdict_tightened=verdict_t, verdict_original="see verdict_original_pd (v0 rule on PD arms)", outcomes=out_arms,
                arms={x: dict(L=R[x]["L"], L_ci=[float(v) for v in np.percentile(R[x]["Lb"], [2.5, 97.5])], U=R[x]["U"], U_ci=[float(v) for v in np.percentile(R[x]["Ub"], [2.5, 97.5])], L_win=R[x]["L_win"],
                              L_att=R[x]["L_att"], U_att=R[x]["U_att"], L_held=R[x]["L_held"], has_nn=R[x]["has_nn"], n_trials=R[x]["n_trials"]) for x in R})
