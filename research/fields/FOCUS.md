@@ -22,7 +22,17 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   while holding L_worst within 0.05 of it. The LEACE comparison stays as a floor, not as the kill test.
 - Original kill text (superseded): "does not beat LEACE on worst-case centre-probe accuracy at equal label accuracy".
 
-## Focus C: identity-free emotion, CREMA-D first   [GO-WITH-CHANGES]
+## Focus C: identity-free emotion, CREMA-D first   [CLOSED as a negative result, 2026-11-04 ~12:50Z VM clock]
+- Outcome (Builder C, results_notes/C.md sections 2a-2d; WavLM-Base+, 91 actors, bootstrap over actors): (1) no label-supervised learned encoder (rate, adversarial, VQ) beats the
+  label-only LDA-5 projection (UAR 0.743, identity 7x chance) and none passes the pre-registered held-out-emotion criterion; (2) the pre-registered task-agnostic adversarial
+  autoencoder round fails too: 0 of 3 seeds for the validation-selected config (d32, lam 3: U_HE 0.326 [0.307,0.345] vs matched LDA, dU_HE -0.208 [-0.240,-0.179]) and for every
+  adversarial config; the only positive difference is the NO-adversary AE (a reconstruction effect that leaks 34.8x chance and is ineligible under the selection rule).
+  By-products worth keeping: full-clip CREMA-D identity is 76% recording-channel signal (non-speech alone 56x chance), LDA is the strongest identity attacker, closed-form LEACE fitted on
+  train actors leaves 53x on unseen actors, oracle per-actor prosody normalisation is a strong floor (0.535 UAR at 2x chance, a different threat model).
+- Still running, cannot change the verdict: speech-trimmed AE variant and a noise-dithered label-free control.
+- Original text kept below for the record.
+
+## Focus C (original text): identity-free emotion, CREMA-D first   [GO-WITH-CHANGES]
 - Keep: emotion (6 classes).  Hide: actor identity (91 actors), plus sex/age/race attributes as secondary secrets.
 - Data: CREMA-D (ODbL, ~2.5 GB, VM-reachable). RAVDESS as the second set. We build the benchmark ourselves (prior WACV 2025 /
   ICME 2026 pipelines use frozen validators, shared-actor splits, gated data, no checkpoints).

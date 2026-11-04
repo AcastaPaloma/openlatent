@@ -1,0 +1,16 @@
+{
+ "name": "a_p2h_dinov2L_tolkach_esca_s2",
+ "config": {
+  "name": "a_p2h_dinov2L_tolkach_esca_s2",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset tolkach_esca --seed 2 --grid p2 --holdout",
+  "hf_path": "runs/a_p2h_dinov2L_tolkach_esca_s2"
+ },
+ "commit": "2acc1d0",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 839.0,
+ "finished_utc": "2026-11-04T12:49:53Z",
+ "uploaded": true
+}
