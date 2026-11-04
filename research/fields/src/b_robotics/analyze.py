@@ -8,7 +8,7 @@ import sys, glob, json, os, re
 import numpy as np
 
 MARGIN, LEAK_TOL = 0.05, 0.02
-ORDER = ["clean", "raw", "rate4", "rateb", "sam", "gtmask", "adv", "adv30", "lmask", "advmask"]
+ORDER = ["clean", "raw", "rate4", "rateb", "sam", "gtmask", "adv", "adv30", "lmask", "advmask", "sup", "supadv", "smask"]
 
 
 def load(dirs):
@@ -51,10 +51,18 @@ def main(dirs):
             bks = " / ".join((f"{np.mean([x for x in v if x is not None]):.2f}" if any(x is not None for x in v) else "-") for v in bk.values())
             print(f"| {arm} | {len(S)} | {ms(g('util_lin2k_xyz'))} [{ci[0]:.3f},{ci[1]:.3f}] | {ms(g('util_linfull_xyz'))} | {ms(g('util_mlp_xyz'))} | {ms(g('leak_worst'))} | {lk('resid_vel')} | {lk('position')} | "
                   f"{(np.mean(g('leak_appearance_lin')) if g('leak_appearance_lin') else float('nan')):.2f} / {(np.mean(g('leak_appearance_mlp')) if g('leak_appearance_mlp') else float('nan')):.2f} | {bks} |")
+        # decidability: how much room is there above SAM at all?
+        sam_, gt_, raw_ = R.get((kind, "sam"), {}), R.get((kind, "gtmask"), {}), R.get((kind, "raw"), {})
+        cl_ = R.get(("none", "clean"), {})
+        sd = sorted(set(sam_) & set(gt_))
+        if sd:
+            print(f"\nheadroom vs SAM on {kind}: exact-silhouette mask gain over SAM = {np.mean([sam_[s]['util_lin2k_xyz'] - gt_[s]['util_lin2k_xyz'] for s in sd]):.3f} "
+                  f"(per seed {[round(sam_[s]['util_lin2k_xyz'] - gt_[s]['util_lin2k_xyz'], 3) for s in sd]}); clean-frame oracle gain over SAM = "
+                  f"{np.mean([sam_[s]['util_lin2k_xyz'] - cl_[s]['util_lin2k_xyz'] for s in sd if s in cl_]):.3f}; raw-minus-SAM = {np.mean([raw_[s]['util_lin2k_xyz'] - sam_[s]['util_lin2k_xyz'] for s in sd if s in raw_]):.3f}")
         # kill rule
-        if kind in ("corr_det", "corr_noisy", "corr_glued"):
+        if kind in ("corr_det", "corr_noisy", "corr_glued", "indep"):
             sam, gt = R.get((kind, "sam"), {}), R.get((kind, "gtmask"), {})
-            for cand in ("adv", "adv30", "lmask", "advmask"):
+            for cand in ("adv", "adv30", "lmask", "advmask", "sup", "supadv", "smask"):
                 c = R.get((kind, cand), {})
                 seeds = sorted(set(c) & set(sam))
                 if not seeds:

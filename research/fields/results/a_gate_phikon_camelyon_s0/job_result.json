@@ -1,0 +1,16 @@
+{
+ "name": "a_gate_phikon_camelyon_s0",
+ "config": {
+  "name": "a_gate_phikon_camelyon_s0",
+  "priority": 13,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset camelyon --seed 0 --grid gate",
+  "hf_path": "runs/a_gate_phikon_camelyon_s0"
+ },
+ "commit": "d638263",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 349.2,
+ "finished_utc": "2026-11-04T10:54:55Z",
+ "uploaded": true
+}
