@@ -1,0 +1,576 @@
+{
+ "elig": {
+  "e2_cvae_b10": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2_cvae_b2": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2_cvae_b50": {
+   "eligible": false,
+   "why": [
+    "fold 0: collapsed (KL 0.7, R2 0.21 vs pca16 0.26)",
+    "fold 1: collapsed (KL 0.6, R2 0.17 vs pca16 0.24)",
+    "fold 2: collapsed (KL 0.8, R2 0.21 vs pca16 0.28)"
+   ],
+   "adversarial": false
+  },
+  "e2_cvaeadv_b10_l1": {
+   "eligible": false,
+   "why": [
+    "fold 0: in-sample adversary 0.371 above memorisation floor 0.288 + 0.05",
+    "fold 1: in-sample adversary 0.503 above memorisation floor 0.398 + 0.05",
+    "fold 2: in-sample adversary 0.519 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2_cvaeadv_b10_l16": {
+   "eligible": false,
+   "why": [
+    "fold 0: in-sample adversary 0.478 above memorisation floor 0.288 + 0.05",
+    "fold 1: in-sample adversary 0.506 above memorisation floor 0.398 + 0.05",
+    "fold 2: in-sample adversary 0.532 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2_cvaeadv_b10_l4": {
+   "eligible": false,
+   "why": [
+    "fold 0: in-sample adversary 0.431 above memorisation floor 0.288 + 0.05",
+    "fold 1: in-sample adversary 0.515 above memorisation floor 0.398 + 0.05",
+    "fold 2: in-sample adversary 0.545 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2_vae_b10": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2_vae_b2": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2_vae_b50": {
+   "eligible": false,
+   "why": [
+    "fold 0: collapsed (KL 0.7, R2 0.12 vs pca16 0.26)",
+    "fold 1: collapsed (KL 0.6, R2 0.11 vs pca16 0.24)",
+    "fold 2: collapsed (KL 0.7, R2 0.14 vs pca16 0.28)"
+   ],
+   "adversarial": false
+  },
+  "e2_vaeadv_b10_l1": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.238)",
+    "fold 0: in-sample adversary 0.517 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.195)",
+    "fold 1: in-sample adversary 0.575 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.253)",
+    "fold 2: in-sample adversary 0.603 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2_vaeadv_b10_l16": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.222)",
+    "fold 0: in-sample adversary 0.509 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.187)",
+    "fold 1: in-sample adversary 0.560 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.256)",
+    "fold 2: in-sample adversary 0.620 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2_vaeadv_b10_l4": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.223)",
+    "fold 0: in-sample adversary 0.528 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.183)",
+    "fold 1: in-sample adversary 0.519 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.255)",
+    "fold 2: in-sample adversary 0.631 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2_vaeplc_b10_l4": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.251)",
+    "fold 0: in-sample adversary 0.526 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.197)",
+    "fold 1: in-sample adversary 0.492 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.258)",
+    "fold 2: in-sample adversary 0.638 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2x_cvae_b0p5": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2x_cvae_b1": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2x_cvaeadv_b1_l16": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.213)",
+    "fold 0: in-sample adversary 0.733 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.158)",
+    "fold 1: in-sample adversary 0.795 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.291)",
+    "fold 2: in-sample adversary 0.815 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2x_cvaeadv_b1_l64": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.320)",
+    "fold 0: in-sample adversary 0.717 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.325)",
+    "fold 1: in-sample adversary 0.740 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.425)",
+    "fold 2: in-sample adversary 0.801 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2x_vae_b0p5": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2x_vae_b1": {
+   "eligible": true,
+   "why": [],
+   "adversarial": false
+  },
+  "e2x_vaeadv_b1_l16": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.362)",
+    "fold 0: in-sample adversary 0.818 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.278)",
+    "fold 1: in-sample adversary 0.829 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.428)",
+    "fold 2: in-sample adversary 0.861 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  },
+  "e2x_vaeadv_b1_l64": {
+   "eligible": false,
+   "why": [
+    "fold 0: adversary not converged (donor-disjoint excess 0.399)",
+    "fold 0: in-sample adversary 0.720 above memorisation floor 0.288 + 0.05",
+    "fold 1: adversary not converged (donor-disjoint excess 0.384)",
+    "fold 1: in-sample adversary 0.773 above memorisation floor 0.398 + 0.05",
+    "fold 2: adversary not converged (donor-disjoint excess 0.511)",
+    "fold 2: in-sample adversary 0.831 above memorisation floor 0.257 + 0.05"
+   ],
+   "adversarial": true
+  }
+ },
+ "rows": {
+  "e2_cvae_b10": {
+   "U": 0.3634590889691343,
+   "L": 0.47866748977525375,
+   "Uh": 0.4289291570666805,
+   "eligible": true,
+   "U_ci": [
+    0.33830472072074197,
+    0.37469650261962184
+   ],
+   "L_ci": [
+    0.27633170588627376,
+    0.5253104762637086
+   ]
+  },
+  "e2_cvae_b2": {
+   "U": 0.6734463067456691,
+   "L": 0.675549862889373,
+   "Uh": 0.7109117533734937,
+   "eligible": true,
+   "U_ci": [
+    0.6463216619018797,
+    0.6829252080767996
+   ],
+   "L_ci": [
+    0.5205535718641376,
+    0.7238792118368951
+   ]
+  },
+  "e2_cvae_b50": {
+   "U": 0.05543238738999834,
+   "L": 0.13540469236081007,
+   "Uh": 0.040252823753263535,
+   "eligible": false,
+   "U_ci": [
+    0.05053153655799897,
+    0.0587599283619796
+   ],
+   "L_ci": [
+    -0.1290327306704425,
+    0.18186640766143536
+   ]
+  },
+  "e2_cvaeadv_b10_l1": {
+   "U": 0.36068429093953763,
+   "L": 0.4801001312351734,
+   "Uh": 0.4247358585215071,
+   "eligible": false,
+   "U_ci": [
+    0.3360630674816697,
+    0.37213071726303204
+   ],
+   "L_ci": [
+    0.2703200765482693,
+    0.5287522120127102
+   ]
+  },
+  "e2_cvaeadv_b10_l16": {
+   "U": 0.34973776393484796,
+   "L": 0.4810532532568,
+   "Uh": 0.40952942125503816,
+   "eligible": false,
+   "U_ci": [
+    0.32473494188086727,
+    0.3620881695850844
+   ],
+   "L_ci": [
+    0.26048739102962043,
+    0.5256501395894755
+   ]
+  },
+  "e2_cvaeadv_b10_l4": {
+   "U": 0.3565379240266762,
+   "L": 0.4833838668772904,
+   "Uh": 0.4173023190421053,
+   "eligible": false,
+   "U_ci": [
+    0.331836127980183,
+    0.36822084983314335
+   ],
+   "L_ci": [
+    0.26674491649328186,
+    0.5310437690036218
+   ]
+  },
+  "e2_vae_b10": {
+   "U": 0.4206157401188171,
+   "L": 0.4876880139139917,
+   "Uh": 0.4631887246023208,
+   "eligible": true,
+   "U_ci": [
+    0.39623455001637725,
+    0.4315947454091799
+   ],
+   "L_ci": [
+    0.3703092335282901,
+    0.5296475565953576
+   ]
+  },
+  "e2_vae_b2": {
+   "U": 0.7010138468467301,
+   "L": 0.6792451843395203,
+   "Uh": 0.7240644608474054,
+   "eligible": true,
+   "U_ci": [
+    0.6696544653235732,
+    0.7089791235549613
+   ],
+   "L_ci": [
+    0.5797532368494973,
+    0.719057516981323
+   ]
+  },
+  "e2_vae_b50": {
+   "U": 0.04831621197155265,
+   "L": 0.09501622630107226,
+   "Uh": 0.03409643728264586,
+   "eligible": false,
+   "U_ci": [
+    0.0436664374345552,
+    0.05126074265400736
+   ],
+   "L_ci": [
+    -0.1753806222954452,
+    0.14488759461080478
+   ]
+  },
+  "e2_vaeadv_b10_l1": {
+   "U": 0.41768724802563706,
+   "L": 0.4891083442316017,
+   "Uh": 0.4613623480989733,
+   "eligible": false,
+   "U_ci": [
+    0.39315041849203497,
+    0.42826683612353306
+   ],
+   "L_ci": [
+    0.37117530910989605,
+    0.522328823234926
+   ]
+  },
+  "e2_vaeadv_b10_l16": {
+   "U": 0.41322291754043444,
+   "L": 0.4917441350562211,
+   "Uh": 0.463693372243269,
+   "eligible": false,
+   "U_ci": [
+    0.38732668149773797,
+    0.4242829834404467
+   ],
+   "L_ci": [
+    0.3490757855524851,
+    0.5291758769262956
+   ]
+  },
+  "e2_vaeadv_b10_l4": {
+   "U": 0.41812505987831,
+   "L": 0.4992257539112,
+   "Uh": 0.46773340051785106,
+   "eligible": false,
+   "U_ci": [
+    0.39410268694576933,
+    0.4282295831250598
+   ],
+   "L_ci": [
+    0.36063853827857173,
+    0.5434715570981209
+   ]
+  },
+  "e2_vaeplc_b10_l4": {
+   "U": 0.4214591969656369,
+   "L": 0.5032666606083569,
+   "Uh": 0.46387254984977067,
+   "eligible": false,
+   "U_ci": [
+    0.39477560494215963,
+    0.4319549304205481
+   ],
+   "L_ci": [
+    0.3820832805021634,
+    0.5406855541968146
+   ]
+  },
+  "e2x_cvae_b0p5": {
+   "U": 0.7547005741265634,
+   "L": 0.7564812849820705,
+   "Uh": 0.7676565722404076,
+   "eligible": true,
+   "U_ci": [
+    0.7181292638054292,
+    0.7628248248501039
+   ],
+   "L_ci": [
+    0.6693115063453734,
+    0.7877166548220129
+   ]
+  },
+  "e2x_cvae_b1": {
+   "U": 0.7323473784331161,
+   "L": 0.7274406978532658,
+   "Uh": 0.7549014024400099,
+   "eligible": true,
+   "U_ci": [
+    0.6984420231206121,
+    0.7406785793979557
+   ],
+   "L_ci": [
+    0.6253341096313016,
+    0.7609019701689347
+   ]
+  },
+  "e2x_cvaeadv_b1_l16": {
+   "U": 0.707361822489145,
+   "L": 0.7477598682310594,
+   "Uh": 0.7382339245245032,
+   "eligible": false,
+   "U_ci": [
+    0.6784386620101518,
+    0.716338486494117
+   ],
+   "L_ci": [
+    0.6216901613889998,
+    0.7921999152071658
+   ]
+  },
+  "e2x_cvaeadv_b1_l64": {
+   "U": 0.673410504543052,
+   "L": 0.6962693001126532,
+   "Uh": 0.7044078776505177,
+   "eligible": false,
+   "U_ci": [
+    0.6444569430474831,
+    0.6829090218576409
+   ],
+   "L_ci": [
+    0.5880194820590166,
+    0.7361066411575768
+   ]
+  },
+  "e2x_vae_b0p5": {
+   "U": 0.7548767289370967,
+   "L": 0.7686655794751566,
+   "Uh": 0.7669805735218308,
+   "eligible": true,
+   "U_ci": [
+    0.7170421468550908,
+    0.7627056985066116
+   ],
+   "L_ci": [
+    0.7021565436323101,
+    0.8031653297322531
+   ]
+  },
+  "e2x_vae_b1": {
+   "U": 0.7408726384706092,
+   "L": 0.7454873679338436,
+   "Uh": 0.7593625661995174,
+   "eligible": true,
+   "U_ci": [
+    0.7056576521179675,
+    0.7492861296481493
+   ],
+   "L_ci": [
+    0.6610465149185872,
+    0.7781973680457374
+   ]
+  },
+  "e2x_vaeadv_b1_l16": {
+   "U": 0.729094573082348,
+   "L": 0.7151354523567904,
+   "Uh": 0.7472655429660165,
+   "eligible": false,
+   "U_ci": [
+    0.6930335784792158,
+    0.7379329008530854
+   ],
+   "L_ci": [
+    0.6097179004235075,
+    0.7553090492261498
+   ]
+  },
+  "e2x_vaeadv_b1_l64": {
+   "U": 0.6839529289530665,
+   "L": 0.7018919524557258,
+   "Uh": 0.7074307474995609,
+   "eligible": false,
+   "U_ci": [
+    0.6509403239428838,
+    0.6942286783677588
+   ],
+   "L_ci": [
+    0.5897488628719545,
+    0.7402217785651921
+   ]
+  }
+ },
+ "K1": {
+  "passed": true,
+  "raw_excess": 0.38918995635098047
+ },
+ "verdict": "E2-NO-GO (resolved: Delta 0.016, upper bound 0.023 < 0.05, or leakage constraint failed: {'L_ok': True, 'delta_ok': False, 'seeds_ok': False, 'power_ok': True})",
+ "res": {
+  "scvi": {
+   "target": {
+    "U": 0.816,
+    "L": 0.8
+   },
+   "K2p": {
+    "sel": {
+     "0": "rp16",
+     "1": "rp16",
+     "2": "rp16"
+    },
+    "U": 0.6704423871133024,
+    "L": 0.8143673310686088,
+    "gap": 0.14555761288669755,
+    "fires": false,
+    "retained_fraction": 0.8186422956113323
+   },
+   "sel_floor": {
+    "0": "noise_r0.5",
+    "1": "dith32_r0.5",
+    "2": "noise_r0.5"
+   },
+   "sel_learned": {
+    "0": "e2x_vae_b0p5",
+    "1": "e2x_vae_b0p5",
+    "2": "e2x_cvae_b0p5"
+   },
+   "U_learned": 0.7546346776535886,
+   "L_learned": 0.7673267246585945,
+   "U_floor": 0.7384013767044256,
+   "L_floor": 0.8056617483670444,
+   "delta": 0.016233300949162977,
+   "delta_ci": [
+    0.009321871863490514,
+    0.023138898944314177
+   ],
+   "L_learned_ci": [
+    0.6988819942192679,
+    0.7998134247116171
+   ],
+   "seed_delta": {
+    "0": 0.015517725632643753,
+    "1": 0.011571353896013381,
+    "2": 0.021610823318831573
+   },
+   "mde80": 0.013136884137259233,
+   "mde_se": 0.0036975862836895815,
+   "gap_closed": 0.2091957338898925,
+   "delta_cluster_ci": [
+    0.0032161552907208403,
+    0.03274058917001902
+   ],
+   "conds": {
+    "L_ok": true,
+    "delta_ok": false,
+    "seeds_ok": false,
+    "power_ok": true
+   },
+   "resolved_null": true
+  },
+  "harmony": {
+   "target": {
+    "U": 0.668,
+    "L": 0.37
+   },
+   "K2p": {
+    "sel": {
+     "0": null,
+     "1": null,
+     "2": null
+    },
+    "U": null,
+    "fires": false,
+    "note": "no label-only/PCA arm feasible at this leakage in at least one fold"
+   },
+   "sel_floor": {
+    "0": "dith32_r2",
+    "1": "dith8_r1",
+    "2": "dith8_r0.5"
+   },
+   "sel_learned": {
+    "0": null,
+    "1": null,
+    "2": null
+   },
+   "conds": null,
+   "note": "infeasible: learned False, floor True, eligible learned arms 8"
+  }
+ }
+}
