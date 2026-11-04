@@ -497,7 +497,7 @@ def build(method, hp, P, sp, seed):
     if method == "vq":
         return train_vq(P, sp, hp["m"], hp["K"], seed)
     if method == "ae":
-        return train_ae(P, sp, hp["dl"], hp["lam"], hp["beta"], seed)
+        return train_ae(P, sp, hp["dl"], hp["lam"], hp["beta"], seed, rounds=hp.get("rounds", 12))
     if method == "supcon_xc":
         return train_supcon(P, sp, hp["dl"], hp["tau"], seed)
     raise ValueError(method)
@@ -539,6 +539,17 @@ P3 = (
     + [("pca", dict(d=d)) for d in (4, 16, 64)] + [("randproj", dict(d=d)) for d in (4, 16, 64)]
     + DITHER + RECON + AE
 )
+# protocol 4 (audit follow-up): trimmed p3 for the dinov2-L cross-fit and the phikon-v2 holdout; F-02 convergence grid (lam 30/100/300, 3x encoder steps)
+P4 = (
+    [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0)), ("lda", {})] + [("lda_pca", dict(d=d)) for d in (4, 8, 16, 32, 64)]
+    + [("pca", dict(d=d)) for d in (4, 16, 64)] + [("randproj", dict(d=d)) for d in (4, 16, 64)]
+    + [("dither", dict(base="pca", d=32, r=r)) for r in (0.5, 1.0, 2.0)]
+    + [("dither", dict(base="lda_pca", d=32, r=1.0))] + [("dither", dict(base="randproj", d=32, r=r)) for r in (1.0, 2.0)]
+    + [("dither", dict(base="ae", dl=32, beta=1e-3, r=r)) for r in (0.5, 1.0)]
+    + RECON + AE
+)
+CONTROLS_MIN = [("ctrl_const", {}), ("ctrl_shuffle_orth", dict(rep=0))]
+F02 = [("ae", dict(dl=32, lam=l, beta=1e-3, rounds=36)) for l in (30.0, 100.0, 300.0)]
 P2 = (
     [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0))] + LDA_ARMS
     + [("pca", dict(d=d)) for d in (4, 16, 64)] + [("randproj", dict(d=d)) for d in (4, 16, 64)]
