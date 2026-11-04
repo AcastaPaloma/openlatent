@@ -131,3 +131,52 @@ def trim_ragged(rag, spans, stride=320, min_frames=10):
     idx = torch.as_tensor(np.concatenate(keep), device=rag.flat.device)
     print(f"trim: {n_trim}/{rag.n} clips trimmed, frames {rag.flat.shape[0]} -> {len(idx)}", flush=True)
     return Ragged(rag.flat[idx], np.concatenate([[0], np.cumsum(lens)]), rag.dev)
+
+
+def fit_lda_proj(P, y, tr_idx, val_idx, k, ncls_present, alphas=(0.05, 0.2, 0.5)):
+    """Label-supervised linear projection (shrinkage LDA) of pooled features P [N,D] to k dims.
+    LDA has at most C-1 informative directions (C = emotions present in y[tr_idx]); extra dims (k > C-1) are filled with the top
+    principal directions of the residual after projecting the LDA subspace out.  Shrinkage chosen on val_idx by nearest-class-mean
+    UAR in the projected space.  Returns (mu, sd, W [D,k])."""
+    P = P.double()
+    Xtr = P[tr_idx]
+    mu, sd = Xtr.mean(0), Xtr.std(0) + 1e-5
+    X = (P - mu) / sd
+    ytr = torch.as_tensor(y[tr_idx], device=P.device)
+    classes = torch.unique(ytr)
+    C = len(classes)
+    Xt = X[tr_idx]
+    m_c = torch.stack([Xt[ytr == c].mean(0) for c in classes])
+    n_c = torch.stack([(ytr == c).sum() for c in classes]).double()
+    m = Xt.mean(0)
+    R = Xt - m_c[torch.searchsorted(classes, ytr)]
+    Sw0 = R.T @ R / len(ytr)
+    Sb = ((m_c - m).T * n_c) @ (m_c - m) / len(ytr)
+    best = None
+    for a in alphas:
+        Sw = (1 - a) * Sw0 + a * (torch.trace(Sw0) / Sw0.shape[0]) * torch.eye(Sw0.shape[0], dtype=torch.float64, device=P.device)
+        ev, U = torch.linalg.eigh(Sw)
+        Wh = U @ torch.diag(ev.rsqrt()) @ U.T
+        e2, V = torch.linalg.eigh(Wh @ Sb @ Wh)
+        order = torch.argsort(e2, descending=True)[: C - 1]
+        W = Wh @ V[:, order]  # [D, C-1]
+        W = W / W.norm(dim=0, keepdim=True)
+        if k > C - 1:  # residual PCA directions
+            Q, _ = torch.linalg.qr(W)
+            Xr = Xt - (Xt @ Q) @ Q.T
+            cov = Xr.T @ Xr / len(Xr)
+            e3, U3 = torch.linalg.eigh(cov)
+            W = torch.cat([W, U3[:, -(k - (C - 1)):].flip(1)], 1)
+        elif k < C - 1:
+            W = W[:, :k]
+        Z = X @ W
+        Zc = torch.stack([Z[tr_idx][ytr == c].mean(0) for c in classes])
+        yv = torch.as_tensor(y[val_idx], device=P.device)
+        keep = torch.isin(yv, classes)
+        d = torch.cdist(Z[val_idx][keep], Zc)
+        pred = classes[d.argmin(1)]
+        rec = [float((pred[yv[keep] == c] == c).double().mean()) for c in classes]
+        sc = sum(rec) / len(rec)
+        if best is None or sc > best[0]:
+            best = (sc, a, W)
+    return mu.float(), sd.float(), best[2].float(), best[1], best[0]

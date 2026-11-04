@@ -58,6 +58,26 @@ def emo_uar_curve(res, kind):
     return rec.mean(1), float(ptr.mean())
 
 
+def emo_subset_curve(res, kind, classes):
+    """mean per-class recall over `classes` (probe trained on all six emotions on the released z), bootstrap over actors"""
+    C = np.zeros((91, 6, 6))
+    for a, m in res["emo"][kind].items():
+        C[int(a) - 1001] = np.array(m)
+    tot = np.einsum("ba,acd->bcd", MULT, C)
+    rec = np.diagonal(tot, axis1=1, axis2=2) / np.maximum(tot.sum(2), 1)
+    pt = C.sum(0); ptr = np.diag(pt) / np.maximum(pt.sum(1), 1)
+    return rec[:, classes].mean(1), float(ptr[classes].mean())
+
+
+def emo_subset(runs, classes):
+    best = None
+    for k in kinds_present(runs[0], "emo"):
+        b, p, _ = stat_over_seeds(runs, lambda r: emo_subset_curve(r, k, classes))
+        if best is None or p > best[1]:
+            best = (b, p, k)
+    return dict(point=best[1], ci=ci(best[0]), kind=best[2])
+
+
 def attr_ba(res, name, kind, ncls):
     C = np.zeros((91, ncls, ncls))
     for a, m in res["secrets"][name][kind].items():
@@ -124,6 +144,8 @@ def summarize(runs, raw_runs):
     # utility
     b, p, _ = stat_over_seeds(runs, lambda r: best_emo(r)[:2])
     S["emo_uar"] = dict(point=p, ci=ci(b), per_seed=[best_emo(r)[1] for r in runs], best_kind=[best_emo(r)[2] for r in runs])
+    S["emo_recall_trained_classes_ANG_HAP_NEU_SAD"] = emo_subset(runs, [0, 3, 4, 5])
+    S["emo_recall_DIS_FEA"] = emo_subset(runs, [1, 2])
     S["emo_uar_by_kind"] = {k: float(np.mean([emo_uar_curve(r, k)[1] for r in runs])) for k in kinds_present(runs[0], "emo")}
     if "head" in runs[0]["emo"]:
         S["emo_uar_head"] = float(np.mean([emo_uar_curve(r, "head")[1] for r in runs]))

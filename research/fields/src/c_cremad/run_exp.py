@@ -46,7 +46,7 @@ def main():
     need4 = a.method == "learned"
     t_load = time.time()
     x0 = None
-    if a.method in ("raw", "mean", "smooth", "pca", "leace_tr", "leace_oracle"):
+    if a.method in ("raw", "mean", "smooth", "pca", "leace_tr", "leace_oracle", "lda_emo"):
         x0 = baselines.build_x0(frames, feats.offsets)
     rag4 = None
     spans = np.load(data.FEAT_ROOT / "handcrafted" / "vad_span.npy") if a.trim else None
@@ -57,6 +57,7 @@ def main():
         if a.trim:
             rag4 = baselines.trim_ragged(rag4, spans)
     stats = feats.stats() if a.method == "layers" else None
+    lda_pool = baselines.rep_from_ragged(x0, "x0") if a.method == "lda_emo" else None
     feat_rep = None
     if a.method == "feat":
         hc = data.FEAT_ROOT / "handcrafted"
@@ -97,6 +98,13 @@ def main():
                 A, b, r = baselines.fit_leace(x0, clips, lab, 91)
                 info["leace_rank"] = r
                 rep = baselines.rep_from_ragged(baselines.affine(x0, A, b), a.method)
+            elif a.method == "lda_emo":
+                te = cfg.get("train_emotions")
+                trc = S["tr"] if te is None else S["tr"][np.isin(ctx.emo[S["tr"]], te)]
+                P = lda_pool.pooled
+                mu_, sd_, W_, alpha_, vs_ = baselines.fit_lda_proj(P, ctx.emo, trc, S["val"][np.isin(ctx.emo[S["val"]], te)] if te is not None else S["val"], cfg.get("k", 5), None)
+                info.update(lda_alpha=alpha_, lda_val_ncm_uar=vs_)
+                rep = Rep(((P - mu_) / sd_) @ W_, None, "lda_emo")
             elif a.method == "feat":
                 rep = feat_rep
             elif a.method == "ctrl_constant":

@@ -188,6 +188,8 @@ def train_encoder(cfg, rag4, emo, actor_idx, train_clips, val_clips, seed, log=p
     E.release = release
     emo_t = torch.as_tensor(emo, device=DEV)
     train_clips = np.asarray(train_clips)
+    if cfg.get("train_emotions") is not None:  # held-out-emotion protocol: the encoder only ever sees these emotion labels
+        train_clips = train_clips[np.isin(emo[train_clips], cfg["train_emotions"])]
     # contiguous adversary labels over the encoder-train actors only
     tr_actors = np.unique(actor_idx[train_clips])
     amap = {a: i for i, a in enumerate(tr_actors)}
