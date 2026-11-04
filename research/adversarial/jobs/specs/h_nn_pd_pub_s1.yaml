@@ -1,5 +1,5 @@
 name: h_nn_pd_pub_s1
 priority: 14
-cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm pd_pub --tag _s1 --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/runs/h_pd_pub_s1/pd_pub""_s1.npz"
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm pd_pub --tag _s1 --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/runs/h_pd_pub_s1/pd_pub_s1.npz"
 hf_path: runs/h_nn_pd_pub_s1
 hf_allow: ["*.json", "*.log", "*.md"]
