@@ -136,3 +136,13 @@ State of play at this moment: stage-0 floor jobs (CPU) and the PrivDiffuser R0 /
 | PD HAR accuracy | 96.84% | 96.32% | 0.52 | yes |
 | PD gender accuracy | 49.87% | 49.96% | 0.09 | yes |
 Also: PD HAR F1 96.25 (published 95.69), raw HAR F1 96.59 (96.59), gender balanced accuracy raw 92.59 / PD 49.04; the majority-class share of the test windows is 56.99% male, so the PD gender number (49.87%) is BELOW the majority baseline and the shipped attacker predicts male for 55.8% of PD windows. Raw-window numbers reproduce the paper to the second decimal, which also validates the data, the loader and the evaluation models. **R0 (PD) PASSES.** Note for the record: the shipped MotionSense evaluators are MLPs on the flat 256-d window (the paper text says CNN) and PD's train trials are the checkpoint's training data.
+
+### 5.2 R0-AAE gate (job `h_r0_aae`, exit 0, 574 s, 18:22Z; PD-loader windows (60,059 train / 13,344 test), torch re-implementation of the paper's `Estimator` CNN trained on RAW train windows, 3 runs, frozen at test; shipped `msda` / `rep` weights, decoder output)
+| quantity (window-level accuracy, mean +- sd over 3 runs) | ours | published (repo notebooks, `msda_table2_(I)id(trial)`) | |diff| | pass rule |
+|---|---:|---:|---:|---|
+| raw-trained ID CNN on RAW test windows | 95.03 +- 0.64 | 94.9-96.2 (5 runs) | within | 95.5 +- 3.0: yes |
+| ... on `msda` release (identity claim) | **4.07 +- 0.98** | **6.98** | 2.91 | 6.98 +- 3.0: yes (borderline; ours is LOWER than published, i.e. the claim reproduces) |
+| ... on `rep` release | 14.55 +- 0.13 | 15.92 | 1.37 | 15.92 +- 4.0: yes |
+| ... on 10 Hz / 5 Hz resampling (descriptive) | 20.62 +- 0.68 / 10.81 +- 1.49 | 31.08 / 13.53 | 10.5 / 2.7 | not in rule |
+**R0-AAE PASSES** (all three rule quantities inside tolerance). Chance for 24 classes is 4.17%, so `msda` sits at chance under a frozen raw-trained attacker.
+Protocol finding (read from the repo's activity notebook `msda_table2_(I)act(subject)` cells 6 and 9, not from the paper PDF): the AAE's ">92% activity" is measured with an activity CNN RETRAINED on the anonymised training windows (93.16% on its first run, subject split with test subjects [4, 9, 11, 21]), whereas its "<7% identity" is measured with an ID CNN trained on RAW data and frozen. **The published claim therefore pairs a retrained utility classifier with a frozen privacy attacker.** For reference, the same frozen-vs-retrained gap exists on the utility side in our R0 run: a raw-trained activity CNN scores only 16.68 +- 2.08% on `msda` windows (raw 98.77 +- 0.16%, `rep` 78.70 +- 4.86%), i.e. the release is unreadable to a frozen model in both directions. The audit question is what a RETRAINED identity attacker recovers (section 5.5, after the margin amendment).
