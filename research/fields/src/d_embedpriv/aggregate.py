@@ -179,7 +179,7 @@ def main():
     for arm in sorted(byarm, key=lambda x: (byarm[x][0]["family"], -byarm[x][0]["dim"], x)):
         rs = byarm[arm]
         print(f"| {arm} | {rs[0]['dim']} | {len(rs)} | {np.mean([A.retention(r, 'dev') for r in rs]):.3f} | {np.mean([A.retention(r) for r in rs]):.3f} | "
-              f"{np.mean([worst(r, 'V', 'rare') for r in rs]):.3f} | {np.mean([worst(r, 'C', 'rare') for r in rs]):.3f} | {np.mean([worst(r, 'C', 'mid') for r in rs]):.3f} |")
+              f"{np.mean([worst(r, 'V', P) for r in rs]):.3f} | {np.mean([worst(r, 'C', P) for r in rs]):.3f} | {np.mean([worst(r, 'C', S2) for r in rs]):.3f} |")
     print()
 
     # ---- selection at each tau
