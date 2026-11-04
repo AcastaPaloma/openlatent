@@ -438,3 +438,339 @@ Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.50; ctrl_noi
 | midnight_clsmean | tolkach_esca | holdout | adv_retrain | adv_retrain__dl64_lam3.0 | no |
 | midnight_clsmean | tolkach_esca | holdout | supcon_xc | supcon_xc__dl64_tau0.1 | no |
 | midnight_clsmean | tolkach_esca | holdout | ae | ae__beta0.001_dl32_lam10.0 | no |
+
+
+## ROUND 2 (2026-11-04 ~13:30Z): power audit, 3 seeds, cross-fit and dither controls
+
+Written after reading RANKING_R2.md. Everything in this section is on the SAME sealed test units in every seed (`RandomState(1234)`), so "3 seeds" replicate training noise
+(adapter init, A/B/V draw), not test-unit noise; bootstrap intervals and MDEs below are conditional on that fixed test set. Cross-fit (below) is the replication that fixes this.
+
+### Corrections to my earlier seed-0 write-up (made because they change the lead)
+
+* The seed-0 "leakage-matched" gains (+0.083 midnight/Tolkach, +0.164 midnight/TCGA) were measured against the **LDA family only** (plain LDA, `lda_pca__d8`), a sparse and weak comparator at that leakage.
+  Against the lower envelope of **all** inductive floors (adding per-centre whitening, PCA, random projection) the same picks are **+0.021 [+0.002, +0.046]** (midnight/Tolkach, seed 0; the best floor there is `centre_whiten`)
+  and **+0.007 [-0.081, +0.097]** (midnight/TCGA, seed 0; `centre_whiten` again). The per-centre-whitening contrast was already in my seed-0 exploratory table (columns "best label-free ref") and I summarised the LDA-family column only. That was a selective read.
+* **Confirmed:** midnight/TCGA seed 1, `ae__beta0.001_dl32_lam10.0` (L 0.32, held 0.778): +0.011 against plain LDA (0.767), -0.014 [-0.116, +0.084] against the full floor envelope. The +0.164 does not reproduce.
+* The two AE configurations were picked after looking at the seed-0 test numbers (post hoc, best of 10); the V-selected AE differs from them in 5 of 12 cell-seeds.
+
+### Power audit (H2-016 step 1; paired bootstrap over the sealed test units, MDE80 = 2.8 x SE of the paired difference)
+
+Held-class utility difference of each ae configuration vs the best inductive floor with L <= L_AE + 0.05, all ae configs x 3 seeds per cell:
+
+| cell | sealed test units / held-class cases | SE median [min, max] | **MDE80 median [min, max]** | median half-width of the 95% CI of L_worst (matching tolerance is 0.05) |
+|---|---|---|---|---|
+| midnight / TCGA | 48 units, 24 held-class cases | 0.049 [0.024, 0.076] | **0.138 [0.068, 0.213]** | 0.122 |
+| dinov2-L / TCGA | 48, 24 | 0.033 [0.014, 0.076] | **0.093 [0.039, 0.211]** | 0.108 |
+| midnight / Tolkach | 12 cases | 0.019 [0.003, 0.037] | **0.052 [0.008, 0.103]** | 0.224 |
+| dinov2-L / Tolkach | 12 cases | 0.022 [0.010, 0.045] | **0.061 [0.029, 0.125]** | 0.264 |
+
+Reading: the TCGA cells cannot detect a held-class difference smaller than about 0.09-0.14 (a +0.04 criterion is unresolvable there), the Tolkach cells about 0.05-0.06 (borderline for +0.04), and L itself is resolved only to +-0.11 (TCGA) / +-0.22-0.26 (Tolkach), five times the 0.05 matching tolerance.
+The Tolkach intervals are narrow partly because held-class accuracy is near the ceiling (midnight 0.97-1.00). These SEs are a lower bound on the total error (test-unit noise only; no training noise, no selection of the comparator by point estimate on C).
+The earlier statements "0 of 24" and "+0.083" are therefore both inside or near the undetectable zone for TCGA.
+
+### 3-seed table, V-selected families vs the matched LDA arm AND vs the floor envelope (seed-pooled V selection, MDE next to every difference)
+
+
+#### dinov2L_clsmean / tcga / holdout  (seeds [0, 1, 2]; centre chance 0.250, floor 0.250; seen classes [0, 1], held-out classes [2, 3])
+
+
+References and V-selected learned configurations (absolute numbers on sealed C):
+
+| config | dim | rate (bits) | seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | 2048 | nan | 0.963 | 0.617 [0.525, 0.698] | 0.627 | 1.00 [1.00, 1.00] | 1.00 | 1.000 [1.000, 1.000] | 1.000 |
+| centre_whiten | 64 | nan | 0.881 | 0.594 [0.509, 0.674] | 0.566 | 0.05 [0.02, 0.09] | 0.05 | 0.397 [0.381, 0.413] | 0.383 |
+| leace__rho1.0 | 2048 | nan | 0.961 | 0.626 [0.529, 0.714] | 0.643 | 0.75 [0.68, 0.81] | 0.75 | 0.969 [0.963, 0.974] | 0.975 |
+| lda | 1 | nan | 0.976 | 0.554 [0.423, 0.679] | 0.589 | 0.07 [0.06, 0.17] | 0.08 | 0.049 [0.044, 0.055] | 0.039 |
+| lda_pca__d4 | 4 | nan | 0.977 | 0.566 [0.480, 0.646] | 0.594 | 0.08 [0.04, 0.18] | 0.10 | 0.302 [0.285, 0.323] | 0.264 |
+| lda_pca__d8 | 8 | nan | 0.976 | 0.602 [0.512, 0.686] | 0.607 | 0.26 [0.19, 0.36] | 0.27 | 0.556 [0.535, 0.578] | 0.518 |
+| lda_pca__d16 | 16 | nan | 0.970 | 0.650 [0.551, 0.738] | 0.647 | 0.51 [0.44, 0.61] | 0.52 | 0.704 [0.691, 0.718] | 0.689 |
+| lda_pca__d32 | 32 | nan | 0.973 | 0.656 [0.566, 0.741] | 0.651 | 0.80 [0.74, 0.87] | 0.81 | 0.709 [0.697, 0.719] | 0.703 |
+| lda_pca__d64 | 64 | nan | 0.962 | 0.615 [0.521, 0.703] | 0.655 | 0.85 [0.80, 0.91] | 0.85 | 0.629 [0.614, 0.644] | 0.629 |
+| lda_pca__d128 | 128 | nan | 0.953 | 0.618 [0.523, 0.704] | 0.659 | 0.88 [0.85, 0.92] | 0.88 | 0.542 [0.517, 0.567] | 0.546 |
+| pca__d4 | 4 | nan | 0.899 | 0.571 [0.506, 0.636] | 0.589 | 0.09 [0.03, 0.20] | 0.09 | 0.417 [0.393, 0.439] | 0.370 |
+| pca__d16 | 16 | nan | 0.931 | 0.662 [0.562, 0.749] | 0.654 | 0.51 [0.44, 0.60] | 0.52 | 0.706 [0.692, 0.719] | 0.694 |
+| pca__d64 | 64 | nan | 0.914 | 0.611 [0.516, 0.698] | 0.656 | 0.86 [0.81, 0.92] | 0.87 | 0.617 [0.601, 0.634] | 0.617 |
+| vib__beta0.01_dl4 | 4 | 9.8 | 0.968 | 0.531 [0.428, 0.626] | 0.546 | 0.05 [0.03, 0.12] | 0.07 | 0.054 [0.050, 0.059] | 0.042 |
+| vq__K16_m4 | 64 | 16.0 | 0.957 | 0.588 [0.502, 0.674] | 0.518 | 0.08 [0.05, 0.14] | 0.09 | 0.089 [0.083, 0.097] | 0.076 |
+| dann__dl64_lam3.0 | 64 | nan | 0.945 | 0.622 [0.550, 0.690] | 0.576 | 0.59 [0.50, 0.68] | 0.59 | 0.387 [0.370, 0.403] | 0.349 |
+| adv_retrain__dl64_lam1.0 | 64 | nan | 0.969 | 0.622 [0.541, 0.696] | 0.593 | 0.46 [0.40, 0.52] | 0.46 | 0.320 [0.308, 0.331] | 0.310 |
+| supcon_xc__dl64_tau0.1 | 64 | nan | 0.968 | 0.619 [0.542, 0.686] | 0.612 | 0.35 [0.29, 0.43] | 0.36 | 0.248 [0.226, 0.273] | 0.244 |
+| ae__beta0.01_dl32_lam0.0 | 32 | 23.4 | 0.898 | 0.653 [0.567, 0.729] | 0.639 | 0.48 [0.40, 0.55] | 0.48 | 0.255 [0.243, 0.270] | 0.229 |
+
+Per family, configuration selected on V (L_V within +0.05 of the matched LDA arm; then max V held-class acc):
+
+| family | config | matched LDA | Δ held-class acc vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |
+|---|---|---|---|---|---|---|---|---|
+| vib | vib__beta0.01_dl4 | lda_pca__d4 | -0.036 [-0.094, +0.028] (MDE 0.084) | -0.248 [-0.266, -0.231] (MDE 0.025) | -0.03 | no | -0.064 [-0.149, +0.028] (MDE 0.129) vs centre_whiten, n_near=4 | no |
+| vq | vq__K16_m4 | lda_pca__d64 | -0.027 [-0.113, +0.061] (MDE 0.127) | -0.539 [-0.557, -0.520] (MDE 0.028) | -0.77 | no | -0.006 [-0.089, +0.085] (MDE 0.120) vs centre_whiten, n_near=5 | no |
+| dann | dann__dl64_lam3.0 | lda_pca__d64 | +0.007 [-0.055, +0.074] (MDE 0.093) | -0.242 [-0.264, -0.218] (MDE 0.033) | -0.26 | no | -0.040 [-0.094, +0.016] (MDE 0.081) vs pca__d16, n_near=0 | no |
+| adv_retrain | adv_retrain__dl64_lam1.0 | lda_pca__d64 | +0.007 [-0.042, +0.057] (MDE 0.071) | -0.308 [-0.327, -0.289] (MDE 0.027) | -0.39 | no | -0.001 [-0.075, +0.063] (MDE 0.099) vs randproj__d16, n_near=0 | no |
+| supcon_xc | supcon_xc__dl64_tau0.1 | lda_pca__d64 | +0.004 [-0.028, +0.036] (MDE 0.046) | -0.381 [-0.408, -0.348] (MDE 0.043) | -0.49 | no | -0.005 [-0.072, +0.057] (MDE 0.089) vs randproj__d16, n_near=1 | no |
+| ae | ae__beta0.01_dl32_lam0.0 | lda_pca__d32 | -0.003 [-0.028, +0.024] (MDE 0.037) | -0.454 [-0.468, -0.439] (MDE 0.021) | -0.33 | no | -0.010 [-0.028, +0.010] (MDE 0.027) vs pca__d16, n_near=2 | no |
+
+Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.25; ctrl_noise 0.26; ctrl_shuffle_orth__rep0 0.27; ctrl_shuffle_orth__rep1 0.24; ctrl_shuffle_orth__rep2 0.27
+
+#### dinov2L_clsmean / tolkach_esca / holdout  (seeds [0, 1, 2]; centre chance 0.500, floor 0.500; seen classes [0, 1, 2], held-out classes [3, 4, 5])
+
+
+References and V-selected learned configurations (absolute numbers on sealed C):
+
+| config | dim | rate (bits) | seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | 2048 | nan | 0.945 | 0.954 [0.939, 0.975] | 0.966 | 1.00 [1.00, 1.00] | 1.00 | 1.000 [1.000, 1.000] | 1.000 |
+| centre_whiten | 64 | nan | 0.880 | 0.860 [0.818, 0.895] | 0.880 | 0.03 [0.02, 0.11] | 0.03 | 0.460 [0.386, 0.523] | 0.462 |
+| leace__rho1.0 | 2048 | nan | 0.938 | 0.952 [0.938, 0.973] | 0.966 | 0.91 [0.86, 0.96] | 0.91 | 0.984 [0.980, 0.988] | 0.983 |
+| lda | 2 | nan | 0.976 | 0.562 [0.440, 0.607] | 0.521 | 0.06 [-0.06, 0.34] | 0.06 | 0.114 [0.098, 0.139] | 0.062 |
+| lda_pca__d4 | 4 | nan | 0.965 | 0.635 [0.546, 0.699] | 0.638 | 0.06 [-0.02, 0.40] | 0.06 | 0.312 [0.261, 0.395] | 0.239 |
+| lda_pca__d8 | 8 | nan | 0.956 | 0.816 [0.735, 0.884] | 0.806 | 0.08 [-0.01, 0.41] | 0.08 | 0.559 [0.518, 0.612] | 0.490 |
+| lda_pca__d16 | 16 | nan | 0.961 | 0.892 [0.850, 0.930] | 0.880 | 0.11 [-0.03, 0.30] | 0.13 | 0.748 [0.729, 0.773] | 0.711 |
+| lda_pca__d32 | 32 | nan | 0.961 | 0.910 [0.879, 0.931] | 0.915 | 0.25 [0.12, 0.44] | 0.27 | 0.809 [0.775, 0.838] | 0.804 |
+| lda_pca__d64 | 64 | nan | 0.952 | 0.919 [0.905, 0.929] | 0.932 | 0.68 [0.55, 0.78] | 0.69 | 0.791 [0.724, 0.833] | 0.797 |
+| lda_pca__d128 | 128 | nan | 0.942 | 0.919 [0.899, 0.939] | 0.951 | 0.91 [0.87, 0.95] | 0.91 | 0.707 [0.616, 0.774] | 0.722 |
+| pca__d4 | 4 | nan | 0.854 | 0.742 [0.625, 0.825] | 0.759 | 0.09 [-0.01, 0.44] | 0.09 | 0.422 [0.365, 0.493] | 0.339 |
+| pca__d16 | 16 | nan | 0.941 | 0.888 [0.846, 0.924] | 0.883 | 0.10 [0.01, 0.31] | 0.10 | 0.745 [0.723, 0.770] | 0.718 |
+| pca__d64 | 64 | nan | 0.915 | 0.910 [0.899, 0.923] | 0.928 | 0.70 [0.57, 0.79] | 0.70 | 0.762 [0.692, 0.812] | 0.772 |
+| vib__beta0.001_dl32 | 32 | 27.0 | 0.972 | 0.579 [0.488, 0.633] | 0.591 | 0.04 [-0.07, 0.33] | 0.04 | 0.088 [0.078, 0.100] | 0.048 |
+| vq__K64_m8 | 128 | 48.0 | 0.969 | 0.653 [0.547, 0.728] | 0.685 | 0.02 [-0.06, 0.28] | 0.02 | 0.181 [0.156, 0.222] | 0.125 |
+| dann__dl64_lam3.0 | 64 | nan | 0.939 | 0.846 [0.771, 0.900] | 0.844 | 0.15 [0.03, 0.31] | 0.15 | 0.425 [0.383, 0.490] | 0.360 |
+| adv_retrain__dl64_lam3.0 | 64 | nan | 0.959 | 0.891 [0.872, 0.910] | 0.908 | 0.15 [0.05, 0.38] | 0.15 | 0.511 [0.483, 0.552] | 0.482 |
+| supcon_xc__dl64_tau0.1 | 64 | nan | 0.974 | 0.872 [0.840, 0.893] | 0.888 | 0.26 [0.13, 0.47] | 0.27 | 0.349 [0.314, 0.404] | 0.340 |
+| ae__beta0.001_dl32_lam0.0 | 32 | 78.0 | 0.934 | 0.906 [0.875, 0.928] | 0.906 | 0.30 [0.15, 0.44] | 0.31 | 0.772 [0.748, 0.791] | 0.747 |
+
+Per family, configuration selected on V (L_V within +0.05 of the matched LDA arm; then max V held-class acc):
+
+| family | config | matched LDA | Δ held-class acc vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |
+|---|---|---|---|---|---|---|---|---|
+| vib | vib__beta0.001_dl32 | lda_pca__d32 | -0.331 [-0.417, -0.297] (MDE 0.074) | -0.722 [-0.759, -0.677] (MDE 0.056) | -0.21 | no | -0.281 [-0.360, -0.219] (MDE 0.097) vs centre_whiten, n_near=6 | no |
+| vq | vq__K64_m8 | lda_pca__d128 | -0.267 [-0.369, -0.194] (MDE 0.121) | -0.526 [-0.615, -0.394] (MDE 0.159) | -0.89 | no | -0.207 [-0.299, -0.144] (MDE 0.104) vs centre_whiten, n_near=4 | no |
+| dann | dann__dl64_lam3.0 | lda_pca__d64 | -0.073 [-0.149, -0.018] (MDE 0.093) | -0.366 [-0.439, -0.251] (MDE 0.142) | -0.53 | no | -0.046 [-0.085, -0.016] (MDE 0.051) vs lda_pca__d16, n_near=1 | no |
+| adv_retrain | adv_retrain__dl64_lam3.0 | lda_pca__d64 | -0.028 [-0.049, -0.007] (MDE 0.029) | -0.281 [-0.335, -0.185] (MDE 0.112) | -0.53 | no | -0.001 [-0.024, +0.025] (MDE 0.035) vs lda_pca__d16, n_near=2 | no |
+| supcon_xc | supcon_xc__dl64_tau0.1 | lda_pca__d64 | -0.047 [-0.079, -0.030] (MDE 0.034) | -0.442 [-0.503, -0.338] (MDE 0.121) | -0.42 | no | -0.038 [-0.054, -0.027] (MDE 0.023) vs lda_pca__d32, n_near=2 | no |
+| ae | ae__beta0.001_dl32_lam0.0 | lda_pca__d32 | -0.004 [-0.016, +0.006] (MDE 0.017) | -0.038 [-0.051, -0.025] (MDE 0.018) | +0.05 | no | -0.004 [-0.016, +0.006] (MDE 0.017) vs lda_pca__d32, n_near=0 | no |
+
+Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.50; ctrl_noise 0.51; ctrl_shuffle_orth__rep0 0.54; ctrl_shuffle_orth__rep1 0.55; ctrl_shuffle_orth__rep2 0.49
+
+#### midnight_clsmean / tcga / holdout  (seeds [0, 1, 2]; centre chance 0.250, floor 0.250; seen classes [0, 1], held-out classes [2, 3])
+
+
+References and V-selected learned configurations (absolute numbers on sealed C):
+
+| config | dim | rate (bits) | seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | 3072 | nan | 0.970 | 0.872 [0.744, 0.965] | 0.778 | 1.00 [1.00, 1.00] | 1.00 | 1.000 [1.000, 1.000] | 1.000 |
+| centre_whiten | 64 | nan | 0.931 | 0.791 [0.696, 0.859] | 0.652 | 0.18 [0.13, 0.23] | 0.19 | 0.291 [0.267, 0.315] | 0.312 |
+| leace__rho1.0 | 3072 | nan | 0.972 | 0.878 [0.748, 0.972] | 0.774 | 0.83 [0.77, 0.89] | 0.83 | 0.992 [0.985, 0.997] | 0.997 |
+| lda | 1 | nan | 0.970 | 0.688 [0.592, 0.777] | 0.545 | 0.02 [0.01, 0.16] | 0.03 | 0.099 [0.086, 0.111] | 0.074 |
+| lda_pca__d4 | 4 | nan | 0.979 | 0.634 [0.535, 0.719] | 0.546 | 0.30 [0.20, 0.46] | 0.30 | 0.327 [0.278, 0.379] | 0.285 |
+| lda_pca__d8 | 8 | nan | 0.972 | 0.650 [0.564, 0.738] | 0.626 | 0.33 [0.24, 0.45] | 0.35 | 0.414 [0.370, 0.462] | 0.376 |
+| lda_pca__d16 | 16 | nan | 0.973 | 0.749 [0.631, 0.854] | 0.677 | 0.48 [0.38, 0.59] | 0.50 | 0.484 [0.439, 0.530] | 0.487 |
+| lda_pca__d32 | 32 | nan | 0.959 | 0.857 [0.774, 0.930] | 0.698 | 0.59 [0.50, 0.71] | 0.62 | 0.600 [0.555, 0.651] | 0.626 |
+| lda_pca__d64 | 64 | nan | 0.948 | 0.844 [0.726, 0.933] | 0.731 | 0.67 [0.58, 0.78] | 0.67 | 0.704 [0.661, 0.746] | 0.733 |
+| lda_pca__d128 | 128 | nan | 0.946 | 0.847 [0.740, 0.936] | 0.758 | 0.86 [0.80, 0.93] | 0.86 | 0.722 [0.674, 0.767] | 0.777 |
+| pca__d4 | 4 | nan | 0.958 | 0.624 [0.537, 0.702] | 0.557 | 0.38 [0.27, 0.51] | 0.38 | 0.325 [0.276, 0.375] | 0.293 |
+| pca__d16 | 16 | nan | 0.960 | 0.719 [0.596, 0.826] | 0.671 | 0.46 [0.37, 0.59] | 0.48 | 0.480 [0.438, 0.524] | 0.487 |
+| pca__d64 | 64 | nan | 0.927 | 0.836 [0.720, 0.926] | 0.730 | 0.69 [0.60, 0.79] | 0.69 | 0.694 [0.650, 0.736] | 0.727 |
+| vib__beta0.001_dl32 | 32 | 18.6 | 0.972 | 0.654 [0.580, 0.719] | 0.591 | 0.05 [0.01, 0.15] | 0.07 | 0.080 [0.071, 0.088] | 0.063 |
+| vq__K16_m4 | 64 | 16.0 | 0.976 | 0.675 [0.580, 0.767] | 0.541 | 0.09 [0.04, 0.21] | 0.09 | 0.119 [0.097, 0.142] | 0.098 |
+| dann__dl64_lam3.0 | 64 | nan | 0.950 | 0.675 [0.573, 0.766] | 0.603 | 0.52 [0.42, 0.65] | 0.52 | 0.331 [0.292, 0.373] | 0.338 |
+| adv_retrain__dl64_lam3.0 | 64 | nan | 0.962 | 0.803 [0.711, 0.881] | 0.723 | 0.39 [0.30, 0.50] | 0.41 | 0.492 [0.444, 0.546] | 0.481 |
+| supcon_xc__dl64_tau0.1 | 64 | nan | 0.983 | 0.778 [0.687, 0.859] | 0.690 | 0.28 [0.21, 0.39] | 0.32 | 0.372 [0.315, 0.431] | 0.402 |
+| ae__beta0.001_dl32_lam0.0 | 32 | 70.7 | 0.944 | 0.802 [0.700, 0.893] | 0.683 | 0.58 [0.51, 0.67] | 0.59 | 0.588 [0.546, 0.633] | 0.622 |
+
+Per family, configuration selected on V (L_V within +0.05 of the matched LDA arm; then max V held-class acc):
+
+| family | config | matched LDA | Δ held-class acc vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |
+|---|---|---|---|---|---|---|---|---|
+| vib | vib__beta0.001_dl32 | lda_pca__d32 | -0.204 [-0.275, -0.122] (MDE 0.109) | -0.520 [-0.567, -0.477] (MDE 0.064) | -0.54 | no | -0.034 [-0.103, +0.045] (MDE 0.108) vs lda, n_near=1 | no |
+| vq | vq__K16_m4 | lda_pca__d64 | -0.169 [-0.269, -0.060] (MDE 0.154) | -0.585 [-0.625, -0.543] (MDE 0.060) | -0.59 | no | -0.012 [-0.084, +0.078] (MDE 0.119) vs lda, n_near=0 | no |
+| dann | dann__dl64_lam3.0 | lda_pca__d64 | -0.169 [-0.252, -0.084] (MDE 0.125) | -0.373 [-0.407, -0.333] (MDE 0.054) | -0.15 | no | -0.116 [-0.188, -0.049] (MDE 0.103) vs centre_whiten, n_near=1 | no |
+| adv_retrain | adv_retrain__dl64_lam3.0 | lda_pca__d64 | -0.041 [-0.092, +0.015] (MDE 0.077) | -0.212 [-0.251, -0.169] (MDE 0.061) | -0.28 | no | +0.012 [-0.044, +0.057] (MDE 0.074) vs centre_whiten, n_near=2 | no |
+| supcon_xc | supcon_xc__dl64_tau0.1 | lda_pca__d64 | -0.066 [-0.136, +0.015] (MDE 0.107) | -0.332 [-0.382, -0.280] (MDE 0.076) | -0.39 | no | -0.013 [-0.074, +0.044] (MDE 0.084) vs centre_whiten, n_near=1 | no |
+| ae | ae__beta0.001_dl32_lam0.0 | lda_pca__d32 | -0.056 [-0.108, -0.010] (MDE 0.071) | -0.012 [-0.044, +0.018] (MDE 0.045) | -0.01 | no | -0.056 [-0.108, -0.010] (MDE 0.071) vs lda_pca__d32, n_near=2 | no |
+
+Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.25; ctrl_noise 0.26; ctrl_shuffle_orth__rep0 0.28; ctrl_shuffle_orth__rep1 0.28; ctrl_shuffle_orth__rep2 0.28
+
+#### midnight_clsmean / tolkach_esca / holdout  (seeds [0, 1, 2]; centre chance 0.500, floor 0.500; seen classes [0, 1, 2], held-out classes [3, 4, 5])
+
+
+References and V-selected learned configurations (absolute numbers on sealed C):
+
+| config | dim | rate (bits) | seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | 3072 | nan | 0.974 | 0.998 [0.993, 1.000] | 0.998 | 1.00 [1.00, 1.00] | 1.00 | 1.000 [1.000, 1.000] | 1.000 |
+| centre_whiten | 64 | nan | 0.900 | 0.980 [0.961, 0.993] | 0.976 | 0.23 [0.06, 0.42] | 0.23 | 0.340 [0.260, 0.430] | 0.414 |
+| leace__rho1.0 | 3072 | nan | 0.973 | 0.998 [0.993, 1.000] | 0.998 | 0.94 [0.88, 1.07] | 0.94 | 0.995 [0.992, 0.997] | 0.999 |
+| lda | 2 | nan | 0.986 | 0.861 [0.809, 0.895] | 0.823 | 0.16 [0.04, 0.41] | 0.16 | 0.195 [0.167, 0.216] | 0.117 |
+| lda_pca__d4 | 4 | nan | 0.987 | 0.871 [0.796, 0.925] | 0.808 | 0.14 [0.05, 0.43] | 0.15 | 0.355 [0.328, 0.387] | 0.283 |
+| lda_pca__d8 | 8 | nan | 0.982 | 0.952 [0.914, 0.988] | 0.937 | 0.33 [0.15, 0.55] | 0.34 | 0.495 [0.461, 0.539] | 0.451 |
+| lda_pca__d16 | 16 | nan | 0.984 | 0.963 [0.933, 0.990] | 0.913 | 0.77 [0.54, 0.91] | 0.78 | 0.546 [0.506, 0.603] | 0.572 |
+| lda_pca__d32 | 32 | nan | 0.980 | 0.989 [0.982, 0.996] | 0.975 | 0.93 [0.86, 1.05] | 0.93 | 0.617 [0.575, 0.673] | 0.668 |
+| lda_pca__d64 | 64 | nan | 0.965 | 0.994 [0.984, 1.000] | 0.996 | 0.99 [0.96, 1.05] | 0.99 | 0.692 [0.651, 0.758] | 0.758 |
+| lda_pca__d128 | 128 | nan | 0.957 | 0.994 [0.984, 1.000] | 0.997 | 1.02 [0.98, 1.10] | 1.02 | 0.709 [0.663, 0.781] | 0.798 |
+| pca__d4 | 4 | nan | 0.927 | 0.889 [0.808, 0.948] | 0.796 | 0.20 [0.07, 0.45] | 0.22 | 0.410 [0.376, 0.457] | 0.350 |
+| pca__d16 | 16 | nan | 0.942 | 0.953 [0.916, 0.987] | 0.898 | 0.78 [0.64, 0.91] | 0.79 | 0.537 [0.494, 0.596] | 0.577 |
+| pca__d64 | 64 | nan | 0.921 | 0.992 [0.980, 0.999] | 0.986 | 0.98 [0.95, 1.05] | 0.99 | 0.658 [0.612, 0.729] | 0.745 |
+| vib__beta0.001_dl32 | 32 | 19.3 | 0.985 | 0.823 [0.780, 0.879] | 0.760 | 0.09 [-0.06, 0.36] | 0.09 | 0.111 [0.095, 0.123] | 0.061 |
+| vq__K64_m8 | 128 | 48.0 | 0.987 | 0.858 [0.815, 0.944] | 0.773 | 0.12 [-0.02, 0.40] | 0.14 | 0.217 [0.183, 0.245] | 0.141 |
+| dann__dl64_lam3.0 | 64 | nan | 0.949 | 0.906 [0.852, 0.943] | 0.823 | 0.84 [0.74, 0.92] | 0.84 | 0.407 [0.365, 0.445] | 0.379 |
+| adv_retrain__dl64_lam3.0 | 64 | nan | 0.990 | 0.988 [0.977, 0.996] | 0.958 | 0.53 [0.34, 0.70] | 0.53 | 0.541 [0.504, 0.584] | 0.533 |
+| supcon_xc__dl64_tau0.1 | 64 | nan | 0.974 | 0.985 [0.968, 0.999] | 0.980 | 0.63 [0.46, 0.81] | 0.63 | 0.478 [0.427, 0.527] | 0.456 |
+| ae__beta0.001_dl32_lam10.0 | 32 | 140.3 | 0.966 | 0.978 [0.969, 0.988] | 0.940 | 0.25 [0.06, 0.48] | 0.27 | 0.556 [0.522, 0.597] | 0.536 |
+
+Per family, configuration selected on V (L_V within +0.05 of the matched LDA arm; then max V held-class acc):
+
+| family | config | matched LDA | Δ held-class acc vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |
+|---|---|---|---|---|---|---|---|---|
+| vib | vib__beta0.001_dl32 | lda_pca__d32 | -0.166 [-0.205, -0.112] (MDE 0.062) | -0.506 [-0.570, -0.466] (MDE 0.075) | -0.84 | no | (no floor at this leakage) | no |
+| vq | vq__K64_m8 | lda_pca__d128 | -0.136 [-0.177, -0.046] (MDE 0.075) | -0.491 [-0.591, -0.427] (MDE 0.115) | -0.90 | no | -0.013 [-0.055, +0.066] (MDE 0.081) vs lda_pca__d4, n_near=2 | no |
+| dann | dann__dl64_lam3.0 | lda_pca__d64 | -0.088 [-0.133, -0.057] (MDE 0.058) | -0.285 [-0.350, -0.244] (MDE 0.075) | -0.15 | no | -0.086 [-0.128, -0.056] (MDE 0.054) vs randproj__d64, n_near=1 | no |
+| adv_retrain | adv_retrain__dl64_lam3.0 | lda_pca__d64 | -0.006 [-0.013, +0.000] (MDE 0.009) | -0.152 [-0.197, -0.125] (MDE 0.052) | -0.46 | no | +0.001 [-0.008, +0.008] (MDE 0.011) vs randproj__d16, n_near=0 | no |
+| supcon_xc | supcon_xc__dl64_tau0.1 | lda_pca__d64 | -0.009 [-0.021, +0.001] (MDE 0.016) | -0.214 [-0.269, -0.175] (MDE 0.068) | -0.36 | no | -0.002 [-0.016, +0.009] (MDE 0.018) vs randproj__d16, n_near=0 | no |
+| ae | ae__beta0.001_dl32_lam10.0 | lda_pca__d32 | -0.010 [-0.018, -0.004] (MDE 0.011) | -0.061 [-0.101, -0.032] (MDE 0.050) | -0.67 | no | -0.002 [-0.011, +0.010] (MDE 0.015) vs centre_whiten, n_near=2 | no |
+
+Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.50; ctrl_noise 0.52; ctrl_shuffle_orth__rep0 0.55; ctrl_shuffle_orth__rep1 0.56; ctrl_shuffle_orth__rep2 0.50
+
+##### Kill-test tally (FOCUS A, revised): learned families (selected on V) beating the matched LDA arm on (i) held-class utility or (ii) retention with L within tolerance
+
+| encoder | dataset | variant | family | config | wins |
+|---|---|---|---|---|---|
+| dinov2L_clsmean | tcga | holdout | vib | vib__beta0.01_dl4 | no |
+| dinov2L_clsmean | tcga | holdout | vq | vq__K16_m4 | no |
+| dinov2L_clsmean | tcga | holdout | dann | dann__dl64_lam3.0 | no |
+| dinov2L_clsmean | tcga | holdout | adv_retrain | adv_retrain__dl64_lam1.0 | no |
+| dinov2L_clsmean | tcga | holdout | supcon_xc | supcon_xc__dl64_tau0.1 | no |
+| dinov2L_clsmean | tcga | holdout | ae | ae__beta0.01_dl32_lam0.0 | no |
+| dinov2L_clsmean | tolkach_esca | holdout | vib | vib__beta0.001_dl32 | no |
+| dinov2L_clsmean | tolkach_esca | holdout | vq | vq__K64_m8 | no |
+| dinov2L_clsmean | tolkach_esca | holdout | dann | dann__dl64_lam3.0 | no |
+| dinov2L_clsmean | tolkach_esca | holdout | adv_retrain | adv_retrain__dl64_lam3.0 | no |
+| dinov2L_clsmean | tolkach_esca | holdout | supcon_xc | supcon_xc__dl64_tau0.1 | no |
+| dinov2L_clsmean | tolkach_esca | holdout | ae | ae__beta0.001_dl32_lam0.0 | no |
+| midnight_clsmean | tcga | holdout | vib | vib__beta0.001_dl32 | no |
+| midnight_clsmean | tcga | holdout | vq | vq__K16_m4 | no |
+| midnight_clsmean | tcga | holdout | dann | dann__dl64_lam3.0 | no |
+| midnight_clsmean | tcga | holdout | adv_retrain | adv_retrain__dl64_lam3.0 | no |
+| midnight_clsmean | tcga | holdout | supcon_xc | supcon_xc__dl64_tau0.1 | no |
+| midnight_clsmean | tcga | holdout | ae | ae__beta0.001_dl32_lam0.0 | no |
+| midnight_clsmean | tolkach_esca | holdout | vib | vib__beta0.001_dl32 | no |
+| midnight_clsmean | tolkach_esca | holdout | vq | vq__K64_m8 | no |
+| midnight_clsmean | tolkach_esca | holdout | dann | dann__dl64_lam3.0 | no |
+| midnight_clsmean | tolkach_esca | holdout | adv_retrain | adv_retrain__dl64_lam3.0 | no |
+| midnight_clsmean | tolkach_esca | holdout | supcon_xc | supcon_xc__dl64_tau0.1 | no |
+| midnight_clsmean | tolkach_esca | holdout | ae | ae__beta0.001_dl32_lam10.0 | no |
+
+### Per-seed replication of the two post hoc AE picks (and which configuration validation selects), same test units
+
+
+#### dinov2L_clsmean / tcga / holdout  (seeds [0, 1, 2]; sealed C identical across seeds)
+
+Pre-registered picks (the two seed-0 post hoc AE configurations) vs the best inductive floor at L <= L_AE + 0.05:
+
+| seed | config | L | held acc [95% CI] | best floor (held acc, L) | n floor pts within +-0.05 (P3) | Δ held [95% CI] | SE | MDE80 | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | ae__beta0.001_dl32_lam10.0 | 0.46 | 0.624 [0.527, 0.703] | pca__d16 (0.669, 0.44) | 3 | -0.046 [-0.104, +0.011] | 0.030 | 0.084 | no |
+| 0 | ae__beta0.001_dl8_lam0.0 | 0.32 | 0.615 [0.516, 0.710] | lda_pca__d8 (0.647, 0.27) | 1 | -0.032 [-0.086, +0.013] | 0.025 | 0.070 | no |
+| 1 | ae__beta0.001_dl32_lam10.0 | 0.39 | 0.674 [0.588, 0.751] | randproj__d16 (0.682, 0.31) | 0 | -0.008 [-0.064, +0.044] | 0.028 | 0.077 | no |
+| 1 | ae__beta0.001_dl8_lam0.0 | 0.21 | 0.647 [0.559, 0.729] | lda_pca__d4 (0.615, 0.06) | 1 | +0.032 [-0.059, +0.125] | 0.048 | 0.133 | no |
+| 2 | ae__beta0.001_dl32_lam10.0 | 0.40 | 0.601 [0.492, 0.699] | randproj__d16 (0.585, 0.37) | 1 | +0.017 [-0.074, +0.109] | 0.046 | 0.130 | no |
+| 2 | ae__beta0.001_dl8_lam0.0 | 0.48 | 0.565 [0.456, 0.670] | lda_pca__d16 (0.614, 0.53) | 1 | -0.049 [-0.139, +0.037] | 0.046 | 0.129 | no |
+
+Seeds on which each pre-registered pick wins (Δ >= +0.04, lower CI > 0, >= 2 floor points near its L): ae__beta0.001_dl32_lam10.0: 0 of 3; ae__beta0.001_dl8_lam0.0: 0 of 3
+
+AE configuration selected on validation (V held-class accuracy among ae configs whose V leakage is within +0.05 of the best inductive floor's V leakage... simplified: max V held-class accuracy among ae configs with V_L <= median V_L of the ae grid), per seed and pooled over seeds:
+
+| selection | config | L | held acc | best floor | Δ held [95% CI] | SE | MDE80 |
+|---|---|---|---|---|---|---|---|
+| seed 0 V-selected | ae__beta0.01_dl8_lam0.0 | 0.32 | 0.637 | lda_pca__d8 (0.647) | -0.010 [-0.058, +0.040] | 0.027 | 0.074 |
+| seed 1 V-selected | ae__beta0.001_dl8_lam0.0 | 0.21 | 0.647 | lda_pca__d4 (0.615) | +0.032 [-0.059, +0.125] | 0.048 | 0.133 |
+| seed 2 V-selected | ae__beta0.01_dl8_lam0.0 | 0.40 | 0.562 | randproj__d16 (0.585) | -0.022 [-0.119, +0.070] | 0.048 | 0.134 |
+
+Per-seed V-selected ae configuration: seed 0: ae__beta0.01_dl8_lam0.0, seed 1: ae__beta0.001_dl8_lam0.0, seed 2: ae__beta0.01_dl8_lam0.0. Most frequent config chosen on 2 of 3 seeds.
+
+Power audit, all ae configs x seeds with a floor comparator (n=30): SE of the paired Δ held: min 0.014, median 0.033, max 0.076; **MDE80 = 2.8 x SE: min 0.039, median 0.093, max 0.211**; median half-width of the 95% CI of L_worst: 0.108 (the leakage-matching tolerance is 0.05).
+
+
+#### dinov2L_clsmean / tolkach_esca / holdout  (seeds [0, 1, 2]; sealed C identical across seeds)
+
+Pre-registered picks (the two seed-0 post hoc AE configurations) vs the best inductive floor at L <= L_AE + 0.05:
+
+| seed | config | L | held acc [95% CI] | best floor (held acc, L) | n floor pts within +-0.05 (P3) | Δ held [95% CI] | SE | MDE80 | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | ae__beta0.001_dl32_lam10.0 | 0.16 | 0.890 [0.861, 0.926] | pca__d16 (0.900, 0.17) | 3 | -0.010 [-0.039, +0.019] | 0.015 | 0.042 | no |
+| 0 | ae__beta0.001_dl8_lam0.0 | 0.16 | 0.862 [0.812, 0.904] | pca__d16 (0.900, 0.17) | 3 | -0.038 [-0.074, -0.007] | 0.016 | 0.045 | no |
+| 1 | ae__beta0.001_dl32_lam10.0 | 0.09 | 0.880 [0.815, 0.927] | randproj__d64 (0.881, 0.14) | 3 | -0.001 [-0.043, +0.031] | 0.019 | 0.053 | no |
+| 1 | ae__beta0.001_dl8_lam0.0 | 0.05 | 0.797 [0.682, 0.877] | pca__d16 (0.881, 0.03) | 8 | -0.084 [-0.148, -0.039] | 0.028 | 0.078 | no |
+| 2 | ae__beta0.001_dl32_lam10.0 | 0.19 | 0.851 [0.790, 0.924] | lda_pca__d16 (0.907, 0.17) | 1 | -0.056 [-0.099, -0.011] | 0.019 | 0.052 | no |
+| 2 | ae__beta0.001_dl8_lam0.0 | 0.13 | 0.827 [0.740, 0.918] | lda_pca__d16 (0.907, 0.17) | 5 | -0.079 [-0.145, -0.020] | 0.032 | 0.091 | no |
+
+Seeds on which each pre-registered pick wins (Δ >= +0.04, lower CI > 0, >= 2 floor points near its L): ae__beta0.001_dl32_lam10.0: 0 of 3; ae__beta0.001_dl8_lam0.0: 0 of 3
+
+AE configuration selected on validation (V held-class accuracy among ae configs whose V leakage is within +0.05 of the best inductive floor's V leakage... simplified: max V held-class accuracy among ae configs with V_L <= median V_L of the ae grid), per seed and pooled over seeds:
+
+| selection | config | L | held acc | best floor | Δ held [95% CI] | SE | MDE80 |
+|---|---|---|---|---|---|---|---|
+| seed 0 V-selected | ae__beta0.001_dl32_lam3.0 | 0.17 | 0.899 | pca__d16 (0.900) | -0.002 [-0.023, +0.018] | 0.010 | 0.029 |
+| seed 1 V-selected | ae__beta0.001_dl32_lam10.0 | 0.09 | 0.880 | randproj__d64 (0.881) | -0.001 [-0.043, +0.031] | 0.019 | 0.053 |
+| seed 2 V-selected | ae__beta0.001_dl32_lam3.0 | 0.08 | 0.817 | pca__d16 (0.883) | -0.067 [-0.106, -0.031] | 0.019 | 0.053 |
+
+Per-seed V-selected ae configuration: seed 0: ae__beta0.001_dl32_lam3.0, seed 1: ae__beta0.001_dl32_lam10.0, seed 2: ae__beta0.001_dl32_lam3.0. Most frequent config chosen on 2 of 3 seeds.
+
+Power audit, all ae configs x seeds with a floor comparator (n=28): SE of the paired Δ held: min 0.010, median 0.022, max 0.045; **MDE80 = 2.8 x SE: min 0.029, median 0.061, max 0.125**; median half-width of the 95% CI of L_worst: 0.264 (the leakage-matching tolerance is 0.05).
+
+
+#### midnight_clsmean / tcga / holdout  (seeds [0, 1, 2]; sealed C identical across seeds)
+
+Pre-registered picks (the two seed-0 post hoc AE configurations) vs the best inductive floor at L <= L_AE + 0.05:
+
+| seed | config | L | held acc [95% CI] | best floor (held acc, L) | n floor pts within +-0.05 (P3) | Δ held [95% CI] | SE | MDE80 | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | ae__beta0.001_dl32_lam10.0 | 0.35 | 0.800 [0.688, 0.903] | centre_whiten (0.793, 0.23) | 3 | +0.007 [-0.081, +0.097] | 0.046 | 0.129 | no |
+| 0 | ae__beta0.001_dl8_lam0.0 | 0.29 | 0.782 [0.668, 0.881] | centre_whiten (0.793, 0.23) | 2 | -0.011 [-0.125, +0.101] | 0.057 | 0.160 | no |
+| 1 | ae__beta0.001_dl32_lam10.0 | 0.32 | 0.778 [0.688, 0.866] | centre_whiten (0.792, 0.17) | 4 | -0.014 [-0.116, +0.084] | 0.051 | 0.142 | no |
+| 1 | ae__beta0.001_dl8_lam0.0 | 0.42 | 0.704 [0.606, 0.800] | centre_whiten (0.792, 0.17) | 0 | -0.088 [-0.194, +0.039] | 0.059 | 0.165 | no |
+| 2 | ae__beta0.001_dl32_lam10.0 | 0.39 | 0.840 [0.784, 0.892] | centre_whiten (0.789, 0.14) | 4 | +0.051 [-0.029, +0.151] | 0.045 | 0.127 | no |
+| 2 | ae__beta0.001_dl8_lam0.0 | 0.43 | 0.560 [0.427, 0.682] | centre_whiten (0.789, 0.14) | 4 | -0.229 [-0.325, -0.142] | 0.047 | 0.131 | no |
+
+Seeds on which each pre-registered pick wins (Δ >= +0.04, lower CI > 0, >= 2 floor points near its L): ae__beta0.001_dl32_lam10.0: 0 of 3; ae__beta0.001_dl8_lam0.0: 0 of 3
+
+AE configuration selected on validation (V held-class accuracy among ae configs whose V leakage is within +0.05 of the best inductive floor's V leakage... simplified: max V held-class accuracy among ae configs with V_L <= median V_L of the ae grid), per seed and pooled over seeds:
+
+| selection | config | L | held acc | best floor | Δ held [95% CI] | SE | MDE80 |
+|---|---|---|---|---|---|---|---|
+| seed 0 V-selected | ae__beta0.001_dl32_lam1.0 | 0.46 | 0.756 | centre_whiten (0.793) | -0.037 [-0.095, +0.021] | 0.030 | 0.085 |
+| seed 1 V-selected | ae__beta0.001_dl32_lam10.0 | 0.32 | 0.778 | centre_whiten (0.792) | -0.014 [-0.116, +0.084] | 0.051 | 0.142 |
+| seed 2 V-selected | ae__beta0.01_dl32_lam0.0 | 0.29 | 0.710 | centre_whiten (0.789) | -0.079 [-0.162, +0.003] | 0.043 | 0.121 |
+
+Per-seed V-selected ae configuration: seed 0: ae__beta0.001_dl32_lam1.0, seed 1: ae__beta0.001_dl32_lam10.0, seed 2: ae__beta0.01_dl32_lam0.0. Most frequent config chosen on 1 of 3 seeds.
+
+Power audit, all ae configs x seeds with a floor comparator (n=30): SE of the paired Δ held: min 0.024, median 0.049, max 0.076; **MDE80 = 2.8 x SE: min 0.068, median 0.138, max 0.213**; median half-width of the 95% CI of L_worst: 0.122 (the leakage-matching tolerance is 0.05).
+
+
+#### midnight_clsmean / tolkach_esca / holdout  (seeds [0, 1, 2]; sealed C identical across seeds)
+
+Pre-registered picks (the two seed-0 post hoc AE configurations) vs the best inductive floor at L <= L_AE + 0.05:
+
+| seed | config | L | held acc [95% CI] | best floor (held acc, L) | n floor pts within +-0.05 (P3) | Δ held [95% CI] | SE | MDE80 | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | ae__beta0.001_dl32_lam10.0 | 0.27 | 0.993 [0.989, 0.997] | centre_whiten (0.973, 0.31) | 1 | +0.021 [+0.002, +0.046] | 0.012 | 0.032 | no |
+| 0 | ae__beta0.001_dl8_lam0.0 | 0.47 | 0.919 [0.857, 0.969] | lda_pca__d8 (0.973, 0.37) | 1 | -0.054 [-0.109, -0.001] | 0.031 | 0.087 | no |
+| 1 | ae__beta0.001_dl32_lam10.0 | 0.22 | 0.966 [0.944, 0.987] | centre_whiten (0.978, 0.15) | 1 | -0.012 [-0.029, -0.001] | 0.008 | 0.021 | no |
+| 1 | ae__beta0.001_dl8_lam0.0 | 0.32 | 0.881 [0.802, 0.938] | centre_whiten (0.978, 0.15) | 1 | -0.097 [-0.173, -0.041] | 0.037 | 0.103 | no |
+| 2 | ae__beta0.001_dl32_lam10.0 | 0.29 | 0.975 [0.967, 0.983] | centre_whiten (0.991, 0.25) | 4 | -0.016 [-0.029, -0.002] | 0.006 | 0.018 | no |
+| 2 | ae__beta0.001_dl8_lam0.0 | 0.55 | 0.914 [0.840, 0.962] | centre_whiten (0.991, 0.25) | 0 | -0.077 [-0.151, -0.030] | 0.035 | 0.098 | no |
+
+Seeds on which each pre-registered pick wins (Δ >= +0.04, lower CI > 0, >= 2 floor points near its L): ae__beta0.001_dl32_lam10.0: 0 of 3; ae__beta0.001_dl8_lam0.0: 0 of 3
+
+AE configuration selected on validation (V held-class accuracy among ae configs whose V leakage is within +0.05 of the best inductive floor's V leakage... simplified: max V held-class accuracy among ae configs with V_L <= median V_L of the ae grid), per seed and pooled over seeds:
+
+| selection | config | L | held acc | best floor | Δ held [95% CI] | SE | MDE80 |
+|---|---|---|---|---|---|---|---|
+| seed 0 V-selected | ae__beta0.001_dl32_lam10.0 | 0.27 | 0.993 | centre_whiten (0.973) | +0.021 [+0.002, +0.046] | 0.012 | 0.032 |
+| seed 1 V-selected | ae__beta0.001_dl32_lam3.0 | 0.49 | 0.965 | randproj__d16 (0.990) | -0.026 [-0.043, -0.010] | 0.009 | 0.025 |
+| seed 2 V-selected | ae__beta0.001_dl32_lam10.0 | 0.29 | 0.975 | centre_whiten (0.991) | -0.016 [-0.029, -0.002] | 0.006 | 0.018 |
+
+Per-seed V-selected ae configuration: seed 0: ae__beta0.001_dl32_lam10.0, seed 1: ae__beta0.001_dl32_lam3.0, seed 2: ae__beta0.001_dl32_lam10.0. Most frequent config chosen on 2 of 3 seeds.
+
+Power audit, all ae configs x seeds with a floor comparator (n=30): SE of the paired Δ held: min 0.003, median 0.019, max 0.037; **MDE80 = 2.8 x SE: min 0.008, median 0.052, max 0.103**; median half-width of the 95% CI of L_worst: 0.224 (the leakage-matching tolerance is 0.05).
+
