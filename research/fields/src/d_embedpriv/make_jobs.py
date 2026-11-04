@@ -34,4 +34,7 @@ if __name__ == "__main__":
             out.append(write(f"d_bott_gtr_s{s}", ["bott"], s, 20 + s))
             for lam in (0.1, 0.3, 1, 3):
                 out.append(write(f"d_adv_l{lam:g}_gtr_s{s}", [f"adv_l{lam:g}"], s, 23 + s))
+    elif mode == "posthoc":  # learned arms run AFTER the pre-registered H2 failed (coordinator asked for the learned kill test anyway): labelled post-hoc
+        for s in (0, 1):
+            out.append(write(f"d_ph_lrn_gtr_s{s}", ["bott", "adv_l0.3", "adv_l3"], s, 10 + s))
     print("\n".join(out))

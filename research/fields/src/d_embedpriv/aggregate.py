@@ -116,6 +116,7 @@ def main():
     taus = [float(t) for t in a.taus.split(",")]
     seeds = A.seeds
     orc = [r for r in recs.values() if r["spec"].get("mask") == "rare"]
+    tauO = None
     if orc:  # H2 when the oracle cannot reach tau=0.97: compare floors at the oracle's own (dev) retention
         tauO = float(np.floor(np.mean([A.retention(r, "dev") for r in orc]) * 1000) / 1000)
         if tauO < min(taus):
@@ -175,6 +176,8 @@ def main():
     print()
 
     # ---- selection at each tau
+    if orc:
+        headroom(A, seeds, [t for t in taus if t != tauO], tauO)
     for tau in taus:
         print(f"### Selected on V at retention >= {tau} (config per family and seed; numbers on sealed C)\n")
         print("| family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |")
@@ -205,6 +208,51 @@ def main():
             print(f"\nStrongest floor F*({tau}) (lowest seed-mean V leakage): **{fstar}** (V L_rare {floors[fstar]['LV']:.3f}; C L_rare {floors[fstar]['L']:.3f})\n")
             if a.margin is not None and "adv" in fams and tau == taus[0]:
                 kill_rule(A, fstar, tau, a.margin, seeds)
+
+
+def headroom(A, seeds, taus, tauO):
+    """Pre-registered H1 (measurability) and H2 (room: strongest floor vs the masked-text oracle at the oracle's own retention)."""
+    print("### Headroom check (pre-registered H1, H2; floors + oracle only)\n")
+    d = []
+    for s in seeds:
+        raw, con = f"raw|s{s}", f"const|s{s}"
+        if raw not in A.recs or con not in A.recs:
+            continue
+        Rr = boot_worst(rp_units(A.units, raw, "C", "rare"), A.idx_c)
+        Rp = boot_worst(rp_units(A.units, con, "C", "rare"), A.idx_c)
+        d.append(Rr - Rp)
+    d = np.mean(d, axis=0)
+    print(f"H1 measurability: R_raw - R_prior (rare tier, worst of 3 attackers) = {d.mean():.3f} [{ci(d)[0]:.3f}, {ci(d)[1]:.3f}] (rule: >= 0.05 and CI excludes 0): "
+          f"{'PASS' if ci(d)[0] > 0 and d.mean() >= 0.05 else 'FAIL'}\n")
+    orc = {s: next((r for r in A.recs.values() if r["seed"] == s and r["spec"].get("mask") == "rare"), None) for s in seeds}
+    if any(v is None for v in orc.values()):
+        return
+    Lo = np.mean([A.L_boot(r["rid"], s, "rare")[0] for s, r in orc.items()], axis=0)
+    ret_o = np.mean([A.retention(r) for r in orc.values()])
+    print(f"oracle_mask_rare: L_rare = {Lo.mean():.3f} [{ci(Lo)[0]:.3f}, {ci(Lo)[1]:.3f}], test retention {ret_o:.3f} (< 0.97: not a valid reference at tau = 0.97, so H2 is judged at the oracle's own dev retention tau_O = {tauO:.3f})\n")
+    print("| tau | strongest floor F* (by V) | F* configs | F* test retention | L_rare(F*) [95% CI] | L_rare(oracle) | headroom = L(F*) - L(oracle) [95% CI] | H2 (>= 0.10) |")
+    print("|---|---|---|---|---|---|---|---|")
+    for tau in [t for t in taus if t >= 0.9] + [tauO]:
+        best = None
+        for fam in FLOORS:
+            sel = {s: A.select(fam, s, tau) for s in seeds}
+            if any(v is None for v in sel.values()):
+                continue
+            LV = np.mean([(worst(r, "V", "rare") - worst(A.ref(s, "rare")["const"], "V", "rare")) /
+                          max(worst(A.ref(s, "rare")["raw"], "V", "rare") - worst(A.ref(s, "rare")["const"], "V", "rare"), 1e-6) for s, r in sel.items()])
+            if best is None or LV < best[0]:
+                best = (LV, fam, sel)
+        if best is None:
+            print(f"| {tau:.3f} | none feasible | | | | | | |")
+            continue
+        _, fam, sel = best
+        Lf = np.mean([A.L_boot(r["rid"], s, "rare")[0] for s, r in sel.items()], axis=0)
+        hd = Lf - Lo
+        rt = np.mean([A.retention(r) for r in sel.values()])
+        flag = "" if tau == tauO else " (oracle not valid at this tau; reference only)"
+        verdict = ("PASS" if hd.mean() >= 0.10 else "FAIL") if tau == tauO else "n/a"
+        print(f"| {tau:.3f}{flag} | {fam} | {', '.join(f's{s_}:' + r_['arm'] for s_, r_ in sel.items())} | {rt:.3f} | {Lf.mean():.3f} [{ci(Lf)[0]:.3f}, {ci(Lf)[1]:.3f}] | {Lo.mean():.3f} | {hd.mean():.3f} [{ci(hd)[0]:.3f}, {ci(hd)[1]:.3f}] | {verdict} |")
+    print()
 
 
 def kill_rule(A, fstar, tau, m, seeds):
