@@ -135,6 +135,13 @@ power audit first. Budget <= 5 GPU-h and one builder-day, one attempt.
   (b) Bootstrap chance. In a resample a held-out batch whose donors are all absent has no cells; balanced accuracy and chance (1/B_f) are now computed over the held-out batches PRESENT in the resample (a constant predictor
   otherwise scored 0.83 in such resamples). Point estimates are unchanged.
 
+* **A2, 13:41Z, before any real-data model number.** scVI training length: the scvi-tools heuristic would give 400 epochs on Pancreas and 241 on Immune (about 15 GPU-min each, over the GPU budget); capped at `--max_epochs 100`
+  for Immune and Pancreas; HLCA keeps the default heuristic (82 epochs). The scVI reference is a transductive context arm and is excluded from every selection, so this cannot decide K2/K3 except through
+  the choice of the "best transductive reference", which is the arm with the highest U_fine among the four. A shorter-trained scVI can only LOWER the reference, i.e. make K3 easier to fire.
+* **A3, 13:49Z, before any real-data model number (additive code only).** A dense floor frontier (`dithN_rR` for N in {8,16,32}, R in {0.25,0.5,1,2,4}; `pca{4,6,12,24}`; `ldaC_pca{8,24}`) can be run as separate jobs
+  (`evaluate.py --arms dense`). It is NOT part of the pre-registered K3 grid; it exists to test whether a "no inductive floor reaches L_ref + 0.05, so headroom exists" reading is an artefact of holes in the floor grid
+  (the ranker's note on A). It will be reported as a clearly labelled post-hoc sensitivity and cannot flip a pre-registered verdict by itself.
+
 ## 4. Status log
 
 * 13:22Z `prep.py` done for Immune and Pancreas (cached under `~/work/cache/e_singlecell`, not in git). HLCA prep done 13:28Z: cap 750 cells per donor for the non-rare types, 28 rare finest types kept whole,
