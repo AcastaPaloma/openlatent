@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 
 ATT = ("ridge", "mlp", "knn")
-P, S2, OM, OM2 = P, S2, P, "all"  # primary tier, second tier, oracle mask names (set from the records in main)
+P, S2, OM, OM2 = "rare", "mid", "rare", "all"  # primary tier, second tier, oracle mask names (set from the records in main)
 FLOORS = ("randproj", "pca", "noise", "leace", "sup_lin")
 CONTROLS = ("bott_mlp",)
 
