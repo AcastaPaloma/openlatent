@@ -1,0 +1,4 @@
+name: b_m_corr_noisy_s1
+priority: 15
+cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind corr_noisy --arms raw,rate4,rateb,gtmask,adv,adv30 --epochs 30 --seed 1 --out $OUT
+hf_path: runs/b_m_corr_noisy_s1

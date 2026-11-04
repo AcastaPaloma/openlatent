@@ -23,7 +23,7 @@ ARMS = {
     "clean": dict(train_kind="none", mask=None, zdim=16, beta=0.1, adv=0.0),
     "raw": dict(mask=None, zdim=16, beta=0.1, adv=0.0),
     "rate4": dict(mask=None, zdim=4, beta=0.1, adv=0.0),
-    "rateb": dict(mask=None, zdim=16, beta=3.0, adv=0.0),
+    "rateb": dict(mask=None, zdim=16, beta=0.5, adv=0.0),
     "sam": dict(mask="sam", zdim=16, beta=0.1, adv=0.0),
     "gtmask": dict(mask="gt", zdim=16, beta=0.1, adv=0.0),
     "adv": dict(mask=None, zdim=16, beta=0.1, adv=10.0),
@@ -373,9 +373,12 @@ def evaluate(m, cfg, kind_id, sets, seed, mask_root, log=print):
         (pmm,) = mlp_probe(Ztr, Y_tr, Zva, Y_va, [Zte], seed=seed)
         for aname, pp in (("lin", pl), ("mlp", pmm)):
             num, den = nmse_parts(pp, Y_te, Y_tr.mean(0), ete, n_te)
-            res[f"leak_{label}_{aname}"] = float(max(0.0, 1 - num.sum() / den.sum()))
+            # pooled over all sprites dilutes a leak that concerns only a few sprites, so the headline number is the best single coordinate
+            r_dim = 1 - ((pp - Y_te) ** 2).sum(0) / ((Y_te - Y_tr.mean(0)) ** 2).sum(0).clamp_min(1e-12)
+            res[f"leak_{label}_{aname}_pooled"] = float(max(0.0, 1 - num.sum() / den.sum()))
+            res[f"leak_{label}_{aname}"] = float(max(0.0, r_dim.max().item()))
             parts[f"leak_{label}_{aname}"] = (num, den)
-            res[f"leak_{label}_{aname}_ci"] = [max(0.0, 1 - c) for c in boot_ci(num, den)][::-1]
+            res[f"leak_{label}_{aname}_ci"] = [max(0.0, 1 - c) for c in boot_ci(num, den)][::-1]   # CI of the pooled version
 
     reg_leak("n1", "resid_vel")      # independent part of distractor motion
     reg_leak("n2", "position")       # sprite position relative to the end effector at t+1
@@ -393,7 +396,7 @@ def evaluate(m, cfg, kind_id, sets, seed, mask_root, log=print):
         sh2 = torch.randperm(len(Ztr), generator=g).to(dev)
         (pc,) = mlp_probe(Ztr, Ttr["n3"][sh2], Zva, Tva["n3"], [Zte], classes=6, seed=seed)
         res["ctrl_shuffled_appearance_mlp_acc"] = float((pc == Tte["n3"]).float().mean().item())
-    main = [v for k, v in res.items() if k.startswith("leak_") and not k.endswith("_ci") and "total_vel" not in k]
+    main = [v for k, v in res.items() if k.startswith("leak_") and not k.endswith(("_ci", "_pooled")) and "total_vel" not in k]
     res["leak_worst"] = float(max(main)) if main else 0.0
     return res, parts
 

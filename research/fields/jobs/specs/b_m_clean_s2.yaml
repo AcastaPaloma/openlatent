@@ -1,0 +1,4 @@
+name: b_m_clean_s2
+priority: 13
+cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind none --arms clean --epochs 30 --seed 2 --out $OUT
+hf_path: runs/b_m_clean_s2

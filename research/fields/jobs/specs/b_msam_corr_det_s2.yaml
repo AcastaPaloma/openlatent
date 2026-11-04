@@ -1,0 +1,4 @@
+name: b_msam_corr_det_s2
+priority: 14
+cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind corr_det --arms sam --epochs 30 --seed 2 --out $OUT
+hf_path: runs/b_msam_corr_det_s2
