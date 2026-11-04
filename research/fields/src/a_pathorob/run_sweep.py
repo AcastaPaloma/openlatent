@@ -68,7 +68,7 @@ def main():
         try:
             rep, extra = AD.build(method, hp, P, sp, a.seed)
             tfit = time.time() - t0
-            m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=(method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0), holdout=a.holdout,
+            m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=("orth" if method == "ctrl_shuffle_orth" else method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0), holdout=a.holdout,
                                   patchsplit=(method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten")))
             rec = dict(variant=variant, cfg=cid, method=method, hp=hp, seed=a.seed, encoder=a.encoder, dataset=a.dataset, metrics=m, extra=extra,
                        seconds_fit=round(tfit, 1))

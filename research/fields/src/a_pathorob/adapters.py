@@ -373,8 +373,8 @@ def run_control(method, P, sp, seed):
 def build(method, hp, P, sp, seed):
     if method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten", "pca", "randproj"):
         return run_floor(method, hp, P, sp, seed)
-    if method in ("ctrl_const", "ctrl_noise", "ctrl_shuffle"):
-        if method == "ctrl_shuffle":
+    if method in ("ctrl_const", "ctrl_noise", "ctrl_shuffle", "ctrl_shuffle_orth"):
+        if method in ("ctrl_shuffle", "ctrl_shuffle_orth"):
             return run_floor("raw", {}, P, sp, seed)
         return run_control(method, P, sp, seed)
     if method == "vib":
@@ -396,7 +396,7 @@ GATE = (
     + [("leace", dict(rho=r)) for r in (1e-3, 1e-2, 1e-1, 1.0)]
     + [("isp", dict(n_iter=n)) for n in (1, 5, 20)]
 )
-CONTROLS = [("ctrl_const", {}), ("ctrl_noise", {})] + [("ctrl_shuffle", dict(rep=r)) for r in range(3)]
+CONTROLS = [("ctrl_const", {}), ("ctrl_noise", {})] + [("ctrl_shuffle_orth", dict(rep=r)) for r in range(3)]
 LEARNED = (
     [("vib", dict(dl=dl, beta=b)) for dl in (4, 32) for b in (1e-3, 1e-2, 1e-1, 1.0)]
     + [("vq", dict(m=m, K=K)) for m, K in ((1, 16), (2, 16), (4, 16), (4, 64), (8, 64))]

@@ -145,6 +145,8 @@ def main():
            "label_V,worst_V,ood_label_lin,onA_linear,rate_bits"]
     verdict = []
     verdict2 = []
+    g1rows = []
+    compact = []
     for enc, ds, var in cells:
         cell = Cell(enc, ds, var, recs, a.runs, a.B)
         cfgs = sorted(cell.by)
@@ -175,6 +177,16 @@ def main():
             lo, hi = ci(lab[1]); wlo, whi = ci(wc[1]); llo, lhi = ci(leak_b)
             csv.append(f"{enc},{ds},{var},{cfg},{family(cfg)},{len(rs)},{lab[0]:.4f},{lo:.4f},{hi:.4f},{labm[0]:.4f},{wc[0]:.4f},{wlo:.4f},{whi:.4f},"
                        f"{leak:.4f},{llo:.4f},{lhi:.4f},{lv:.4f},{wv:.4f},{ood:.4f},{ona:.4f},{rate:.2f}")
+        lcands = [c for c in table if family(c) == "leace"]
+        if lcands:
+            lc = min(lcands, key=lambda c: table[c]["wv"])      # LEACE ridge chosen on V
+            have_x2 = all(f"centre/{k}/C" in cell.by["raw"][seeds_raw[0]]["metrics"] for k in KX)
+            kall = KC + (KX if have_x2 else ())
+            wa = cell.metric(lc, "centre", kall)
+            ra = cell.metric("raw", "centre", kall)
+            lall_pt = (wa[0] - floor) / max(ra[0] - floor, 1e-6)
+            llin = (cell.metric(lc, "centre", ("linear",))[0] - floor) / max(cell.metric("raw", "centre", ("linear",))[0] - floor, 1e-6)
+            g1rows.append((enc, ds, var, len(seeds_raw), lc, table[lc]["leak"][0], ci(table[lc]["leak"][1]), lall_pt, llin))
         # controls
         ctrl = []
         for cfg in cfgs:
@@ -194,8 +206,9 @@ def main():
         lines.append("| config | label acc | " + " | ".join(kinds_all) + " | L_worst (4 selection families) [95% CI] | L_worst (all families) | L_linear | unseen-centre worst acc | A-trained linear | patch-disjoint worst acc (same test slides) |")
         lines.append("|---|---|" + "---|" * (len(kinds_all) + 6))
         raw_k = {k: cell.metric("raw", "centre", (k,))[0] for k in kinds_all}
+        grow = {}
         for cfg in cfgs:
-            if family(cfg) not in ("raw", "lda", "centre_mean", "centre_zscore", "centre_whiten", "leace", "isp", "ctrl_const", "ctrl_noise", "ctrl_shuffle", "pca", "randproj"):
+            if family(cfg) not in ("raw", "lda", "centre_mean", "centre_zscore", "centre_whiten", "leace", "isp", "ctrl_const", "ctrl_noise", "ctrl_shuffle", "ctrl_shuffle_orth", "pca", "randproj"):
                 continue
             ks = {k: cell.metric(cfg, "centre", (k,)) for k in kinds_all}
             Lk = {k: (ks[k][0] - floor) / max(raw_k[k] - floor, 1e-6) for k in kinds_all}
@@ -211,8 +224,15 @@ def main():
             pdv = [max(r["metrics"][f"centre_patch/{k}/C2"] for k in ("linear", "mlp", "knn")) for r in rs_ if "centre_patch/linear/C2" in r["metrics"]]
             pd_ = f"{np.mean(pdv):.3f}" if pdv else "-"
             lall = max(Lk.values())
+            grow[cfg] = dict(lab=lab_[0], ks={k: ks[k][0] for k in kinds_all}, L4=L4p, Llo=lo_, Lhi=hi_, pd=pd_, ood=ood_w)
             lines.append(f"| {cfg} | {lab_[0]:.3f} | " + " | ".join(f"{ks[k][0]:.3f}" for k in kinds_all)
                          + f" | {L4p:.2f} [{lo_:.2f}, {hi_:.2f}] | {lall:.2f} | {Lk['linear']:.2f} | {ood_w:.3f} | {ona_:.3f} | {pd_} |")
+        def pick(fam):
+            cs = [c for c in grow if family(c) == fam]
+            return min(cs, key=lambda c: table[c]["wv"]) if cs else None
+        sel_rows = [c for c in ("raw", "lda", "centre_mean", "centre_zscore", "centre_whiten") if c in grow] + [c for c in (pick("leace"), pick("isp")) if c]
+        ctrl_txt = "; ".join(f"{c.replace('ctrl_', '')} {max(cell.metric(c, 'centre', KC)[0], 0):.2f}" for c in sorted(cell.by) if c.startswith("ctrl_"))
+        compact.append((enc, ds, var, len(seeds_raw), chance, floor, kinds_all, [(c, grow[c]) for c in sel_rows], ctrl_txt))
         # family-level selection on V
         lines.append("\nSelected per family on V (label within delta of raw), reported on sealed C:\n")
         lines.append("| delta | family | config | label acc (linear) | worst-case centre acc | leak (0=chance, 1=raw) | label acc on unseen centres | A-trained linear attacker | rate (bits/patch) | held-out-class label acc |")
@@ -270,6 +290,22 @@ def main():
     lines.append("|---|---|---|---|---|---|---|---|")
     for enc, ds, dl, a0, b0, d, lo, hi, dlab in verdict2:
         lines.append(f"| {enc} | {ds} | {dl:.2f} | {a0} | {b0} | {d:+.3f} [{lo:+.3f}, {hi:+.3f}] | {dlab:+.3f} | {'YES' if hi < 0 else 'no'} |")
+    if compact:
+        lines.append("\n### Compact gate summary (balanced accuracy on sealed C; mean over the listed seeds; chance and label-only floor in the heading)\n")
+        for enc, ds, var, ns, chance_, floor_, kinds_, rows_, ctrl_txt in compact:
+            lines.append(f"\n**{enc} / {ds} / {var}**, seeds = {ns}{' (PARTIAL: single seed, not yet replicated)' if ns < 3 else ''}; chance {chance_:.3f}; label-only floor {floor_:.3f}. Controls, worst of the 4 attackers: {ctrl_txt}\n")
+            lines.append("| representation | label acc | " + " | ".join(kinds_) + " | L_worst [95% CI] | patch-disjoint worst | unseen-centre worst |")
+            lines.append("|---|---|" + "---|" * (len(kinds_) + 3))
+            for c, r in rows_:
+                lines.append(f"| {c} | {r['lab']:.3f} | " + " | ".join(f"{r['ks'][k]:.3f}" for k in kinds_) + f" | {r['L4']:.2f} [{r['Llo']:.2f}, {r['Lhi']:.2f}] | {r['pd']} | {r['ood']:.3f} |")
+    if g1rows:
+        lines.append("\n### Gate G1: LEACE (ridge chosen on V) normalised worst-case centre leakage L_worst on sealed C (stop rule: L_worst < 0.15 in >= 5 of 9 cells)\n")
+        lines.append("| encoder | dataset | variant | seeds | LEACE config | L_worst (4 selection families) [95% CI] | L_worst (+LightGBM, RFF-SVM) | L_linear | < 0.15? |")
+        lines.append("|---|---|---|---|---|---|---|---|---|")
+        for enc, ds, var, ns, lc, l4, (lo, hi), lall, llin in g1rows:
+            lines.append(f"| {enc} | {ds} | {var} | {ns} | {lc} | {l4:.2f} [{lo:.2f}, {hi:.2f}] | {lall:.2f} | {llin:.2f} | {'YES' if l4 < 0.15 else 'no'} |")
+        n_lt = sum(1 for r in g1rows if r[5] < 0.15)
+        lines.append(f"\nG1 count: {n_lt} of {len(g1rows)} aggregated cells have L_worst(LEACE) < 0.15.")
     text = "\n".join(lines)
     if a.out == "-":
         print(text)

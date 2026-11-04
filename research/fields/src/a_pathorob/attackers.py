@@ -225,7 +225,19 @@ def run_suite(Xb, yb, ub, evals, K, kinds=KINDS, seed=0, epochs_nn=40, secret_sh
     Returns {kind: {eval_name: int predictions}}.  Xb numpy float32, yb int, ub unit ids (for the inner split).
     secret_shuffle: permute yb at the unit level (control: must give chance)."""
     yb = np.asarray(yb).copy()
-    if secret_shuffle:
+    if secret_shuffle == "orth":
+        # orthogonal shuffle: inside every true class the units get the permuted labels in (near) equal shares, so the permuted
+        # labelling is uncorrelated with the truth by construction (expected agreement = chance, much lower variance than a plain permutation)
+        rng = np.random.RandomState(777 + seed + 1000 * shuffle_rep)
+        new = np.empty_like(yb)
+        for c in np.unique(yb):
+            us = np.unique(ub[yb == c])
+            rng.shuffle(us)
+            labs = (np.arange(len(us)) + rng.randint(K)) % K
+            for u, l in zip(us, labs):
+                new[ub == u] = l
+        yb = new
+    elif secret_shuffle:
         rng = np.random.RandomState(777 + seed + 1000 * shuffle_rep)
         uu = np.unique(ub)
         # each unit gets the label of another random unit
