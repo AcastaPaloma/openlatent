@@ -106,3 +106,6 @@ pooled: not detected at levels 1-2, DETECTED at 4-5 (0.70). G1 passes (0.80; the
 - 2026-11-04 19:10Z (VM clock): RELEASES GENERATED from the committed manifest (`n_control.manifest generate`, clean clone at `8f11607`): 704 files in `~/n_releases/<digest>.npz` (8.9 GB; arrays X, y, unit, split only), 704 distinct digests,
   **SHA-256 of the sorted digest list (`INDEX.txt`) `fb40e7cce95d0c6cc64c9a8cc1a55d8f9e08b0d2f3c2ec1c2e45753358e22a23`**. The sealed digest -> manifest map and the sealed oracle report were written to `~/sealed_manifest/` (mode 0400) and have not been read.
   No certificate exists at the time of this commit.
+- 2026-11-04 19:12Z (VM clock): runner smoke on two SYNTHETIC releases (not in the manifest, throw-away ledger): pipeline, ledger and `frozen_match` work. The runner was first queued as `r_n_cert` (priority 10) but sat behind nine priority-4/5 GPU jobs (hours), so I WITHDREW the spec (deleted from `~/queue/pending`, removed from git)
+  and started the same command directly: 8 single-thread worker processes, `nice -n 10`, thread caps in the environment (CPU etiquette: at most 8 worker processes). Run start 19:13Z in the clean clone at `62eb352`; ledger `~/sealed_ledger_N/`; ~55 s per release per worker (about 80 minutes for 704).
+  Nothing in the certificates has been read; `analyse.py` is run once, after all 704 exist.
