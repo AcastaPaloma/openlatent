@@ -1,0 +1,16 @@
+{
+ "name": "d_extract_gtr_base",
+ "config": {
+  "name": "d_extract_gtr_base",
+  "priority": 3,
+  "cmd": "USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/embed.py --embedder gtr_base --masks rare,all --bs 64",
+  "hf_path": "runs/d_extract_gtr_base"
+ },
+ "commit": "db908c4",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 196.1,
+ "finished_utc": "2026-11-04T12:08:09Z",
+ "uploaded": true
+}
