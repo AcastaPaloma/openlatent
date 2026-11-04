@@ -18,13 +18,16 @@ FLOORS = ("randproj", "pca", "noise", "leace", "sup_lin")
 CONTROLS = ("bott_mlp",)
 
 
-def load(dirs):
+def load(dirs, legacy_adv=False):
+    """legacy_adv=False drops the original `adv` fits (conf_norm absent: all 24 collapsed to the uniform-softmax retrieval loss, audit F-01)."""
     recs, units = {}, {}
     for d in dirs:
         d = Path(d)
         for line in open(d / "records.jsonl"):
             r = json.loads(line)
             if "error" in r:
+                continue
+            if r.get("family") == "adv" and not r["spec"].get("conf_norm") and not legacy_adv:
                 continue
             recs[r["rid"]] = r
         z = np.load(d / "units.npz")
@@ -86,7 +89,8 @@ class Agg:
 
     # --- selection
     def family_recs(self, family, seed):
-        return [r for r in self.recs.values() if r["family"] == family and r["seed"] == seed and not r["spec"].get("mask") and not r["spec"].get("shuffle")]
+        return [r for r in self.recs.values() if r["family"] == family and r["seed"] == seed and not r["spec"].get("mask") and not r["spec"].get("shuffle")
+                and not r.get("collapsed")]
 
     def select(self, family, seed, tau):
         """Lowest V worst-case rare R-precision among configs with V retention >= tau (ties: smaller dim, smaller lambda)."""
@@ -110,9 +114,15 @@ def main():
     ap.add_argument("dirs", nargs="+")
     ap.add_argument("--taus", default="0.97,0.90")
     ap.add_argument("--margin", type=float, default=None, help="frozen margin m (normalised leakage); enables the kill-rule evaluation")
+    ap.add_argument("--margins", default="", help="per-tau frozen margins, e.g. 0.90:0.0775,0.97:0.10 (D2)")
+    ap.add_argument("--mde", action="store_true", help="print the paired-bootstrap SD and MDE80 of F* vs the bott_mlp control at each tau, then continue")
+    ap.add_argument("--legacy-adv", action="store_true", help="keep the original collapsed adv fits")
     ap.add_argument("--families", default="")
     a = ap.parse_args()
-    recs, units = load(a.dirs)
+    recs, units = load(a.dirs, a.legacy_adv)
+    margins = {float(x.split(":")[0]): float(x.split(":")[1]) for x in a.margins.split(",") if x}
+    if a.margin is not None and not margins:
+        margins = {0.97: a.margin}
     tiers = list(next(iter(recs.values()))["attackers"]["ridge"]["V"].keys())
     P, S2 = tiers[0], tiers[1]
     if P == "n1":  # digits / entity scheme (H2-009)
@@ -183,6 +193,7 @@ def main():
     print()
 
     # ---- selection at each tau
+    collapse_table(A)
     if orc:
         headroom(A, seeds, [t for t in taus if t != tauO], tauO)
     for tau in taus:
@@ -214,8 +225,10 @@ def main():
         if floors:
             fstar = min(floors, key=lambda f: floors[f]["LV"])
             print(f"\nStrongest floor F*({tau}) (lowest seed-mean V leakage): **{fstar}** (V L_{P} {floors[fstar]['LV']:.3f}; C L_{P} {floors[fstar]['L']:.3f})\n")
-            if a.margin is not None and "adv" in fams and tau == taus[0]:
-                kill_rule(A, fstar, tau, a.margin, seeds)
+            if tau in margins and "adv" in fams:
+                kill_rule(A, fstar, tau, margins[tau], seeds)
+            if a.mde:
+                mde_print(A, fstar, tau, seeds)
 
 
 def headroom(A, seeds, taus, tauO):
@@ -266,11 +279,41 @@ def headroom(A, seeds, taus, tauO):
     print()
 
 
+def mde_print(A, fstar, tau, seeds):
+    """Paired-bootstrap SD of L(F*) - L(bott_mlp control) at tau (seed-averaged, shared resamples) and MDE80 = 2.8 x SD (alpha 0.05 two-sided, power 0.8).
+    Computed from floors + the (valid) no-adversary control only, i.e. before any repaired-adversary number exists."""
+    ds = []
+    for s in seeds:
+        rf, rb = A.select(fstar, s, tau), A.select("bott_mlp", s, tau)
+        if rf is None or rb is None or A.ref(s, P) is None:
+            print(f"MDE tau={tau}: no pair for seed {s} (bott_mlp feasible: {rb is not None})\n")
+            return
+        ds.append(A.L_boot(rf["rid"], s, P)[0] - A.L_boot(rb["rid"], s, P)[0])
+    d = np.mean(ds, axis=0)
+    sd = d.std()
+    print(f"**MDE at tau={tau}** (F*={fstar} vs bott_mlp, {len(seeds)} seeds): paired L difference {d.mean():.3f}, bootstrap SD {sd:.4f}, MDE80 = 2.8 x SD = **{2.8 * sd:.3f}**\n")
+
+
+def collapse_table(A):
+    adv = sorted((r for r in A.recs.values() if r["family"] == "adv"), key=lambda r: (r["spec"].get("lam", 0), r["dim"], r["seed"]))
+    if not adv:
+        return
+    print("### Collapse check of the repaired adversarial fits (reject if final retrieval loss > ln N - 0.5 = 7.415)\n")
+    print("| arm | seed | final retrieval loss | confusion / initial (last log) | collapsed | dev retention | R_V primary |")
+    print("|---|---|---|---|---|---|---|")
+    for r in adv:
+        cr = r["train_log"][-1].get("conf_rel")
+        print(f"| {r['arm']} | {r['seed']} | {r['final_ret']:.2f} | {'n/a' if cr is None else f'{cr:.2f}'} | {'YES' if r.get('collapsed') else 'no'} | {A.retention(r, 'dev'):.3f} | {worst(r, 'V', P):.3f} |")
+    n = sum(1 for r in adv if r.get("collapsed"))
+    print(f"\n{n} of {len(adv)} adversarial fits collapsed and are excluded from selection.\n")
+
+
 def kill_rule(A, fstar, tau, m, seeds):
     print(f"#### Kill rule at tau={tau}, margin m={m} (pre-registered K1-K4), F*={fstar}\n")
     print("| seed | adv config | F* config | adv test ret. | F* test ret. | L(F*)-L(adv) [95% CI] | L(bott)-L(adv) [95% CI] | mid: L(adv)-L(F*) |")
     print("|---|---|---|---|---|---|---|---|")
     k1 = k2 = k3 = k4 = 0
+    ok_seeds = []
     for s in seeds:
         ra, rf, rb = A.select("adv", s, tau), A.select(fstar, s, tau), A.select("bott_mlp", s, tau)
         if ra is None or rf is None or A.ref(s, P) is None:
@@ -291,10 +334,13 @@ def kill_rule(A, fstar, tau, m, seeds):
         k1 += p1 and p2
         k3 += bool(p1 and p2 and p3)
         k4 += p4
+        ok_seeds.append(bool(p1 and p2 and p3 and p4))
         print(f"| {s} | {ra['arm']} | {rf['arm']} | {ret_a:.3f} | {ret_f:.3f} | {d1.mean():.3f} [{ci(d1)[0]:.3f}, {ci(d1)[1]:.3f}] "
               f"({'ok' if p1 else 'fail'}; ret {'ok' if p2 else 'fail'}) | {d3s} | {mid:.3f} ({'ok' if p4 else 'fail'}) |")
+    need = len(seeds) if len(seeds) < 3 else 2
     print(f"\nK1+K2 (>= m with equal utility) in {k1}/{len(seeds)} seeds; K1+K2+K3 in {k3}/{len(seeds)}; K4 in {k4}/{len(seeds)}. "
-          f"PASS requires K1+K2+K3 in >= 2 seeds and K4 in those seeds.\n")
+          f"PASS requires K1+K2+K3+K4 in >= {need} of {len(seeds)} seeds (all of them when only 2 seeds exist): **{'PASS' if sum(ok_seeds) >= need else 'FAIL'}** "
+          f"({sum(ok_seeds)} seeds pass all four).\n")
 
 
 if __name__ == "__main__":

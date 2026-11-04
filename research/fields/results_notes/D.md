@@ -239,12 +239,10 @@ Strongest floor F*(0.7) (lowest seed-mean V leakage): **noise** (V L_rare 0.625;
    excluded at 0.97 although on the sealed test it would qualify (d = 128: retention 1.013 [0.935, 1.096], L 0.748). Reading C instead of V would make sup_lin d = 128 the strongest floor at 0.97 (L 0.75). With 324/323 queries the retention CIs
    are wide (+-0.05 to 0.08), the same size as the 3% target, so operating points near 0.97 are not resolvable on this benchmark.
 
-### 5.3 Post-hoc learned arms (NOT part of the kill decision)
-The coordinator asked for the learned kill test to be run after the headroom tables. Because H2 had already failed, anything below is **post-hoc** and cannot flip the verdict; it only tests whether the pre-registered reading
-(no room) is too pessimistic, since the oracle is not a bound for a vector map. Jobs `d_ph_lrn_gtr_s{0,1}` (queued 12:30Z): bott_mlp (control) d in {16..512}, adv lambda in {0.3, 3} x d in {16..512}, seeds 0 and 1,
-selection on V as in 2.5, comparison margin fixed post hoc at 0.10 (the cap in the pre-registered formula) for K1-K4. Results are added below when the jobs finish.
-
-(pending)
+### 5.3 Post-hoc learned arms (superseded: the adversarial arm was a FAILED IMPLEMENTATION, see 7.1)
+The coordinator asked for the learned kill test to be run after the headroom tables. Jobs `d_ph_lrn_gtr_s{0,1}` (queued 12:30Z): bott_mlp (control) d in {16..512}, adv lambda in {0.3, 3} x d in {16..512}, seeds 0 and 1.
+**The `adv` arm of these jobs collapsed in all 24 fits** (retrieval loss at ln 2,739 = 7.915 from step 250; audit F-01, section 7.1): it is not evidence about adversarial training. The `bott_mlp` control in the same jobs trained normally (retrieval loss 4.5-4.9)
+and is used as the control in section 7. Results of these `adv` fits are kept in the raw records only.
 
 ## 6. H2-009 check: digit/number secret (pre-registered 15:10Z VM clock, before any attacker, floor or oracle number on this secret)
 
@@ -346,7 +344,36 @@ oracle_mask_digits: L_n1 = 14.112 [-1.548, 6.325], retention dev 1.005 / test 0.
 | 0.900 (fallback if no floor reaches 0.97 in every seed) | leace | s0:leace_r16, s1:leace_r16, s2:leace_r16 | 0.931 | -82.981 [-1692.116, 0.554] | 14.112 | -97.093 [-1874.463, -0.280] | n/a |
 
 
-### 6.5 Post-hoc learned arms for the WORD secret (jobs `d_ph_lrn_gtr_s{0,1}`, finished; seeds 0 and 1; not part of any decision)
-Selection on V as in 2.5; numbers on C; margin m = 0.10 fixed post hoc. The adversary is not better than its no-adversary control and costs utility: dev retention never reaches 0.90 for any `adv` config (best 0.838 at d = 256, lambda 3, versus `bott_mlp` 0.935 at d = 512)
-at the same attacker recovery (adv d256: R_C 0.159 vs bott d256 0.154). Selected at dev retention >= 0.70: adv (d = 128, lambda 0.3) L_rare 0.731 [0.705, 0.756] at test retention 0.803; bott_mlp (d = 64) 0.683 [0.647, 0.719] at 0.896; noise r = 1 0.633 [0.599, 0.665] at 0.806; sup_lin d = 64 0.692 at 0.878.
-At 0.97 and at 0.90 `adv` has no feasible config, so K1-K4 are not satisfiable (K1+K2 in 0 of 2 seeds). The post-hoc evidence therefore agrees with the H2 verdict: the adversarial arm adds nothing over a rate/architecture bottleneck or noise.
+### 6.5 Post-hoc learned arms for the WORD secret (jobs `d_ph_lrn_gtr_s{0,1}`): `adv` = FAILED IMPLEMENTATION (collapsed), no conclusion
+~~The adversary is not better than its no-adversary control and costs utility ... the adversarial arm adds nothing over a rate/architecture bottleneck or noise.~~ **Struck (2026-11-04, audit F-01):** all 24 `adv` fits sat at the uniform-softmax retrieval loss ln 2,739 = 7.915 from step 250
+(the unnormalised confusion term, 101-154 nats at step 0, dominated the retrieval loss; the map collapsed to a constant), so their low retention and "no feasible config at 0.90/0.97" reflect a dead map, not the adversary. Only the `bott_mlp` rows of those jobs are valid
+(selected at dev retention >= 0.90: d 256/128, L_rare 0.788 [0.764, 0.811] at test retention 1.010; at >= 0.70: d = 64, 0.683 [0.647, 0.719] at 0.896). The repaired arm is run in section 7.
+
+## 7. D2: repaired adversarial arm and the pre-registered learned kill test at tau 0.90 / 0.97 (reopened by the coordinator after audit F-01, F-10; pre-registered 19:10Z VM clock, before any repaired-arm number exists)
+
+### 7.0 Two verdicts, kept side by side
+* **verdict_original** (section 5, unchanged, 3 seeds): the pre-registered H2 failed at the oracle's own retention (tau = 0.70): headroom 0.039 [-0.003, 0.077] < 0.10. Original learned kill test: not run as pre-registered; the post-hoc `adv` fits were collapsed (7.1).
+* **verdict_D2** (this section): at tau = 0.90 and 0.97 the same H2 passes against the oracle taken as a reference (headroom 0.155 [0.109, 0.198] and 0.416 [0.376, 0.451], 3 seeds; the oracle itself only reaches retention 0.738, so it is a reference there, not a valid bound). D2 runs the learned kill test K1-K4 at those two points with a repaired adversarial arm. A D2 PASS or FAIL does not overwrite verdict_original; it is reported next to it.
+
+### 7.1 What failed and the repair
+`train_log` of all 24 post-hoc `adv` fits (d_ph_lrn_gtr_s{0,1}): the retrieval loss is 7.911-7.915 from step 250 to the end (ln of the 2,739 docs outside C = 7.9153, the uniform-softmax value), the confusion term goes 90-154 nats at step 0 to about 0, i.e. the map collapsed to a constant that the adversary cannot decode. With lambda 0.3-3 on an unnormalised sum over 14,864 word logits the confusion term dominated the retrieval loss (about 8-12 nats). Dev nDCG of those fits was at or near chance. B' flagged its own collapsed masks as a failed implementation; this arm should have been flagged the same way.
+Repair (`train.py`, spec key `conf_norm`): the confusion term is divided by its value at step 0 (detached; adversary already warmed up on the initial PCA-d map), so lambda is a relative weight: loss = L_retrieval + lambda x conf / conf_0. Every fit (all arms) gets a collapse check: final retrieval loss (mean of the last two logs) > ln N - 0.5 = 7.415 => the fit is flagged `collapsed`, stays in the records, and is excluded from selection.
+
+### 7.2 D2 arm and grid (fixed now)
+`adv` with `conf_norm = true`, lambda in {0.001, 0.01, 0.1} (coordinator) plus {1, 3} (added by me: after normalisation the first three add at most about 0.1 nats against a retrieval loss of 5-8, so they may be too weak to move leakage; all five lambdas are members of the family and all enter the V-selection pool), d in {32, 64, 128, 256, 512}, seeds 0 and 1, same data, 1,500 steps, 256 queries/step, adversary re-initialised every 250 steps (warm-up 150, 2 adversary steps per map step) as before. 50 fits, about 35 s each. Words secret (rare tier), GTR-base x NFCorpus, splits and attackers as in section 2. Controls and floors: the existing `d_hr1/d_hr2` (floors, seeds 0, 1) and the valid `bott_mlp` rows of `d_ph_lrn` (seeds 0, 1; the retrieval-loss code path is unchanged by the repair).
+"The repaired arm trains" := in each seed at least one non-collapsed config exists. If not, D2 stops with "still collapsed" and K1-K4 are not evaluated.
+
+### 7.3 Kill test and margin (fixed now, from floors + control only)
+* Operating points tau in {0.90, 0.97} (selection on V dev retention, numbers on C), 2 seeds. F\*(tau) = floor family (randproj, pca, noise, leace, sup_lin) that reaches tau on V in **every** seed with the lowest seed-mean V leakage, as in 2.5 (sup_lin at 0.90; at 0.97 PCA-512 / LEACE r = 4 with L about 1.0). The candidate is the V-selected non-collapsed `adv` config per seed.
+* K1-K4 as in 2.5: K1 paired-bootstrap (over C docs) 95% lower bound of L(F\*) - L(adv) >= m; K2 adv test retention >= F\* test retention - 0.01; K3 the same comparison adv vs `bott_mlp` has lower bound >= m/2; K4 second-tier (mid-word) leakage of adv not worse than F\* by more than 0.05.
+  With only 2 seeds the rule is **K1-K4 in both seeds** (stricter than the original 2 of 3). If adv or `bott_mlp` cannot reach tau in a seed, K3 (or the whole test) fails at that tau. Fail at both taus => the repaired learned arm does not beat the floors; pass at either => learned arm GO for a 3-seed replication, not yet a sweep.
+* **Margin**: m(tau) = max(min(0.10, 0.5 x headroom(tau)), MDE80(tau)), i.e. the original formula, never lower than the printed minimum detectable effect. Headroom: 0.155 (tau 0.90) and 0.416 (tau 0.97) from the 3-seed headroom table. MDE80 = 2.8 x the paired bootstrap SD of L(F\*) - L(bott_mlp) printed by `aggregate.py --mde` on floors and the valid control only, seeds 0 and 1: **0.031** at tau 0.90 (F\* = sup_lin, SD 0.0111); at tau 0.97 `bott_mlp` cannot reach the threshold on dev so no pair exists, and I use the largest MDE printed anywhere (0.046 at tau 0.70, F\* = noise, SD 0.0164).
+  Result: **m(0.90) = max(min(0.10, 0.0775), 0.031) = 0.0775; m(0.97) = max(min(0.10, 0.208), 0.046) = 0.10.** Both margins exceed their MDE, so a pass or a fail is decidable.
+* Budget: <= 2 GPU-h; queue priority 4 (reserved for the main agent) used once for these jobs, at the coordinator's instruction. No PII-Masking-300K.
+
+### 7.4 Digits (n1s), post-hoc re-analysis of section 6 (audit F-10)
+Disclosure first: the n1s numbers (raw R-precision 0.0408 vs frequency prior 0.0163) were told to me by the audit before this paragraph was written, so the threshold below is **post hoc**: it was chosen knowing the point ratio is about 2.5, and is set well below it. The absolute 0.05 threshold of 6.2 was scale-blind: the n1 prior is 0.204 because the top "numbers" are "1", "2", "95".
+Scale-aware H1s (n1s = numeric tokens with 3 <= df <= 30, the rare-number tier; 1,432 tokens, 1.9 per C doc, 47% of C docs have none and are excluded): **PASS iff the ratio R_raw / R_prior >= 1.5 with the 95% bootstrap lower bound >= 1.25 and the absolute excess R_raw - R_prior has a lower bound > 0** (same attackers, 3 seeds, bootstrap over C docs). H2s as in 6.2 with the primary tier n1s. The attacker suite is weak for this question: three attackers trained on 3,716 documents, no Vec2Text or external-decoder attacker, so a pass or a fail is about this suite only. No learned digit arm is run in this budget; a pass would only reopen the digit tier for a separate pre-registration.
+
+### 7.5 Disclosure (before the D2 numbers)
+Seen before this pre-registration: all of sections 5 and 6, the collapsed `adv` train logs, the valid `bott_mlp` and floor tables for seeds 0 and 1, the audit text. Mechanics of the repaired code were smoke-tested on synthetic vectors (CPU) after this section was committed; no real-embedding number for a repaired arm exists at this point.
