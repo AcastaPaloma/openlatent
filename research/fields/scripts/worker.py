@@ -8,6 +8,7 @@ A job is a YAML file (also kept in git under research/fields/jobs/specs/) with:
     priority: int             lower runs first (default 50)
     out: str                  directory the job writes (default ~/work/runs/<name>); uploaded to HF on success
     hf_path: str              path inside the HF repo (default runs/<name>)
+    hf_allow: list[str]       optional glob allow-list for the upload (default: everything); REQUIRED for t_ (chest X-ray) jobs: ["*.json","*.log","*.md"]
 Claim = atomic os.rename pending -> running; a crashed worker leaves the file in running/ for the tick to requeue.
 After each job: result.json (config, commit, exit code, timings) is written next to the logs, outputs go to HF.
 """
@@ -51,13 +52,16 @@ def git(*a):
     return subprocess.run(["git", "-C", str(REPO), *a], capture_output=True, text=True).stdout.strip()
 
 
-def upload(out, hf_path):
+def upload(out, hf_path, hf_allow=None):
+    """hf_allow: optional list of glob patterns; when set ONLY matching files are uploaded
+    (use ["*.json","*.log","*.md"] for jobs whose weights/images must not be published, e.g. chest X-ray linkage attackers)."""
     try:
         from huggingface_hub import HfApi
         api = HfApi()
         api.create_repo(HF_REPO, exist_ok=True, repo_type="model", private=False)
+        kw = dict(allow_patterns=list(hf_allow)) if hf_allow else {}
         api.upload_folder(folder_path=str(out), path_in_repo=hf_path, repo_id=HF_REPO,
-                          ignore_patterns=["*.tmp", "frames_cache/*"])
+                          ignore_patterns=["*.tmp", "frames_cache/*"], **kw)
         return True
     except Exception as e:  # noqa
         print("HF upload failed:", e, flush=True)
@@ -80,7 +84,7 @@ def run(job_path, gpu):
                host=socket.gethostname(), seconds=round(time.time() - t0, 1), finished_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     shutil.copy(logdir / f"{name}.log", out / "train.log")
     (out / "job_result.json").write_text(json.dumps(res, indent=1))
-    ok = rc == 0 and upload(out, cfg.get("hf_path", f"runs/{name}"))
+    ok = rc == 0 and upload(out, cfg.get("hf_path", f"runs/{name}"), cfg.get("hf_allow"))
     res["uploaded"] = bool(ok)
     (out / "job_result.json").write_text(json.dumps(res, indent=1))
     dest = Q / ("done" if rc == 0 else "failed")

@@ -1,0 +1,16 @@
+{
+ "name": "h_pd_smoke",
+ "config": {
+  "name": "h_pd_smoke",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 TF_NUM_INTRAOP_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/pd_release.py rel --out $OUT --name smoke --w1 7.8 --w2 0.05 --seed 0 --limit 1024 --batch 512",
+  "hf_path": "runs/h_pd_smoke"
+ },
+ "commit": "8c63193",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 52.4,
+ "finished_utc": "2026-11-04T18:01:00Z",
+ "uploaded": true
+}

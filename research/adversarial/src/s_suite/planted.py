@@ -103,7 +103,7 @@ def raw_view(X: np.ndarray) -> np.ndarray:
 
 def generate_replicate(spec: PlantedSpec, seed: int, units_train: int = 12, units_val: int = 6, units_test: int = 57, units_pop: int = 100):
     """Independent train/val/test/pop splits for one replicate (units per identity). Population split gives the attackers' true accuracy."""
-    rs = np.random.RandomState(7919 * (seed + 1) + 17)
+    rs = np.random.RandomState((7919 * (seed + 1) + 17) % (2 ** 32 - 1))
     out = {}
     for nm, u in (("train", units_train), ("val", units_val), ("test", units_test), ("pop", units_pop)):
         X, y, unit, act = gen_split(spec, u, rs)
