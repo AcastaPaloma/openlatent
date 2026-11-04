@@ -774,3 +774,144 @@ Per-seed V-selected ae configuration: seed 0: ae__beta0.001_dl32_lam10.0, seed 1
 
 Power audit, all ae configs x seeds with a floor comparator (n=30): SE of the paired Δ held: min 0.003, median 0.019, max 0.037; **MDE80 = 2.8 x SE: min 0.008, median 0.052, max 0.103**; median half-width of the 95% CI of L_worst: 0.224 (the leakage-matching tolerance is 0.05).
 
+
+
+### Cross-fit evaluation (H2-016 step 3) and dither / reconstruction-only controls (H2-014)
+
+`run_sweep.py --crossfit 4`: the sealed test units ROTATE. Per (centre, class) stratum the units are shuffled once (`RandomState(1234)`) and cut into 4 chunks; run seed k tests chunk k, so the four folds are unit-disjoint and
+together test every one of the 192 TCGA cases / 45 Tolkach cases exactly once (checked); adapters, probes, attackers are refit per fold and the A/B/V draw differs per fold. Reported numbers are POOLED OUT-OF-FOLD (bootstrap over all test units
+jointly); the validation selection uses the fold-mean V metrics (seed-pooled V, ranker P4). Grid `p3`: references (raw, centre_whiten, leace, lda, lda_pca, pca, randproj), **noise-dithered label-free codes with NO adversary** (PCA-d, LDA+PCA-d, random projection, and the AE with
+lam = 0 as base; release z = z0 + r * std_A(z0_j) * eps, eps fixed per patch, same noise for attacker training, probe training and test), **reconstruction-only AE** (lam 0, beta 1e-4), and the 10-config AE grid.
+Cells: midnight x {TCGA, Tolkach}, 4 folds each (dinov2-L was not cross-fitted; its fixed-C 3-seed result above is already null).
+
+Controls: constant embedding exactly 0.50 / 0.25 in every fold (pooled 0.60 on Tolkach is an artefact of pooling four different constant predictions over folds with different class mixes; per fold it is 0.500);
+noise embedding 0.52 / 0.25; orthogonal shuffled secret 0.47-0.52 (Tolkach, chance 0.5) and 0.25-0.27 (TCGA, chance 0.25).
+
+**Result (pooled out-of-fold, V-selected AE, difference in held-class utility to the best inductive floor with L <= L_AE + 0.05; floors incl. all dithered codes; MDE80 = 2.8 x SE):**
+
+| cell | V-selected ae | L | held acc | best floor at <= equal leakage | Δ held [95% CI] (MDE80) | n floor pts near L | beats floor envelope? |
+|---|---|---|---|---|---|---|---|
+| midnight / TCGA (192 cases, 96 held-class) | ae dl32 lam1 | 0.46 | 0.810 | dither PCA-32, r 0.5 (0.839) | **-0.028 [-0.063, +0.001] (MDE 0.048)** | 5 | no |
+| midnight / Tolkach (45 cases) | ae dl32 lam10 | 0.37 | 0.971 | dither random-proj-32, r 1 | **+0.003 [-0.007, +0.012] (MDE 0.014)** | 3 | no |
+
+Cross-fitting cut the MDE80 from 0.07-0.14 (TCGA) and 0.02-0.10 (Tolkach) in the fixed-C analysis to 0.048 and 0.014. The Tolkach contrast is now a resolved null (an effect of +0.04 would have been seen with >99% power); TCGA excludes anything above about +0.05.
+Over all 12 AE configurations per cell no configuration has a positive held-class Δ against the floor envelope with CI above 0 (TCGA: best -0.015, Tolkach: best +0.003 at CI [-0.007, +0.012]).
+
+**H2-014 (dither, no adversary) vs the AE at equal leakage (pooled out-of-fold; columns are L, held-class acc, retention xc):** the dithered label-free codes match the adversarial AE on utility and the adversary adds nothing on held-class accuracy; the AE keeps more raw-neighbourhood structure than
+*dithered* codes (random noise destroys nearest-neighbour structure), but not more than the undithered low-dimensional floors (see the retention column of the table above: best undithered floor 0.487 vs AE 0.40-0.47 at L 0.3-0.4 on TCGA).
+The reconstruction-only AE (lam 0, beta 1e-4) is the weakest AE family at its leakage (TCGA dl8: held 0.715 at L 0.43 vs dithered PCA-32 0.839 at L 0.45).
+
+
+#### AE configurations vs the nearest dithered label-free codes (pooled out-of-fold)
+
+| cell | AE config | L | held acc | retention xc | nearest dithered label-free codes with |ΔL| <= 0.05: config (L, held, retention) |
+|---|---|---|---|---|---|
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.0001_dl32_lam0.0 | 0.62 | 0.849 | 0.699 | (none) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.0001_dl8_lam0.0 | 0.43 | 0.715 | 0.514 | basepca_d32_r0.5 (0.45, 0.839, 0.47), baseae_beta0.001_dl32_r0.5 (0.48, 0.821, 0.40) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl32_lam0.0 | 0.62 | 0.853 | 0.637 | (none) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl32_lam1.0 | 0.46 | 0.810 | 0.565 | basepca_d32_r0.5 (0.45, 0.839, 0.47), baseae_beta0.001_dl32_r0.5 (0.48, 0.821, 0.40) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl32_lam10.0 | 0.34 | 0.803 | 0.465 | basepca_d32_r1.0 (0.33, 0.802, 0.21), baselda_pca_d32_r1.0 (0.33, 0.797, 0.20), baseae_beta0.0001_dl32_r1.0 (0.35, 0.776, 0.17) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl32_lam3.0 | 0.45 | 0.779 | 0.529 | basepca_d32_r0.5 (0.45, 0.839, 0.47), baseae_beta0.001_dl32_r0.5 (0.48, 0.821, 0.40) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl8_lam0.0 | 0.41 | 0.732 | 0.489 | basepca_d32_r0.5 (0.45, 0.839, 0.47) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl8_lam1.0 | 0.31 | 0.717 | 0.409 | basepca_d32_r1.0 (0.33, 0.802, 0.21), baselda_pca_d32_r1.0 (0.33, 0.797, 0.20), baserandproj_d32_r1.0 (0.27, 0.793, 0.25) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl8_lam10.0 | 0.19 | 0.674 | 0.240 | baserandproj_d32_r2.0 (0.17, 0.733, 0.09), basepca_d32_r2.0 (0.20, 0.712, 0.07), baselda_pca_d32_r2.0 (0.18, 0.703, 0.07) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.001_dl8_lam3.0 | 0.30 | 0.673 | 0.334 | basepca_d32_r1.0 (0.33, 0.802, 0.21), baselda_pca_d32_r1.0 (0.33, 0.797, 0.20), baserandproj_d32_r1.0 (0.27, 0.793, 0.25) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.01_dl32_lam0.0 | 0.37 | 0.768 | 0.234 | basepca_d32_r1.0 (0.33, 0.802, 0.21), baselda_pca_d32_r1.0 (0.33, 0.797, 0.20), baseae_beta0.0001_dl32_r1.0 (0.35, 0.776, 0.17) |
+| midnight_clsmean / tcga / holdout_cv4 | ae__beta0.01_dl8_lam0.0 | 0.33 | 0.686 | 0.339 | basepca_d32_r1.0 (0.33, 0.802, 0.21), baselda_pca_d32_r1.0 (0.33, 0.797, 0.20), baseae_beta0.0001_dl32_r1.0 (0.35, 0.776, 0.17) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.0001_dl32_lam0.0 | 0.83 | 0.959 | 0.728 | (none) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.0001_dl8_lam0.0 | 0.46 | 0.911 | 0.582 | basepca_d32_r1.0 (0.42, 0.882, 0.21), baselda_pca_d32_r1.0 (0.43, 0.860, 0.20), basepca_d16_r0.5 (0.49, 0.857, 0.32) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl32_lam0.0 | 0.76 | 0.939 | 0.623 | (none) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl32_lam1.0 | 0.51 | 0.949 | 0.601 | basepca_d16_r0.5 (0.49, 0.857, 0.32) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl32_lam10.0 | 0.37 | 0.971 | 0.609 | basepca_d32_r1.0 (0.42, 0.882, 0.21), baseae_beta0.0001_dl32_r1.0 (0.41, 0.799, 0.18), baseae_beta0.001_dl32_r1.0 (0.41, 0.799, 0.17) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl32_lam3.0 | 0.45 | 0.931 | 0.578 | basepca_d32_r1.0 (0.42, 0.882, 0.21), baselda_pca_d32_r1.0 (0.43, 0.860, 0.20), basepca_d16_r0.5 (0.49, 0.857, 0.32) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl8_lam0.0 | 0.40 | 0.881 | 0.538 | basepca_d32_r1.0 (0.42, 0.882, 0.21), baselda_pca_d32_r1.0 (0.43, 0.860, 0.20), baseae_beta0.0001_dl32_r1.0 (0.41, 0.799, 0.18) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl8_lam1.0 | 0.22 | 0.846 | 0.484 | baserandproj_d32_r2.0 (0.17, 0.889, 0.10), basepca_d32_r2.0 (0.22, 0.722, 0.07), baselda_pca_d32_r2.0 (0.26, 0.698, 0.07) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl8_lam10.0 | 0.17 | 0.908 | 0.440 | baserandproj_d32_r2.0 (0.17, 0.889, 0.10), basepca_d32_r2.0 (0.22, 0.722, 0.07), basepca_d16_r2.0 (0.18, 0.582, 0.05) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.001_dl8_lam3.0 | 0.17 | 0.865 | 0.456 | baserandproj_d32_r2.0 (0.17, 0.889, 0.10), basepca_d32_r2.0 (0.22, 0.722, 0.07), basepca_d16_r2.0 (0.18, 0.582, 0.05) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.01_dl32_lam0.0 | 0.39 | 0.828 | 0.191 | basepca_d32_r1.0 (0.42, 0.882, 0.21), baselda_pca_d32_r1.0 (0.43, 0.860, 0.20), baseae_beta0.0001_dl32_r1.0 (0.41, 0.799, 0.18) |
+| midnight_clsmean / tolkach_esca / holdout_cv4 | ae__beta0.01_dl8_lam0.0 | 0.27 | 0.725 | 0.338 | baserandproj_d32_r1.0 (0.30, 0.969, 0.27), baselda_pca_d32_r2.0 (0.26, 0.698, 0.07), baseae_beta0.001_dl32_r2.0 (0.24, 0.646, 0.06) |
+
+#### Cross-fit compact output (references and V-selected configuration)
+
+#### midnight_clsmean / tcga / holdout_cv4  (seeds [0, 1, 2, 3]; centre chance 0.250, floor 0.250; seen classes [0, 1], held-out classes [2, 3])
+
+
+References and V-selected learned configurations (absolute numbers on sealed C):
+
+| config | dim | rate (bits) | seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | 3072 | nan | 0.982 | 0.891 [0.833, 0.936] | 0.785 | 1.00 [1.00, 1.00] | 1.00 | 1.000 [1.000, 1.000] | 1.000 |
+| centre_whiten | 64 | nan | 0.947 | 0.823 [0.776, 0.866] | 0.675 | 0.14 [0.10, 0.19] | 0.14 | 0.306 [0.289, 0.321] | 0.320 |
+| leace__rho1.0 | 3072 | nan | 0.984 | 0.889 [0.829, 0.935] | 0.781 | 0.82 [0.76, 0.88] | 0.82 | 0.984 [0.973, 0.992] | 0.996 |
+| lda | 1 | nan | 0.986 | 0.659 [0.592, 0.722] | 0.595 | 0.08 [0.01, 0.19] | 0.08 | 0.095 [0.088, 0.102] | 0.074 |
+| lda_pca__d4 | 4 | nan | 0.989 | 0.667 [0.599, 0.731] | 0.579 | 0.32 [0.24, 0.42] | 0.32 | 0.359 [0.332, 0.386] | 0.302 |
+| lda_pca__d8 | 8 | nan | 0.990 | 0.705 [0.644, 0.764] | 0.640 | 0.42 [0.34, 0.51] | 0.42 | 0.448 [0.419, 0.474] | 0.395 |
+| lda_pca__d16 | 16 | nan | 0.976 | 0.811 [0.752, 0.868] | 0.710 | 0.49 [0.40, 0.57] | 0.49 | 0.552 [0.524, 0.580] | 0.523 |
+| lda_pca__d32 | 32 | nan | 0.975 | 0.856 [0.798, 0.911] | 0.736 | 0.61 [0.54, 0.69] | 0.61 | 0.668 [0.641, 0.696] | 0.657 |
+| lda_pca__d64 | 64 | nan | 0.973 | 0.884 [0.831, 0.931] | 0.731 | 0.72 [0.64, 0.80] | 0.72 | 0.749 [0.722, 0.775] | 0.749 |
+| pca__d4 | 4 | nan | 0.985 | 0.620 [0.563, 0.684] | 0.542 | 0.36 [0.28, 0.46] | 0.36 | 0.367 [0.338, 0.396] | 0.309 |
+| pca__d16 | 16 | nan | 0.952 | 0.801 [0.736, 0.862] | 0.703 | 0.49 [0.40, 0.58] | 0.49 | 0.548 [0.519, 0.576] | 0.526 |
+| pca__d64 | 64 | nan | 0.954 | 0.883 [0.828, 0.932] | 0.745 | 0.70 [0.64, 0.79] | 0.70 | 0.740 [0.713, 0.765] | 0.744 |
+| ae__beta0.001_dl32_lam1.0 | 32 | 106.5 | 0.959 | 0.810 [0.759, 0.856] | 0.713 | 0.46 [0.40, 0.54] | 0.47 | 0.565 [0.538, 0.591] | 0.561 |
+
+Per family, configuration selected on V (L_V within +0.05 of the matched LDA arm; then max V held-class acc):
+
+| family | config | matched LDA | Δ held-class acc vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |
+|---|---|---|---|---|---|---|---|---|
+| vib | (no config within the leakage tolerance on V) | | | | | no | | no |
+| vq | (no config within the leakage tolerance on V) | | | | | no | | no |
+| dann | (no config within the leakage tolerance on V) | | | | | no | | no |
+| adv_retrain | (no config within the leakage tolerance on V) | | | | | no | | no |
+| supcon_xc | (no config within the leakage tolerance on V) | | | | | no | | no |
+| ae | ae__beta0.001_dl32_lam1.0 | lda_pca__d32 | -0.046 [-0.092, -0.006] (MDE 0.063) | -0.103 [-0.124, -0.082] (MDE 0.030) | -0.16 | no | -0.028 [-0.063, +0.001] (MDE 0.048) vs dither__basepca_d32_r0.5, n_near=5 | no |
+
+Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.25; ctrl_noise 0.25; ctrl_shuffle_orth__rep0 0.25; ctrl_shuffle_orth__rep1 0.26; ctrl_shuffle_orth__rep2 0.27
+
+#### midnight_clsmean / tolkach_esca / holdout_cv4  (seeds [0, 1, 2, 3]; centre chance 0.500, floor 0.500; seen classes [0, 1, 2], held-out classes [3, 4, 5])
+
+
+References and V-selected learned configurations (absolute numbers on sealed C):
+
+| config | dim | rate (bits) | seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | 3072 | nan | 0.985 | 0.998 [0.996, 0.999] | 0.997 | 1.00 [1.00, 1.00] | 1.00 | 1.000 [1.000, 1.000] | 1.000 |
+| centre_whiten | 64 | nan | 0.919 | 0.950 [0.910, 0.976] | 0.957 | 0.22 [0.17, 0.32] | 0.22 | 0.415 [0.368, 0.465] | 0.440 |
+| leace__rho1.0 | 3072 | nan | 0.986 | 0.998 [0.996, 0.999] | 0.997 | 0.91 [0.87, 0.96] | 0.91 | 0.998 [0.996, 0.999] | 0.999 |
+| lda | 2 | nan | 0.981 | 0.785 [0.731, 0.835] | 0.721 | 0.11 [0.02, 0.29] | 0.11 | 0.177 [0.157, 0.195] | 0.101 |
+| lda_pca__d4 | 4 | nan | 0.984 | 0.843 [0.803, 0.880] | 0.736 | 0.12 [0.05, 0.30] | 0.13 | 0.349 [0.324, 0.374] | 0.251 |
+| lda_pca__d8 | 8 | nan | 0.984 | 0.954 [0.931, 0.972] | 0.916 | 0.30 [0.22, 0.39] | 0.31 | 0.514 [0.490, 0.539] | 0.424 |
+| lda_pca__d16 | 16 | nan | 0.978 | 0.921 [0.871, 0.960] | 0.879 | 0.67 [0.59, 0.76] | 0.72 | 0.573 [0.542, 0.604] | 0.550 |
+| lda_pca__d32 | 32 | nan | 0.984 | 0.954 [0.909, 0.984] | 0.956 | 0.84 [0.79, 0.91] | 0.86 | 0.673 [0.642, 0.706] | 0.660 |
+| lda_pca__d64 | 64 | nan | 0.974 | 0.982 [0.954, 0.995] | 0.994 | 0.91 [0.86, 0.95] | 0.91 | 0.746 [0.718, 0.780] | 0.765 |
+| pca__d4 | 4 | nan | 0.956 | 0.926 [0.897, 0.949] | 0.820 | 0.21 [0.14, 0.31] | 0.24 | 0.433 [0.412, 0.457] | 0.344 |
+| pca__d16 | 16 | nan | 0.958 | 0.930 [0.883, 0.966] | 0.897 | 0.72 [0.64, 0.80] | 0.76 | 0.572 [0.540, 0.606] | 0.553 |
+| pca__d64 | 64 | nan | 0.968 | 0.986 [0.971, 0.994] | 0.980 | 0.88 [0.82, 0.92] | 0.88 | 0.714 [0.681, 0.754] | 0.758 |
+| ae__beta0.001_dl32_lam10.0 | 32 | 162.0 | 0.979 | 0.971 [0.958, 0.983] | 0.931 | 0.37 [0.29, 0.45] | 0.40 | 0.609 [0.580, 0.642] | 0.544 |
+
+Per family, configuration selected on V (L_V within +0.05 of the matched LDA arm; then max V held-class acc):
+
+| family | config | matched LDA | Δ held-class acc vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |
+|---|---|---|---|---|---|---|---|---|
+| vib | (no config within the leakage tolerance on V) | | | | | no | | no |
+| vq | (no config within the leakage tolerance on V) | | | | | no | | no |
+| dann | (no config within the leakage tolerance on V) | | | | | no | | no |
+| adv_retrain | (no config within the leakage tolerance on V) | | | | | no | | no |
+| supcon_xc | (no config within the leakage tolerance on V) | | | | | no | | no |
+| ae | ae__beta0.001_dl32_lam10.0 | lda_pca__d32 | +0.017 [-0.008, +0.058] (MDE 0.048) | -0.063 [-0.090, -0.039] (MDE 0.035) | -0.47 | no | +0.003 [-0.007, +0.012] (MDE 0.014) vs dither__baserandproj_d32_r1.0, n_near=3 | no |
+
+Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.60; ctrl_noise 0.52; ctrl_shuffle_orth__rep0 0.49; ctrl_shuffle_orth__rep1 0.52; ctrl_shuffle_orth__rep2 0.47
+
+##### Kill-test tally (FOCUS A, revised): learned families (selected on V) beating the matched LDA arm on (i) held-class utility or (ii) retention with L within tolerance
+
+| encoder | dataset | variant | family | config | wins |
+|---|---|---|---|---|---|
+| midnight_clsmean | tcga | holdout_cv4 | ae | ae__beta0.001_dl32_lam1.0 | no |
+| midnight_clsmean | tolkach_esca | holdout_cv4 | ae | ae__beta0.001_dl32_lam10.0 | no |
+
+### VERDICT on the post hoc AE lead (2026-11-04 ~14:15Z): **DEAD**
+
+* Pre-registered margin (RANKING_R2 section 7, AE-DEAD (a): 3-seed V-selected Δ_held < +0.02 in either midnight cell): fixed-C 3 seeds, midnight/TCGA -0.056 [-0.108, -0.010] (MDE 0.071), midnight/Tolkach -0.002 [-0.011, +0.010] (MDE 0.015); met in both.
+* Replication of the two seed-0 picks: 0 of 3 seeds on every cell win against the floor envelope (Δ >= +0.04, CI above 0, >= 2 floor points near L); seed 0 midnight/TCGA +0.007 [-0.081, +0.097], seed 1 -0.014 (the +0.164 / +0.011 pair in the ranking is the LDA-family-only comparator).
+* Cross-fit (test-unit noise replicated, MDE 0.048 / 0.014): -0.028 [-0.063, +0.001] and +0.003 [-0.007, +0.012]; (b): dithered / undithered floors within 0.03 of the AE in both midnight cells at equal leakage.
+* Not run: H2-015 selection-null (criterion (c)); phikon-v2 cells; dinov2-L cross-fit. None can revive a lead that is null in both midnight cells against a resolved MDE.
+* The label-supervised families (vib, vq, dann, adv_retrain, supcon_xc) stay below the matched LDA arm and below the floor envelope in all four fixed-C cells (table above).
