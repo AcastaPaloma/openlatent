@@ -1,0 +1,4 @@
+name: a_p2h_dinov2L_tcga_s2
+priority: 10
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset tcga --seed 2 --grid p2 --holdout
+hf_path: runs/a_p2h_dinov2L_tcga_s2
