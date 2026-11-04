@@ -265,10 +265,15 @@ def encode_all(E, rag4, bs=128):
     E.eval()
     n = rag4.n
     pooled, seqs, lens, kls = [], [], [], []
+    hist = torch.zeros(E.vq.G, E.vq.K) if E.bott == "vq" else None
     for s in range(0, n, bs):
         idx = np.arange(s, min(s + bs, n))
         x, m = rag4.batch(idx)
         o = E(x.float(), m)
+        if hist is not None:
+            ix = o["idx"].reshape(-1, E.vq.G).cpu()
+            for g in range(E.vq.G):
+                hist[g] += torch.bincount(ix[:, g], minlength=E.vq.K).float()
         rel = getattr(E, "release", "z")
         if rel == "posterior":
             pooled.append(torch.softmax(o["emo_logits"], -1).cpu())
@@ -287,5 +292,7 @@ def encode_all(E, rag4, bs=128):
         seq = Ragged(torch.cat(seqs, 0), np.concatenate([[0], np.cumsum(lens)]))
     rate = dict(kl_nats=float(torch.cat(kls).mean()), bits_vq=E.bits if getattr(E, "release", "z") == "z" else (float(np.log2(6)) if E.release == "label" else None))
     if E.bott == "vq":
-        rate["vq_perplexity"] = E.vq.perplexity()
+        p = hist / hist.sum(1, keepdim=True).clamp(min=1)  # code usage over all 7,442 clips (the training-time usage buffer is reset every epoch)
+        rate["vq_perplexity"] = float(torch.exp(-(p * torch.log(p + 1e-9)).sum(1)).mean())
+        rate["vq_codes_used"] = float((hist > 0).sum(1).float().mean())
     return Rep(pooled, seq, "learned"), rate
