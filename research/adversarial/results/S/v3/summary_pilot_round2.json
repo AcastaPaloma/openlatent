@@ -1,0 +1,183 @@
+{
+ "N2_best_in_own_group_vs_base": {
+  "hb|snr1.0": {
+   "base": 0.05390625,
+   "own": 0.080078125
+  },
+  "hb|snr1.6": {
+   "base": 0.055078125000000006,
+   "own": 0.260546875
+  },
+  "hb|snr2.5": {
+   "base": 0.05755208333333334,
+   "own": 0.6078125
+  },
+  "inter|snr1.0": {
+   "base": 0.055078125,
+   "own": 0.05110677083333333
+  },
+  "inter|snr1.6": {
+   "base": 0.062109374999999994,
+   "own": 0.05794270833333333
+  },
+  "inter|snr2.5": {
+   "base": 0.09016927083333333,
+   "own": 0.108203125
+  },
+  "phase|snr1.0": {
+   "base": 0.05423177083333333,
+   "own": 0.1078125
+  },
+  "phase|snr1.6": {
+   "base": 0.05390625,
+   "own": 0.2400390625
+  },
+  "phase|snr2.5": {
+   "base": 0.061263020833333334,
+   "own": 0.4442057291666667
+  }
+ },
+ "N2_detection": {
+  "hb|snr1.0": {
+   "pooled": [
+    8,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    4,
+    4
+   ]
+  },
+  "hb|snr1.6": {
+   "pooled": [
+    8,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    4,
+    4
+   ]
+  },
+  "hb|snr2.5": {
+   "pooled": [
+    8,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    4,
+    4
+   ]
+  },
+  "inter|snr1.0": {
+   "pooled": [
+    0,
+    8
+   ],
+   "smooth": [
+    0,
+    4
+   ],
+   "white": [
+    0,
+    4
+   ]
+  },
+  "inter|snr1.6": {
+   "pooled": [
+    1,
+    8
+   ],
+   "smooth": [
+    1,
+    4
+   ],
+   "white": [
+    0,
+    4
+   ]
+  },
+  "inter|snr2.5": {
+   "pooled": [
+    7,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    3,
+    4
+   ]
+  },
+  "phase|snr1.0": {
+   "pooled": [
+    8,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    4,
+    4
+   ]
+  },
+  "phase|snr1.6": {
+   "pooled": [
+    8,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    4,
+    4
+   ]
+  },
+  "phase|snr2.5": {
+   "pooled": [
+    8,
+    8
+   ],
+   "smooth": [
+    4,
+    4
+   ],
+   "white": [
+    4,
+    4
+   ]
+  }
+ },
+ "N2_shuffled_false_leak": {
+  "leak": 0,
+  "n": 72
+ },
+ "_provenance": {
+  "evaluator": {
+   "expected_sha256": "b1bc7e7283bbd92c298a4afc71c90dd51a052fe2ed5228962ab9d31ffd8f4e4b",
+   "frozen_match": false,
+   "sha256": "f08a6af1af24e86d2a1f3eb6c3627cfa283ab6f29f854bc278731aed7fd61322",
+   "tag": "s-suite-eval-v2",
+   "version": "s_suite/3.0"
+  },
+  "script": "summarize.py",
+  "script_sha256": "39d5c50d88e19f329e5be645edfbce4c7c6947b2f397bb14852d09fc349bb243"
+ }
+}
