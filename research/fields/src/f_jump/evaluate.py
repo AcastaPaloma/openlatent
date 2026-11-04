@@ -40,16 +40,17 @@ def universe(meta, s5):
     pert = meta["PertType"].to_numpy()
     src = meta["Metadata_Source"].to_numpy()
     trt = pert == "trt"
+    js = pd.Series(jcp)
     t2_ids = set(jcp[(ptype == "TARGET2") & trt])
+    exc = js.isin(C.EXCLUDE_FROM_MAP).to_numpy()
     if s5:
-        inu = (ptype == "COMPOUND") & trt & ~np.isin(jcp, list(t2_ids)) & ~np.isin(jcp, list(C.EXCLUDE_FROM_MAP))
+        inu = (ptype == "COMPOUND") & trt & ~js.isin(t2_ids).to_numpy() & ~exc
     else:
-        inu = (ptype == "TARGET2") & trt & ~np.isin(jcp, list(C.EXCLUDE_FROM_MAP))
+        inu = (ptype == "TARGET2") & trt & ~exc
     # >= 2 sources
     df = pd.DataFrame({"j": jcp[inu], "s": src[inu]})
     ns = df.groupby("j")["s"].nunique()
-    ok = set(ns[ns >= 2].index)
-    inu &= np.isin(jcp, list(ok))
+    inu &= js.isin(set(ns[ns >= 2].index)).to_numpy()
     return dict(inu=inu, jcp=jcp, ptype=ptype, pert=pert, src=src)
 
 
