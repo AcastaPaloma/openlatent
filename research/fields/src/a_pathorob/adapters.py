@@ -365,14 +365,19 @@ def run_floor(method, hp, P, sp, seed):
     if method == "lda_pca":      # matched-dimensionality label-only arm: LDA (C-1 dims) + top PCs of the residual after removing the LDA subspace
         from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
         XA = P.X[sp["A"]].astype(np.float64)
-        m_ = LDA(solver="eigen", shrinkage="auto").fit(XA, P.y[sp["A"]])
-        nl = m_.transform(XA[:2]).shape[1]
+        key = ("lda_pca", XA.shape, float(XA[:3].sum()), float(XA[-3:].sum()))
+        if key not in _EIG:                       # LDA + residual SVD are shared by the whole d ladder
+            _EIG.clear()
+            m0 = LDA(solver="eigen", shrinkage="auto").fit(XA, P.y[sp["A"]])
+            nl0 = m0.transform(XA[:2]).shape[1]
+            mu0 = XA.mean(0)
+            Q0, _ = np.linalg.qr(m0.scalings_[:, :nl0])
+            resid = (XA - mu0) - ((XA - mu0) @ Q0) @ Q0.T
+            _, _, Vt0 = np.linalg.svd(resid, full_matrices=False)
+            _EIG[key] = (m0, nl0, mu0, Q0, Vt0[:128].T)
+        m_, nl, mu, Q, Vall = _EIG[key]
         d = hp["d"]
-        mu = XA.mean(0)
-        Q, _ = np.linalg.qr(m_.scalings_[:, :nl])
-        resid = (XA - mu) - ((XA - mu) @ Q) @ Q.T
-        _, _, Vt = np.linalg.svd(resid, full_matrices=False)
-        V = Vt[: max(d - nl, 0)].T
+        V = Vall[:, : max(d - nl, 0)]
         out = {}
         for s in SPLITS:
             X64 = P.X[sp[s]].astype(np.float64)
