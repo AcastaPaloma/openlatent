@@ -915,3 +915,29 @@ Controls (worst of the 4 attackers, centre bacc on C): ctrl_const 0.60; ctrl_noi
 * Cross-fit (test-unit noise replicated, MDE 0.048 / 0.014): -0.028 [-0.063, +0.001] and +0.003 [-0.007, +0.012]; (b): dithered / undithered floors within 0.03 of the AE in both midnight cells at equal leakage.
 * Not run: H2-015 selection-null (criterion (c)); phikon-v2 cells; dinov2-L cross-fit. None can revive a lead that is null in both midnight cells against a resolved MDE.
 * The label-supervised families (vib, vq, dann, adv_retrain, supcon_xc) stay below the matched LDA arm and below the floor envelope in all four fixed-C cells (table above).
+
+
+## AUDIT FOLLOW-UP: PRE-REGISTRATION (written 2026-11-04 ~18:15Z VM clock, BEFORE any of the numbers below it; tightening only, original verdicts stay alongside)
+
+Trigger: Auditor-1 findings F-02, F-03, F-07, F-08, F-09, F-14 (research/fields/AUDIT_findings.md) and the AUDIT CORRECTIONS block of FOCUS.md. Original verdicts, unchanged by this block: gate G1 not met; held-class LABEL utility of the label-free AE: no gain
+(cross-fit midnight/TCGA -0.028 [-0.063, +0.001], midnight/Tolkach +0.003 [-0.007, +0.012]). What is reopened: criterion (ii) retention, the F-02 adversary attribution, and the untested encoders.
+
+**Definitions changed (hygiene, F-08).** "Inductive floors" = raw, leace, lda, lda_pca, pca, randproj and the noise-dithered codes (all fitted on adapter-train units only). `centre_whiten` is a **transductive reference** (it needs the centre id of each released patch and
+the test split's own statistics) and is reported in its own column, not in the inductive envelope. Every difference gets a **headroom to raw** (raw minus the best inductive floor at the same leakage, i.e. the most any adapter could gain) and an MDE80; a cell with headroom < 0.04 on the metric
+is labelled "ceiling-limited, not scored" for that metric. Pooled cross-fit L is reported as is (the Tolkach pooled constant-embedding control reads 0.60 because four different constant predictions are pooled; per fold it is 0.50), and the V size is stated.
+
+**(2) H2-015 selection null.** For each cell (fixed-C 3-seed pools and the two cross-fit cells), statistic T_obs = max over the 12 `ae` configurations of the difference (held-class accuracy; separately kNN-retention-xc) to the best inductive floor with L <= L_c + 0.05.
+Null A (frontier permutation): replace the 12 `ae` configurations by 12 inductive-floor points drawn at random with |L - L_ae| <= 0.1 (one per `ae` config, 5000 draws), compare each to the remaining floors exactly as for the AE, record the max. Null B (max-T bootstrap): over 1000 unit bootstraps,
+T^b = max_c (D^b_c - D_c) where D^b_c is the difference recomputed on the resample and D_c the point estimate. A best-of-12 gain counts as "above selection noise" only if T_obs exceeds the 95th percentile of BOTH nulls.
+Observed best-of-12 gains that do not exceed them are described as selection noise, whatever their point estimate.
+
+**(3) Replications.** dinov2-L cross-fit (K=4 rotating test units, TCGA and Tolkach) and phikon-v2 held-out-class protocol (fixed C, seed 0, TCGA and Tolkach; single seed, labelled "not yet replicated"), grid `p4` (= `p3` minus 14 dithered / duplicate floor
+points; keeps all 12 `ae` configurations, the reconstruction-only AE, lda_pca, pca, randproj, a reduced dither ladder, controls). Decision rules, unchanged from FOCUS A: (i) held-class utility win = Delta >= +0.04 with CI > 0 against the inductive envelope and >= 2 floor points within +-0.05 of L;
+(ii) retention win = Delta >= +0.05 with CI > 0, >= 2 floor points near L, **and** held-class utility not worse than the matched floor by more than 0.03 (added: retention must not be bought with utility). Cells with headroom < 0.04 on a metric are not scored on that metric.
+Combined verdict language: "dead on label utility, mixed on retention" is kept unless (3) gives retention wins in both new encoders (-> retention ALIVE) or in none of the four encoder-cells including midnight/TCGA (-> retention DEAD).
+
+**(4) F-02 adversary convergence (one cell: midnight/Tolkach, 4-fold cross-fit).** `ae` dl32 beta 1e-3 with lam in {30, 100, 300} and 3x more encoder steps (36 rounds x 60 = 2160 steps instead of 720; the retrained adversaries and their per-round in-sample accuracy are logged as `adv_train_acc_per_round`).
+"Adapter trained" criterion: the mean over folds of the LAST round's in-sample adversary accuracy is within 0.05 of chance (<= 0.55 for 2 centres). No statement about what the adversary adds or does not add is allowed for a configuration that fails the criterion (it is reported as "adversary did not converge");
+for configurations that pass, they are compared with the dithered no-adversary codes and the floor envelope at equal leakage under the same rules as (i)/(ii). Reference rows lam in {0, 1, 3, 10} (12 rounds) come from the existing cross-fit run of that cell.
+
+Budget <= 4 GPU-h (estimate: dinov2-L cross-fit 2.0, phikon-v2 holdout 0.5, F-02 0.4), at most 3 `a_` jobs at once, priority 4 once.
