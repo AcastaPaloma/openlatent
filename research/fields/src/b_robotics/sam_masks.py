@@ -79,11 +79,11 @@ def run(kind, splits, out, limit=None, device="cuda", bs=32, model_id="facebook/
             cov_l.append(((m & gt).sum((1, 2))) / np.maximum(gt.sum((1, 2)), 1))
             if e % 50 == 0:
                 print(f"{kind} {split} ep {e}/{N} iou {np.mean(iou_l):.3f} decoy_in_mask {np.mean(inc_l):.3f} {time.time()-t0:.0f}s", flush=True)
-        np.savez_compressed(os.path.join(out, f"sam_{kind}_{split}.npz"), mask=np.packbits(masks, axis=-1))
+        np.savez_compressed(os.path.join(out, f"sam_{D.MASK_PREFIX}{kind}_{split}.npz"), mask=np.packbits(masks, axis=-1))
         summary[split] = dict(iou_vs_exact_arm=float(np.mean(iou_l)), decoy_pixels_in_mask=float(np.mean(inc_l)),
                               arm_recall=float(np.mean(cov_l)), iou_per_episode=[float(x.mean()) for x in iou_l][:2000], n_eps=N)
         print(kind, split, {k: v for k, v in summary[split].items() if k != "iou_per_episode"}, flush=True)
-    json.dump(summary, open(os.path.join(out, f"sam_summary_{kind}.json"), "w"))
+    json.dump(summary, open(os.path.join(out, f"sam_summary_{D.MASK_PREFIX}{kind}.json"), "w"))
 
 
 if __name__ == "__main__":

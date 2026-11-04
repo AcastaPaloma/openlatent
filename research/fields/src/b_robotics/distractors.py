@@ -16,14 +16,22 @@ Sprite 0 mimics the arm (R_0 = fitted EE-pixel response), sprite 1 mirrors it, s
 Sprites start near the end effector, are opaque discs drawn over the arm, and half of the palette is arm-like
 (red / grey / dark), so a segmenter cannot separate them by colour alone.
 """
+import os
 import numpy as np
 import torch
 
+# strength level (env B_LEVEL): "weak" = 3 small slow sprites (first regime check: raw LAM loses only ~0.06 NMSE vs clean, no headroom);
+# "strong" = 8 larger, 2x faster sprites.  The level changes K, radius, speed, spread; mask files get a level prefix.
+LEVEL = os.environ.get("B_LEVEL", "weak")
+_P = dict(weak=dict(K=3, R=7.0, GAIN=1.0, SIG=1.5, SPREAD=22.0, JIT=2.0, OFF0=8.0),
+          strong=dict(K=8, R=9.0, GAIN=2.0, SIG=3.0, SPREAD=30.0, JIT=4.0, OFF0=12.0))[LEVEL]
+MASK_PREFIX = "" if LEVEL == "weak" else LEVEL + "_"
+
 KINDS = ["none", "indep", "corr_det", "corr_noisy", "corr_glued"]
-K_SPR = 3
-RADIUS = 7.0
-SIGMA_CORR = 1.5       # px / macro step, independent part of corr_noisy
-SPREAD0 = 22.0         # px, initial scatter around the end effector
+K_SPR = _P["K"]
+RADIUS = _P["R"]
+SIGMA_CORR = _P["SIG"]  # px / macro step, independent part of corr_noisy
+SPREAD0 = _P["SPREAD"]  # px, initial scatter around the end effector
 PALETTE = torch.tensor([[0.75, 0.12, 0.12], [0.10, 0.70, 0.20], [0.15, 0.25, 0.85],
                         [0.90, 0.85, 0.10], [0.62, 0.62, 0.64], [0.12, 0.12, 0.14]])
 
@@ -40,7 +48,8 @@ def make_maps(M_ee, seed=4242):
     rng = np.random.default_rng(seed)
     R2 = rng.normal(size=(2, 3))
     R2 *= np.linalg.norm(M_ee) / np.linalg.norm(R2)
-    return np.stack([M_ee, -M_ee, R2])  # (K,2,3)
+    Rs = [M_ee, -M_ee, R2] + [rng.normal(size=(2, 3)) * np.linalg.norm(M_ee) / np.sqrt(6) for _ in range(K_SPR - 3)]
+    return np.stack(Rs[:K_SPR]) * _P["GAIN"]  # (K,2,3)
 
 
 def sample(kind, acts, eepix, maps, seed, indep_std=None, W=128):
@@ -52,15 +61,15 @@ def sample(kind, acts, eepix, maps, seed, indep_std=None, W=128):
                     vres=np.zeros((N, T, K, 2), np.float32), vtot=np.zeros((N, T, K, 2), np.float32))
     rng = np.random.default_rng(seed)
     pos0 = eepix[:, 0][:, None, :] + rng.normal(0, SPREAD0, (N, K, 2))
-    cls = np.stack([rng.permutation(6)[:K] for _ in range(N)])
+    cls = np.stack([rng.permutation(6)[:K] for _ in range(N)]) if K <= 6 else rng.integers(0, 6, (N, K))
     eps = rng.normal(0, 1, (N, T, K, 2))
     a3 = acts[..., :3]
     drive = np.einsum("kij,ntj->ntki", maps, a3)  # (N,T,K,2) deterministic action response
     if kind == "corr_glued":
         rg = np.random.default_rng(seed + 7)
-        off = np.zeros((N, T + 1, K, 2)); off[:, 0] = rg.normal(0, 8.0, (N, K, 2))
+        off = np.zeros((N, T + 1, K, 2)); off[:, 0] = rg.normal(0, _P["OFF0"], (N, K, 2))
         for t in range(T):
-            off[:, t + 1] = 0.9 * off[:, t] + 2.0 * rg.normal(0, 1, (N, K, 2))
+            off[:, t + 1] = 0.9 * off[:, t] + _P["JIT"] * rg.normal(0, 1, (N, K, 2))
         pos = np.clip(eepix[:, :, None, :] + off, RADIUS, W - RADIUS)
         vres = off[:, 1:] - off[:, :-1]
         return dict(pos=pos.astype(np.float32), cls=cls.astype(np.int64), vres=vres.astype(np.float32),

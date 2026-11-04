@@ -8,7 +8,7 @@ import sys, glob, json, os, re
 import numpy as np
 
 MARGIN, LEAK_TOL = 0.05, 0.02
-ORDER = ["clean", "raw", "rate4", "rateb", "sam", "gtmask", "adv", "advmask"]
+ORDER = ["clean", "raw", "rate4", "rateb", "sam", "gtmask", "adv", "adv30"]
 
 
 def load(dirs):
@@ -34,6 +34,13 @@ def main(dirs):
         print("|---|---|---|---|---|---|---|---|---|---|")
         for arm in ORDER:
             rs = R.get((kind, arm))
+            if arm == "clean" and kind != "none" and ("none", "clean") in R:   # clean-trained LAM evaluated on this kind's test set (OOD for it)
+                S0 = list(R[("none", "clean")].values())
+                u = [r["util_by_test_kind"].get(kind) for r in S0]
+                print(f"| clean (trained on none; test on {kind}) | {len(S0)} | {ms([x for x in u if x is not None])} | | | | | | | |")
+                S1 = [r["util_lin2k_xyz"] for r in S0]
+                print(f"| clean (ID: test on none) | {len(S0)} | {ms(S1)} | {ms([r['util_linfull_xyz'] for r in S0])} | {ms([r['util_mlp_xyz'] for r in S0])} | 0 | | | | |")
+                continue
             if not rs:
                 continue
             S = list(rs.values())
@@ -47,7 +54,7 @@ def main(dirs):
         # kill rule
         if kind in ("corr_det", "corr_noisy", "corr_glued"):
             sam, gt = R.get((kind, "sam"), {}), R.get((kind, "gtmask"), {})
-            for cand in ("adv", "advmask"):
+            for cand in ("adv", "adv30"):
                 c = R.get((kind, cand), {})
                 seeds = sorted(set(c) & set(sam))
                 if not seeds:

@@ -1,0 +1,4 @@
+name: b_str_indep
+priority: 9
+cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind indep --arms raw,gtmask --epochs 30 --seed 0 --out $OUT
+hf_path: runs/b_str_indep

@@ -7,7 +7,7 @@ Arms (one trained model each):
   rateb   raw + strong KL (beta large)                             [rate-bottleneck control, no adversary]
   sam     frames and loss restricted to the zero-shot (oracle-prompted) SAM arm mask
   gtmask  frames and loss restricted to the exact arm silhouette   [best any mask can do]
-  adv     raw + adversary on distractor state (confusion loss; fresh attackers retrained at eval)
+  adv     raw + adversary on distractor state (confusion loss, lambda 10; fresh attackers retrained at eval); adv30: lambda 30
 Utility = linear probe z -> true macro action (NMSE, 1.0 = chance).  Leakage = fresh probes z -> distractor state
 (normalised to chance, 0 = chance), worst case over linear and MLP attackers and over targets.
 """
@@ -18,7 +18,7 @@ import data as Dt, distractors as D
 
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 S = 64
-TRAIN_KINDS = ["indep", "corr_det", "corr_noisy", "corr_glued"]
+TRAIN_KINDS = ["none", "indep", "corr_det", "corr_noisy", "corr_glued"]
 ARMS = {
     "clean": dict(train_kind="none", mask=None, zdim=16, beta=0.1, adv=0.0),
     "raw": dict(mask=None, zdim=16, beta=0.1, adv=0.0),
@@ -27,6 +27,7 @@ ARMS = {
     "sam": dict(mask="sam", zdim=16, beta=0.1, adv=0.0),
     "gtmask": dict(mask="gt", zdim=16, beta=0.1, adv=0.0),
     "adv": dict(mask=None, zdim=16, beta=0.1, adv=10.0),
+    "adv30": dict(mask=None, zdim=16, beta=0.1, adv=30.0),
 }
 
 
@@ -48,7 +49,7 @@ class GData:
         self.eepix = torch.from_numpy(ep["eepix"][L]).to(dev)
         self.sam = None
         if mask_root is not None:
-            f = os.path.join(mask_root, f"sam_{kind}_{split}.npz")
+            f = os.path.join(mask_root, f"sam_{D.MASK_PREFIX}{kind}_{split}.npz")
             if os.path.exists(f):
                 self.sam = torch.from_numpy(Dt.unpack(np.load(f)["mask"])[L]).to(dev)
         self.N, self.T1 = self.frames.shape[:2]
@@ -136,8 +137,9 @@ class FDM(nn.Module):
 
 
 class Adv(nn.Module):
-    def __init__(s, zdim, n_reg, n_cls=3, k=6):
+    def __init__(s, zdim, n_reg, n_cls=None, k=6):
         super().__init__()
+        n_cls = n_cls or D.K_SPR
         s.n_reg, s.n_cls, s.k = n_reg, n_cls, k
         s.net = nn.Sequential(nn.Linear(zdim, 256), nn.GELU(), nn.Linear(256, 256), nn.GELU(), nn.Linear(256, n_reg + n_cls * k))
 
@@ -164,7 +166,7 @@ def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
     use_adv = cfg["adv"] > 0
     if use_adv:
         has_n1 = bool(tr.vres.abs().sum() > 0)
-        n_reg = (6 if has_n1 else 0) + 6
+        n_reg = (2 * D.K_SPR if has_n1 else 0) + 2 * D.K_SPR
         adv = Adv(cfg["zdim"], n_reg).to(dev)
         opt_a = torch.optim.AdamW(adv.parameters(), lr=1e-3, weight_decay=1e-4)
         # standardisers for regression targets
