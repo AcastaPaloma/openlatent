@@ -1,0 +1,16 @@
+{
+ "name": "b_msam_indep_s0",
+ "config": {
+  "name": "b_msam_indep_s0",
+  "priority": 11,
+  "cmd": "until [ -f ~/work/data/b_mw/masks/sam_summary_strong_indep.json ]; do sleep 20; done; cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind indep --arms sam --epochs 30 --seed 0 --out $OUT",
+  "hf_path": "runs/b_msam_indep_s0"
+ },
+ "commit": "6312175",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 231.3,
+ "finished_utc": "2026-11-04T18:13:46Z",
+ "uploaded": true
+}
