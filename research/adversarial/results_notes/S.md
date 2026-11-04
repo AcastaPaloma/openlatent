@@ -113,4 +113,4 @@ Everything after the freeze is one pass of each script unless an amendment says 
 (to be appended)
 
 ## 9. Record
-(prereg commit hash and tag target to be appended)
+- 2026-11-04 ~19:05Z: tag `s-suite-eval-v1` (annotated, pushed) points to commit `6cfc65e` (a main-agent commit that swept S.md, `s_suite/FREEZE.json` and the code in; their content at that commit is byte-identical to this pre-registration; `python -m s_suite.freeze --check` passes against it). That commit is the prereg_commit for every later ledger check. No real-data number existed at that time.
