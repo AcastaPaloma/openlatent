@@ -84,10 +84,18 @@ def build_release(arm, S, PHI, tr_mask, fold, pd_file=None, seed=0):
     m = re.fullmatch(r"act(\d+)(?:_r([0-9.]+))?", arm)
     if m:
         return act_bottleneck(PHI, act, tr_mask, int(m.group(1)), float(m.group(2) or 0), seed), "code"
+    if arm == "predlabel":  # H-A4 floor: release only the PREDICTED activity (hard one-hot) of an MLP trained on the fold's training windows
+        return act_bottleneck(PHI, act, tr_mask, 60, 0.0, seed, onehot=True), "code"
+    if arm == "predlabel_pd":  # H-A4 floor: one-hot of the argmax of PD's own shipped surrogate classifier head applied to its 60-d embedding
+        import torch
+        sd = torch.load(os.path.join(C.PD_REPO, "models", "privdiffuser_motion_1", "pub_classifier_motion_1.pt"), map_location="cpu")
+        W, b = sd["fc6.weight"].numpy(), sd["fc6.bias"].numpy()
+        d = np.load(pd_file); Z = np.zeros((N, 60), np.float32); Z[d["idx"]] = d["z"]
+        return np.eye(N_ACT, dtype=np.float32)[(Z @ W.T + b).argmax(1)], "code"
     raise ValueError(f"unknown arm {arm}")
 
 
-def act_bottleneck(PHI, act, tr_mask, k, r, seed):
+def act_bottleneck(PHI, act, tr_mask, k, r, seed, onehot=False):
     """Label-supervised wide code: MLP activity classifier on standardised phi with an L2-normalised k-d bottleneck; release = bottleneck (+ N(0,(r sd)^2))."""
     import torch
     from torch import nn
@@ -103,7 +111,10 @@ def act_bottleneck(PHI, act, tr_mask, k, r, seed):
             b = perm[i:i + 256]; z = nn.functional.normalize(net(Xt[b]), dim=-1)
             loss = nn.functional.cross_entropy(head(z), yt[b]); opt.zero_grad(); loss.backward(); opt.step()
     with torch.no_grad():
-        Z = nn.functional.normalize(net(Fz), dim=-1).numpy().astype(np.float32)
+        Zt = nn.functional.normalize(net(Fz), dim=-1)
+        if onehot:
+            return np.eye(N_ACT, dtype=np.float32)[head(Zt).argmax(1).numpy()]
+        Z = Zt.numpy().astype(np.float32)
     if r > 0:
         rng = np.random.default_rng(55 + seed); Z = Z + rng.standard_normal(Z.shape).astype(np.float32) * r * Z[tr_mask].std(0)
     return Z
