@@ -270,3 +270,83 @@ Queue priority 4 (reserved for the main agent) is used **once**, for the `d_dig_
 * Seen before this pre-registration: tier sizes, tokens per doc, df quantiles and example tokens from the text only (stage 0); the section 5 results for the *word* secret, including the retention curves of the secret-agnostic floors (random projection, PCA, noise use the same embeddings and seeds, so their retention numbers on this run are already known; what is new is the attacker side and the oracle).
 * `d_ph_lrn_gtr_s{0,1}` (post-hoc learned arms for the word secret) have finished but were not aggregated at the time of writing; they are unrelated to this check.
 * An N2 bug (words after a title were counted as mid-sentence) was fixed in stage 0 before any model number; the numbers above are after the fix.
+
+### 6.4 Results (GTR-base x NFCorpus, secret = numeric tokens n1; seeds 0, 1, 2; jobs `d_dig_check_gtr_s{0,1,2}`, priority 4, one run each)
+Run notes: the extraction job `d_dig_extract_gtr` wrote all four masked-embedding files (digits and n2, NFCorpus and SciFact) and then crashed at the very last line (`KeyError: 'rare'` while writing its meta file,
+a scheme bug fixed in the next commit); the worker marked it failed. I verified the files (3,633 / 5,183 rows, unit norm, 87% of NFCorpus rows differ from the raw embedding) and wrote the `meta_digits.json` marker by hand
+(CPU, no GPU process) so the guarded check jobs could start. Raw GTR-base nDCG@10 dev 0.3039 / test 0.3022 (identical to section 5). Intervals: 95% bootstrap over the 894 sealed C docs, shared resamples, mean of 3 seeds.
+
+**Verdict: H1 FAIL. The check fails; the learned arms (bott_mlp, adv, K1-K4) were NOT run, as pre-registered in 6.2. No margin was needed.**
+* **H1: R_raw - R_prior = 0.010 [0.002, 0.018] (rule: >= 0.05).** The worst retrained attacker on raw GTR-base vectors recovers number tokens at R-precision 0.214 versus 0.204 for the frequency prior (ridge 0.204, mlp 0.215, knn 0.187; the controls hold: shuffled pairs 0.207, const 0.205).
+  Raw GTR vectors carry almost no information about which numbers a document contains beyond how common each number is.
+* **H2(a) passes, H2(b) is undecidable.** The oracle that deletes every digit run keeps dev 1.005 / test 0.991 of nDCG@10 (so the premise "retrieval does not use numbers" is true), but its attacker recovery is 0.215, the same as raw (0.214):
+  there is nothing for it to remove. L = (R - R_prior)/(R_raw - R_prior) divides by 0.010 and is noise (values such as +14, -69, +21 in the tables below); L on n1 must be ignored. In absolute terms every arm sits at 0.204-0.216 R-precision,
+  i.e. floors, oracle and raw are indistinguishable on this secret. H2(b) is reported FAIL (headroom lower bound is not positive), but the correct reading is "no measurable leakage to defend".
+* Attacker limits that bound the claim: three attackers trained on 3,716 documents (no Vec2Text corrector, no external decoder). A frequency prior is a strong reference for numbers (top tokens "1", "2", "3", "95"), and a corrector trained on millions of passages might recover more.
+  The result is "not recoverable by this retrained suite", not "not recoverable".
+* **Descriptive tier n2 (capitalised mid-sentence words, a crude entity proxy; not part of the pass/fail).** Raw excess is large: 0.228 vs prior 0.070 (+0.158). The oracle that deletes n2 words keeps dev 0.987 / test 0.978 and still leaves L_n2 = 0.80 [0.73, 0.86]
+  (re-inference from context, as with rare words). The strongest floors at 0.97 reach L_n2 0.81 [0.75, 0.88] (noise r = 0.25-0.5, test retention 0.988) - equal to the oracle within 0.01, so a headroom of about 0 on this tier as well; at 0.90 noise r = 0.5 gets 0.68, below the oracle.
+  The pattern is the same as for rare words: what is leaked is recoverable from context, deleting the secret from the input does not remove it, and noise already matches the oracle. I did not run a pre-registered K-test on n2 and did not choose it after seeing the numbers as a rescue.
+
+##### References and controls (sealed C docs; R-precision of the worst of ridge/mlp/knn; mean over seeds; bootstrap over C docs)
+
+| arm | tier | R_worst [95% CI] | per attacker (ridge/mlp/knn) | L = (R-R_prior)/(R_raw-R_prior) [95% CI] | nDCG@10 test | retention (dev / test) |
+|---|---|---|---|---|---|---|
+| const | n1 | 0.204 [0.190, 0.218] | 0.205/0.204/0.205 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
+| const | n2 | 0.070 [0.060, 0.082] | 0.070/0.067/0.070 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
+| raw | n1 | 0.214 [0.201, 0.228] | 0.204/0.215/0.187 | -27.62 [-368.09, 1.00] | 0.3022 | 1.000 / 1.000 |
+| raw | n2 | 0.228 [0.205, 0.251] | 0.228/0.143/0.167 | 1.00 [1.00, 1.00] | 0.3022 | 1.000 / 1.000 |
+| oracle_mask_digits | n1 | 0.215 [0.201, 0.228] | 0.202/0.215/0.183 | 14.11 [-1.55, 6.33] | 0.2994 | 1.005 / 0.991 |
+| oracle_mask_digits | n2 | 0.220 [0.198, 0.245] | 0.220/0.145/0.170 | 0.95 [0.91, 0.99] | 0.2994 | 1.005 / 0.991 |
+| oracle_mask_n2 | n1 | 0.214 [0.200, 0.228] | 0.206/0.214/0.185 | -10.04 [-93.79, 2.17] | 0.2956 | 0.987 / 0.978 |
+| oracle_mask_n2 | n2 | 0.195 [0.174, 0.219] | 0.196/0.138/0.156 | 0.80 [0.73, 0.86] | 0.2956 | 0.987 / 0.978 |
+
+
+##### All configs (mean over seeds; V = selection split, C = sealed). R = worst-of-3 primary-tier R-precision
+
+| arm | dim | seeds | retention dev | retention test | R_V n1 | R_C n1 | R_C n2 |
+|---|---|---|---|---|---|---|---|
+| leace_r128 | 768 | 3 | 0.792 | 0.765 | 0.215 | 0.206 | 0.174 |
+| leace_r16 | 768 | 3 | 0.963 | 0.931 | 0.212 | 0.206 | 0.205 |
+| leace_r256 | 768 | 3 | 0.523 | 0.508 | 0.214 | 0.204 | 0.141 |
+| leace_r4 | 768 | 3 | 0.996 | 0.964 | 0.216 | 0.208 | 0.220 |
+| leace_r64 | 768 | 3 | 0.904 | 0.884 | 0.216 | 0.206 | 0.185 |
+| noise_r0.25 | 768 | 3 | 0.992 | 1.000 | 0.229 | 0.211 | 0.206 |
+| noise_r0.5 | 768 | 3 | 0.960 | 0.958 | 0.224 | 0.212 | 0.177 |
+| noise_r1 | 768 | 3 | 0.809 | 0.806 | 0.225 | 0.212 | 0.145 |
+| noise_r2 | 768 | 3 | 0.413 | 0.393 | 0.216 | 0.208 | 0.109 |
+| noise_r3 | 768 | 3 | 0.212 | 0.192 | 0.211 | 0.205 | 0.095 |
+| noise_r4 | 768 | 3 | 0.135 | 0.124 | 0.210 | 0.204 | 0.091 |
+| pca_d512 | 512 | 3 | 0.977 | 0.975 | 0.224 | 0.212 | 0.222 |
+| pca_d256 | 256 | 3 | 0.968 | 0.966 | 0.223 | 0.212 | 0.209 |
+| pca_d128 | 128 | 3 | 0.884 | 0.913 | 0.229 | 0.213 | 0.185 |
+| pca_d64 | 64 | 3 | 0.759 | 0.752 | 0.226 | 0.213 | 0.154 |
+| pca_d32 | 32 | 3 | 0.519 | 0.527 | 0.221 | 0.210 | 0.147 |
+| randproj_d512 | 512 | 3 | 0.925 | 0.944 | 0.227 | 0.216 | 0.214 |
+| randproj_d256 | 256 | 3 | 0.886 | 0.865 | 0.227 | 0.216 | 0.193 |
+| randproj_d128 | 128 | 3 | 0.748 | 0.755 | 0.224 | 0.213 | 0.165 |
+| randproj_d64 | 64 | 3 | 0.544 | 0.544 | 0.223 | 0.213 | 0.144 |
+| randproj_d32 | 32 | 3 | 0.288 | 0.328 | 0.222 | 0.209 | 0.125 |
+| sup_lin_d512 | 512 | 3 | 0.957 | 1.068 | 0.222 | 0.213 | 0.205 |
+| sup_lin_d256 | 256 | 3 | 0.940 | 1.044 | 0.224 | 0.213 | 0.196 |
+| sup_lin_d128 | 128 | 3 | 0.904 | 1.012 | 0.223 | 0.210 | 0.179 |
+| sup_lin_d64 | 64 | 3 | 0.799 | 0.875 | 0.222 | 0.214 | 0.154 |
+| sup_lin_d32 | 32 | 3 | 0.630 | 0.666 | 0.224 | 0.211 | 0.146 |
+
+
+##### Headroom check (pre-registered H1, H2; floors + oracle only)
+
+H1 measurability: R_raw - R_prior (n1 tier, worst of 3 attackers) = 0.010 [0.002, 0.018] (rule: >= 0.05 and CI excludes 0): FAIL
+
+oracle_mask_digits: L_n1 = 14.112 [-1.548, 6.325], retention dev 1.005 / test 0.991; H2(a) (both >= 0.97): PASS
+
+| tau | strongest floor F* (by V) | F* configs | F* test retention | L_n1(F*) [95% CI] | L_n1(oracle) | headroom = L(F*) - L(oracle) [95% CI] | H2(b) (>= 0.10, lower bound > 0) |
+|---|---|---|---|---|---|---|---|
+| 0.970 | leace | s0:leace_r4, s1:leace_r4, s2:leace_r4 | 0.964 | -69.354 [-1483.489, 0.796] | 14.112 | -83.466 [-1602.887, -0.098] | FAIL |
+| 0.900 (fallback if no floor reaches 0.97 in every seed) | leace | s0:leace_r16, s1:leace_r16, s2:leace_r16 | 0.931 | -82.981 [-1692.116, 0.554] | 14.112 | -97.093 [-1874.463, -0.280] | n/a |
+
+
+### 6.5 Post-hoc learned arms for the WORD secret (jobs `d_ph_lrn_gtr_s{0,1}`, finished; seeds 0 and 1; not part of any decision)
+Selection on V as in 2.5; numbers on C; margin m = 0.10 fixed post hoc. The adversary is not better than its no-adversary control and costs utility: dev retention never reaches 0.90 for any `adv` config (best 0.838 at d = 256, lambda 3, versus `bott_mlp` 0.935 at d = 512)
+at the same attacker recovery (adv d256: R_C 0.159 vs bott d256 0.154). Selected at dev retention >= 0.70: adv (d = 128, lambda 0.3) L_rare 0.731 [0.705, 0.756] at test retention 0.803; bott_mlp (d = 64) 0.683 [0.647, 0.719] at 0.896; noise r = 1 0.633 [0.599, 0.665] at 0.806; sup_lin d = 64 0.692 at 0.878.
+At 0.97 and at 0.90 `adv` has no feasible config, so K1-K4 are not satisfiable (K1+K2 in 0 of 2 seeds). The post-hoc evidence therefore agrees with the H2 verdict: the adversarial arm adds nothing over a rate/architecture bottleneck or noise.
