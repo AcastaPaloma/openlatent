@@ -833,6 +833,34 @@
       "mlp_a_d64",
       "mlp_a_d64_r0.5"
      ],
+     "a_star_match_plus": "mlp_a_d8",
+     "sel_match_plus": {
+      "arm": "mlp_a_d8",
+      "U_V": 0.30306415703045836,
+      "L_V": 0.2795564407497056,
+      "U_H": 0.13706727079863665,
+      "L_H": 0.29023289167326094,
+      "F_star": "ldaM_a_8",
+      "dU_V": 0.017947308981873855,
+      "U_H_F": 0.12673544412595217,
+      "L_H_F": 0.3017505895162162,
+      "dU_H": 0.01033182667268448,
+      "dU_H_ci": [
+       0.008831593208014965,
+       0.011926859617233276
+      ],
+      "dU_H_plate": 0.010363533194540808,
+      "dU_H_plate_ci": [
+       0.009041090027141273,
+       0.011701469426733741
+      ],
+      "u_win": true,
+      "F_L": null,
+      "gain_L": NaN,
+      "l_win": false,
+      "note_L": "no envelope arm has U_V >= U_V(a)-0.01 (utility above the whole envelope)",
+      "win": true
+     },
      "a_star_match": "mlp_a_d8_r0.5",
      "sel_match": {
       "arm": "mlp_a_d8_r0.5",
@@ -2086,6 +2114,34 @@
       "mlp_c_d64",
       "mlp_c_d64_r0.5"
      ],
+     "a_star_match_plus": "mlp_c_d8",
+     "sel_match_plus": {
+      "arm": "mlp_c_d8",
+      "U_V": 0.3026844629335634,
+      "L_V": 0.2640671625179966,
+      "U_H": 0.133987635576178,
+      "L_H": 0.2759230389075362,
+      "F_star": "ldaM_c_8",
+      "dU_V": 0.013930090992148314,
+      "U_H_F": 0.12846786426363455,
+      "L_H_F": 0.3114509624428586,
+      "dU_H": 0.005519771312543442,
+      "dU_H_ci": [
+       0.004083210602402687,
+       0.007072832901030779
+      ],
+      "dU_H_plate": 0.00556586774167813,
+      "dU_H_plate_ci": [
+       0.004249000844197222,
+       0.006895786148296236
+      ],
+      "u_win": false,
+      "F_L": null,
+      "gain_L": NaN,
+      "l_win": false,
+      "note_L": "no envelope arm has U_V >= U_V(a)-0.01 (utility above the whole envelope)",
+      "win": false
+     },
      "a_star_match": "mlp_c_d8_r0.5",
      "sel_match": {
       "arm": "mlp_c_d8_r0.5",
@@ -3448,6 +3504,34 @@
       "mlp_a_d64",
       "mlp_a_d64_r0.5"
      ],
+     "a_star_match_plus": "mlp_a_d8",
+     "sel_match_plus": {
+      "arm": "mlp_a_d8",
+      "U_V": 0.30864529425998233,
+      "L_V": 0.2654512331056748,
+      "U_H": 0.1377276326323088,
+      "L_H": 0.2658546917560187,
+      "F_star": "ldaM_a_8",
+      "dU_V": 0.019379378360189214,
+      "U_H_F": 0.1272101417879966,
+      "L_H_F": 0.29862059628214327,
+      "dU_H": 0.010517490844312194,
+      "dU_H_ci": [
+       0.0089960852637887,
+       0.01200468372553587
+      ],
+      "dU_H_plate": 0.010643173352235288,
+      "dU_H_plate_ci": [
+       0.00937216719716269,
+       0.012053981752529967
+      ],
+      "u_win": true,
+      "F_L": null,
+      "gain_L": NaN,
+      "l_win": false,
+      "note_L": "no envelope arm has U_V >= U_V(a)-0.01 (utility above the whole envelope)",
+      "win": true
+     },
      "a_star_match": "mlp_a_d8_r0.5",
      "sel_match": {
       "arm": "mlp_a_d8_r0.5",
@@ -4706,6 +4790,34 @@
       "mlp_c_d64",
       "mlp_c_d64_r0.5"
      ],
+     "a_star_match_plus": "mlp_c_d8",
+     "sel_match_plus": {
+      "arm": "mlp_c_d8",
+      "U_V": 0.3045058486445607,
+      "L_V": 0.25822018463352137,
+      "U_H": 0.13366757011679214,
+      "L_H": 0.2661383787402154,
+      "F_star": "ldaM_c_8",
+      "dU_V": 0.0104856873043358,
+      "U_H_F": 0.12860499927691527,
+      "L_H_F": 0.312696618090569,
+      "dU_H": 0.005062570839876879,
+      "dU_H_ci": [
+       0.0036646826192736626,
+       0.006376202218234539
+      ],
+      "dU_H_plate": 0.005164618569915931,
+      "dU_H_plate_ci": [
+       0.003882559084202887,
+       0.006605667332471245
+      ],
+      "u_win": false,
+      "F_L": null,
+      "gain_L": NaN,
+      "l_win": false,
+      "note_L": "no envelope arm has U_V >= U_V(a)-0.01 (utility above the whole envelope)",
+      "win": false
+     },
      "a_star_match": "mlp_c_d8_r0.5",
      "sel_match": {
       "arm": "mlp_c_d8_r0.5",
@@ -6198,6 +6310,34 @@
       "mlp_a_d64",
       "mlp_a_d64_r0.5"
      ],
+     "a_star_match_plus": "mlp_a_d8",
+     "sel_match_plus": {
+      "arm": "mlp_a_d8",
+      "U_V": 0.30826864217600425,
+      "L_V": 0.27932680576287877,
+      "U_H": 0.13815120229865618,
+      "L_H": 0.28328480448734533,
+      "F_star": "ldaM_a_8",
+      "dU_V": 0.021102933989714967,
+      "U_H_F": 0.1269434809015969,
+      "L_H_F": 0.3031511877430933,
+      "dU_H": 0.011207721397059278,
+      "dU_H_ci": [
+       0.009823298081755638,
+       0.012589985504746437
+      ],
+      "dU_H_plate": 0.011022805049895942,
+      "dU_H_plate_ci": [
+       0.009668383442588361,
+       0.012379710858106687
+      ],
+      "u_win": true,
+      "F_L": null,
+      "gain_L": NaN,
+      "l_win": false,
+      "note_L": "no envelope arm has U_V >= U_V(a)-0.01 (utility above the whole envelope)",
+      "win": true
+     },
      "a_star_match": "mlp_a_d8_r0.5",
      "sel_match": {
       "arm": "mlp_a_d8_r0.5",
@@ -7461,6 +7601,34 @@
       "mlp_c_d64",
       "mlp_c_d64_r0.5"
      ],
+     "a_star_match_plus": "mlp_c_d8",
+     "sel_match_plus": {
+      "arm": "mlp_c_d8",
+      "U_V": 0.3017729516631952,
+      "L_V": 0.2562265549301354,
+      "U_H": 0.13241718372359534,
+      "L_H": 0.26535096349713927,
+      "F_star": "ldaM_c_8",
+      "dU_V": 0.012010596982695187,
+      "U_H_F": 0.128466008633013,
+      "L_H_F": 0.31196027271492344,
+      "dU_H": 0.003951175090582348,
+      "dU_H_ci": [
+       0.002567178336903453,
+       0.005502091255038977
+      ],
+      "dU_H_plate": 0.0037867621412680497,
+      "dU_H_plate_ci": [
+       0.002345204124941972,
+       0.005279216724003697
+      ],
+      "u_win": false,
+      "F_L": null,
+      "gain_L": NaN,
+      "l_win": false,
+      "note_L": "no envelope arm has U_V >= U_V(a)-0.01 (utility above the whole envelope)",
+      "win": false
+     },
      "a_star_match": "mlp_c_d8_r0.5",
      "sel_match": {
       "arm": "mlp_c_d8_r0.5",
@@ -8129,6 +8297,10 @@
     }
    }
   }
+ },
+ "sensitivity_E_match_plus_ldaT2_wins_splits": {
+  "a": 3,
+  "c": 0
  },
  "passes": {
   "a": {
