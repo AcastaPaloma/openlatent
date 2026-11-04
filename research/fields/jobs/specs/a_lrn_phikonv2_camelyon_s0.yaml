@@ -1,4 +1,0 @@
-name: a_lrn_phikonv2_camelyon_s0
-priority: 9
-cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset camelyon --seed 0 --grid learned 
-hf_path: runs/a_lrn_phikonv2_camelyon_s0

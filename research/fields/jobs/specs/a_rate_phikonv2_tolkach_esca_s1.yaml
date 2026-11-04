@@ -1,4 +1,0 @@
-name: a_rate_phikonv2_tolkach_esca_s1
-priority: 22
-cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset tolkach_esca --seed 1 --grid rate 
-hf_path: runs/a_rate_phikonv2_tolkach_esca_s1
