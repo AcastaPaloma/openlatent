@@ -79,7 +79,7 @@ class SC:
         self.ds = ds
         self.cfg = DATASETS[ds]
         d = cache_dir(ds)
-        self.obs = pd.read_parquet(d / "obs.parquet")
+        self.obs = pd.read_pickle(d / "obs.pkl")
         self.X = sp.load_npz(d / "X.npz").tocsr()
         self.counts = sp.load_npz(d / "counts.npz").tocsr() if (d / "counts.npz").exists() else None
         self.genes = np.array((d / "genes.txt").read_text().split("\n"))[: self.X.shape[1]]

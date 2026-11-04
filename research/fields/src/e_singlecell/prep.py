@@ -77,7 +77,7 @@ def main(ds):
         "fine_name": fine, "coarse_name": coarse, "batch_name": batch, "unit_name": unit_names,
     })
     d = cache_dir(ds)
-    o.to_parquet(d / "obs.parquet")
+    o.to_pickle(d / "obs.pkl")
     X = a.X if sp.issparse(a.X) else sp.csr_matrix(a.X)
     X = X.tocsr().astype(np.float32)
     if cfg["counts_layer"] == "raw":
