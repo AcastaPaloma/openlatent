@@ -17,6 +17,8 @@ def main():
     out.mkdir(parents=True)
     n = 0
     for job in sorted(Path(a.runs).glob("t_*")):
+        if job.name.startswith("t_u1_"):                       # stage-1 utility used a different definition (A+S fine-tune, rotation-specific): never mixed into T2
+            continue
         for d in job.iterdir():
             if d.is_dir() and ("_rot" in d.name) and (d / "summary.json").exists() or (d.is_dir() and d.name.startswith("labels14_rot")):
                 dst = out / d.name
