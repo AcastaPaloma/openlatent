@@ -236,7 +236,7 @@ def main():
             L.append(f"| {c} | {t['dim']} | {t['rate']:.1f} | {u_}{fmt(t['L'][0], t['L'][1], 2)} | {t['La']:.2f} | {fmt(*t['ret'][:2])} | {t['reta'][0]:.3f} |")
         # --- comparison with the matched LDA arm
         L.append("\nLearned configurations minus the matched-dimensionality LDA arm (sealed C; paired unit bootstrap; positive utility/retention delta = better, positive L delta = more leakage):\n")
-        L.append("| learned config | dim | matched LDA arm | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | Δ retention xc [95% CI] | Δ L_worst [95% CI] | meets criterion (i)/(ii) at L within +%.2f? |" % a.tol)
+        L.append("| learned config | dim | matched LDA arm | Δ " + ("held-class acc" if held_mode else "label acc") + f" [95% CI] | Δ retention xc [95% CI] | Δ L_worst [95% CI] | meets criterion (i)/(ii) at L within +{a.tol:.2f}? |")
         L.append("|---|---|---|---|---|---|---|")
         flags = {}
         for c in order:
@@ -255,8 +255,33 @@ def main():
             flag = ("(i) utility " if wu else "") + ("(ii) retention " if wr else "")
             flags[c] = (okL and (wu or wr), flag.strip(), m_, du, dr, dL)
             L.append(f"| {c} | {tab[c]['dim']} | {m_} | {fmt(*du)} | {fmt(*dr)} | {fmt(*dL, nd=2)} | {'YES: ' + flag if (okL and (wu or wr)) else ('no (L worse by %.2f)' % dL[0] if not okL else 'no')} |")
+        # --- exploratory: same comparison against the best LDA-family / label-free point at <= equal leakage (not dimension matched)
+        L.append(f"\nExploratory, leakage-matched: each learned config minus the BEST (by point estimate on C, so optimistic for the baseline) reference with L_worst <= L(config)+{a.tol:.2f}; "
+                 "refs = LDA family (lda, lda_pca all d) and label-free floors (pca, randproj, centre_whiten). Positive = learned better.\n")
+        L.append("| learned config | L | best LDA-family ref | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | best label-free ref | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | best LDA-family ref (retention) | Δ retention xc [95% CI] | best label-free ref (retention) | Δ retention xc [95% CI] |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|")
+        ut = "held" if held_mode else "lab"
+        frontier_wins = {}
+        for c in order:
+            if family(c) not in LEARNED:
+                continue
+            row = [f"| {c} | {tab[c]['L'][0]:.2f} "]
+            res = []
+            for fams in (("lda", "lda_pca"), ("pca", "randproj", "centre_whiten")):
+                refs = [x for x in tab if family(x) in fams and tab[x]["L"][0] <= tab[c]["L"][0] + a.tol]
+                for key in (ut, "ret"):
+                    if not refs:
+                        row.append("| (none at this leakage) | n/a "); res.append(None); continue
+                    b = max(refs, key=lambda x: tab[x][key][0])
+                    d_ = (tab[c][key][0] - tab[b][key][0], tab[c][key][1] - tab[b][key][1])
+                    row.append(f"| {b} | {fmt(*d_)} "); res.append(ci(d_[1])[0] > 0)
+            frontier_wins[c] = res
+            # reorder columns to header order: LDA util, LF util, LDA ret, LF ret
+            cells_ = row[1:]
+            order_idx = [0, 1, 4, 5, 2, 3, 6, 7]
+            L.append(row[0] + "".join(cells_[i] for i in order_idx) + "|")
         # --- V-selected per family (the official line)
-        L.append("\nPer family, configuration selected on V (L_V within +%.2f of the matched LDA arm; then max V %s):\n" % (a.tol, "held-class acc" if held_mode else "retention xc"))
+        L.append(f"\nPer family, configuration selected on V (L_V within +{a.tol:.2f} of the matched LDA arm; then max V {'held-class acc' if held_mode else 'retention xc'}):\n")
         L.append("| family | config | matched LDA | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | Δ retention xc [95% CI] | Δ L_worst | wins? |")
         L.append("|---|---|---|---|---|---|---|")
         for fam in LEARNED:
