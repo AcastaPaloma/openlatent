@@ -14,6 +14,7 @@ import os
 
 import numpy as np
 
+from . import provenance as prov
 from . import selection_bias as sb
 
 SAT_LO, SAT_HI = 0.06, 0.95
@@ -27,7 +28,7 @@ def thr(P):
 def e1(path_list):
     res = {}
     for p in path_list:
-        res.update(json.load(open(p)))
+        res.update({k: v for k, v in json.load(open(p)).items() if not k.startswith("_")})
     out = {}
     for k, v in res.items():
         rel = v["releases"]
@@ -72,7 +73,7 @@ def e2(path):
 
 
 def e3(path):
-    r = json.load(open(path))
+    r = {k: v for k, v in json.load(open(path)).items() if not k.startswith("_")}
     K = r[next(iter(r))]["K"]
     i10 = K.index(10)
     out = dict(controls={}, gain={}, independence={}, nstar={})
@@ -180,10 +181,10 @@ def main():
     if a.kind == "real":
         res = dict(E1=e1([os.path.join(a.within, "rescore_programme1.json")] + ([os.path.join(a.hmdb, "rescore_programme1.json")] if a.hmdb else [])),
                    E2=e2(os.path.join(a.select, "harness_selection_bias.json")), E3=e3(os.path.join(a.budget, "harness_evidence_budget.json")))
-        json.dump(res, open(os.path.join(a.out, "summary_real.json"), "w"), indent=1, sort_keys=True, default=float)
+        json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_real.json"), "w"), indent=1, sort_keys=True, default=float)
     else:
         res = e45(a.jsonl)
-        json.dump(res, open(os.path.join(a.out, "summary_planted.json"), "w"), indent=1, sort_keys=True, default=float)
+        json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_planted.json"), "w"), indent=1, sort_keys=True, default=float)
     print(json.dumps(res, indent=1, sort_keys=True, default=float))
 
 

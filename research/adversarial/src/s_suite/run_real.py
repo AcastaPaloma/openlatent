@@ -18,6 +18,7 @@ import numpy as np
 from . import certificate as cf
 from . import evidence_budget as eb
 from . import harness_io as hio
+from . import provenance as prov
 from . import selection_bias as sb
 from . import stats as st
 
@@ -33,6 +34,7 @@ PRIMARY = ("retrained|frame_r50", "retrained|r3d")
 
 
 def _dump(obj, path):
+    obj = prov.add(obj, __file__)
     with open(path, "w") as f:
         json.dump(obj, f, indent=1, sort_keys=True, default=lambda o: o.tolist() if hasattr(o, "tolist") else str(o))
 

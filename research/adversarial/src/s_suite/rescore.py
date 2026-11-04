@@ -27,6 +27,7 @@ import time
 import numpy as np
 
 from . import harness_io as hio
+from . import provenance as prov
 from . import stats as st
 from .selection_bias import _subset_cols  # noqa: F401  (kept for symmetry with the other analysis scripts)
 
@@ -234,7 +235,7 @@ def _generic_multilabel(c, keys, M, W, inv, m, cond):
 def to_markdown(res):
     L = ["# Re-score of programme 1's harness predictions (development/burned data, NOT sealed)\n"]
     for key, r in res.items():
-        if not r:
+        if not r or key.startswith("_"):
             continue
         L.append(f"\n## {key}  ({r['n_units']} independent units)\n")
         L.append("| release | P1 printed | recomputed | repro | best-of-2 (A2) | honest cross-fit (H) | A2-H [95% CI] (MDE80) | moves | Bonf. UB K=2 | privacy printed / honest | MDE80 in privacy units |")
@@ -282,8 +283,8 @@ def main():
             res[f"{ds}/{proto}"] = r
             print(ds, proto, f"{time.time() - t0:.0f}s", flush=True)
     clean = {k: {kk: vv for kk, vv in v.items() if kk != "boots"} for k, v in res.items()}
-    json.dump(clean, open(os.path.join(a.out, "rescore_programme1.json"), "w"), indent=1, sort_keys=True, default=float)
-    open(os.path.join(a.out, "rescore_programme1.md"), "w").write(to_markdown(res))
+    json.dump(prov.add(clean, __file__), open(os.path.join(a.out, "rescore_programme1.json"), "w"), indent=1, sort_keys=True, default=float)
+    open(os.path.join(a.out, "rescore_programme1.md"), "w").write(prov.md_line(__file__) + "\n" + to_markdown(res))
 
 
 if __name__ == "__main__":
