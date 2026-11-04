@@ -28,6 +28,9 @@ ARMS = {
     "gtmask": dict(mask="gt", zdim=16, beta=0.1, adv=0.0),
     "adv": dict(mask=None, zdim=16, beta=0.1, adv=10.0),
     "adv30": dict(mask=None, zdim=16, beta=0.1, adv=30.0),
+    # learned soft mask (no SAM, no silhouette): MaskNet(f_t, f_t+1) gates input and target, area reward alpha per pixel stops collapse
+    "lmask": dict(mask=None, zdim=16, beta=0.1, adv=0.0, lmask=0.03),
+    "advmask": dict(mask=None, zdim=16, beta=0.1, adv=10.0, lmask=0.03),
 }
 
 
@@ -148,16 +151,34 @@ class Adv(nn.Module):
         return o[:, :s.n_reg], o[:, s.n_reg:].reshape(len(z), s.n_cls, s.k)
 
 
+class MaskNet(nn.Module):
+    def __init__(s):
+        super().__init__()
+        s.net = nn.Sequential(nn.Conv2d(6, 32, 3, 1, 1), nn.GroupNorm(8, 32), nn.GELU(), nn.Conv2d(32, 32, 3, 1, 1),
+                              nn.GroupNorm(8, 32), nn.GELU(), nn.Conv2d(32, 1, 3, 1, 1))
+
+    def forward(s, x):  # x (B,2,3,S,S) -> M (B,1,S,S)
+        return torch.sigmoid(s.net(x.flatten(1, 2)) + 2.0)
+
+
 class LAM(nn.Module):
-    def __init__(s, zdim):
+    def __init__(s, zdim, lmask=False):
         super().__init__()
         s.idm, s.fdm = IDM(zdim), FDM(zdim)
+        s.mnet = MaskNet() if lmask else None
+
+    def gate(s, x):
+        """returns (gated frames, M or None)"""
+        if s.mnet is None:
+            return x, None
+        M = s.mnet(x)[:, None]
+        return x * M + 0.5 * (1 - M), M
 
 
 # ----------------------------------------------------------------------------------------------- training
 def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
     torch.manual_seed(seed); np.random.seed(seed)
-    m = LAM(cfg["zdim"]).to(dev).to(memory_format=torch.channels_last)
+    m = LAM(cfg["zdim"], bool(cfg.get("lmask"))).to(dev).to(memory_format=torch.channels_last)
     opt = torch.optim.AdamW(m.parameters(), lr=lr, weight_decay=1e-4)
     e_all, t_all = tr.pairs()
     n = len(e_all)
@@ -183,6 +204,7 @@ def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
         e, t = e_all[idx], t_all[idx]
         x, mk = tr.batch(e, t, cfg["mask"])
         with torch.autocast(dev, dtype=torch.bfloat16, enabled=(dev == "cuda")):
+            x, M = m.gate(x)
             mu, lv = m.idm(x)
             z = mu + torch.randn_like(mu) * torch.exp(0.5 * lv)
             pred = m.fdm(x[:, 0], z)
@@ -190,6 +212,8 @@ def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
         recon = err.flatten(1).sum(1).mean()
         kl = (0.5 * (mu.float() ** 2 + lv.float().exp() - 1 - lv.float())).sum(1).mean()
         loss = recon + cfg["beta"] * kl
+        if M is not None:
+            loss = loss - cfg["lmask"] * M.float().flatten(1).sum(1).mean()
         if use_adv:
             lam = cfg["adv"] * min(1.0, it / (0.2 * iters))
             tg = tr.targets(e, t)
@@ -210,7 +234,7 @@ def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
         nn.utils.clip_grad_norm_(m.parameters(), 5.0)
         opt.step(); sched.step()
         if it % 500 == 0 or it == iters - 1:
-            log(f"  it {it}/{iters} recon {recon.item():.2f} kl {kl.item():.2f}" + (f" adv {la.item():.3f}" if use_adv else "") + f" {time.time()-t0:.0f}s")
+            log(f"  it {it}/{iters} recon {recon.item():.2f} kl {kl.item():.2f}" + (f" mask_mean {M.float().mean().item():.3f}" if M is not None else "") + (f" adv {la.item():.3f}" if use_adv else "") + f" {time.time()-t0:.0f}s")
     return m
 
 
@@ -222,6 +246,7 @@ def embed(m, ds, mask, bs=512):
     for i in range(0, len(e), bs):
         x, _ = ds.batch(e[i:i + bs], t[i:i + bs], mask)
         with torch.autocast(dev, dtype=torch.bfloat16, enabled=(dev == "cuda")):
+            x, _ = m.gate(x)
             out.append(m.idm(x)[0].float())
     return torch.cat(out), e, t
 
