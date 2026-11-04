@@ -252,3 +252,7 @@ Repaired control as in 6.4(c): U(ctrl_noise16) with shuffled compound labels wit
 
 ### 8.8 Limitations stated now
 One training seed per (split, regime, d) ("not yet replicated" at the seed level; 3 splits replicate the held-out units); two output sizes (8, 64) and two dither levels; production labels are random subsets (one draw per split); no semi-supervised use of the unlabelled wells; `c` differs from `a` only in id names/DMSO identity, so a `c` win says "ids are unnecessary", not "supervision is unnecessary"; F2's b100 arms are reused.
+
+### 8.9 Notes made before the first F3 grid number
+* Smoke (disclosed): one 200-step run on split s0 (arms ldaM_c_8, mlp_c_d8, mlp_b1_d8, perm_c_d64, ae_d8; AP only, no attackers) was executed to check the code path. It printed training losses only (c: 6.04 -> 4.75; b1: 5.77 -> 3.24; permuted-label c: 6.70 -> 6.65; ae recon 0.763 -> 0.557) and the labelled-set sizes: a 301 classes / 21,074 wells; b1 299 production + 301 Target2 classes / 22,104 wells; b10 3,164 + 301 / 31,784; b100 32,320 + 301 / 129,787; c 384 position classes / 25,329 wells. No AP value was read.
+* Implementation detail: the permuted-label control permutes the labels of the labelled wells (one permutation per regime, seed = f(salt)); `adapter.train_supcon` keeps the F2 random-draw order, so b100 as produced in F2 is reproduced by the F3 code path (the b100 permuted control uses it).
