@@ -98,4 +98,8 @@ pooled: not detected at levels 1-2, DETECTED at 4-5 (0.70). G1 passes (0.80; the
 (to be appended)
 
 ## 9. Record
-(commit hashes of the manifest and of the digest list will be appended before the corresponding runs)
+- 2026-11-04 19:09Z (VM clock): MANIFEST COMMITMENT. Pre-registration commit `8f11607` (code + this file) was pushed first; the clean clone `~/n_run/openlatent` on the VM is at that commit
+  (tag `s-suite-eval-v1` is an ancestor, `s_suite.freeze --check` passes). The manifest was then built from the oracle-only calibration (`n_control.calibrate`) with random keys from `os.urandom`:
+  `~/sealed_manifest/manifest.json`, canonical JSON, 143,094 bytes, mode 0400, 704 entries (plant 480, shuf 144, null 80),
+  **SHA-256 `e5a511e188eb492afe6a4682459008804a86eb8d1bfa098b45c08ee35f82f912`**. No release has been generated and no S code has touched any base or planted data at the time of this commit.
+  Reproducibility: the file is `canon(manifest)`; `sha256sum` of the unsealed copy published at the end must equal the hash above.
