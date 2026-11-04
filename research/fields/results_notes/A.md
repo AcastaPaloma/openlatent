@@ -235,7 +235,7 @@ at chance (TCGA 0.24-0.31, chance 0.25; Tolkach 0.50-0.58, chance 0.50; orthogon
 **Result so far (seed 0).**
 
 1. **Official kill-test tally: 0 of 24 (4 cells x 6 learned families, selected on V) beat the matched-dimensionality LDA arm** on held-class utility or retention (table at the end of this section). No learned family is above 0 on both CIs anywhere;
-   the closest are the task-agnostic `ae` configs (held-class utility +0.002 to +0.009, CIs include 0; retention -0.04 to -0.05 below the LDA+PCA arm).
+   the closest are the task-agnostic `ae` configs (held-class utility difference -0.09 to +0.009, every CI includes 0 or is negative; retention difference -0.04 to -0.13, i.e. below the LDA+PCA arm).
 2. **LDA does collapse onto its training labels, but only mildly in these cells:** held-class accuracy of plain LDA vs raw is 0.544 vs 0.633 (dinov2-L, TCGA), 0.910 vs 1.000 (midnight, Tolkach), i.e. a loss of 0.09 with CIs that overlap for TCGA (24 cases).
    Label-supervised bottlenecks collapse harder (midnight/Tolkach: vib 0.814, vq 0.760 held-class accuracy, CI half-widths ~0.07; raw 1.000).
 3. **The dimension-matched comparison is dominated by leakage, not by what the adapters keep.** At d >= 16 the LDA+PCA arm has L 0.5-0.9 while the learned adapters sit at L 0.1-0.5, so every learned config is "better" on L (-0.2 to -0.8) and worse on retention.
