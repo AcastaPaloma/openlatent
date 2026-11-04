@@ -4,7 +4,7 @@ import os
 SPEC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "jobs", "specs")
 PRE = "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python"
 NOSAM = "raw,rate4,rateb,gtmask,adv,adv30,lmask,advmask"
-PRIO = {"indep": 13, "corr_det": 13, "corr_noisy": 15, "corr_glued": 15}
+PRIO = {"indep": 11, "corr_det": 11, "corr_noisy": 15, "corr_glued": 15}
 
 
 def w(name, prio, cmd):
@@ -18,4 +18,4 @@ for kind, pr in PRIO.items():
     w(f"b_sam_{kind}", pr - 1, f"cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind {kind} --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_{kind}.json $OUT/")
 w("b_sam_none", 14, "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind none --splits test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_none.json $OUT/")
 for seed in (0, 1, 2):
-    w(f"b_m_clean_s{seed}", 13, f"{PRE} lam.py --kind none --arms clean --epochs 30 --seed {seed} --out $OUT")
+    w(f"b_m_clean_s{seed}", 11, f"{PRE} lam.py --kind none --arms clean --epochs 30 --seed {seed} --out $OUT")

@@ -1,4 +1,4 @@
 name: b_sam_indep
-priority: 12
+priority: 10
 cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind indep --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_indep.json $OUT/
 hf_path: runs/b_sam_indep
