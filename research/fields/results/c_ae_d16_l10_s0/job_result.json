@@ -1,0 +1,16 @@
+{
+ "name": "c_ae_d16_l10_s0",
+ "config": {
+  "name": "c_ae_d16_l10_s0",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=4 LGBM_THREADS=6 python3 research/fields/src/c_cremad/run_exp.py --name c_ae_d16_l10_s0 --method ae --cfg '{\"dz\": 16, \"lam\": 10.0, \"beta\": 0.001}' --seeds 0 --no_secrets --val_report",
+  "hf_path": "runs/c_ae_d16_l10_s0"
+ },
+ "commit": "e3af49c",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 226.8,
+ "finished_utc": "2026-11-04T12:20:10Z",
+ "uploaded": true
+}
