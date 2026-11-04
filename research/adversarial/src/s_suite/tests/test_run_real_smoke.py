@@ -47,6 +47,7 @@ def test_runners_on_fake_harness(tmp_path, monkeypatch):
     rr.cmd_select(a)
     rr.cmd_budget(a)
     sel = json.load(open(os.path.join(out, "harness_selection_bias.json")))
+    assert sel["_provenance"]["evaluator"]["sha256"] and sel["_provenance"]["script"] == "run_real.py"
     assert "kth_ilic/black" in sel["cells"] and sel["families"]["kth_ilic"]["P"] == 6
     bud = json.load(open(os.path.join(out, "harness_evidence_budget.json")))
     k = "kth_ilic/pose_canon_down16/retrained|r3d"

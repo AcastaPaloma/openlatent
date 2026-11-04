@@ -1,0 +1,21 @@
+{
+ "name": "h_nn_aae",
+ "config": {
+  "name": "h_nn_aae",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm msda --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/h_imu/out/aae_rel/msda_s0.npz && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm rep --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/h_imu/out/aae_rel/rep_s0.npz",
+  "hf_path": "runs/h_nn_aae",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "f28ea7a",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 253.2,
+ "finished_utc": "2026-11-04T19:43:51Z",
+ "uploaded": true
+}
