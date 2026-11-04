@@ -8,7 +8,7 @@ From the intervals already printed in results_notes/A.md (paired unit bootstrap,
 - midnight/TCGA leakage-matched Delta_held (+0.164 [0.040, 0.284], SE ~0.06): MDE80 ~0.17; midnight/Tolkach (+0.083 [0.048, 0.126], SE ~0.02): MDE80 ~0.06; dinov2-L cells are in the same range (Delta CI half-widths 0.03-0.10);
 - the L_worst CI half-width is >= 0.15 in the Tolkach cells (e.g. 0.27 [0.05, 0.47]) and ~0.10 in TCGA cells, so a leakage-matching tolerance of 0.05 is below the resolution in every A cell;
 - consequently a claim of "+0.04 over a leakage-matched floor" cannot be adjudicated from one split in any A cell, and only repeated unit-disjoint cross-fitting (H2-001's remedy: 4-5 folds so every non-training unit is a test unit once) brings MDE80 to <= 0.04 (Tolkach) and <= 0.10 (TCGA).
-In C (91 actors, 4 folds, bootstrap over actors) MDE80 for U_HE differences between a learned and a LDA comparator is ~0.04-0.05, so the pre-registered +0.05 criterion is at the detection boundary.
+In C (91 actors, 4 folds, bootstrap over actors) the paired U_HE intervals printed in C.md have half-widths of 0.025-0.03 (SE ~0.012-0.015), i.e. MDE80 ~0.03-0.04, so the pre-registered +0.05 criterion is resolvable there; the power problem is specific to A (few independent units) and to anything with 12-48 cases.
 
 ## Mechanism
 Held-out-class cells split a small number of independent units (cases or slides) into train, probe, validation and test; the unit, not the patch, is the independent observation, and the held-class probe is evaluated on a subset of those units; matching on L adds a second noisy coordinate. This is arithmetic, not a model claim, and it bears on how every earlier "pass" and "fail" in A is read (all single seed).

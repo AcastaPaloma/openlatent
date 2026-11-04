@@ -57,3 +57,53 @@ Zero-GPU or near-zero: H-C-005, H-C-006, H-A-007 (the controls) and H-A-001, H-C
 
 ## Papers opened by me in this session (abstract pages unless noted)
 2306.03819 (LEACE), 2507.17845 (PathoROB, HTML read to ~100k of 241k characters), 2603.07529 (Obliviator), 2505.15667 (Segmentation-Variant Codebooks), 2006.12013 (CLUB), 2605.20223 (Why Latent Actions Fail), 2608.06706 (Dueling World Models), 2501.05310 (speaker attributes in SSL layers), 2609.28231 (Do Center Biases Propagate?), 1603.04779 (AdaBN), 1911.08731 (Group DRO), 2312.15185 (emotion2vec), 2607.22861 (Filiot et al. pathology fine-tuning), 2006.10726 (Tent), 2004.11362 (SupCon), 2201.12191 (Kernelized Concept Erasure), 2006.07500 (Domain generalisation using causal matching), 2101.10001 (Diverse adversaries), 2607.25497 (CRoMa), 2605.01381 (concept-subspace framework), 2609.02941 (SISER), 2602.18502 (shortcut mitigation benchmark). Pages that did not contain what I wanted: 2610.30104 (BatchBench abstract shows no baseline numbers; the AdaBN +7 / DANN -0.5 figures are scout-reported), 2006.07966 (wrong ID for MatchDG; the right one is 2006.07500).
+
+---
+
+# H2: round-2 hypotheses (generator round 2, 2026-11-04, written after the A / B' / C / D results; NOT ranked)
+
+19 hypotheses `H2-001` to `H2-019`: AE-lead replication and attribution 7 (001-007), C multi-task 1 (008), D reframe 1 (009), new candidate fields 4 (010-013), boring controls 4 (014-017), cross-focus procedure and stop rule 2 (018-019). Round-1 files and numbers are unchanged. Priors are my probability that the stated prediction holds as written (all clauses); GPU-h are throughput estimates, not measurements. Every numeric prediction is a prior to be falsified.
+
+## Organising question
+Where does the task NOT determine the content a representation must keep, so that label-only projections collapse and a learned task-agnostic latent is the only option? Evidence in hand (all single-seed unless stated): label-supervised LDA keeps the label and hides the source in A and C; the secret overlaps the utility in D; the harm is clutter, not leakage, in B'; the one unfalsified lead is the task-agnostic adversarial AE on held-out classes (A, midnight only, post hoc, best of 10 variants). Round 2 asks (a) is that lead real (001-007, 014-016), (b) which other fields have many downstream tasks plus a deterministic benchmark plus a trivial floor that can be tested cheaply (008-013), (c) what would we stop on (017-019).
+
+## Definitions added by round 2 (used in the H2 files)
+- **Threat models.** T = transductive: the source id (centre, actor, subject, batch) of every released item is available at release or test time, so per-source normalisation or whitening is allowed. I = inductive: unseen sources, no source id at release (the situation of a foundation-model embedding released for unknown future use). Only I-floors are kill floors for a learned encoder; T-methods (Harmony, per-source whitening, Sphering) are references and the deployable alternative.
+- **Leakage-matched rule (LM-rule).** For a learned configuration with (U, L) on the sealed split, the comparator is the best I-floor point with L_ref <= L + 0.05, interpolated along each floor family's envelope (favours the baseline). I-floors: PCA-d, random projection-d, label projection + PCA padding (`lda_pca__d`), noise-dithered codes (H2-014), label-only projection.
+- **SEL-V.** Configuration chosen on the validation split only: among configurations of the family with L_V <= 0.35 (A; field-specific cap elsewhere) the one with the highest V utility on the held-out tasks, ties to smaller dz then smaller lam. The sealed-split number is that configuration; best-of-N on the sealed split is a diagnostic only (H2-015).
+- **Headroom fraction.** h = U_ref(T') - U_floor*(T'; L*) from floors only (on V), g = U_learned - U_floor* on the sealed split, g/h the fraction closed (H2-018). A learned arm is not run in a new cell until h is committed.
+- **Held-out tasks T'.** Classes, label sets, attributes or subtasks not used to fit the encoder; probes on them are retrained on the released representation.
+
+## Index
+| ID | One line | Focus | Cost (GPU-h) | Prior |
+|---|---|---|---|---|
+| H2-001 | AE gain over leakage-matched inductive floors survives V-only selection, 3 seeds and phikon-v2 / phikon (>= 3 of 6 cells at +0.04) | A | 5 (+30 CPU) | 0.30 |
+| H2-002 | Attribution: the adversary adds <= 0.02 AUC over a lam = 0 rate-limited AE; the nonlinear decoder, not the adversary, beats PCA-d by >= 0.03 | A + C | 3 | 0.35 |
+| H2-003 | A label-free embedding-level contrastive code leaks (L >= 0.6) alone and ties the AE within 0.04 once an adversary is added | A | 3 | 0.35 |
+| H2-004 | Dose-response: AE gain over label-supervised arms grows as the number of seen classes falls (Delta(2) - Delta(4) >= 0.03) | A | 2 (+10 CPU) | 0.40 |
+| H2-005 | The AE keeps slide/case fingerprints: at equal held-class utility it leaks >= 0.10 more slide identity than PCA / LDA-family (second secret) | A | 1 (+6 CPU) | 0.60 |
+| H2-006 | A label-free adapter trained on two datasets transfers its centre invariance to the third (leave-one-dataset-out; C arm CREMA-D -> RAVDESS) | A + C | 3 | 0.20 |
+| H2-007 | A conditional-decoder VAE (source id to the decoder, no adversary) ties the adversarial AE with lower seed variance | A | 2 | 0.30 |
+| H2-008 | CREMA-D multi-task probes (emotion + sentence content): LDA-emotion collapses sentence content, a speaker-adversarial label-free AE keeps it (+0.08 U_MT) | C | 1.5 | 0.20 |
+| H2-009 | D reframe: with digits/entities as the secret (not used by retrieval) the oracle retains >= 0.97 nDCG and headroom >= 0.30; check first, learned stage second | D | 0.5 check / 6.5 full | 0.20 (check) |
+| H2-010 | NEW FIELD N1, single-cell: inductive label-free adapter on scFM embeddings keeps fine cell types under unseen studies where coarse-label LDA collapses | new (scIB-style) | 2.5 check / 5 full | 0.15 (0.45 check) |
+| H2-011 | NEW FIELD N2, Cell Painting (JUMP): adapter on well profiles retrieves replicates of held-out compounds across labs beyond inductive floors | new (JUMP) | 1 check / 4 full | 0.15 (0.70 check) |
+| H2-012 | NEW FIELD N3, EEG foundation models: label-free adapter keeps 5 task decodings at low subject-identity leakage where LEACE fitted on training subjects cannot | new (EEGMMI) | 1.5 check / 4 full | 0.12 (0.35 check) |
+| H2-013 | NEW FIELD N4, astronomy GalSim twin render with exact truth: adapter keeps held-out physical parameters that a parameter-supervised projection discards | new (astronomy / A domain 2) | 3 (+4 CPU) | 0.15 (0.65 check) |
+| H2-014 | BORING CONTROL: noise-dithered PCA / LDA+PCA (or PCA then low-dimensional LEACE) matches the AE at equal leakage | A | 1 (+8 CPU) | 0.35 (that it kills) |
+| H2-015 | BORING CONTROL: the best-of-10 pick at test inflates a null family by +0.04 to +0.09, a large share of the seed-0 lead | A | 0 (+2 CPU) | 0.35 (that it kills) |
+| H2-016 | BORING CONTROL: power audit: MDE80 >= 0.10 on TCGA cells, ~0.05-0.06 on Tolkach, matched leakage resolved only to +-0.10 to +-0.20; cross-fitting halves it | A + C | 0 / 5 remedy | 0.70 |
+| H2-017 | BORING CONTROL: per-actor standardisation of full WavLM features (oracle ids) is the multi-task floor (identity <= 10x chance, emotion >= 0.70) | C (A analogue exists) | 0.3 | 0.45 (that it wins) |
+| H2-018 | Floors-only headroom fraction predicts where a learned latent wins: g >= 0.4 h where h >= 0.05, g <= 0.02 where h < 0.03 (4 post hoc A points fit) | cross-focus | 0 | 0.30 |
+| H2-019 | STOP RULE: the central claim is false and the line stops if H2-001/014/015, the C AE round and the new-field checks all fail at pre-declared margins | programme | 0 | 0.35 |
+
+Total if every H2 hypothesis ran in full: ~50 GPU-h (stage-1 headroom checks of 009-013 ~7 GPU-h) plus ~55 CPU-h of attacker evaluation, mostly in A.
+
+## Dependency notes (not a ranking)
+- Zero-GPU, existing artefacts: H2-016 (saved predictions), H2-015 and the dither arms of H2-014 (CPU), H2-017 (cached WavLM features), H2-018 script. H2-014 supplies the strongest comparator to H2-001, H2-006, H2-015.
+- Already queued and shared: A seeds 1-2 of the midnight/dinov2 holdout cells (H2-001, H2-004), C `c_ae_*` (H2-002, H2-008 after a sentence probe is added).
+- Headroom-first rule for every new field: floors and the oracle/clean reference before any learned arm (H2-009 to H2-013; H2-018 makes it a standing procedure).
+- Needs the programme owner: licences and download sizes not verified by me (RAVDESS for H2-006, EEGMMI and EEG foundation-model weights for H2-012, single-cell atlas and scFM weights for H2-010, JUMP per-scenario sizes for H2-011, GalSim for H2-013); the PII-Masking-300K licence flag from the journal stays open.
+
+## Papers opened by me while writing H2 (abstract / page level)
+2606.06647 (Identity Trap in EEG Foundation Models), 2604.09787 (Learning What's Real), 2610.30104 (BatchBench abstract; no numbers on the page), PMC11297288 (Arevalo et al., JUMP batch correction, five scenarios), bioRxiv 10.64898/2025.12.19.695371 (batch effects in single-cell foundation models). Tags [S] in the H2 files mean "read by a literature scout, not opened by me"; scIB itself was not opened (the nature.com page redirected to a login).

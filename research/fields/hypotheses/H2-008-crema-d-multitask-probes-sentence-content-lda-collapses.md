@@ -13,7 +13,7 @@ If G1 and G2 pass, then for the V-selected AE (dz 16 or 32, lam in {3, 10}, no e
 (c) the same holds on speech-trimmed input (otherwise the gain leans on the channel, Gate 2 of C).
 
 ## Mechanism
-Emotion labels define 5 LDA dimensions, and sentence/phonetic content is orthogonal to emotion in a balanced design, so the label-only projection keeps almost none of it (the C pre-registration expects this collapse only for held-out emotions, where it was small: LDA-16 padded keeps 0.450 U_HE vs raw 0.692). A task whose label is not emotion makes "the task does not determine the representation" literally true. The AE sees no labels, so it keeps content if content survives the speaker adversary; sentence content is shared across all actors and does not help identify them, whereas channel and timbre do, which is why it is the most plausible survivor.
+Emotion labels define 5 LDA dimensions, and sentence/phonetic content is orthogonal to emotion in a balanced design, so the label-only projection keeps almost none of it (the collapse already visible on held-out emotions is large: LDA-4 padded to 16 dims keeps U_HE 0.450 vs raw 0.692, and 3 LDA dims 0.363). A task whose label is not emotion makes "the task does not determine the representation" literally true. The AE sees no labels, so it keeps content if content survives the speaker adversary; sentence content is shared across all actors and does not help identify them, whereas channel and timbre do, which is why it is the most plausible survivor.
 
 ## Experiment (exact)
 - Data: CREMA-D (existing splits.json, 4 actor-disjoint folds, encoder-train / validation / sealed-test actors, 91 actors), WavLM-Base+ pooled mean+std (1,536-d), also `--trim` variant.
