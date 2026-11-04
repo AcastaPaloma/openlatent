@@ -950,13 +950,13 @@ V-selected `ae` configuration per cell; "n_near" = inductive floor points within
 | cell / design | AE config | L | utility: headroom | utility Δ vs inductive envelope [95% CI] (MDE80) | retention: headroom | retention Δ vs inductive envelope [95% CI] (MDE80) | n_near | utility win | retention win |
 |---|---|---|---|---|---|---|---|---|---|
 | midnight / Tolkach, cross-fit K=4 | dl32 lam10 | 0.37 | 0.029 (ceiling-limited) | +0.003 [-0.007, +0.012] (0.014) | 0.486 | **+0.095 [+0.068, +0.123] (0.041)** vs `lda_pca__d8` | 3 | not scored | **YES** |
-| midnight / Tolkach, fixed C, 3 seeds | dl32 lam10 | 0.27 | 0.109 | +0.089 [+0.033, +0.174] (0.104) vs `pca__d4` | 0.590 | +0.146 [+0.112, +0.177] (0.046) vs `pca__d4` | 1 | no comparator | no comparator (P3) |
+| midnight / Tolkach, fixed C, 3 seeds | dl32 lam10 | 0.25 | 0.109 | +0.089 [+0.033, +0.174] (0.104) vs `pca__d4` | 0.590 | +0.146 [+0.112, +0.177] (0.046) vs `pca__d4` | 1 | no comparator | no comparator (P3) |
 | midnight / TCGA, cross-fit K=4 | dl32 lam1 | 0.46 | 0.052 | -0.028 [-0.063, +0.001] (0.048) | 0.448 | +0.013 [-0.009, +0.034] (0.030) vs `lda_pca__d16` | 5 | no | no |
 | midnight / TCGA, fixed C, 3 seeds | dl32 lam0 | 0.58 | 0.015 (ceiling-limited) | -0.056 [-0.108, -0.010] (0.071) | 0.322 | -0.090 [-0.130, -0.051] (0.058) | 2 | not scored | no |
-| dinov2-L / Tolkach, fixed C, 3 seeds | dl32 lam0 | 0.55 | 0.043 | -0.004 [-0.016, +0.006] (0.017) | 0.191 | -0.038 [-0.051, -0.025] (0.018) | 0 | no comparator | no |
-| dinov2-L / TCGA, fixed C, 3 seeds | dl32 lam0 (beta 0.01) | 0.40 | < 0 (a floor beats raw) | -0.010 [-0.028, +0.010] (0.027) | 0.294 | -0.451 [-0.464, -0.439] (0.018) | 2 | not scored | no |
-| phikon / TCGA, fixed C, seed 0 (not yet replicated) | dl32 lam1 | 0.50 | 0.032 | -0.051 [-0.150, +0.046] (0.143) | 0.814 | +0.292 [+0.253, +0.331] (0.054) vs `randproj__d16` but utility -0.113 [-0.215, -0.015] vs the matched LDA arm | 0 | no comparator | no (n_near 0, utility cost) |
-| dinov2-L / Camelyon, crossed, seed 0 (no held-out classes) | dl32 lam1 | 0.62 | -0.017 | -0.046 [-0.108, -0.011] vs `leace` | 0.034 (ceiling-limited) | -0.296 [-0.327, -0.268] | 1 | not scored | not scored |
+| dinov2-L / Tolkach, fixed C, 3 seeds | dl32 lam0 | 0.30 | 0.043 | -0.004 [-0.016, +0.006] (0.017) | 0.191 | -0.038 [-0.051, -0.025] (0.018) | 0 | no comparator | no |
+| dinov2-L / TCGA, fixed C, 3 seeds | dl32 lam0 (beta 0.01) | 0.48 | < 0 (a floor beats raw) | -0.010 [-0.028, +0.010] (0.027) | 0.294 | -0.451 [-0.464, -0.439] (0.018) | 2 | not scored | no |
+| phikon / TCGA, fixed C, seed 0 (not yet replicated) | dl32 lam1 | 0.59 | 0.032 | -0.051 [-0.150, +0.046] (0.143) | 0.814 | +0.292 [+0.253, +0.331] (0.054) vs `randproj__d16` but utility -0.113 [-0.215, -0.015] vs the matched LDA arm | 0 | no comparator | no (n_near 0, utility cost) |
+| dinov2-L / Camelyon, crossed, seed 0 (no held-out classes) | dl32 lam1 | 0.81 | -0.017 | -0.046 [-0.108, -0.011] vs `leace` | 0.034 (ceiling-limited) | -0.296 [-0.327, -0.268] | 1 | not scored | not scored |
 
 Reading: retention is positive in exactly one cell with a valid comparator (midnight/Tolkach cross-fit: +0.095 at equal held-class utility, utility headroom only 0.029), null in the other midnight cell, and negative in the weak-headroom or weak-encoder cells; the fixed-C Tolkach +0.146 has one
 floor point near its L and is not a win under P3. Dropping `centre_whiten` from the envelope moves the fixed-C midnight/Tolkach utility contrast from -0.002 (vs centre_whiten) to +0.089 on one comparator point, which is why cross-fit (3 floor points near L) is the number to quote.
