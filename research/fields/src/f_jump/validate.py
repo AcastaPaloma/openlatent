@@ -36,6 +36,6 @@ for name, E in embs.items():
         b[res.index.to_numpy()] = res["average_precision"].to_numpy()
         both = ~np.isnan(a) & ~np.isnan(b)
         out[f"{name}|{mode}"] = dict(n_gpu=int((~np.isnan(a)).sum()), n_copairs=int((~np.isnan(b)).sum()), n_both=int(both.sum()),
-                                      max_abs_diff=float(np.abs(a[both] - b[both]).max()), mean_gpu=float(np.nanmean(a)), mean_copairs=float(np.nanmean(b)), seconds_gpu=round(t1, 2))
+                                      max_abs_diff=float(np.abs(a[both] - b[both]).max()), n_diff_gt_1e6=int((np.abs(a[both] - b[both]) > 1e-6).sum()), p9999_abs_diff=float(np.quantile(np.abs(a[both] - b[both]), 0.9999)), mean_abs_diff=float(np.abs(a[both] - b[both]).mean()), mean_gpu=float(np.nanmean(a)), mean_copairs=float(np.nanmean(b)), seconds_gpu=round(t1, 2))
         print(name, mode, out[f"{name}|{mode}"], flush=True)
 (d / "validate_s4.json").write_text(json.dumps(out, indent=1))
