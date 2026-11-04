@@ -1,4 +1,4 @@
 name: c_rate_d128_s0
-priority: 20
+priority: 14
 cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_rate_d128_s0 --method learned --cfg '{\"dz\": 128, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 0.0}' --seeds 0"
 hf_path: runs/c_rate_d128_s0

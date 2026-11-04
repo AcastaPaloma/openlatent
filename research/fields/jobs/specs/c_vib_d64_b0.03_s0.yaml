@@ -1,4 +1,4 @@
 name: c_vib_d64_b0.03_s0
-priority: 20
+priority: 14
 cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_vib_d64_b0.03_s0 --method learned --cfg '{\"dz\": 64, \"bott\": \"vib\", \"beta\": 0.03, \"lam\": 0.0}' --seeds 0"
 hf_path: runs/c_vib_d64_b0.03_s0

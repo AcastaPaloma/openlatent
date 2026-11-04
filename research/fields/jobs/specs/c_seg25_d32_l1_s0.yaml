@@ -1,4 +1,4 @@
 name: c_seg25_d32_l1_s0
-priority: 20
+priority: 14
 cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_seg25_d32_l1_s0 --method learned --cfg '{\"dz\": 32, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 1.0, \"pool\": 25}' --seeds 0"
 hf_path: runs/c_seg25_d32_l1_s0

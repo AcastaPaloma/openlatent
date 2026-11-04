@@ -1,4 +1,4 @@
 name: c_post6_s0
-priority: 20
+priority: 14
 cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_post6_s0 --method learned --cfg '{\"dz\": 64, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 0.0, \"release\": \"posterior\"}' --seeds 0"
 hf_path: runs/c_post6_s0

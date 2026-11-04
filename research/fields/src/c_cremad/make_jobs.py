@@ -67,7 +67,15 @@ def sweep(seeds, prio):
     return out
 
 
+def sweeptrim(seeds=(0,), prio=22):
+    """Key learned configs again on speech-trimmed input (net of the non-speech channel cue)."""
+    keep = ["c_rate_d4", "c_rate_d16", "c_rate_d64", "c_adv_d16_l1", "c_adv_d16_l3", "c_adv_d64_l3", "c_vq_g4k64"]
+    cf = learned_configs()
+    return [spec(f"{n.replace('c_', 'c_trim_', 1)}_s{sd}", "learned", cf[n], seeds=(sd,), prio=prio + sd, extra="--trim")
+            for n in keep for sd in seeds]
+
+
 if __name__ == "__main__":
     what = sys.argv[1]
-    names = trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 20) if what == "sweep0" else sweep((1, 2), 30)
+    names = sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
     print(len(names), "specs", names[:3], "...")

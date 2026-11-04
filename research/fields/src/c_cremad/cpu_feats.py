@@ -170,6 +170,23 @@ def span_one(path):
     return np.array([-1, -1]) if s is None else np.array([s, min(t, len(x))])
 
 
+def edge_feats(path):
+    """First 150 ms of the FILE (and last 150 ms) for clips whose speech starts after 300 ms / ends >300 ms before the end:
+    stricter non-speech than the VAD head/tail (no VAD boundary effects, no onset residue)."""
+    sr, x = wavfile.read(path)
+    x = x.astype(np.float64) / 32768.0
+    e, nf, s, t = vad(x)
+    if s is None:
+        return None
+    out = {}
+    def st(seg):
+        m = logmel(seg)
+        return np.concatenate([m.mean(0), m.std(0)]) if len(m) else None
+    out["first"] = st(x[:2400]) if s >= 4800 else None
+    out["last"] = st(x[-2400:]) if len(x) - t >= 4800 else None
+    return out
+
+
 def run_span():
     meta = data.load_meta()
     paths = [str(data.DATA_ROOT / "AudioWAV" / f"{c}.wav") for c in meta["ids"]]
@@ -221,5 +238,22 @@ def run(name):
             save("pros_" + k, [r[k] if r is not None else None for r in res])
 
 
+def run_edge():
+    meta = data.load_meta()
+    paths = [str(data.DATA_ROOT / "AudioWAV" / f"{c}.wav") for c in meta["ids"]]
+    with Pool(int(os.environ.get("NPROC", 8))) as p:
+        res = p.map(edge_feats, paths, chunksize=80)
+    d = data.FEAT_ROOT / "handcrafted"
+    for k in ("first", "last"):
+        rows = [r[k] if r is not None else None for r in res]
+        ok = np.array([r is not None for r in rows])
+        arr = np.zeros((len(rows), 128), np.float32)
+        for i, r in enumerate(rows):
+            if r is not None:
+                arr[i] = r
+        np.save(d / f"edge_{k}.npy", arr); np.save(d / f"edge_{k}.keep.npy", ok)
+        print("edge", k, int(ok.sum()), f"({ok.mean():.3f})")
+
+
 if __name__ == "__main__":
-    run_span() if sys.argv[1] == "span" else run(sys.argv[1])
+    {"span": run_span, "edge": run_edge}.get(sys.argv[1], lambda: run(sys.argv[1]))()
