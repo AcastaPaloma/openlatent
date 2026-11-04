@@ -1,0 +1,5 @@
+{
+ "2": {
+  "error": "ArpackError('ARPACK error 3: No shifts could be applied during a cycle of the Implicitly restarted Arnoldi iteration. One possibility is to increase the size of NCV relative to NEV. ')"
+ }
+}

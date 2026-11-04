@@ -469,7 +469,21 @@ median MDE80 over pairs = 0.098 (needs <= 0.05 on HLCA)
 | onehot_oracle | 1.000 | 0.765 | 0.906 | 0.612 | 0.776 | 0.673 | 1.000 | 1.000 | 1.000 |
 | ctrl_noise16 | 0.335 | 0.686 | 0.475 | 0.606 | 0.693 | 0.184 | 0.710 | 0.482 | 0.005 |
 
-HLCA: pending (the first two attempts crashed in fold 2 with an XLA CPU JIT allocation failure; a per-fold retry at 4,000 cells per fold is running).
+### scIB-style context, hlca (scib-metrics 0.5.6, held-out cells, fold 1 ONLY (4,000 held-out cells); NOT comparable with published scIB totals)
+| arm | bio conservation | batch correction | total (0.6 bio + 0.4 batch) | iLISI | KBET | graph conn. | cLISI | isolated labels | KMeans NMI |
+|---|---|---|---|---|---|---|---|---|---|
+| raw50 | 0.623 | 0.481 | 0.566 | 0.099 | 0.764 | 0.877 | 0.993 | 0.666 | 0.676 |
+| pca16 | 0.586 | 0.449 | 0.531 | 0.132 | 0.720 | 0.797 | 0.989 | 0.619 | 0.614 |
+| ldaC_pca16 | 0.597 | 0.537 | 0.573 | 0.160 | 0.760 | 0.821 | 0.989 | 0.617 | 0.636 |
+| leace | 0.621 | 0.513 | 0.578 | 0.123 | 0.781 | 0.863 | 0.992 | 0.665 | 0.668 |
+| T_centre | 0.617 | 0.633 | 0.623 | 0.055 | 0.674 | 0.837 | 0.993 | 0.671 | 0.658 |
+| T_bwhiten16 | 0.546 | 0.675 | 0.598 | 0.228 | 0.708 | 0.746 | 0.980 | 0.628 | 0.504 |
+| T_harmony | 0.614 | 0.646 | 0.627 | 0.267 | 0.832 | 0.858 | 0.991 | 0.644 | 0.656 |
+| T_scvi | 0.631 | 0.595 | 0.617 | 0.107 | 0.752 | 0.899 | 0.996 | 0.604 | 0.712 |
+| onehot_oracle | 0.983 | 0.747 | 0.889 | 0.446 | 0.913 | 0.901 | 1.000 | 0.917 | 1.000 |
+| ctrl_noise16 | 0.360 | 0.593 | 0.453 | 0.604 | 0.303 | 0.154 | 0.902 | 0.414 | 0.095 |
+
+HLCA: only fold 1 produced a result (4,000 cells). `e_scib_hlca` and `e_scib_hlca_b` crashed in fold 2 with an XLA CPU JIT allocation failure; in the per-fold retry `e_scib_hlca_c` folds 0 and 2 failed with an ARPACK error inside scib-metrics ("No shifts could be applied"). Not pursued: this table is context, in no kill condition. Reading: the literature ordering appears (Harmony and per-batch centring/whitening raise the batch score, the one-hot oracle saturates bio, noise scores 0.45 total), and the kNN-based batch scores rise for `T_centre` in all three datasets where the retrained attackers say leakage rises (section 5.2 point 6): the two families of metric disagree in direction for that arm.
 
 ### 5.6 What this does and does not establish
 * It establishes, for one frozen encoder (2,000-HVG PCA-50), three datasets and the registered folds: (i) a +0.05 macro-F1 difference between arms is resolvable on HLCA (MDE80 0.035) but not on the scIB sets; (ii) a 16-d code, label-free or coarse-label-supervised,
