@@ -158,3 +158,17 @@ def test_auc_metric_path():
     d = cf.SuiteDecl("auc", ("s0", "s1"), metric="auc", n_boot=300, seed=1)
     c = cf.certify(d, cf.SplitPreds(y, cl, sv), cf.SplitPreds(y, cl, sc))
     assert c["chance"]["used"] == 0.5 and c["selected"]["name"] == "s0" and c["verdict"]["label"] == "LEAK"
+
+
+def test_conservative_interval_contains_the_percentile_interval():
+    val, test = build(11, [0.3, 0.2, 0.1])
+    c = cf.certify(decl(3), val, test)
+    assert c["ci_inflation"] == cf.CI_KAPPA == 1.10 and c["evaluator"]["version"] == "s_suite/2.1"
+    for a in list(c["attackers"].values()) + [c["selected"]]:
+        lo, hi = a["ci95"]
+        clo, chi = a["ci95_conservative"]
+        assert clo <= lo + 1e-6 and chi >= hi - 1e-6
+        if clo > 0 and chi < 1:
+            assert abs((chi - clo) - 1.10 * (hi - lo)) < 2e-5
+    w = cf.widen_interval(0.0, 0.2)
+    assert w[0] == 0.0 and abs(w[1] - 0.21) < 1e-12

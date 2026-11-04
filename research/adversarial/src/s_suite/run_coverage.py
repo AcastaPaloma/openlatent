@@ -80,7 +80,8 @@ def run_job(job):
         sb = c["suite_bound"]
         out["cert"][str(n)] = dict(
             sel=sel["name"], sel_test=sel["test"], sel_se=sel["se"], ci95=sel["ci95"], ci_cp=[lo_cp, hi_cp], true_sel=ts, true_se_sel=tse,
-            z=(sel["test"] - ts) / sel["se"], cover_ci=bool(sel["ci95"][0] <= ts <= sel["ci95"][1]), cover_cp=bool(lo_cp <= ts <= hi_cp),
+            z=(sel["test"] - ts) / sel["se"], cover_ci=bool(sel["ci95"][0] <= ts <= sel["ci95"][1]),
+            ci_cons=sel["ci95_conservative"], cover_ci_cons=bool(sel["ci95_conservative"][0] <= ts <= sel["ci95_conservative"][1]), cover_cp=bool(lo_cp <= ts <= hi_cp),
             cover_ci_truthadj=bool(abs(sel["test"] - ts) <= 1.96 * np.hypot(sel["se"], tse)), cover_bonf=bool(sb["bonferroni"] >= true12.max()),
             cover_maxt=bool(sb["maxt"] >= true12.max()), cover_ucb1=bool(sel["ucb_onesided"] >= ts), verdict=c["verdict"]["label"],
             true_best12=float(true12.max()), ci_width=sel["ci95"][1] - sel["ci95"][0], cp_width=hi_cp - lo_cp, n_units=c["data"]["n_test_units"])
@@ -92,11 +93,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--reps", type=int, default=30)
+    ap.add_argument("--rep-start", type=int, default=0, help="first replicate index (fresh identities for out-of-sample verification)")
     ap.add_argument("--procs", type=int, default=8)
     ap.add_argument("--smoke", action="store_true")
     a = ap.parse_args()
     jobs = []
-    for rep in range(a.reps):                       # replicate-major order: an early stop leaves every cell balanced
+    for rep in range(a.rep_start, a.rep_start + a.reps):                       # replicate-major order: an early stop leaves every cell balanced
         for ci, (ch, d) in enumerate(cells()):
             if a.smoke and (ch, d) not in (("null", 0.0), ("gain", 0.092)):
                 continue

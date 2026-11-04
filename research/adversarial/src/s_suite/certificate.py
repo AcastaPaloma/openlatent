@@ -33,7 +33,8 @@ import numpy as np
 from . import freeze, ledger
 from . import stats as st
 
-VERSION = "s_suite/2"
+VERSION = "s_suite/2.1"
+CI_KAPPA = 1.10   # evaluator v2 (S.md amendment v1.4): the QUOTED interval is the percentile interval widened by this factor about its midpoint
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,12 @@ class SplitPreds:
 
 
 # ---------------------------------------------------------------------------------------------------------------------------
+
+def widen_interval(lo, hi, kappa=CI_KAPPA):
+    """Percentile interval widened by `kappa` about its midpoint, clipped to [0, 1]."""
+    mid, half = (lo + hi) / 2.0, (hi - lo) / 2.0 * kappa
+    return [max(0.0, mid - half), min(1.0, mid + half)]
+
 
 def _check_suite(decl: SuiteDecl, split: SplitPreds, which: str):
     got, want = set(split.scores), set(decl.attackers)
@@ -184,7 +191,7 @@ def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Opti
     ksel = int(np.argmax(val_point))  # first maximum on ties = declaration order
     per = {}
     for k, a in enumerate(names):
-        per[a] = dict(val=val_point[k], test=point[k], se=se[k], ci95=[lo[k], hi[k]], ucb_onesided=ucb1[k], ucb_bonferroni=ucbK[k],
+        per[a] = dict(val=val_point[k], test=point[k], se=se[k], ci95=[lo[k], hi[k]], ci95_conservative=widen_interval(lo[k], hi[k]), ucb_onesided=ucb1[k], ucb_bonferroni=ucbK[k],
                       ucb_maxt=ucb_maxt[k], mde80=st.mde80(se[k]),
                       design_effect=st.design_effect(se[k], point[k], n_items) if decl.metric == "accuracy" else None)
     kn = int(np.argmax(point))
@@ -217,7 +224,7 @@ def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Opti
         return (x - base) / denom
 
     sel = dict(name=names[ksel], rank_rule="argmax validation metric, ties -> declaration order", val=val_point[ksel], test=point[ksel],
-               se=se[ksel], ci95=[lo[ksel], hi[ksel]], ucb_onesided=ucb1[ksel], mde80=st.mde80(se[ksel]),
+               se=se[ksel], ci95=[lo[ksel], hi[ksel]], ci95_conservative=widen_interval(lo[ksel], hi[ksel]), ucb_onesided=ucb1[ksel], mde80=st.mde80(se[ksel]),
                excess_over_baseline=point[ksel] - base, excess_lcb_onesided=dlo, excess_mde80=st.mde80(dse),
                normalised_leakage=norm_leak(point[ksel]),
                normalised_leakage_ci95=[norm_leak(lo[ksel]), norm_leak(hi[ksel])],
@@ -248,7 +255,7 @@ def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Opti
         declaration={**asdict(decl), "attackers": names}, decl_digest=decl.digest(),
         data=dict(n_test_items=n_items, n_test_units=m, n_val_items=len(val.y), n_val_units=st.unit_index(val.cluster)[1],
                   val_digest=val.digest(names), test_digest=test.digest(names)),
-        chance=ch, label_only=lab, baseline_used=base, reference=ref,
+        ci_inflation=CI_KAPPA, chance=ch, label_only=lab, baseline_used=base, reference=ref,
         attackers=per, naive_max=dict(name=names[kn], test=point[kn], note="max over the suite on the sealed test; comparison only, optimistic"),
         selected=sel, suite_bound=suite, floor=floor,
         verdict=dict(label=verdict, below_margin_maxt=bool(ub_maxt <= base + decl.margin),

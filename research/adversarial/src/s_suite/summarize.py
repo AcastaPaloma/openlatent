@@ -172,9 +172,36 @@ def e45(path):
     return out
 
 
+def coverage(path):
+    rows = [json.loads(x) for x in open(path) if x.strip()]
+    leak = [r for r in rows if r["channel"] != "null"]
+    nul = [r for r in rows if r["channel"] == "null"]
+    out = dict(n_rows=len(rows), n_leak=len(leak), n_null=len(nul), per_n={})
+    for n in ("150", "360", "1425", "4707"):
+        c = [r["cert"][n] for r in leak]
+        z = np.array([x["z"] for x in c])
+        se = np.array([x["sel_se"] for x in c])
+        tse = np.array([x["true_se_sel"] for x in c])
+        by_cell = collections.defaultdict(list)
+        for r in leak:
+            by_cell[(r["channel"], r["dose"])].append(r["cert"][n]["cover_ci"])
+        out["per_n"][n] = dict(
+            cover_ci=float(np.mean([x["cover_ci"] for x in c])), cover_ci_truthadj=float(np.mean([x["cover_ci_truthadj"] for x in c])),
+            cover_cp=float(np.mean([x["cover_cp"] for x in c])),
+            cover_ci_cons=(float(np.mean([x["cover_ci_cons"] for x in c])) if "cover_ci_cons" in c[0] else None),
+            min_cell_cover_ci_cons=(float(min(np.mean([r["cert"][n]["cover_ci_cons"] for r in leak if (r["channel"], r["dose"]) == cell]) for cell in {(r["channel"], r["dose"]) for r in leak})) if "cover_ci_cons" in c[0] else None), cover_bonf=float(np.mean([x["cover_bonf"] for x in c])),
+            cover_maxt=float(np.mean([x["cover_maxt"] for x in c])), cover_ucb1=float(np.mean([x["cover_ucb1"] for x in c])),
+            min_cell_cover_ci=float(min(np.mean(v) for v in by_cell.values())),
+            null_false_leak=float(np.mean([r["cert"][n]["verdict"] == "LEAK" for r in nul])) if nul else None,
+            bias_selected=float(np.mean([x["sel_test"] - x["true_sel"] for x in c])), mean_abs_bias=float(np.mean([abs(x["sel_test"] - x["true_sel"]) for x in c])),
+            z_mean=float(z.mean()), z_sd=float(z.std(ddof=1)), mean_sel_se=float(se.mean()), mean_true_se=float(tse.mean()),
+            ci_width=float(np.mean([x["ci_width"] for x in c])), cp_width=float(np.mean([x["cp_width"] for x in c])))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("kind", choices=["real", "planted"])
+    ap.add_argument("kind", choices=["real", "planted", "coverage"])
     ap.add_argument("--within"), ap.add_argument("--budget"), ap.add_argument("--select"), ap.add_argument("--hmdb"), ap.add_argument("--jsonl")
     ap.add_argument("--out", default=".")
     a = ap.parse_args()
@@ -182,6 +209,9 @@ def main():
         res = dict(E1=e1([os.path.join(a.within, "rescore_programme1.json")] + ([os.path.join(a.hmdb, "rescore_programme1.json")] if a.hmdb else [])),
                    E2=e2(os.path.join(a.select, "harness_selection_bias.json")), E3=e3(os.path.join(a.budget, "harness_evidence_budget.json")))
         json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_real.json"), "w"), indent=1, sort_keys=True, default=float)
+    elif a.kind == "coverage":
+        res = coverage(a.jsonl)
+        json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_coverage.json"), "w"), indent=1, sort_keys=True, default=float)
     else:
         res = e45(a.jsonl)
         json.dump(prov.add(res, __file__), open(os.path.join(a.out, "summary_planted.json"), "w"), indent=1, sort_keys=True, default=float)

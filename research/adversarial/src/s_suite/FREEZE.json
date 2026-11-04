@@ -8,7 +8,7 @@
   "run_real.py": "a048ae5b022fa4c841e465309faff3ede730304371208510aea9be191ddb388c"
  },
  "evaluator_files": {
-  "certificate.py": "69b194737f6522dfca48400fc73a29a0814d9b7f8760898cc6aefa30cbb8f099",
+  "certificate.py": "a3c3dd5a8d24c05067e62acd673357d47f32f8af1d861f6c453ab3c6d9931a3f",
   "evidence_budget.py": "db37be939924d1acb073a127192226fc5c2c702138d8ff4fe6d8ee9bc258a469",
   "freeze.py": "150cbb16d0823c4c17fabad3c109a630b94e1630ef2a20902dd5c190039f475b",
   "harness_io.py": "b40ee1cf63180edeb38b063c875db6ac66db077f01b1a30cff7784c064350679",
@@ -17,6 +17,6 @@
   "selection_bias.py": "3a18c2c83d50007b2b095669b4301c7ba1dd695218685820e783e39e4a174b3e",
   "stats.py": "c3df507c4abe48a539e465b4d22d469ef9044e191eb933c160cf6ee70796732d"
  },
- "evaluator_sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
- "tag": "s-suite-eval-v1"
+ "evaluator_sha256": "b1bc7e7283bbd92c298a4afc71c90dd51a052fe2ed5228962ab9d31ffd8f4e4b",
+ "tag": "s-suite-eval-v2"
 }
