@@ -119,13 +119,20 @@ def main():
         P[f"idx|{nm}"] = S["idx"].astype(np.int64)
         P[f"half|{nm}"] = S["half"]
     kinds = a.kinds.split(",")
+    pos_cache = {}
     rng_cap = np.random.RandomState(AR.seed_of(a.salt, "cap") % (2 ** 31))
 
     def do_ap(name, E, sname, comp_override=None, modes=("xs", "nonrep")):
         S = sets[sname]
         comp = S["comp"] if comp_override is None else comp_override
         for mode in modes:
-            apq = AP.ap_queries(E, S["plate"], comp, S["src"], S["well"], S["pert"], mode=mode)
+            if comp_override is None:
+                if (sname, mode) not in pos_cache:
+                    pos_cache[(sname, mode)] = AP.build_pos(comp, S["src"], S["well"], mode)
+                pos = pos_cache[(sname, mode)]
+            else:
+                pos = None
+            apq = AP.ap_queries(E, S["plate"], comp, S["src"], S["well"], S["pert"], mode=mode, pos=pos)
             ids, mean_ap = AP.per_compound(apq, comp)
             P[f"apc|{sname}|{name}|{mode}"] = mean_ap.astype(np.float32)
             if s5 and mode == "xs":
@@ -218,7 +225,7 @@ def main():
             sel = {}
             for i, par in enumerate(pars):
                 E = AR.sphering_apply(Xall, par).detach().cpu().numpy()
-                apq = AP.ap_queries(E[:nV], sets["V"]["plate"], sets["V"]["comp"], sets["V"]["src"], sets["V"]["well"], sets["V"]["pert"], mode="xs")
+                apq = AP.ap_queries(E[:nV], sets["V"]["plate"], sets["V"]["comp"], sets["V"]["src"], sets["V"]["well"], sets["V"]["pert"], mode="xs", pos=pos_cache.get(("V", "xs")))
                 u = float(np.nanmean(AP.per_compound(apq, sets["V"]["comp"])[1]))
                 sel[f"{eps[i]:.6g}"] = u
                 if u > best[0]:

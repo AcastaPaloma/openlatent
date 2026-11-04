@@ -39,13 +39,14 @@ def build_pos(comp, source, well, mode):
     return pos
 
 
-def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512):
+def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=None):
     """E: (n, d) array of the eval universe; comp/source: int arrays; plate/well: any hashable arrays; pert in {'trt','negcon','poscon'}.
     Queries = 'trt' wells with >= 1 positive and >= 1 negative.  Returns per-query AP (NaN for dropped queries)."""
     n = len(comp)
     Et = torch.as_tensor(np.ascontiguousarray(E), dtype=torch.float32, device=DEV)
     Et = torch.nn.functional.normalize(Et, dim=1)
-    pos = build_pos(comp, source, well, mode)
+    if pos is None:
+        pos = build_pos(comp, source, well, mode)
     ap = np.full(n, np.nan, np.float64)
     plate = np.asarray(plate)
     order = np.argsort(plate, kind="stable")
