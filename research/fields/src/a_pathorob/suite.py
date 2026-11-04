@@ -34,7 +34,7 @@ def remap(c):
     return inv, len(u)
 
 
-def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True, holdout=False):
+def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True, holdout=False, patchsplit=False):
     t0 = time.time()
     m, preds, timing = {}, {}, {}
     Kc, Ky = int(P.n_id_centres), len(P.classes)
@@ -91,6 +91,13 @@ def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle
     if do_onA:
         r = run_suite(rep["A"], P.c[sp["A"]], P.u[sp["A"]], {"C": rep["C"]}, Kc, kinds=("linear",), seed=seed)
         m["centre_onA/linear/C"] = bacc(P.c[sp["C"]], r["linear"]["C"])
+    if patchsplit:   # slide-fingerprint diagnostic (H-A-001 sub-control): attackers trained and tested on patches of the SAME test units
+        rng = np.random.RandomState(4242 + seed)
+        idx = rng.permutation(len(sp["C"]))
+        h1, h2 = idx[: len(idx) // 2], idx[len(idx) // 2:]
+        r = run_suite(rep["C"][h1], P.c[sp["C"]][h1], P.u[sp["C"]][h1], {"C2": rep["C"][h2]}, Kc, kinds=KINDS_LABEL, seed=seed)
+        for k, d in r.items():
+            m[f"centre_patch/{k}/C2"] = bacc(P.c[sp["C"]][h2], d["C2"])
     m["floor/centre_label_only/C"] = label_only_floor(cB, yB, P.c[sp["C"]], P.y[sp["C"]])
     m["floor/centre_label_only/V"] = label_only_floor(cB, yB, P.c[sp["V"]], P.y[sp["V"]])
     m["chance/centre"] = 1.0 / Kc

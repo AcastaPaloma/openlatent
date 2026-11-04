@@ -191,8 +191,8 @@ def main():
         kinds_all = KC + (KX if have_x else ())
         lines.append("\nGate cell: floors and controls, every attacker separately (balanced accuracy on sealed C, mean over seeds; "
                      "L = (acc - floor)/(raw acc of that attacker - floor); floor = max(chance, label-only))\n")
-        lines.append("| config | label acc | " + " | ".join(kinds_all) + " | L_worst (4 selection families) [95% CI] | L_worst (all families) | L_linear | unseen-centre worst acc | A-trained linear |")
-        lines.append("|---|---|" + "---|" * (len(kinds_all) + 5))
+        lines.append("| config | label acc | " + " | ".join(kinds_all) + " | L_worst (4 selection families) [95% CI] | L_worst (all families) | L_linear | unseen-centre worst acc | A-trained linear | patch-disjoint worst acc (same test slides) |")
+        lines.append("|---|---|" + "---|" * (len(kinds_all) + 6))
         raw_k = {k: cell.metric("raw", "centre", (k,))[0] for k in kinds_all}
         for cfg in cfgs:
             if family(cfg) not in ("raw", "lda", "centre_mean", "centre_zscore", "centre_whiten", "leace", "isp", "ctrl_const", "ctrl_noise", "ctrl_shuffle", "pca", "randproj"):
@@ -208,9 +208,11 @@ def main():
             ood_w = np.mean([max(r["metrics"][f"oodcentre/{k}/OOD2"] for k in ("linear", "mlp", "knn")) for r in rs_])
             ona_ = np.mean([r["metrics"]["centre_onA/linear/C"] for r in rs_])
             lo_, hi_ = ci(L4)
+            pdv = [max(r["metrics"][f"centre_patch/{k}/C2"] for k in ("linear", "mlp", "knn")) for r in rs_ if "centre_patch/linear/C2" in r["metrics"]]
+            pd_ = f"{np.mean(pdv):.3f}" if pdv else "-"
             lall = max(Lk.values())
             lines.append(f"| {cfg} | {lab_[0]:.3f} | " + " | ".join(f"{ks[k][0]:.3f}" for k in kinds_all)
-                         + f" | {L4p:.2f} [{lo_:.2f}, {hi_:.2f}] | {lall:.2f} | {Lk['linear']:.2f} | {ood_w:.3f} | {ona_:.3f} |")
+                         + f" | {L4p:.2f} [{lo_:.2f}, {hi_:.2f}] | {lall:.2f} | {Lk['linear']:.2f} | {ood_w:.3f} | {ona_:.3f} | {pd_} |")
         # family-level selection on V
         lines.append("\nSelected per family on V (label within delta of raw), reported on sealed C:\n")
         lines.append("| delta | family | config | label acc (linear) | worst-case centre acc | leak (0=chance, 1=raw) | label acc on unseen centres | A-trained linear attacker | rate (bits/patch) | held-out-class label acc |")
