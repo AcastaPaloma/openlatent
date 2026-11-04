@@ -1,0 +1,4 @@
+name: d_dig_extract_gtr
+priority: 4
+cmd: "USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/embed.py --embedder gtr_base --scheme digits --masks digits,n2 --skip_raw --bs 64"
+hf_path: runs/d_dig_extract_gtr

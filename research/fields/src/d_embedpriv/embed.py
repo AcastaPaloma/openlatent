@@ -30,6 +30,7 @@ def main():
     ap.add_argument("--bs", type=int, default=64)
     ap.add_argument("--out", default="")
     ap.add_argument("--skip_raw", action="store_true")
+    ap.add_argument("--scheme", default="words")
     a = ap.parse_args()
     from sentence_transformers import SentenceTransformer
     spec = EMBEDDERS[a.embedder]
@@ -39,7 +40,7 @@ def main():
     commit = getattr(model[0].auto_model.config, "_commit_hash", None)
     cache = Path(a.out) if a.out else CACHE / a.embedder
     cache.mkdir(parents=True, exist_ok=True)
-    W = World()
+    W = World(a.scheme)
     lim = a.limit or None
 
     def enc(texts, name, prefix=""):
@@ -60,9 +61,9 @@ def main():
         enc(W.q_texts, "nf_queries", spec["qprefix"])
         enc(W.sf_texts, "sf_docs", spec["dprefix"])
     for m in [m for m in a.masks.split(",") if m]:
-        enc([W.mask_text(t, m) for t in W.nf_texts], f"nf_docs_mask_{m}", spec["dprefix"])
-        enc([W.mask_text(t, m) for t in W.sf_texts], f"sf_docs_mask_{m}", spec["dprefix"])
-    (cache / "meta.json").write_text(json.dumps(dict(embedder=a.embedder, hf=spec["hf"], commit=commit, device=dev,
+        enc([W.mask_text(t, m, len(ti)) for t, ti in zip(W.nf_texts, W.nf_titles)], f"nf_docs_mask_{m}", spec["dprefix"])
+        enc([W.mask_text(t, m, len(ti)) for t, ti in zip(W.sf_texts, W.sf_titles)], f"sf_docs_mask_{m}", spec["dprefix"])
+    (cache / ("meta.json" if a.scheme == "words" else f"meta_{a.scheme}.json")).write_text(json.dumps(dict(embedder=a.embedder, hf=spec["hf"], commit=commit, device=dev,
                                                      torch=torch.__version__, limit=a.limit,
                                                      n_vocab=len(W.vocab), n_rare=len(W.tier_cols["rare"]),
                                                      n_mid=len(W.tier_cols["mid"])), indent=1))

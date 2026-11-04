@@ -1,0 +1,4 @@
+name: d_dig_check_gtr_s1
+priority: 4
+cmd: "n=0; while [ ! -f $HOME/work/cache/d_embedpriv/gtr_base/meta_digits.json ] && [ $n -lt 120 ]; do sleep 15; n=$((n+1)); done; USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/run_kill.py --name d_dig_check_gtr_s1 --embedder gtr_base --grid ctrl+oracle_dig+floors_a2+floors_b2+suplin2 --seeds 1 --scheme digits --out $OUT"
+hf_path: runs/d_dig_check_gtr_s1

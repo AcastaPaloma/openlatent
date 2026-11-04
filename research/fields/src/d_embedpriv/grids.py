@@ -11,6 +11,16 @@ def grid(name):
         g += [dict(family="raw"), dict(family="const"), dict(family="raw", shuffle=True)]
     elif name == "oracle":
         g += [dict(family="raw", mask="rare"), dict(family="raw", mask="all")]
+    elif name == "oracle_dig":
+        g += [dict(family="raw", mask="digits"), dict(family="raw", mask="n2")]
+    elif name == "floors_a2":  # digits check: finer noise grid (0.25) after D showed the 3% boundary lies below r = 0.5
+        g += [dict(family="randproj", d=d) for d in (32, 64, 128, 256, 512)]
+        g += [dict(family="pca", d=d) for d in D_FLOOR[1:]]
+        g += [dict(family="noise", r=r) for r in (0.25, 0.5, 1, 2, 3, 4)]
+    elif name == "floors_b2":
+        g += [dict(family="leace", r=r) for r in (4, 16, 64, 128, 256)]
+    elif name == "suplin2":
+        g += [dict(family="sup_lin", d=d) for d in D_FLOOR[1:]]
     elif name == "floors_a":  # random projection, PCA, noise
         g += [dict(family="randproj", d=d) for d in (32, 64, 128, 256, 512)]
         g += [dict(family="pca", d=d) for d in D_FLOOR]

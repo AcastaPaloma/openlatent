@@ -9,7 +9,7 @@ from common import World
 
 out = Path(sys.argv[1])
 out.mkdir(parents=True, exist_ok=True)
-W = World()
+W = World(sys.argv[2] if len(sys.argv) > 2 else "words")
 rng = np.random.default_rng(0)
 R = rng.standard_normal((len(W.vocab), 768)).astype(np.float32) / np.sqrt(60)
 
@@ -22,6 +22,6 @@ def emb(B):
 np.save(out / "nf_docs.npy", emb(W.nf_bags))
 np.save(out / "sf_docs.npy", emb(W.sf_bags))
 np.save(out / "nf_queries.npy", emb(W.bags(W.q_texts)))
-for m in ("rare", "all"):
+for m in (("rare", "all") if W.scheme == "words" else ("digits", "n2")):
     np.save(out / f"nf_docs_mask_{m}.npy", emb(W.nf_bags))
     np.save(out / f"sf_docs_mask_{m}.npy", emb(W.sf_bags))

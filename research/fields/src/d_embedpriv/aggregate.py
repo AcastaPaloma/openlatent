@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 
 ATT = ("ridge", "mlp", "knn")
-TIERS = ("rare", "mid")
+P, S2, OM, OM2 = P, S2, P, "all"  # primary tier, second tier, oracle mask names (set from the records in main)
 FLOORS = ("randproj", "pca", "noise", "leace", "sup_lin")
 CONTROLS = ("bott_mlp",)
 
@@ -51,7 +51,7 @@ class Agg:
     def __init__(self, recs, units, B=1000):
         self.recs, self.units, self.B = recs, units, B
         self.rng = np.random.default_rng(0)
-        any_c = next(k for k in units if "rp_C_rare_ridge" in k)
+        any_c = next(k for k in units if f"rp_C_{P}_ridge" in k)
         self.n_c = len(units[any_c])
         self.idx_c = self.rng.integers(0, self.n_c, size=(B, self.n_c))
         any_q = next(k for k in units if k.endswith("|ndcg_test"))
@@ -93,7 +93,7 @@ class Agg:
         ok = [r for r in self.family_recs(family, seed) if self.retention(r, "dev") >= tau]
         if not ok:
             return None
-        return min(ok, key=lambda r: (round(worst(r, "V", "rare"), 4), r["dim"], r["spec"].get("lam", 0)))
+        return min(ok, key=lambda r: (round(worst(r, "V", P), 4), r["dim"], r["spec"].get("lam", 0)))
 
 
 def ci(x):
@@ -105,6 +105,7 @@ def fmt(x, lo=None, hi=None, nd=3):
 
 
 def main():
+    global P, S2, OM, OM2
     ap = argparse.ArgumentParser()
     ap.add_argument("dirs", nargs="+")
     ap.add_argument("--taus", default="0.97,0.90")
@@ -112,16 +113,22 @@ def main():
     ap.add_argument("--families", default="")
     a = ap.parse_args()
     recs, units = load(a.dirs)
+    tiers = list(next(iter(recs.values()))["attackers"]["ridge"]["V"].keys())
+    P, S2 = tiers[0], tiers[1]
+    if P == "n1":  # digits / entity scheme (H2-009)
+        OM, OM2 = "digits", "n2"
     A = Agg(recs, units)
     taus = [float(t) for t in a.taus.split(",")]
     seeds = A.seeds
-    orc = [r for r in recs.values() if r["spec"].get("mask") == "rare"]
+    orc = [r for r in recs.values() if r["spec"].get("mask") == OM]
     tauO = None
     if orc:  # H2 when the oracle cannot reach tau=0.97: compare floors at the oracle's own (dev) retention
         tauO = float(np.floor(np.mean([A.retention(r, "dev") for r in orc]) * 1000) / 1000)
-        if tauO < min(taus):
+        if min(tauO, np.mean([A.retention(r) for r in orc])) >= 0.97:
+            tauO = None  # oracle reaches 0.97 on dev and test: H2 is judged at tau = 0.97
+        elif tauO < min(taus):
             taus.append(tauO)
-            print(f"(oracle_mask_rare reaches dev retention {tauO:.3f} < tau: added as an oracle-matched operating point for H2)\n")
+            print(f"(oracle_mask_{OM} reaches dev retention {tauO:.3f} < tau: added as an oracle-matched operating point for H2)\n")
     print(f"records {len(recs)}, seeds {seeds}, C docs {A.n_c}, test queries {A.n_q}\n")
 
     # ---- controls / references
@@ -132,11 +139,11 @@ def main():
         "const": lambda r: r["arm"] == "const",
         "raw": lambda r: r["arm"] == "raw" and not r["spec"].get("mask") and not r["spec"].get("shuffle"),
         "raw|shuffled pairs": lambda r: r["arm"] == "raw" and r["spec"].get("shuffle"),
-        "oracle_mask_rare": lambda r: r["spec"].get("mask") == "rare",
-        "oracle_mask_all": lambda r: r["spec"].get("mask") == "all",
+        f"oracle_mask_{OM}": lambda r: r["spec"].get("mask") == OM,
+        f"oracle_mask_{OM2}": lambda r: r["spec"].get("mask") == OM2,
     }
     for arm, pred in preds.items():
-        for tier in TIERS:
+        for tier in (P, S2):
             xs, per, nd, rt, rd, Ls = [], [], [], [], [], []
             for s in seeds:
                 cand = [r for r in recs.values() if r["seed"] == s and pred(r)]
@@ -162,8 +169,8 @@ def main():
 
     # ---- curve table (all configs)
     fams = [f for f in (a.families.split(",") if a.families else (*FLOORS, *CONTROLS, "adv")) if any(r["family"] == f for r in recs.values())]
-    print("### All configs (mean over seeds; V = selection split, C = sealed). R = worst-of-3 rare-tier R-precision\n")
-    print("| arm | dim | seeds | retention dev | retention test | R_V rare | R_C rare | R_C mid |")
+    print("### All configs (mean over seeds; V = selection split, C = sealed). R = worst-of-3 primary-tier R-precision\n")
+    print(f"| arm | dim | seeds | retention dev | retention test | R_V {P} | R_C {P} | R_C {S2} |")
     print("|---|---|---|---|---|---|---|---|")
     byarm = defaultdict(list)
     for r in recs.values():
@@ -180,24 +187,24 @@ def main():
         headroom(A, seeds, [t for t in taus if t != tauO], tauO)
     for tau in taus:
         print(f"### Selected on V at retention >= {tau} (config per family and seed; numbers on sealed C)\n")
-        print("| family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |")
+        print(f"| family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C {P} worst [95% CI] | L_{P} [95% CI] | L_{S2} [95% CI] | mean V L_{P} |")
         print("|---|---|---|---|---|---|---|---|")
         summ = {}
         for fam in fams:
             sel = {s: A.select(fam, s, tau) for s in seeds}
             ok = {s: r for s, r in sel.items() if r is not None}
-            if not ok or any(A.ref(s, "rare") is None for s in ok):
+            if not ok or any(A.ref(s, P) is None for s in ok):
                 print(f"| {fam} | {len(ok)}/{len(seeds)} | cannot reach tau | | | | | |")
                 continue
-            Lr = np.mean([A.L_boot(r["rid"], s, "rare")[0] for s, r in ok.items()], axis=0)
-            Lm = np.mean([A.L_boot(r["rid"], s, "mid")[0] for s, r in ok.items()], axis=0)
-            Rr = np.mean([A.L_boot(r["rid"], s, "rare")[1] for s, r in ok.items()], axis=0)
+            Lr = np.mean([A.L_boot(r["rid"], s, P)[0] for s, r in ok.items()], axis=0)
+            Lm = np.mean([A.L_boot(r["rid"], s, S2)[0] for s, r in ok.items()], axis=0)
+            Rr = np.mean([A.L_boot(r["rid"], s, P)[1] for s, r in ok.items()], axis=0)
             Rt = np.mean([A.ret_boot(r["rid"], s) for s, r in ok.items()], axis=0)
             # V leakage point estimate (for strongest-floor choice)
             LV = []
             for s, r in ok.items():
-                ref = A.ref(s, "rare")
-                rp, rr, rc = worst(r, "V", "rare"), worst(ref["raw"], "V", "rare"), worst(ref["const"], "V", "rare")
+                ref = A.ref(s, P)
+                rp, rr, rc = worst(r, "V", P), worst(ref["raw"], "V", P), worst(ref["const"], "V", P)
                 LV.append((rp - rc) / max(rr - rc, 1e-6))
             if len(ok) == len(seeds):  # a family is a candidate for F* only if it reaches tau in every seed (clarification added after seeing noise r=0.5 feasible in 1 of 3 seeds)
                 summ[fam] = dict(L=Lr.mean(), LV=np.mean(LV), n=len(ok))
@@ -206,7 +213,7 @@ def main():
         floors = {f: v for f, v in summ.items() if f in FLOORS}
         if floors:
             fstar = min(floors, key=lambda f: floors[f]["LV"])
-            print(f"\nStrongest floor F*({tau}) (lowest seed-mean V leakage): **{fstar}** (V L_rare {floors[fstar]['LV']:.3f}; C L_rare {floors[fstar]['L']:.3f})\n")
+            print(f"\nStrongest floor F*({tau}) (lowest seed-mean V leakage): **{fstar}** (V L_{P} {floors[fstar]['LV']:.3f}; C L_{P} {floors[fstar]['L']:.3f})\n")
             if a.margin is not None and "adv" in fams and tau == taus[0]:
                 kill_rule(A, fstar, tau, a.margin, seeds)
 
@@ -219,39 +226,42 @@ def headroom(A, seeds, taus, tauO):
         raw, con = f"raw|s{s}", f"const|s{s}"
         if raw not in A.recs or con not in A.recs:
             continue
-        Rr = boot_worst(rp_units(A.units, raw, "C", "rare"), A.idx_c)
-        Rp = boot_worst(rp_units(A.units, con, "C", "rare"), A.idx_c)
+        Rr = boot_worst(rp_units(A.units, raw, "C", P), A.idx_c)
+        Rp = boot_worst(rp_units(A.units, con, "C", P), A.idx_c)
         d.append(Rr - Rp)
     d = np.mean(d, axis=0)
-    print(f"H1 measurability: R_raw - R_prior (rare tier, worst of 3 attackers) = {d.mean():.3f} [{ci(d)[0]:.3f}, {ci(d)[1]:.3f}] (rule: >= 0.05 and CI excludes 0): "
+    print(f"H1 measurability: R_raw - R_prior ({P} tier, worst of 3 attackers) = {d.mean():.3f} [{ci(d)[0]:.3f}, {ci(d)[1]:.3f}] (rule: >= 0.05 and CI excludes 0): "
           f"{'PASS' if ci(d)[0] > 0 and d.mean() >= 0.05 else 'FAIL'}\n")
-    orc = {s: next((r for r in A.recs.values() if r["seed"] == s and r["spec"].get("mask") == "rare"), None) for s in seeds}
+    orc = {s: next((r for r in A.recs.values() if r["seed"] == s and r["spec"].get("mask") == OM), None) for s in seeds}
     if any(v is None for v in orc.values()):
         return
-    Lo = np.mean([A.L_boot(r["rid"], s, "rare")[0] for s, r in orc.items()], axis=0)
+    Lo = np.mean([A.L_boot(r["rid"], s, P)[0] for s, r in orc.items()], axis=0)
     ret_o = np.mean([A.retention(r) for r in orc.values()])
-    print(f"oracle_mask_rare: L_rare = {Lo.mean():.3f} [{ci(Lo)[0]:.3f}, {ci(Lo)[1]:.3f}], test retention {ret_o:.3f} (< 0.97: not a valid reference at tau = 0.97, so H2 is judged at the oracle's own dev retention tau_O = {tauO:.3f})\n")
-    print("| tau | strongest floor F* (by V) | F* configs | F* test retention | L_rare(F*) [95% CI] | L_rare(oracle) | headroom = L(F*) - L(oracle) [95% CI] | H2 (>= 0.10) |")
+    ret_od = np.mean([A.retention(r, "dev") for r in orc.values()])
+    gate = tauO if tauO is not None else 0.97
+    print(f"oracle_mask_{OM}: L_{P} = {Lo.mean():.3f} [{ci(Lo)[0]:.3f}, {ci(Lo)[1]:.3f}], retention dev {ret_od:.3f} / test {ret_o:.3f}; H2(a) (both >= 0.97): {'PASS' if min(ret_od, ret_o) >= 0.97 else 'FAIL'}"
+          + ("" if tauO is None else f" (not a valid reference at tau = 0.97, so (b) is judged at the oracle's own dev retention tau_O = {tauO:.3f})") + "\n")
+    print(f"| tau | strongest floor F* (by V) | F* configs | F* test retention | L_{P}(F*) [95% CI] | L_{P}(oracle) | headroom = L(F*) - L(oracle) [95% CI] | H2(b) (>= 0.10, lower bound > 0) |")
     print("|---|---|---|---|---|---|---|---|")
-    for tau in [t for t in taus if t >= 0.9] + [tauO]:
+    for tau in [t for t in taus if t >= 0.9] + ([tauO] if tauO is not None else []):
         best = None
         for fam in FLOORS:
             sel = {s: A.select(fam, s, tau) for s in seeds}
             if any(v is None for v in sel.values()):
                 continue
-            LV = np.mean([(worst(r, "V", "rare") - worst(A.ref(s, "rare")["const"], "V", "rare")) /
-                          max(worst(A.ref(s, "rare")["raw"], "V", "rare") - worst(A.ref(s, "rare")["const"], "V", "rare"), 1e-6) for s, r in sel.items()])
+            LV = np.mean([(worst(r, "V", P) - worst(A.ref(s, P)["const"], "V", P)) /
+                          max(worst(A.ref(s, P)["raw"], "V", P) - worst(A.ref(s, P)["const"], "V", P), 1e-6) for s, r in sel.items()])
             if best is None or LV < best[0]:
                 best = (LV, fam, sel)
         if best is None:
             print(f"| {tau:.3f} | none feasible | | | | | | |")
             continue
         _, fam, sel = best
-        Lf = np.mean([A.L_boot(r["rid"], s, "rare")[0] for s, r in sel.items()], axis=0)
+        Lf = np.mean([A.L_boot(r["rid"], s, P)[0] for s, r in sel.items()], axis=0)
         hd = Lf - Lo
         rt = np.mean([A.retention(r) for r in sel.values()])
-        flag = "" if tau == tauO else " (oracle not valid at this tau; reference only)"
-        verdict = ("PASS" if hd.mean() >= 0.10 else "FAIL") if tau == tauO else "n/a"
+        flag = "" if tau == gate else (" (fallback if no floor reaches 0.97 in every seed)" if tauO is None else " (oracle not valid at this tau; reference only)")
+        verdict = ("PASS" if hd.mean() >= 0.10 and ci(hd)[0] > 0 else "FAIL") if tau == gate else "n/a"
         print(f"| {tau:.3f}{flag} | {fam} | {', '.join(f's{s_}:' + r_['arm'] for s_, r_ in sel.items())} | {rt:.3f} | {Lf.mean():.3f} [{ci(Lf)[0]:.3f}, {ci(Lf)[1]:.3f}] | {Lo.mean():.3f} | {hd.mean():.3f} [{ci(hd)[0]:.3f}, {ci(hd)[1]:.3f}] | {verdict} |")
     print()
 
@@ -263,14 +273,14 @@ def kill_rule(A, fstar, tau, m, seeds):
     k1 = k2 = k3 = k4 = 0
     for s in seeds:
         ra, rf, rb = A.select("adv", s, tau), A.select(fstar, s, tau), A.select("bott_mlp", s, tau)
-        if ra is None or rf is None or A.ref(s, "rare") is None:
+        if ra is None or rf is None or A.ref(s, P) is None:
             print(f"| {s} | n/a | | | | | | |")
             continue
-        La = A.L_boot(ra["rid"], s, "rare")[0]
-        Lf = A.L_boot(rf["rid"], s, "rare")[0]
+        La = A.L_boot(ra["rid"], s, P)[0]
+        Lf = A.L_boot(rf["rid"], s, P)[0]
         d1 = Lf - La
-        d3 = (A.L_boot(rb["rid"], s, "rare")[0] - La) if rb is not None else None
-        mid = A.L_boot(ra["rid"], s, "mid")[0].mean() - A.L_boot(rf["rid"], s, "mid")[0].mean()
+        d3 = (A.L_boot(rb["rid"], s, P)[0] - La) if rb is not None else None
+        mid = A.L_boot(ra["rid"], s, S2)[0].mean() - A.L_boot(rf["rid"], s, S2)[0].mean()
         ret_a, ret_f = A.retention(ra), A.retention(rf)
         d3s = None
         p1 = ci(d1)[0] >= m

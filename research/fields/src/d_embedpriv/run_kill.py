@@ -23,12 +23,10 @@ from attackers import run_suite
 from common import CACHE, World, ndcg10_per_query, rprec_per_doc
 from grids import grid
 
-TIERS = ("rare", "mid")
-
 
 class Ctx:
-    def __init__(self, embedder):
-        self.W = World()
+    def __init__(self, embedder, scheme="words"):
+        self.W = World(scheme)
         W = self.W
         c = CACHE / embedder
         self.dir = c
@@ -108,7 +106,7 @@ def evaluate(ctx, spec, seed, boots=None):
         att[a] = {}
         for split, Y in (("V", Yv), ("C", Yc)):
             att[a][split] = {}
-            for tier in TIERS:
+            for tier in W.tiers:
                 rp = rprec_per_doc(d[split], Y, W.tier_cols[tier])
                 att[a][split][tier] = float(np.nanmean(rp))
                 units[f"rp_{split}_{tier}_{a}"] = rp.astype(np.float32)
@@ -129,6 +127,7 @@ def main():
     ap.add_argument("--grid", default="")
     ap.add_argument("--specs", default="")
     ap.add_argument("--seeds", default="0")
+    ap.add_argument("--scheme", default="words")
     ap.add_argument("--out", default=os.environ.get("OUT", "out"))
     a = ap.parse_args()
     out = Path(a.out)
@@ -136,13 +135,13 @@ def main():
     specs = json.loads(a.specs) if a.specs else grid(a.grid)
     seeds = [int(s) for s in a.seeds.split(",")]
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
-    ctx = Ctx(a.embedder)
+    ctx = Ctx(a.embedder, a.scheme)
     # raw reference utility for retention (cheap, no attackers)
     raw = {}
     for key in ("dev", "test"):
         _, nd = ndcg10_per_query(ctx.X_q, ctx.X_nf, ctx.W.q_ids, ctx.W.nf_ids, ctx.W.qrels[key])
         raw[key] = float(nd.mean())
-    meta = dict(name=a.name, embedder=a.embedder, commit=commit, grid=a.grid, seeds=seeds, n_specs=len(specs),
+    meta = dict(name=a.name, embedder=a.embedder, scheme=a.scheme, tiers=list(ctx.W.tiers), commit=commit, grid=a.grid, seeds=seeds, n_specs=len(specs),
                 ndcg_raw=raw, n_vocab=len(ctx.W.vocab), split_sizes={s: int(len(v)) for s, v in ctx.idx.items()},
                 device=str(torch.device("cuda" if torch.cuda.is_available() else "cpu")))
     (out / "meta.json").write_text(json.dumps(meta, indent=1))
@@ -168,9 +167,10 @@ def main():
                 for k, v in units.items():
                     units_all[f"{rid}|{k}"] = v
                 np.savez_compressed(out / "units.npz", **units_all)
-                aw = {s: max(rec["attackers"][x][s]["rare"] for x in rec["attackers"]) for s in ("V", "C")}
+                pt = ctx.W.tiers[0]
+                aw = {s: max(rec["attackers"][x][s][pt] for x in rec["attackers"]) for s in ("V", "C")}
                 print(f"[{rid}] dim={rec['dim']} ndcg dev {rec['ndcg_dev']:.4f} test {rec['ndcg_test']:.4f} (raw {raw['dev']:.4f}/{raw['test']:.4f}) "
-                      f"rare worst V {aw['V']:.3f} C {aw['C']:.3f} | fit {rec['t_fit']}s att {rec['t_attack']}s", flush=True)
+                      f"{pt} worst V {aw['V']:.3f} C {aw['C']:.3f} | fit {rec['t_fit']}s att {rec['t_attack']}s", flush=True)
     # qid order of the per-query arrays, for the aggregator
     qd = [q for q in ctx.W.qrels["dev"] if q in set(ctx.W.q_ids)]
     qt = [q for q in ctx.W.qrels["test"] if q in set(ctx.W.q_ids)]
