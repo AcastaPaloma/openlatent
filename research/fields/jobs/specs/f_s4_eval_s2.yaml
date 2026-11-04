@@ -1,0 +1,4 @@
+name: f_s4_eval_s2
+priority: 4
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 4 --salt s2 --out $OUT"
+hf_path: runs/f_s4_eval_s2
