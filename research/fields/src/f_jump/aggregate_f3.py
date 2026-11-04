@@ -131,6 +131,11 @@ def main():
             allR = [x for x in sp.arms if regime.get(x) == R and sp.fam[x] in ("adapter", "adapter_lf")]
             E_match = E_lf if R == "ae" else E_lf + [x for x in matched if regime.get(x) == R]
             out = dict(trained_arms=arms_R, all_arms=allR)
+            if arms_R and R in ("a", "c"):
+                E_plus = E_match + [x for x in allfloors if x.startswith("ldaT2_")]
+                tp = {x: F2.compare(sp, P, x, E_plus) for x in arms_R}
+                ap_ = max(arms_R, key=lambda x: tp[x]["dU_V"])
+                out.update(a_star_match_plus=ap_, sel_match_plus=tp[ap_])
             if arms_R:
                 tm = {x: F2.compare(sp, P, x, E_match) for x in arms_R}
                 tf = {x: F2.compare(sp, P, x, E_full) for x in arms_R}
@@ -179,6 +184,13 @@ def main():
                         f"[{AG.fmt(sm.get('dU_H_plate_ci', [float('nan')] * 2)[0], 4)}, {AG.fmt(sm.get('dU_H_plate_ci', [float('nan')] * 2)[1], 4)}] | {sm['win']} | {o['a_star_full']} | {sf.get('F_star')} | "
                         f"{AG.fci(sf.get('dU_H'), sf.get('dU_H_ci', [float('nan')] * 2), 4)} | [{AG.fmt(sf.get('dU_H_plate_ci', [float('nan')] * 2)[0], 4)}, {AG.fmt(sf.get('dU_H_plate_ci', [float('nan')] * 2)[1], 4)}] | {sf['win']} | {AG.fmt(o.get('rec'), 2)} |")
         md.append("\n".join(rows) + "\n")
+        rows = ["| regime | a* | U_H / L_H | F* in E_match+ (adds ldaT2_*: raw-space LDA on the SAME Target2 labels) | U_H(F*) / L_H(F*) | dU_H [CI] | plate-cluster CI | win |", "|---|---|---|---|---|---|---|---|"]
+        for R in ("a", "c"):
+            o = r["regimes"][R]
+            if "sel_match_plus" in o:
+                sm = o["sel_match_plus"]
+                rows.append(f"| {R} | {o['a_star_match_plus']} | {AG.fmt(sm['U_H'])} / {AG.fmt(sm['L_H'], 2)} | {sm.get('F_star')} | {AG.fmt(sm.get('U_H_F'))} / {AG.fmt(sm.get('L_H_F'), 2)} | {AG.fci(sm.get('dU_H'), sm.get('dU_H_ci', [float('nan')] * 2), 4)} | [{AG.fmt(sm.get('dU_H_plate_ci', [float('nan')] * 2)[0], 4)}, {AG.fmt(sm.get('dU_H_plate_ci', [float('nan')] * 2)[1], 4)}] | {sm['win']} |")
+        md.append("Sensitivity (NOT the pre-registered comparator): E_match plus `ldaT2_*`\n\n" + "\n".join(rows) + "\n")
     ns = len(ctrl_ok)
     passes = {R: dict(match=int(sum(per[R]["match"])), full=int(sum(per[R]["full"])), trained_splits=int(sum(per[R]["trained"])),
                       passes_match=bool(sum(per[R]["match"]) >= 2), passes_full=bool(sum(per[R]["full"]) >= 2)) for R in REGIMES + ["ae"]}
@@ -193,13 +205,15 @@ def main():
         v = "NO-GO"
     budget = next((f for f, R in (("1%", "b1"), ("10%", "b10"), ("100%", "b100")) if passes[R]["passes_full"]), None)
     rec = {R: [s.get("rec") for s in summ[R]] for R in REGIMES + ["ae"]}
+    plus = {R: int(sum(bool(res["splits"][k]["regimes"][R].get("sel_match_plus", {}).get("win")) for k in res["splits"])) for R in ("a", "c")}
+    res["sensitivity_E_match_plus_ldaT2_wins_splits"] = plus
     res["passes"] = passes
     res["recovery_fraction"] = rec
     res["break_even_label_budget_vs_full_envelope"] = budget
     res["verdict_tightened"] = v
     res["gates"] = dict(G_H3_splits=int(sum(gh_ok)), controls_ok_all=controls, c_trained_all_splits=c_trained)
     md.append("## Verdict fields\n\n```\n" + json.dumps(dict(verdict_original=res["verdict_original"], verdict_F2_literal=res["verdict_F2_literal"], verdict_tightened=v, label_free_ish_arm=res["label_free_ish_arm"],
-                                                             gates=res["gates"], passes=passes, break_even_label_budget_vs_full_envelope=budget,
+                                                             gates=res["gates"], passes=passes, sensitivity_E_match_plus_ldaT2_wins_splits=plus, break_even_label_budget_vs_full_envelope=budget,
                                                              recovery_fraction={R: [None if x is None else round(x, 3) for x in xs] for R, xs in rec.items()}, margin=res["margin"]), indent=1, default=float) + "\n```\n")
     Path(a.out + ".json").write_text(json.dumps(res, indent=1, default=float))
     Path(a.out + ".md").write_text("\n".join(md))
