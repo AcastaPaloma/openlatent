@@ -379,11 +379,11 @@ Scale-aware H1s (n1s = numeric tokens with 3 <= df <= 30, the rare-number tier; 
 Seen before this pre-registration: all of sections 5 and 6, the collapsed `adv` train logs, the valid `bott_mlp` and floor tables for seeds 0 and 1, the audit text. Mechanics of the repaired code were smoke-tested on synthetic vectors (CPU) after this section was committed; no real-embedding number for a repaired arm exists at this point.
 
 ### 7.6 D2 results (words secret, GTR-base x NFCorpus; seeds 0 and 1; jobs `d_d2_lam{0p001,0p01,0p1,1,3}_gtr_s{0,1}`, priority 4 once)
-Status at writing: 9 of 10 jobs finished (VM clock 19:35Z). `d_d2_lam0p1_gtr_s1` (lambda 0.1, seed 1; a weak-lambda config that matches the no-adversary control) was still queued behind other builders' jobs; the tables below use the 45 of the 50 planned fits that exist (lambda 0.1 has seed 0 only; 5 fits missing). The verdict does not depend on it: K1 already fails by a factor of five in seed 0, and K1-K4 must hold in both seeds.
+All 10 jobs finished (50 fits; VM clock 19:40Z). The K-test selections and numbers below are from the complete grid (the last job, lambda 0.1 seed 1, did not change any selected config).
 
 **verdict_D2: FAIL at tau = 0.90 and at tau = 0.97 (the repaired learned arm does not beat the strongest floor). verdict_original (NO-GO, headroom 0.039 [-0.003, 0.077] at tau 0.70) stands unchanged next to it.**
-* **The repaired arm trains.** 43 of 45 fits are healthy (final retrieval loss 4.6-7.4, not the uniform-softmax 7.915); only the two lambda = 3, d = 512 fits collapsed (7.91) and are excluded from selection by the pre-registered check. The sentence "the adversary adds nothing" is therefore now *testable*, and for this setting it is supported (below), but it was not supported by the original run.
-* **lambda <= 0.1 is indistinguishable from the no-adversary bottleneck**: at every d the adv rows equal `bott_mlp` to the third decimal (d = 256: dev retention 0.929 / 0.922 / 0.929 for lambda 0.001 / 0.01 / 0.1 vs 0.922 for bott; R_C 0.154 / 0.154 / 0.160 vs 0.154). The in-training adversary stays strong (confusion/initial 5-15 at the end): the normalised weight is too small to move the map.
+* **The repaired arm trains.** 48 of 50 fits are healthy (final retrieval loss 4.6-7.4, not the uniform-softmax 7.915); only the two lambda = 3, d = 512 fits collapsed (7.91) and are excluded from selection by the pre-registered check. The sentence "the adversary adds nothing" is therefore now *testable*, and for this setting it is supported (below), but it was not supported by the original run.
+* **lambda <= 0.1 is indistinguishable from the no-adversary bottleneck**: at every d the adv rows equal `bott_mlp` to the third decimal (d = 256: dev retention 0.929 / 0.922 / 0.927 for lambda 0.001 / 0.01 / 0.1 vs 0.922 for bott; R_C 0.154 / 0.154 / 0.161 vs 0.154). The in-training adversary stays strong (confusion/initial 5-15 at the end): the normalised weight is too small to move the map.
 * **lambda = 1 and 3 reduce the in-training confusion (ratio 10 -> 2.2 -> 0.7) but cost retention and do not reduce retrained-attacker recovery**: d = 256: dev retention 0.830 (lambda 1) and 0.644 (lambda 3) vs 0.922 for bott, while R_C is 0.169 and 0.167 vs 0.154, i.e. the retrained ridge/MLP/kNN suite recovers *more* words. The map hides information from the co-trained MLP adversary, not from freshly trained attackers (the generic "protection holds only against the adversary family it optimised against" failure).
 * **K-test at tau = 0.90** (F\* = sup_lin d = 128, L_rare 0.747 [0.712, 0.783]; margin m = 0.0775; adv selected on V: d = 128, lambda 0.01, both seeds): L(F\*) - L(adv) = 0.015 [-0.003, 0.034] (seed 0) and 0.015 [-0.004, 0.033] (seed 1), needed lower bound >= 0.0775: **K1 fails in both seeds**; K2 fails marginally (adv test retention 0.988 / 0.999 vs F\* 1.011 / 1.013 minus 0.01); K3 passes in seed 0 (0.100 [0.061, 0.140] over the control), but that is a V-selection artefact: in seed 0 the control's d = 128 fit has dev retention 0.894 (just under the 0.90 threshold) so the control is selected at d = 256 (L higher), while the adv d = 128 fit is at 0.90; the matched-d rows in the table below are equal and fails in seed 1 (0.011); K4 passes. PASS needs all four in both seeds: FAIL.
 * **K-test at tau = 0.97**: no adv config reaches 0.97 dev retention in either seed (best 0.940 at d = 512, lambda 0.001-0.1; the same ceiling as `bott_mlp` 0.935 and sup_lin 0.957), F\* = PCA-512 (L 0.993): **not satisfiable, FAIL**. The margin was decidable (MDE80 0.031 at tau 0.90 from floors + control, below m = 0.0775).
@@ -395,16 +395,16 @@ Status at writing: 9 of 10 jobs finished (VM clock 19:35Z). `d_d2_lam0p1_gtr_s1`
 | bott | 0 | 128 | 2 | 0 | 0.902 | 0.998 | 0.135 | 0.137 | n/a |
 | adv | 0.001 | 128 | 2 | 0 | 0.900 | 1.001 | 0.135 | 0.138 | 10.59 |
 | adv | 0.01 | 128 | 2 | 0 | 0.903 | 0.994 | 0.134 | 0.135 | 9.88 |
-| adv | 0.1 | 128 | 1 | 0 | 0.898 | 0.982 | 0.137 | 0.135 | 7.04 |
+| adv | 0.1 | 128 | 2 | 0 | 0.902 | 0.987 | 0.137 | 0.134 | 7.07 |
 | adv | 1 | 128 | 2 | 0 | 0.782 | 0.831 | 0.147 | 0.140 | 2.13 |
 | adv | 3 | 128 | 2 | 0 | 0.599 | 0.608 | 0.147 | 0.142 | 0.66 |
 | bott | 0 | 256 | 2 | 0 | 0.922 | 1.019 | 0.154 | 0.154 | n/a |
 | adv | 0.001 | 256 | 2 | 0 | 0.929 | 1.013 | 0.154 | 0.154 | 13.03 |
 | adv | 0.01 | 256 | 2 | 0 | 0.922 | 1.008 | 0.155 | 0.154 | 11.27 |
-| adv | 0.1 | 256 | 1 | 0 | 0.929 | 1.010 | 0.162 | 0.160 | 7.80 |
+| adv | 0.1 | 256 | 2 | 0 | 0.927 | 1.023 | 0.162 | 0.161 | 7.72 |
 | adv | 1 | 256 | 2 | 0 | 0.830 | 0.872 | 0.169 | 0.169 | 2.20 |
 | adv | 3 | 256 | 2 | 0 | 0.644 | 0.630 | 0.167 | 0.167 | 0.71 |
-(All 25 adv (lambda, d) cells and the 6 bott cells were computed; d = 32, 64, 512 show the same pattern. The per-fit collapse table is in the aggregate output of `aggregate.py` run on the D2 directories.)
+(All 25 adv (lambda, d) cells and the 6 bott cells were computed; d = 32, 64, 512 show the same pattern; the per-fit collapse table is the aggregate output of `aggregate.py` on the D2 directories: 2 of 50 fits collapsed.)
 
 ### Selected on V at retention >= 0.9 (config per family and seed; numbers on sealed C)
 
