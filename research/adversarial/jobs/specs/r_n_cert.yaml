@@ -1,0 +1,5 @@
+name: r_n_cert
+priority: 10
+cmd: "cd $HOME/n_run/openlatent/research/adversarial/src && OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /usr/bin/python3 -m n_control.run_cert --releases $HOME/n_releases --out $HOME/n_certs --ledger $HOME/sealed_ledger_N --procs 8"
+hf_path: runs/r_n_cert
+hf_allow: ["*.log"]
