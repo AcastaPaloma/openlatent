@@ -1,0 +1,16 @@
+{
+ "name": "a_extract_midnight",
+ "config": {
+  "name": "a_extract_midnight",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/extract.py --model midnight_clsmean --num_workers 6",
+  "hf_path": "runs/a_extract_midnight"
+ },
+ "commit": "8ed0623",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 957.3,
+ "finished_utc": "2026-11-04T08:40:30Z",
+ "uploaded": true
+}

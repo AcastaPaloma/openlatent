@@ -1,0 +1,16 @@
+{
+ "name": "a_extract_phikonv2",
+ "config": {
+  "name": "a_extract_phikonv2",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/extract.py --model phikonv2_clsmean --num_workers 6",
+  "hf_path": "runs/a_extract_phikonv2"
+ },
+ "commit": "d6444f6",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 882.8,
+ "finished_utc": "2026-11-04T08:39:20Z",
+ "uploaded": true
+}

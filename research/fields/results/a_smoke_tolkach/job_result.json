@@ -1,0 +1,16 @@
+{
+ "name": "a_smoke_tolkach",
+ "config": {
+  "name": "a_smoke_tolkach",
+  "priority": 5,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset tolkach_esca --seed 0 --grid raw,leace,vib,vq,adv_retrain,ctrl_const,ctrl_shuffle --smoke",
+  "hf_path": "runs/a_smoke_tolkach"
+ },
+ "commit": "d6444f6",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 93.0,
+ "finished_utc": "2026-11-04T08:38:26Z",
+ "uploaded": true
+}
