@@ -1,0 +1,16 @@
+{
+ "name": "e_floors_pancreas_s1",
+ "config": {
+  "name": "e_floors_pancreas_s1",
+  "priority": 12,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate.py --dataset pancreas --seed 1 --no_scvi --out $OUT",
+  "hf_path": "runs/e_floors_pancreas_s1"
+ },
+ "commit": "fa4b9d7",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 252.7,
+ "finished_utc": "2026-11-04T14:10:40Z",
+ "uploaded": true
+}

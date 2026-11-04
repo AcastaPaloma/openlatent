@@ -1,0 +1,16 @@
+{
+ "name": "a_p3cv_midnight_tcga",
+ "config": {
+  "name": "a_p3cv_midnight_tcga",
+  "priority": 8,
+  "cmd": "for s in 0 1 2 3; do USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tcga --seed $s --grid p3 --holdout --crossfit 4; done",
+  "hf_path": "runs/a_p3cv_midnight_tcga"
+ },
+ "commit": "d76125e",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 2976.3,
+ "finished_utc": "2026-11-04T14:06:19Z",
+ "uploaded": true
+}
