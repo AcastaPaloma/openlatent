@@ -974,9 +974,9 @@ on midnight/TCGA at L 0.27-0.35 the dithered codes have 0.17-0.25 versus 0.465 f
 * `a_gate_phikon_tcga_s0` (finished before the 11:15Z tally): LEACE L_worst **0.72 [0.60, 0.81]**; **G1 is 0 of 8 cells** (was 0 of 7); conclusion unchanged. LEACE linear-attacker L 0.72; raw worst-case centre accuracy is far above the label-only floor in all eight cells.
 
 
-### AUDIT FOLLOW-UP (2): H2-015 selection null for the best-of-N AE (as pre-registered above; ; 5000 draws for null A (2000 used in the run reported), 1000 unit bootstraps for null B)
+### AUDIT FOLLOW-UP (2): H2-015 selection null for the best-of-N AE (as pre-registered above; `selection_null.py`; 5000 draws for null A (2000 used in the run reported), 1000 unit bootstraps for null B)
 
-T_obs = best-of-N difference between an  configuration and the best INDUCTIVE floor at L <= L_ae + 0.05. Null A pretends floor points are the AE (frontier roughness + best-of-N); null B is the max-T bootstrap (sampling noise + best-of-N).
+T_obs = best-of-N difference between an `ae` configuration and the best INDUCTIVE floor at L <= L_ae + 0.05. Null A pretends floor points are the AE (frontier roughness + best-of-N); null B is the max-T bootstrap (sampling noise + best-of-N).
 
 | cell | metric | N ae configs | T_obs (best-of-N Δ) | best config | null A: 95th pct / p | null B (max-T bootstrap): 95th pct | above selection noise (exceeds both)? |
 |---|---|---|---|---|---|---|---|
@@ -998,11 +998,11 @@ T_obs = best-of-N difference between an  configuration and the best INDUCTIVE fl
 Reading (all cells, V-unselected best-of-N; N = 10 configurations for the fixed-C grid, 12 for cross-fit):
 
 * **Held-class utility, cross-fit (the cells that carry the verdict): T_obs -0.015 (TCGA) and +0.003 (Tolkach), far below both null thresholds (null A p = 1.00 and 0.95).** The best-of-12 utility gain is selection noise in both midnight cells; the utility verdict is calibrated.
-* **The one "YES" on utility (fixed-C midnight/Tolkach, +0.089 vs null A 0.063, null B 0.075) is a sparse-comparator artefact:** its comparator is a single floor point (, n_near = 1), the fixed-C grid has no dithered floors, and  is no longer in the envelope. The cross-fit grid, which does have dithered floors (3 points near L), gives +0.003. P3 already forbids calling it a win; the null does not rescue it.
+* **The one "YES" on utility (fixed-C midnight/Tolkach, +0.089 vs null A 0.063, null B 0.075) is a sparse-comparator artefact:** its comparator is a single floor point (`pca__d4`, n_near = 1), the fixed-C grid has no dithered floors, and `centre_whiten` is no longer in the envelope. The cross-fit grid, which does have dithered floors (3 points near L), gives +0.003. P3 already forbids calling it a win; the null does not rescue it.
 * **Retention, cross-fit midnight/Tolkach: +0.095 clears the sampling null (null B 95th percentile +0.034) but NOT the frontier null (null A 95th percentile +0.225, p = 0.60).** Retention rises steeply with L on the floor curve (lda_pca d8: 0.51 at L 0.30; d16: 0.57 at L 0.67) and the floor grid has few points between L 0.3 and 0.6, so a one-sided
   "floors with L <= L_ae + 0.05" comparison favours any point that sits slightly above the nearest floor in L. A random floor point treated as the AE shows best-of-12 "gains" of up to +0.225 by the same procedure. Consequence: the retention positive is NOT established as a property of the AE; it is equally consistent with comparing against a sparse floor frontier.
   Midnight/TCGA cross-fit retention (+0.054 best-of-12) is within both nulls.
 * Fixed-C retention "YES"s (midnight/TCGA +0.205, phikon/TCGA +0.422) have n_near < 2 or a utility cost (phikon: -0.113 vs the matched LDA arm) and fail the registered retention rule; dinov2-L is within both nulls.
 
-**Added after seeing null A (post hoc, tightening only):** a dense floor ladder for the two midnight cross-fit cells ( d in {6,10,12,20,24},  d in {6,10,12,20,24},  d in {8,12,24}; same folds, same splits as the cross-fit run). The retention claim (ii) now has to survive the dense ladder
+**Added after seeing null A (post hoc, tightening only):** a dense floor ladder for the two midnight cross-fit cells (`pca` d in {6,10,12,20,24}, `lda_pca` d in {6,10,12,20,24}, `randproj` d in {8,12,24}; same folds, same splits as the cross-fit run). The retention claim (ii) now has to survive the dense ladder
 (Delta >= +0.05 with CI > 0 against the densified inductive envelope) before it is called a win; otherwise "retention: mixed" becomes "retention: not established".
