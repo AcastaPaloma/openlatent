@@ -199,7 +199,8 @@ def main():
                 ref = A.ref(s, "rare")
                 rp, rr, rc = worst(r, "V", "rare"), worst(ref["raw"], "V", "rare"), worst(ref["const"], "V", "rare")
                 LV.append((rp - rc) / max(rr - rc, 1e-6))
-            summ[fam] = dict(L=Lr.mean(), LV=np.mean(LV), n=len(ok))
+            if len(ok) == len(seeds):  # a family is a candidate for F* only if it reaches tau in every seed (clarification added after seeing noise r=0.5 feasible in 1 of 3 seeds)
+                summ[fam] = dict(L=Lr.mean(), LV=np.mean(LV), n=len(ok))
             cfgs = ", ".join(f"s{s}:{r['arm'].split('_', 1)[-1]}" for s, r in ok.items())
             print(f"| {fam} | {len(ok)}/{len(seeds)} | {cfgs} | {fmt(Rt.mean(), *ci(Rt))} | {fmt(Rr.mean(), *ci(Rr))} | {fmt(Lr.mean(), *ci(Lr))} | {fmt(Lm.mean(), *ci(Lm))} | {np.mean(LV):.3f} |")
         floors = {f: v for f, v in summ.items() if f in FLOORS}

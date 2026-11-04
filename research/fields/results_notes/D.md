@@ -108,115 +108,116 @@ could hide topical context that deleting words leaves in).
 
 ## 5. Results
 
-### 5.1 Headroom stage (floors, controls, oracle; GTR-base x NFCorpus; seeds 0 and 1; no learned privacy arm yet)
+### 5.1 Headroom stage (floors, controls, oracle; GTR-base x NFCorpus; seeds 0, 1, 2; no learned privacy arm)
 
-Jobs: `d_extract_gtr_base` (embeddings, revision 9801579c, fp32, max 512 tokens), `d_hr1_gtr_s{0,1}` (controls, oracle, LEACE, sup_lin), `d_hr2_gtr_s{0,1}` (random projection, PCA, noise); code at
-commit recorded in each `records.jsonl`. Seed 2 of `d_hr1` finished, `d_hr2_gtr_s2` is still queued, so the tables below use seeds 0 and 1 (2 seeds: "not yet replicated" in the 3-seed sense).
-Raw GTR-base nDCG@10 on our embeddings: dev 0.3039, test 0.3022 (BEIR-published GTR-base NFCorpus values are 0.31-0.33, same range). R_C = worst-of-3 attacker R-precision on the 894 sealed C docs;
-L = (R - R_prior)/(R_raw - R_prior); intervals are 95% bootstrap over C docs (B = 1000, resamples shared across arms, so differences are paired) averaged over the 2 seeds; they do not include seed spread
-or split-to-split variability. Selection on V (560 docs, 324 dev queries), numbers on C (894 docs, 323 test queries).
+Jobs: `d_extract_gtr_base` (embeddings, revision 9801579c, fp32, max 512 tokens), `d_hr1_gtr_s{0,1,2}` (controls, oracle, LEACE, sup_lin), `d_hr2_gtr_s{0,1,2}` (random projection, PCA, noise); the code commit is recorded in
+each `records.jsonl`. Raw GTR-base nDCG@10 on our embeddings: dev 0.3039, test 0.3022 (BEIR-published GTR-base NFCorpus values are 0.31-0.33, same range).
+R_C = worst-of-3 attacker R-precision on the 894 sealed C docs; L = (R - R_prior)/(R_raw - R_prior); intervals are 95% bootstrap over C docs (B = 1000, resamples shared across arms, so differences are paired)
+averaged over the 3 seeds; they do not include seed spread or split-to-split variability (one fixed document split). Selection on V (560 docs, 324 dev queries), numbers on C (894 docs, 323 test queries).
+Aggregation clarification made after seeing the 3-seed table: a family is a candidate for the strongest floor F\* only if it reaches tau in every seed (noise r = 0.5 reaches 0.97 dev retention in 1 of 3 seeds, which
+would otherwise have made it F\*(0.97) on one seed). It does not touch H2 (all families are feasible at the oracle-matched tau).
 
-**Verdict of the pre-registered headroom check: H1 PASS, H2 FAIL (headroom 0.041 [0.001, 0.081] < 0.10) => NO-GO for the learned kill test as pre-registered (section 2.5).**
-The frozen margin from the pre-registered formula would be m = min(0.10, 0.5 x 0.041) = 0.020, i.e. below the noise of the comparison: no decidable margin exists.
+**Verdict of the pre-registered headroom check: H1 PASS, H2 FAIL (headroom 0.039 [-0.003, 0.077] < 0.10) => NO-GO for the learned kill test as pre-registered (section 2.5).**
+The frozen margin from the pre-registered formula would be m = min(0.10, 0.5 x 0.039) = 0.020, below the resolution of the comparison: no decidable margin exists.
 
 (oracle_mask_rare reaches dev retention 0.700 < tau: added as an oracle-matched operating point for H2)
 
-records 68, seeds [0, 1], C docs 894, test queries 323
+records 102, seeds [0, 1, 2], C docs 894, test queries 323
 
 #### References and controls (sealed C docs; R-precision of the worst of ridge/mlp/knn; mean over seeds; bootstrap over C docs)
 
 | arm | tier | R_worst [95% CI] | per attacker (ridge/mlp/knn) | L = (R-R_prior)/(R_raw-R_prior) [95% CI] | nDCG@10 test | retention (dev / test) |
 |---|---|---|---|---|---|---|
-| const | rare | 0.004 [0.003, 0.005] | 0.004/0.004/0.004 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
+| const | rare | 0.004 [0.003, 0.005] | 0.004/0.003/0.004 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
 | const | mid | 0.039 [0.037, 0.041] | 0.038/0.038/0.038 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
 | raw | rare | 0.183 [0.174, 0.193] | 0.183/0.079/0.145 | 1.00 [1.00, 1.00] | 0.3022 | 1.000 / 1.000 |
 | raw | mid | 0.253 [0.246, 0.260] | 0.253/0.186/0.181 | 1.00 [1.00, 1.00] | 0.3022 | 1.000 / 1.000 |
-| oracle_mask_rare | rare | 0.110 [0.102, 0.120] | 0.110/0.063/0.099 | 0.59 [0.56, 0.63] | 0.2231 | 0.700 / 0.738 |
-| oracle_mask_rare | mid | 0.276 [0.270, 0.283] | 0.276/0.188/0.199 | 1.11 [1.09, 1.13] | 0.2231 | 0.700 / 0.738 |
-| oracle_mask_all | rare | 0.073 [0.065, 0.081] | 0.073/0.041/0.066 | 0.38 [0.35, 0.42] | 0.1433 | 0.397 / 0.474 |
+| oracle_mask_rare | rare | 0.110 [0.102, 0.120] | 0.110/0.062/0.099 | 0.59 [0.56, 0.63] | 0.2231 | 0.700 / 0.738 |
+| oracle_mask_rare | mid | 0.276 [0.270, 0.283] | 0.276/0.189/0.199 | 1.11 [1.09, 1.13] | 0.2231 | 0.700 / 0.738 |
+| oracle_mask_all | rare | 0.073 [0.065, 0.081] | 0.073/0.040/0.066 | 0.38 [0.35, 0.42] | 0.1433 | 0.397 / 0.474 |
 | oracle_mask_all | mid | 0.155 [0.149, 0.160] | 0.155/0.145/0.140 | 0.54 [0.52, 0.56] | 0.1433 | 0.397 / 0.474 |
 
 #### All configs (mean over seeds; V = selection split, C = sealed). R = worst-of-3 rare-tier R-precision
 
 | arm | dim | seeds | retention dev | retention test | R_V rare | R_C rare | R_C mid |
 |---|---|---|---|---|---|---|---|
-| leace_r128 | 768 | 2 | 0.739 | 0.770 | 0.157 | 0.161 | 0.159 |
-| leace_r16 | 768 | 2 | 0.938 | 0.949 | 0.174 | 0.179 | 0.208 |
-| leace_r256 | 768 | 2 | 0.529 | 0.572 | 0.140 | 0.143 | 0.135 |
-| leace_r4 | 768 | 2 | 0.980 | 0.991 | 0.180 | 0.186 | 0.232 |
-| leace_r512 | 768 | 2 | 0.149 | 0.161 | 0.092 | 0.092 | 0.086 |
-| leace_r64 | 768 | 2 | 0.845 | 0.881 | 0.166 | 0.170 | 0.180 |
-| noise_r0.5 | 768 | 2 | 0.954 | 0.955 | 0.142 | 0.137 | 0.207 |
-| noise_r1 | 768 | 2 | 0.804 | 0.805 | 0.114 | 0.118 | 0.165 |
-| noise_r2 | 768 | 2 | 0.413 | 0.405 | 0.042 | 0.038 | 0.107 |
-| noise_r3 | 768 | 2 | 0.209 | 0.197 | 0.018 | 0.018 | 0.080 |
-| noise_r4 | 768 | 2 | 0.135 | 0.128 | 0.011 | 0.011 | 0.066 |
-| noise_r6 | 768 | 2 | 0.076 | 0.075 | 0.006 | 0.006 | 0.052 |
-| pca_d512 | 512 | 2 | 0.977 | 0.975 | 0.180 | 0.182 | 0.248 |
-| pca_d256 | 256 | 2 | 0.968 | 0.966 | 0.169 | 0.162 | 0.232 |
-| pca_d128 | 128 | 2 | 0.884 | 0.913 | 0.140 | 0.140 | 0.211 |
-| pca_d64 | 64 | 2 | 0.759 | 0.752 | 0.124 | 0.128 | 0.184 |
-| pca_d32 | 32 | 2 | 0.519 | 0.527 | 0.106 | 0.105 | 0.166 |
-| pca_d16 | 16 | 2 | 0.312 | 0.275 | 0.077 | 0.077 | 0.147 |
-| randproj_d512 | 512 | 2 | 0.927 | 0.942 | 0.178 | 0.181 | 0.249 |
-| randproj_d256 | 256 | 2 | 0.888 | 0.868 | 0.163 | 0.158 | 0.227 |
-| randproj_d128 | 128 | 2 | 0.727 | 0.753 | 0.132 | 0.128 | 0.193 |
-| randproj_d64 | 64 | 2 | 0.534 | 0.547 | 0.104 | 0.110 | 0.156 |
-| randproj_d32 | 32 | 2 | 0.293 | 0.333 | 0.079 | 0.082 | 0.122 |
-| sup_lin_d512 | 512 | 2 | 0.957 | 1.071 | 0.174 | 0.175 | 0.236 |
-| sup_lin_d256 | 256 | 2 | 0.938 | 1.047 | 0.156 | 0.156 | 0.217 |
-| sup_lin_d128 | 128 | 2 | 0.901 | 1.012 | 0.139 | 0.138 | 0.186 |
-| sup_lin_d64 | 64 | 2 | 0.800 | 0.876 | 0.131 | 0.128 | 0.162 |
-| sup_lin_d32 | 32 | 2 | 0.625 | 0.667 | 0.116 | 0.113 | 0.151 |
-| sup_lin_d16 | 16 | 2 | 0.419 | 0.427 | 0.083 | 0.081 | 0.121 |
+| leace_r128 | 768 | 3 | 0.732 | 0.774 | 0.156 | 0.161 | 0.160 |
+| leace_r16 | 768 | 3 | 0.938 | 0.950 | 0.175 | 0.180 | 0.209 |
+| leace_r256 | 768 | 3 | 0.524 | 0.568 | 0.140 | 0.143 | 0.135 |
+| leace_r4 | 768 | 3 | 0.980 | 0.992 | 0.180 | 0.185 | 0.231 |
+| leace_r512 | 768 | 3 | 0.148 | 0.167 | 0.093 | 0.092 | 0.086 |
+| leace_r64 | 768 | 3 | 0.846 | 0.879 | 0.166 | 0.171 | 0.180 |
+| noise_r0.5 | 768 | 3 | 0.960 | 0.958 | 0.143 | 0.137 | 0.207 |
+| noise_r1 | 768 | 3 | 0.809 | 0.806 | 0.115 | 0.117 | 0.165 |
+| noise_r2 | 768 | 3 | 0.413 | 0.393 | 0.041 | 0.038 | 0.108 |
+| noise_r3 | 768 | 3 | 0.212 | 0.192 | 0.018 | 0.017 | 0.080 |
+| noise_r4 | 768 | 3 | 0.135 | 0.124 | 0.011 | 0.010 | 0.066 |
+| noise_r6 | 768 | 3 | 0.079 | 0.072 | 0.006 | 0.006 | 0.052 |
+| pca_d512 | 512 | 3 | 0.977 | 0.975 | 0.180 | 0.182 | 0.247 |
+| pca_d256 | 256 | 3 | 0.968 | 0.966 | 0.169 | 0.162 | 0.232 |
+| pca_d128 | 128 | 3 | 0.884 | 0.913 | 0.140 | 0.140 | 0.211 |
+| pca_d64 | 64 | 3 | 0.759 | 0.752 | 0.124 | 0.128 | 0.184 |
+| pca_d32 | 32 | 3 | 0.519 | 0.527 | 0.106 | 0.105 | 0.166 |
+| pca_d16 | 16 | 3 | 0.312 | 0.275 | 0.077 | 0.077 | 0.147 |
+| randproj_d512 | 512 | 3 | 0.925 | 0.944 | 0.178 | 0.181 | 0.248 |
+| randproj_d256 | 256 | 3 | 0.886 | 0.865 | 0.164 | 0.158 | 0.227 |
+| randproj_d128 | 128 | 3 | 0.748 | 0.755 | 0.132 | 0.128 | 0.194 |
+| randproj_d64 | 64 | 3 | 0.544 | 0.544 | 0.106 | 0.110 | 0.157 |
+| randproj_d32 | 32 | 3 | 0.288 | 0.328 | 0.078 | 0.081 | 0.122 |
+| sup_lin_d512 | 512 | 3 | 0.957 | 1.068 | 0.174 | 0.175 | 0.235 |
+| sup_lin_d256 | 256 | 3 | 0.940 | 1.044 | 0.156 | 0.156 | 0.217 |
+| sup_lin_d128 | 128 | 3 | 0.904 | 1.012 | 0.140 | 0.138 | 0.187 |
+| sup_lin_d64 | 64 | 3 | 0.799 | 0.875 | 0.131 | 0.129 | 0.162 |
+| sup_lin_d32 | 32 | 3 | 0.630 | 0.666 | 0.117 | 0.112 | 0.151 |
+| sup_lin_d16 | 16 | 3 | 0.419 | 0.429 | 0.082 | 0.082 | 0.121 |
 
-##### Headroom check (pre-registered H1, H2; floors + oracle only)
+#### Headroom check (pre-registered H1, H2; floors + oracle only)
 
 H1 measurability: R_raw - R_prior (rare tier, worst of 3 attackers) = 0.179 [0.170, 0.189] (rule: >= 0.05 and CI excludes 0): PASS
 
-oracle_mask_rare: L_rare = 0.592 [0.558, 0.631], test retention 0.738 (< 0.97: not a valid reference at tau = 0.97, so H2 is judged at the oracle's own dev retention tau_O = 0.700)
+oracle_mask_rare: L_rare = 0.593 [0.559, 0.631], test retention 0.738 (< 0.97: not a valid reference at tau = 0.97, so H2 is judged at the oracle's own dev retention tau_O = 0.700)
 
 | tau | strongest floor F* (by V) | F* configs | F* test retention | L_rare(F*) [95% CI] | L_rare(oracle) | headroom = L(F*) - L(oracle) [95% CI] | H2 (>= 0.10) |
 |---|---|---|---|---|---|---|---|
-| 0.970 (oracle not valid at this tau; reference only) | pca | s0:pca_d512, s1:pca_d512 | 0.975 | 0.993 [0.981, 1.006] | 0.592 | 0.401 [0.362, 0.435] | n/a |
-| 0.900 (oracle not valid at this tau; reference only) | sup_lin | s0:sup_lin_d128, s1:sup_lin_d128 | 1.012 | 0.747 [0.712, 0.783] | 0.592 | 0.155 [0.108, 0.197] | n/a |
-| 0.700 | noise | s0:noise_r1, s1:noise_r1 | 0.805 | 0.633 [0.599, 0.665] | 0.592 | 0.041 [0.001, 0.081] | FAIL |
+| 0.970 (oracle not valid at this tau; reference only) | leace | s0:leace_r4, s1:leace_r4, s2:leace_r4 | 0.992 | 1.008 [0.996, 1.021] | 0.593 | 0.416 [0.376, 0.451] | n/a |
+| 0.900 (oracle not valid at this tau; reference only) | sup_lin | s0:sup_lin_d128, s1:sup_lin_d128, s2:sup_lin_d128 | 1.012 | 0.748 [0.712, 0.783] | 0.593 | 0.155 [0.109, 0.198] | n/a |
+| 0.700 | noise | s0:noise_r1, s1:noise_r1, s2:noise_r1 | 0.806 | 0.632 [0.599, 0.663] | 0.593 | 0.039 [-0.003, 0.077] | FAIL |
 
 #### Selected on V at retention >= 0.97 (config per family and seed; numbers on sealed C)
 
 | family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |
 |---|---|---|---|---|---|---|---|
-| randproj | 0/2 | cannot reach tau | | | | | |
-| pca | 2/2 | s0:d512, s1:d512 | 0.976 [0.949, 1.001] | 0.182 [0.173, 0.191] | 0.993 [0.981, 1.006] | 0.976 [0.968, 0.985] | 0.992 |
-| noise | 0/2 | cannot reach tau | | | | | |
-| leace | 2/2 | s0:r4, s1:r4 | 0.991 [0.969, 1.014] | 0.186 [0.176, 0.196] | 1.014 [0.997, 1.030] | 0.901 [0.887, 0.915] | 0.996 |
-| sup_lin | 0/2 | cannot reach tau | | | | | |
+| randproj | 0/3 | cannot reach tau | | | | | |
+| pca | 3/3 | s0:d512, s1:d512, s2:d512 | 0.976 [0.949, 1.001] | 0.182 [0.172, 0.191] | 0.991 [0.980, 1.003] | 0.974 [0.966, 0.983] | 0.993 |
+| noise | 1/3 | s2:r0.5 | 0.966 [0.942, 0.988] | 0.137 [0.129, 0.146] | 0.743 [0.717, 0.769] | 0.781 [0.765, 0.798] | 0.792 |
+| leace | 3/3 | s0:r4, s1:r4, s2:r4 | 0.992 [0.969, 1.016] | 0.185 [0.175, 0.194] | 1.008 [0.996, 1.021] | 0.898 [0.887, 0.911] | 0.992 |
+| sup_lin | 0/3 | cannot reach tau | | | | | |
 
-Strongest floor F*(0.97) (lowest seed-mean V leakage): **pca** (V L_rare 0.992; C L_rare 0.993)
+Strongest floor F*(0.97) (lowest seed-mean V leakage): **leace** (V L_rare 0.992; C L_rare 1.008)
 
 #### Selected on V at retention >= 0.9 (config per family and seed; numbers on sealed C)
 
 | family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |
 |---|---|---|---|---|---|---|---|
-| randproj | 2/2 | s0:d512, s1:d512 | 0.943 [0.920, 0.966] | 0.181 [0.171, 0.190] | 0.987 [0.975, 0.998] | 0.981 [0.974, 0.987] | 0.980 |
-| pca | 2/2 | s0:d256, s1:d256 | 0.966 [0.937, 0.993] | 0.162 [0.153, 0.171] | 0.883 [0.860, 0.905] | 0.902 [0.888, 0.915] | 0.932 |
-| noise | 2/2 | s0:r0.5, s1:r0.5 | 0.955 [0.935, 0.974] | 0.137 [0.129, 0.145] | 0.744 [0.720, 0.766] | 0.785 [0.770, 0.799] | 0.781 |
-| leace | 2/2 | s0:r16, s1:r16 | 0.950 [0.920, 0.982] | 0.179 [0.170, 0.189] | 0.979 [0.962, 0.995] | 0.792 [0.776, 0.807] | 0.962 |
-| sup_lin | 2/2 | s0:lin_d128, s1:lin_d128 | 1.013 [0.934, 1.097] | 0.138 [0.128, 0.148] | 0.747 [0.712, 0.783] | 0.690 [0.673, 0.708] | 0.762 |
+| randproj | 3/3 | s0:d512, s1:d512, s2:d512 | 0.944 [0.921, 0.967] | 0.180 [0.171, 0.190] | 0.985 [0.975, 0.995] | 0.979 [0.973, 0.985] | 0.984 |
+| pca | 3/3 | s0:d256, s1:d256, s2:d256 | 0.966 [0.937, 0.993] | 0.162 [0.153, 0.171] | 0.883 [0.861, 0.904] | 0.902 [0.889, 0.916] | 0.932 |
+| noise | 3/3 | s0:r0.5, s1:r0.5, s2:r0.5 | 0.959 [0.941, 0.976] | 0.137 [0.129, 0.145] | 0.744 [0.721, 0.764] | 0.784 [0.770, 0.797] | 0.785 |
+| leace | 3/3 | s0:r16, s1:r16, s2:r16 | 0.951 [0.922, 0.982] | 0.180 [0.170, 0.189] | 0.981 [0.966, 0.997] | 0.793 [0.779, 0.808] | 0.967 |
+| sup_lin | 3/3 | s0:lin_d128, s1:lin_d128, s2:lin_d128 | 1.013 [0.935, 1.096] | 0.138 [0.128, 0.149] | 0.748 [0.712, 0.783] | 0.693 [0.675, 0.710] | 0.767 |
 
-Strongest floor F*(0.9) (lowest seed-mean V leakage): **sup_lin** (V L_rare 0.762; C L_rare 0.747)
+Strongest floor F*(0.9) (lowest seed-mean V leakage): **sup_lin** (V L_rare 0.767; C L_rare 0.748)
 
 #### Selected on V at retention >= 0.7 (config per family and seed; numbers on sealed C)
 
 | family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |
 |---|---|---|---|---|---|---|---|
-| randproj | 2/2 | s0:d128, s1:d128 | 0.755 [0.712, 0.793] | 0.128 [0.120, 0.137] | 0.693 [0.669, 0.722] | 0.719 [0.703, 0.735] | 0.723 |
-| pca | 2/2 | s0:d64, s1:d64 | 0.753 [0.705, 0.800] | 0.127 [0.118, 0.137] | 0.689 [0.654, 0.723] | 0.680 [0.662, 0.699] | 0.680 |
-| noise | 2/2 | s0:r1, s1:r1 | 0.806 [0.776, 0.839] | 0.118 [0.108, 0.127] | 0.633 [0.599, 0.665] | 0.592 [0.575, 0.608] | 0.621 |
-| leace | 2/2 | s0:r128, s1:r128 | 0.770 [0.721, 0.814] | 0.161 [0.152, 0.172] | 0.878 [0.854, 0.902] | 0.561 [0.542, 0.581] | 0.862 |
-| sup_lin | 2/2 | s0:lin_d64, s1:lin_d64 | 0.878 [0.806, 0.954] | 0.128 [0.118, 0.138] | 0.692 [0.656, 0.727] | 0.581 [0.561, 0.606] | 0.720 |
+| randproj | 3/3 | s0:d128, s1:d128, s2:d128 | 0.756 [0.715, 0.793] | 0.128 [0.121, 0.137] | 0.694 [0.671, 0.720] | 0.723 [0.708, 0.738] | 0.722 |
+| pca | 3/3 | s0:d64, s1:d64, s2:d64 | 0.753 [0.705, 0.800] | 0.127 [0.118, 0.137] | 0.689 [0.654, 0.723] | 0.679 [0.662, 0.699] | 0.680 |
+| noise | 3/3 | s0:r1, s1:r1, s2:r1 | 0.806 [0.779, 0.836] | 0.117 [0.108, 0.127] | 0.632 [0.599, 0.663] | 0.590 [0.575, 0.605] | 0.625 |
+| leace | 3/3 | s0:r128, s1:r128, s2:r128 | 0.774 [0.729, 0.817] | 0.161 [0.151, 0.171] | 0.875 [0.852, 0.899] | 0.564 [0.545, 0.583] | 0.860 |
+| sup_lin | 3/3 | s0:lin_d64, s1:lin_d64, s2:lin_d64 | 0.876 [0.806, 0.953] | 0.129 [0.120, 0.139] | 0.699 [0.664, 0.733] | 0.582 [0.563, 0.605] | 0.720 |
 
-Strongest floor F*(0.7) (lowest seed-mean V leakage): **noise** (V L_rare 0.621; C L_rare 0.633)
+Strongest floor F*(0.7) (lowest seed-mean V leakage): **noise** (V L_rare 0.625; C L_rare 0.632)
 
 
 
@@ -224,18 +225,19 @@ Strongest floor F*(0.7) (lowest seed-mean V leakage): **noise** (V L_rare 0.621;
 1. **The attacker is measurable and the controls hold (H1).** On raw GTR-base vectors the worst retrained attacker has R-precision 0.183 on rare words versus 0.004 for the frequency prior
    (constant vector) and 0.003-0.004 for shuffled pairs; L is defined on that 0.179 gap. The ridge (linear) attacker is the strongest on raw vectors (0.183), then kNN (0.145), then the MLP (0.079): the cheap linear attacker is
    the worst case, as in Focus C.
-2. **Deleting the secret words from the input does not buy more than the floors do (H2).** The oracle (rare words removed from the document text before embedding) keeps only 0.738 of test nDCG@10 and still leaves L_rare = 0.592 [0.558, 0.631]
+2. **Deleting the secret words from the input does not buy more than the floors do (H2).** The oracle (rare words removed from the document text before embedding) keeps only 0.738 of test nDCG@10 and still leaves L_rare = 0.593 [0.559, 0.631]
    (the attacker re-infers deleted words from context; mid-tier recovery even rises, L_mid 1.11). Rare words (df 3-30, 13.5 per document) are retrieval-critical in NFCorpus. At the oracle's own operating point (dev retention 0.70) the strongest
-   floor, Gaussian noise on stored vectors (r = 1; retention 0.805 on test), reaches L_rare 0.633 [0.599, 0.665]: higher retention than the oracle at a leakage 0.041 [0.001, 0.081] above it. Removing the secret from the input is therefore not a
+   floor, Gaussian noise on stored vectors (r = 1; retention 0.806 on test), reaches L_rare 0.632 [0.599, 0.663]: higher retention than the oracle at a leakage 0.039 [-0.003, 0.077] above it. Removing the secret from the input is therefore not a
    better utility/privacy trade than adding noise. This is the B' lesson again (oracle headroom below the margin => no mask-type arm can pass), but note the limit: the oracle is a *reference*, not a bound on what a vector map could do.
-3. **At the pre-registered 3% operating point the floors give essentially no privacy.** Selected on V at retention >= 0.97, the only feasible floors are PCA-512 (L 0.993) and LEACE r = 4 (L 1.014). Random projection, noise and the
-   retrieval-trained linear map cannot reach 0.97 dev retention. At 0.90: noise r = 0.5 (L 0.744) and sup_lin d = 128 (L 0.747) lead; at 0.70: noise r = 1 (0.633), PCA-64 (0.689), sup_lin d = 64 (0.692), random projection d = 128 (0.693).
-   So the privacy gain of any floor is bought at 5-20% nDCG; nothing is free at 3%.
-4. **LEACE of the secret-token subspace is the weakest floor** (L 0.88 even at 0.77 retention; r = 512 destroys retrieval, 0.16): the token bag is not linearly separable from the retrieval signal, and the retrained ridge attacker
+3. **Floors reaching 3% nDCG loss in every seed give essentially no privacy; the first real gain costs about 4%.** Selected on V at retention >= 0.97, the floors feasible in all 3 seeds are PCA-512 (L 0.991) and LEACE r = 4 (L 1.008).
+   Gaussian noise r = 0.5 sits on the boundary: dev retention 0.960 on average (>= 0.97 in only 1 of 3 seeds), test retention 0.958 and L_rare 0.743 [0.717, 0.769] (the qualifying seed: test retention 0.966). Random projection and the retrieval-trained linear map
+   cannot reach 0.97 on dev. The noise grid has no level between 0 and 0.5, so a floor at exactly 3% with L around 0.8-0.9 may exist; not run. At 0.90: noise r = 0.5 (L 0.744) and sup_lin d = 128 (L 0.748) lead; at 0.70: noise r = 1 (0.632), PCA-64 (0.689),
+   sup_lin d = 64 (0.699), random projection d = 128 (0.694). So a noise floor already moves L from 1.0 to 0.74 for about 4% nDCG, and L 0.63 costs about 19%.
+4. **LEACE of the secret-token subspace is the weakest floor** (L 0.875 even at 0.774 retention; r = 512 destroys retrieval, 0.167): the token bag is not linearly separable from the retrieval signal, and the retrained ridge attacker
    recovers words through the directions LEACE leaves. (Linear erasure removes linear predictability on the fit pool, the attacker retrains on new pool documents, as in Focus A.)
-5. **Dev/test discordance of the retrieval-trained linear map.** sup_lin has *higher* test than raw nDCG (retention 1.07 at d = 512, 1.01 at d = 128) but *lower* dev nDCG (0.957 and 0.901). The pre-registered rule selects on dev, so sup_lin is
-   excluded at 0.97 although on the sealed test it would qualify (d = 128: retention 1.013 [0.934, 1.097], L 0.747). Reading C instead of V would make sup_lin d = 128 the strongest floor at 0.97 (L 0.75 against PCA-512's 0.99): the
-   conclusion "floors give nothing at 3%" depends on the dev split. With 324/323 queries the retention CIs are wide (+-0.05 to 0.08), which is the same size as the 3% target.
+5. **Dev/test discordance of the retrieval-trained linear map.** sup_lin has *higher* test than raw nDCG (retention 1.07 at d = 512, 1.01 at d = 128) but *lower* dev nDCG (0.957 and 0.904). The pre-registered rule selects on dev, so sup_lin is
+   excluded at 0.97 although on the sealed test it would qualify (d = 128: retention 1.013 [0.935, 1.096], L 0.748). Reading C instead of V would make sup_lin d = 128 the strongest floor at 0.97 (L 0.75). With 324/323 queries the retention CIs
+   are wide (+-0.05 to 0.08), the same size as the 3% target, so operating points near 0.97 are not resolvable on this benchmark.
 
 ### 5.3 Post-hoc learned arms (NOT part of the kill decision)
 The coordinator asked for the learned kill test to be run after the headroom tables. Because H2 had already failed, anything below is **post-hoc** and cannot flip the verdict; it only tests whether the pre-registered reading
