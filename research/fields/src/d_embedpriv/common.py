@@ -71,7 +71,7 @@ def ne_spans(text, skip=0):
     out = []
     for m in CAP.finditer(text):
         i = m.start()
-        if i < skip:
+        if i <= skip:  # inside the title, or the first word of the body (a sentence start)
             continue
         j = i - 1
         while j >= 0 and text[j].isspace():
