@@ -29,6 +29,28 @@ def sha256_file(p: Path, chunk: int = 1 << 24) -> str:
     return h.hexdigest()
 
 
+def _process_zip(args):
+    """worker: decode every PNG of one zip, resize, write into the shared memmap rows; returns (zip name, written row ids, bad_dims, missing_in_csv)."""
+    zpath, bank_path, row, size = args
+    bank = np.load(bank_path, mmap_mode="r+")
+    written, bad, miss = [], 0, 0
+    with zipfile.ZipFile(zpath) as z:
+        for info in z.infolist():
+            base = Path(info.filename).name
+            if not base.endswith(".png"):
+                continue
+            if base not in row:
+                miss += 1
+                continue
+            im = Image.open(io.BytesIO(z.read(info)))
+            if im.size != (1024, 1024):
+                bad += 1
+            bank[row[base]] = np.asarray(im.convert("L").resize((size, size), Image.BILINEAR))
+            written.append(row[base])
+    bank.flush()
+    return Path(zpath).name, written, bad, miss
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True, help="dir with Data_Entry_2017_v2020.csv, test_list.txt, train_val_list.txt")
@@ -36,43 +58,42 @@ def main():
     ap.add_argument("--zips", default=None, help="dir holding images_00N.zip (default: download from the HF mirror into <out>/zips)")
     ap.add_argument("--report", default=None, help="small json report copied to $OUT (uploaded)")
     ap.add_argument("--size", type=int, default=256)
+    ap.add_argument("--procs", type=int, default=8)
+    ap.add_argument("--only", type=int, default=12, help="number of zips to process (tests only; the integrity check then fails by design)")
     a = ap.parse_args()
+    from multiprocessing import Pool
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt")
     row = dict(zip(d["img"], d["row"]))
     N = len(d)
-    bank = np.lib.format.open_memmap(out / "cxr256.npy", mode="w+", dtype=np.uint8, shape=(N, a.size, a.size))
-    filled = np.zeros(N, bool)
+    bank_path = out / "cxr256.npy"
+    bank = np.lib.format.open_memmap(bank_path, mode="w+", dtype=np.uint8, shape=(N, a.size, a.size)); del bank
     zdir = Path(a.zips) if a.zips else out / "zips"
     zdir.mkdir(parents=True, exist_ok=True)
     rep = dict(repo=REPO, zips={}, bad_dims=0, missing_in_csv=0, started=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     from huggingface_hub import hf_hub_download
-    for k in range(1, 13):
+    paths = []
+    for k in range(1, a.only + 1):
         name = f"images_{k:03d}.zip"
         p = zdir / name
         if not p.exists():
             got = hf_hub_download(REPO, f"data/images/{name}", repo_type="dataset", local_dir=str(zdir / "_hf"))
             Path(got).rename(p)
         rep["zips"][name] = dict(bytes=p.stat().st_size, sha256=sha256_file(p))
-        with zipfile.ZipFile(p) as z:
-            for info in z.infolist():
-                base = Path(info.filename).name
-                if not base.endswith(".png"):
-                    continue
-                if base not in row:
-                    rep["missing_in_csv"] += 1
-                    continue
-                im = Image.open(io.BytesIO(z.read(info)))
-                if im.size != (1024, 1024):
-                    rep["bad_dims"] += 1
-                bank[row[base]] = np.asarray(im.convert("L").resize((a.size, a.size), Image.BILINEAR))
-                filled[row[base]] = True
-        print(name, int(filled.sum()), flush=True)
-    bank.flush()
+        print("downloaded", name, rep["zips"][name]["bytes"], flush=True)
+        paths.append(p)
+    filled = np.zeros(N, bool)
+    with Pool(min(a.procs, len(paths))) as pool:
+        for name, written, bad, miss in pool.imap_unordered(_process_zip, [(str(p), str(bank_path), row, a.size) for p in paths]):
+            filled[written] = True; rep["bad_dims"] += bad; rep["missing_in_csv"] += miss
+            rep["zips"][name]["images"] = len(written)
+            print(name, "done; filled so far", int(filled.sum()), flush=True)
+    bank = np.load(bank_path, mmap_mode="r")
     rep["filled"] = int(filled.sum()); rep["expected"] = N
-    h = np.array([hashlib.sha256(bank[i].tobytes()).hexdigest() for i in range(N)])
+    h = [hashlib.sha256(bank[i].tobytes()).hexdigest() for i in range(N)]
     rep["exact_duplicate_images_256px"] = int(N - len(set(h)))
     rep["ok"] = bool(filled.all() and rep["missing_in_csv"] == 0 and N == 112120 and rep["bad_dims"] == 0)
+    rep["finished"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (out / "prep.json").write_text(json.dumps(rep, indent=1))
     if a.report:
         Path(a.report).mkdir(parents=True, exist_ok=True)

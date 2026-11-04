@@ -121,7 +121,8 @@ def rescore_dataset(root, ds, protocol, report, seed=0):
         keys = [p1_key(k) for k in sc["attackers"]]
         keys = [k for k in keys if k in c.probs]
         if multilabel:
-            vals, a2, h, a2_b, h_b = _generic_multilabel(c, keys, M, rs_w, inv, m)
+            cond = np.array([hio.dataset_index(root, ds)[i]['labels']['action'] for i in c.ids])
+            vals, a2, h, a2_b, h_b = _generic_multilabel(c, keys, M, rs_w, inv, m, cond)
         else:
             corr = {k: (c.probs[k].argmax(1) == c.y).astype(float) for k in keys}
             a1_re = max(v.mean() for v in corr.values())
@@ -169,29 +170,41 @@ def rescore_dataset(root, ds, protocol, report, seed=0):
                 dropped_releases=sorted(set(rels) - set(cells)))
 
 
-def _generic_multilabel(c, keys, M, W, inv, m):
-    """HMDB51 attributes: mean AP over the 5 attributes (programme 1's metric where the raw footage is measurably above the baseline).
-    Units = videos; slow explicit resampling, fewer resamples."""
-    def apk(probs, y):
-        aps = []
-        for j in range(y.shape[1]):
-            order = np.argsort(-probs[:, j], kind="stable")
-            yy = y[order, j]
-            if yy.sum() == 0:
-                continue
-            tp = np.cumsum(yy)
-            aps.append((tp / np.arange(1, len(yy) + 1) * yy).sum() / yy.sum())
-        return float(np.mean(aps)) if aps else float("nan")
+def _generic_multilabel(c, keys, M, W, inv, m, cond):
+    """HMDB51 attributes with programme 1's metric (plan.json: 'conditional'): mean over the 5 attributes of the mean AP within each action
+    class where the attribute varies (amendment v1.1: the pre-registered plain mAP did not reproduce programme 1's printed numbers).
+    Units = videos; explicit item resampling, fewer resamples."""
+    def ap1(scores, labels):
+        order = np.argsort(-scores, kind="stable")
+        yy = labels[order]
+        if yy.sum() == 0:
+            return float("nan")
+        tp = np.cumsum(yy)
+        return float((tp / np.arange(1, len(yy) + 1) * yy).sum() / yy.sum())
 
+    def apk(probs, y, cnd=None):
+        cnd = cond_all if cnd is None else cnd
+        per_attr = []
+        for j in range(y.shape[1]):
+            aps = []
+            for cls in np.unique(cnd):
+                mk = cnd == cls
+                if 0 < y[mk, j].sum() < mk.sum():
+                    aps.append(ap1(probs[mk, j], y[mk, j]))
+            if aps:
+                per_attr.append(np.mean(aps))
+        return float(np.mean(per_attr)) if per_attr else float("nan")
+
+    cond_all = cond
     y = c.y
     members = [np.flatnonzero(inv == i) for i in range(m)]
-    a1_re = max(apk(c.probs[k], y) for k in keys)
+    a1_re = max(apk(c.probs[k], y, cond) for k in keys)
 
     def stats_for(w):
         idx_w = np.repeat(np.arange(m), w.astype(int))
         # item index list with multiplicities
         items = np.concatenate([members[u] for u in idx_w]) if len(idx_w) else np.array([], int)
-        mc = {k: apk(c.probs[k][items], y[items]) for k in SUITE}
+        mc = {k: apk(c.probs[k][items], y[items], cond[items]) for k in SUITE}
         a2 = max(mc.values())
         Hs = []
         for s in range(M.shape[0]):
@@ -204,8 +217,8 @@ def _generic_multilabel(c, keys, M, W, inv, m):
                     continue
                 it_sel = np.concatenate([members[u] for u in u_sel])
                 it_sc = np.concatenate([members[u] for u in u_sc])
-                ks = max(SUITE, key=lambda k: apk(c.probs[k][it_sel], y[it_sel]))
-                tot += apk(c.probs[ks][it_sc], y[it_sc]) * len(it_sc)
+                ks = max(SUITE, key=lambda k: apk(c.probs[k][it_sel], y[it_sel], cond[it_sel]))
+                tot += apk(c.probs[ks][it_sc], y[it_sc], cond[it_sc]) * len(it_sc)
                 n_tot += len(it_sc)
             Hs.append(tot / n_tot)
         return a2, float(np.mean(Hs))

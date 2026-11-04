@@ -49,7 +49,7 @@ def test_rescore_multilabel_path(tmp_path, monkeypatch):
     ids = [f"c/v{i}" for i in range(n)]
     Y = (rs0.rand(n, 5) < 0.4).astype(int)
     os.makedirs(os.path.join(root, ds), exist_ok=True)
-    json.dump(dict(items=[dict(id=i, labels=dict(attributes=Y[k].tolist()), groups=dict(source=i)) for k, i in enumerate(ids)]), open(os.path.join(root, ds, "dataset.json"), "w"))
+    json.dump(dict(items=[dict(id=i, labels=dict(attributes=Y[k].tolist(), action=int(k % 4)), groups=dict(source=i)) for k, i in enumerate(ids)]), open(os.path.join(root, ds, "dataset.json"), "w"))
     d = os.path.join(root, ds, "eval", "bdq")
     os.makedirs(d)
     np.savez(os.path.join(d, "preds.npz"), **{f"secret|attributes|within|{kd}|{a}": rs0.rand(n, 5) + 0.5 * Y for kd in ("retrained", "frozen") for a in ("frame_r50", "r3d")})
