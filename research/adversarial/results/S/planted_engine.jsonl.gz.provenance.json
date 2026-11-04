@@ -1,0 +1,13 @@
+{
+ "evaluator": {
+  "frozen_match": true,
+  "sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
+  "tag": "s-suite-eval-v1",
+  "version": "s_suite/2"
+ },
+ "file": "planted_engine.jsonl.gz",
+ "file_sha256": "6ce171baed2c2d2650d15a334520061cf1d523b68130166ef8e3ebfa6195b37a",
+ "note": "produced on the VM (numpy 1.21, py3.10) by run_planted.py as frozen at tag s-suite-eval-v1 / s-suite-analysis-v1.2; stamped after the fact from the FREEZE record because run_planted.py (frozen) writes unstamped JSON lines",
+ "script": "run_planted.py",
+ "script_sha256": "237ae7e5d0dd198e191092c543ff82274806947c875bc5c0a86e71c529967ea9"
+}

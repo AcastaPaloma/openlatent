@@ -7,7 +7,7 @@
   "run_planted.py": "237ae7e5d0dd198e191092c543ff82274806947c875bc5c0a86e71c529967ea9",
   "run_real.py": "2e8d339874fa4a20ee0ef9bc9376b664fed7c6b35404c30584a46daf683f6c3b"
  },
- "caveat": "rescore/select/budget outputs carry no in-file evaluator hash (E6c literal FAIL, see section 8.6); certificates produced by certify() do.",
+ "caveat": "Amendment v1.3 stamps every output of rescore/run_real/summarize/run_coverage with _provenance; the files here were regenerated with the stamped scripts (evaluator v1) and are content-identical to the first pass. planted_engine.jsonl.gz carries a sidecar stamped from the v1 FREEZE record.",
  "commands": [
   "python -m s_suite.freeze --check   (before every run; passes)",
   "python -m s_suite.rescore --root HARNESS --reports research/privacy-obfuscation/results/harness --out OUT --datasets kth_ilic,kth_scenario,utdmhad,charades --protocols within",
@@ -17,11 +17,21 @@
   "python -m s_suite.summarize real --within OUT --hmdb OUT --budget OUT --select OUT",
   "VM: python -m s_suite.run_planted --out planted_engine.jsonl --reps 100 --null-reps 300 --procs 36 (stopped after 205 null rows), then --procs 8 (stopped after 220 null rows), then --reps 40 --null-reps 0 --procs 8"
  ],
+ "commands_added": [
+  "python -m s_suite.run_coverage --out coverage.jsonl --reps 30 --procs 6   (v1 evaluator, replicates 0-29)",
+  "python -m s_suite.run_coverage --out coverage_v2.jsonl --reps 30 --rep-start 30 --procs 6   (v2 evaluator, replicates 30-59)",
+  "python -m s_suite.summarize coverage --jsonl FILE --out DIR"
+ ],
  "environment": {
   "local": "numpy 2.5.4, scipy 1.18.1, scikit-learn 1.9.1, python 3.12",
   "vm": "numpy 1.21.5, scipy 1.8.0, scikit-learn 0.23.2, python 3.10 (run_planted only)"
  },
  "evaluator_sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
+ "evaluator_v2": {
+  "change": "certificate.py only: ci95_conservative (kappa 1.10), version s_suite/2.1",
+  "sha256": "b1bc7e7283bbd92c298a4afc71c90dd51a052fe2ed5228962ab9d31ffd8f4e4b",
+  "tag": "s-suite-eval-v2 -> c1399b1"
+ },
  "harness_inputs": "HF KuanKuanKuan/openlatent-privacy harness/<dataset>/{dataset.json,eval/<release>/{preds.npz,result.json}} (78 preds files), downloaded to a scratch directory outside the repository",
  "note": "Provenance of the files in this directory. Evaluator sha256 and analysis-file hashes are those of src/s_suite/FREEZE.json at tags s-suite-eval-v1 (evaluator) and s-suite-analysis-v1.2 (analysis).",
  "summarize_py_sha256": "48b5b85282c94d170e988f8dc78818aba7c65a7b7902bb47289fb328e034882d",

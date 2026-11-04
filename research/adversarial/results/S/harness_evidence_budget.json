@@ -1,4 +1,15 @@
 {
+ "_provenance": {
+  "evaluator": {
+   "expected_sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
+   "frozen_match": true,
+   "sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
+   "tag": "s-suite-eval-v1",
+   "version": "s_suite/2"
+  },
+  "script": "run_real.py",
+  "script_sha256": "a048ae5b022fa4c841e465309faff3ede730304371208510aea9be191ddb388c"
+ },
  "charades/bdq_down32/retrained|frame_r50": {
   "K": [
    1,

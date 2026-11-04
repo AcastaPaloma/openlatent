@@ -1107,6 +1107,17 @@
    }
   }
  },
+ "_provenance": {
+  "evaluator": {
+   "expected_sha256": "b1bc7e7283bbd92c298a4afc71c90dd51a052fe2ed5228962ab9d31ffd8f4e4b",
+   "frozen_match": true,
+   "sha256": "b1bc7e7283bbd92c298a4afc71c90dd51a052fe2ed5228962ab9d31ffd8f4e4b",
+   "tag": "s-suite-eval-v2",
+   "version": "s_suite/2.1"
+  },
+  "script": "summarize.py",
+  "script_sha256": "e4f9b4279348de3adcf2af7ab8f319d9429b171c43f817d4a76f38a7e44d5060"
+ },
  "exploratory_circular": {
   "bias|0.18": {
    "1425": {

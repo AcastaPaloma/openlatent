@@ -1,3 +1,4 @@
+<!-- provenance: evaluator sha256 eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f (frozen match: True, tag s-suite-eval-v1), script rescore.py sha256 76b5b0fca804cb80a5226b656c24ebdacc49403897ca5bb23a40c964b11414bc -->
 # Re-score of programme 1's harness predictions (development/burned data, NOT sealed)
 
 

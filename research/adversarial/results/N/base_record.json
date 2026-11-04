@@ -1,0 +1,22 @@
+{
+ "cap_per_session": 60,
+ "files": {
+  "msda": {
+   "base_file": "/home/ubuntu/n_control_data/base_msda.npz",
+   "base_sha256": "4109e822cd42e61548fc4b25d3804db051d1b8fea0804bdf506ef3b171f37d4a",
+   "n": 12621,
+   "source": "/home/ubuntu/work/h_imu/out/aae_rel/msda_s0.npz",
+   "source_sha256": "5d0fd79436782b9052cf96f77122af483cfe7cf9a6f474ea2a3c5ffc9979ce10"
+  },
+  "rep": {
+   "base_file": "/home/ubuntu/n_control_data/base_rep.npz",
+   "base_sha256": "eb5e64afed5d3e618d285f48e9377637a6bab4233cdb0545643f8f7923e5d2f6",
+   "n": 12621,
+   "source": "/home/ubuntu/work/h_imu/out/aae_rel/rep_s0.npz",
+   "source_sha256": "4ec1fda04b7210a1dccfd02ccb1bbcf7ecb1ceae72b8b6d2347a265c44c519bc"
+  }
+ },
+ "h_common_sha256": "79d8721dc7a85cde1e12b4dfb613327bd4806c6d126565018763b9e344e75394",
+ "n_analysis_windows": 21805,
+ "n_base_windows": 12621
+}
