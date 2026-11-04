@@ -1,0 +1,4 @@
+name: a_extract_dinov2L
+priority: 10
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/extract.py --model dinov2L_clsmean --num_workers 6
+hf_path: runs/a_extract_dinov2L
