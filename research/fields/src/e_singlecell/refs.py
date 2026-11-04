@@ -18,6 +18,7 @@ def main():
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--out", default=os.environ.get("OUT", "out"))
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--max_epochs", type=int, default=None, help="default: scvi-tools heuristic min(400, 20000/n_cells*400)")
     a = ap.parse_args()
     import anndata as ad
     import scanpy as sc_
@@ -33,7 +34,7 @@ def main():
     sc_.pp.highly_variable_genes(ann, n_top_genes=2000, flavor="seurat_v3", batch_key="batch", layer="counts", subset=True)
     scvi.model.SCVI.setup_anndata(ann, layer="counts", batch_key="batch")
     m = scvi.model.SCVI(ann, n_latent=30)
-    m.train()
+    m.train(max_epochs=a.max_epochs)
     Z = m.get_latent_representation().astype(np.float32)
     np.save(CACHE / a.dataset / "scvi_latent.npy", Z)
     info = dict(dataset=a.dataset, cells=int(Z.shape[0]), latent=int(Z.shape[1]), seconds=round(time.time() - t0, 1), scvi=scvi.__version__,
