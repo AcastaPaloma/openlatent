@@ -137,12 +137,16 @@ class KNN:
         self.mu = Z.mean(0, keepdim=True)
         self.P = F.normalize(Z - self.mu, dim=1)
         self.prior = self.Y.mean(0)
+        self.const = bool(Z.std(0).max() < 1e-6)  # constant-vector control: no neighbour is informative -> frequency prior
         n = len(Z)
         g = torch.Generator().manual_seed(seed)
         perm = torch.randperm(n, generator=g).to(DEV)
         nv = int(0.15 * n)
         va, tr = perm[:nv], perm[nv:]
         best = (-1, None)
+        if self.const:
+            self.k, self.T = 5, 0.1
+            return self
         for k in (5, 20):
             for T in (0.02, 0.1):
                 s = self._score(self.P[va], self.P[tr], self.Y[tr], k, T)
@@ -160,6 +164,8 @@ class KNN:
         return (w[:, :, None] * Y[ix]).sum(1)
 
     def score(self, Z):
+        if self.const:
+            return self.prior[None, :].expand(len(Z), -1).cpu().numpy()
         Q = F.normalize(Z.to(DEV).float() - self.mu, dim=1)
         return self._score(Q, self.P, self.Y, self.k, self.T).cpu().numpy()
 
