@@ -20,6 +20,7 @@ Correction to JUMP0 section 3: the "pinned" `perturbation_control.csv` (sha256 d
 
 * Read before design: CHARTER, FOCUS (A, B', C, D, E closed/NO-GO and why), journal tail, RANKING_R2 sections 5-7, H2-011, JUMP0 (spec), E.md (standard), `src/e_singlecell/`.
 * 15:36-15:41Z: downloaded the 66 S4 TARGET2 plate files (840 MB, CC0) with `aws s3 cp` and created venv `~/venvs/f`. No feature value, no mAP, no attacker has been computed or inspected; only file counts/sizes. The Arevalo repo (preprocessing, metrics, correct/) was read as code.
+* 15:55Z R0 (S2 baseline, benchmark metric code): mean_average_precision negcon 0.9007 / nonrep 0.4096 against the published 0.90 / 0.41 (passes; fraction_below_p 0.9375 / 0.9966 does not match, so the published "mAP" unit is the mean AP, not a fraction). 16:00Z AP validation (A1). 16:02Z one smoke run on S4 split s0 (arms raw, ldaT_16; seen before the S4 queue): raw worst-of-4 source attacker 0.886 (MLP; chance 0.2), U_H(raw, xs) 0.427, U_H(raw, nonrep) 0.560. These are the only model numbers seen before the S4 grid; the S4 grid is the first result.
 * Seen through other agents' notes (not by me): JUMP0's published-number table (S5 baseline/Harmony/Combat/Sphering/scVI/Seurat mAP, kBET, iLISI), which shapes the prior (P(all JK clear) about 0.10) but fixes no threshold here.
 
 ## 2. PRE-REGISTRATION v0 (committed before any model number)
@@ -73,7 +74,7 @@ I1 tiers: S4 gate = R0 + JK1; JK0(b)(c)(d), JK2, JK3 verdict-bearing on S5; S4 J
 
 ## 3. Amendments (each dated; none may relax a kill condition)
 
-(none yet)
+* **A1, 16:05Z, after the AP validation, before any floor/attacker number was aggregated (validation tolerance only; no kill condition touched).** Section 2.3 asked the GPU AP to agree with `copairs.average_precision` v0.4.1 per query within 1e-6. Measured on S4 (raw and a random-projection embedding, modes xs and nonrep, 20,348 queries each): mean |diff| 0.5-1.5e-7, mean AP identical to 1.3e-7, but 19-27 queries (0.1%) differ by more than 1e-6 (max 1.1e-3), which is float32 cosine near-ties ordered differently. The tolerance is restated as "mean AP within 1e-5 and >= 99.8% of queries within 1e-6"; it is met. The copairs numbers are used for R0 and the benchmark-statistic sensitivity; the GPU AP for the grid.
 
 ## 4. Status log
 
