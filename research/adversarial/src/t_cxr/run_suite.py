@@ -66,10 +66,12 @@ def main():
     ap.add_argument("--res", type=int, default=64); ap.add_argument("--alpha", type=float, default=1.0)
     ap.add_argument("--feat", default="dinov2", choices=["dinov2", "random"]); ap.add_argument("--no-ledger", action="store_true")
     ap.add_argument("--exclude", default=None, help="exclude_dups.json (T.md A2 b); required for real runs")
+    ap.add_argument("--screen", action="store_true", help="T2 screen: validation only. T pairs / T images are never built, no ledger entry; output dir suffix _screen")
+    ap.add_argument("--pcxr-dir", default=None, help="dir with generator_pcxr_mu*.pth (train_pcx.py)")
     ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
     a = ap.parse_args()
     t0 = time.time()
-    out = Path(a.out) / f"{a.release}_rot{a.rot}{'_shuf' if a.shuffle_labels else ''}"; out.mkdir(parents=True, exist_ok=True)
+    out = Path(a.out) / f"{a.release}_rot{a.rot}{'_shuf' if a.shuffle_labels else ''}{'_screen' if a.screen else ''}"; out.mkdir(parents=True, exist_ok=True)
     if not a.synthetic and not a.exclude:
         raise SystemExit("--exclude exclude_dups.json is required for real runs (T.md A2)")
     d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
@@ -84,22 +86,26 @@ def main():
         salt = Path(a.salt_file).read_text().strip()                  # refuses to run without the custodian's salt
         bank = np.load(a.bank, mmap_mode="r")
     d = meta.assign_roles(d, seen, salt, a.rot)
-    pA, rA = pairs.build(d, "A", "N2", 2, "tr0", col="role"); pV, rV = pairs.build(d, "V", "N2", 1, "v0", col="role"); pT, rT = pairs.build(d, "T", "N2", 1, "te0", col="role")
+    pA, rA = pairs.build(d, "A", "N2", 2, "tr0", col="role"); pV, rV = pairs.build(d, "V", "N2", 1, "v0", col="role")
+    if a.screen:
+        pT, rT = pV.copy(), rV                                      # SCREEN: the 'test' slot is the validation pairs; no T image or T pair is ever built
+    else:
+        pT, rT = pairs.build(d, "T", "N2", 1, "te0", col="role")
     need = np.unique(np.r_[pA.a, pA.b, pV.a, pV.b, pT.a, pT.b]); pos_of = {r: i for i, r in enumerate(need)}
     parts = dict(tr=split_pairs(pA, pos_of), va=split_pairs(pV, pos_of), te=split_pairs(pT, pos_of))
     sfx = ""
     if a.shuffle_labels:
         parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
     cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic)
-    ledger_rec = None if (a.no_ledger or a.synthetic) else ledger.sealed_query(a.release, cfg, "T", a.rot)
+    ledger_rec = None if (a.no_ledger or a.synthetic or a.screen) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
     flow = torch.load(a.flow_stats) if a.flow_stats else None
     pca = R.fit_pca(bank, d.loc[(d.role == "A") & d.ok, "row"].to_numpy()[:10000], size=min(64, a.res)) if a.release.startswith("pca_") else None
-    rel = R.Releases(dev, gen_dir=a.gen_dir, flow_stats=flow, pca=pca)
+    rel = R.Releases(dev, gen_dir=a.gen_dir, flow_stats=flow, pca=pca, pcxr_dir=a.pcxr_dir)
     ids = d["img"].to_numpy()[need].tolist()
     Xr = rel.materialize("raw", bank, need, ids)
     Xd = Xr if a.release == "raw" else rel.materialize(a.release, bank, need, ids)
-    summ = dict(release=a.release, rot=a.rot, synthetic=bool(a.synthetic), salt_provisional=bool(a.synthetic), evaluator_sha=ledger.evaluator_sha()[:16], ledger=ledger_rec,
+    summ = dict(release=a.release, rot=a.rot, screen=bool(a.screen), synthetic=bool(a.synthetic), salt_provisional=bool(a.synthetic), evaluator_sha=ledger.evaluator_sha()[:16], ledger=ledger_rec,
                 n_triples=dict(A=int(len(pA) // 2), V=int(len(pV) // 2), T=int(len(pT) // 2)), pair_reports=dict(A=rA, V=rV, T=rT), role_counts=meta.role_counts(d), attackers={})
     cl_te = pT.anchor_pid.map(lambda p: hid(p, salt)).to_numpy(); cl_va = pV.anchor_pid.map(lambda p: hid(p, salt)).to_numpy()
 
@@ -133,7 +139,13 @@ def main():
             feat = lambda X: (X.float().flatten(1).cpu() @ W).numpy()
         else:
             from .features import dino_features as feat
-        Fd, Fr = feat(Xd), feat(Xr)
+        Fd = feat(Xd)
+        cache = Path(a.work) / f"rawfeat_{a.feat}_rot{a.rot}_{'screen' if a.screen else 'full'}_{len(need)}_{int(need.sum()) % 10**9}.npy"
+        if cache.exists():
+            Fr = np.load(cache)
+        else:
+            Fr = feat(Xr)
+            cache.parent.mkdir(parents=True, exist_ok=True); np.save(cache, Fr)
         tr_, va_, te_ = ({**parts[k]} for k in ("tr", "va", "te"))
         FF = np.concatenate([Fd, Fr])
         for k, p in (("tr", tr_), ("va", va_), ("te", te_)):
