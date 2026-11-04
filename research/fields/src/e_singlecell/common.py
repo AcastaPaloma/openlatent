@@ -62,6 +62,11 @@ DATASETS = {
                ["Jain_Misharin_2021_10Xv1", "Jain_Misharin_2021_10Xv2", "Misharin_Budinger_2018", "Meyer_2019",
                 "Lafyatis_Rojas_2019_10Xv1", "Lafyatis_Rojas_2019_10Xv2", "Teichmann_Meyer_2019"]],
     ),
+    # synthetic dataset used only to exercise the pipeline (smoke.py); never reported as a result
+    "smoke": dict(
+        file=None, batch="batch", study=None, donor="donor", fine="fine", coarse_map=None, coarse_col="coarse", counts_layer="counts", subsample=None,
+        folds=[["b0", "b1"], ["b2", "b3"], ["b4", "b5"]],
+    ),
 }
 
 
