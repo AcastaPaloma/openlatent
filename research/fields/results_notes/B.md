@@ -51,3 +51,44 @@ the `clean` oracle utility with near-zero leakage on all correlated kinds, B' is
 - 10:05Z corr_det seed 0 (all arms, strong level): raw 0.806, rate4 0.840, rateb 0.975 (collapsed), SAM 0.814, gtmask 0.764, adv 0.791, adv30 0.795, lmask 1.000 and advmask 1.001 (collapsed to the degenerate "gate out everything that moves" solution: unsupervised soft mask has no signal to keep the arm; dropped from the remaining jobs, reported as a failed implementation, NOT as evidence about learned masks).
   Zero-shot SAM does NOT beat the raw LAM here (0.814 vs 0.806): its mask loses 15% of the arm and keeps 6.5% of the decoys; only the exact silhouette (an oracle) helps (0.764).
 - Reference leakage (attackers on the TRUE action only): corr_det relative-position leak 0.05 (unavoidable), total sprite velocity 1.00 (deterministic function of the action). So in corr_det the nuisance state is fully determined by the action history and leakage there is not cleanly separable; corr_noisy / corr_glued have a truly independent residual.
+
+## Results (strong level; 3 LAM seeds 0/1/2; +- = sd over seeds; [..] = bootstrap over the 300 test episodes, seed-mean)
+Utility = test NMSE of a linear probe z -> macro action xyz from 2000 labels (1.0 = chance, lower is better). Clean-frame oracle 0.705 +- 0.017.
+A clean-trained LAM fed distractor frames is far worse than chance (1.07-1.37), so the distractors do hurt.
+
+### corr_det (primary: sprite velocity is a deterministic function of the action) - 3 seeds, complete
+| arm | utility NMSE | leak_worst (best single coordinate over linear+MLP attackers; reference leak of the TRUE action alone = 0.05) |
+|---|---|---|
+| clean frames (oracle) | 0.705 +- 0.017 | 0 |
+| raw LAM | 0.815 +- 0.009 [0.803, 0.827] | 0.118 +- 0.030 |
+| rate bottleneck, z dim 4 (control, no adversary) | 0.839 +- 0.001 | 0.082 +- 0.011 |
+| zero-shot SAM ViT-B mask (oracle-prompted) | 0.812 +- 0.002 [0.802, 0.821] | 0.204 +- 0.008 |
+| exact arm silhouette mask (oracle) | 0.764 +- 0.006 [0.755, 0.774] | 0.231 +- 0.010 |
+| adv (learned: raw + attacker-confusion loss, lambda 10) | 0.802 +- 0.010 [0.788, 0.817] | 0.065 +- 0.020 |
+Paired per seed, SAM minus adv: +0.023, +0.009, -0.002 (rule needs >= +0.05 in every seed): FAIL. adv leaks less than SAM (0.065 vs 0.204) and beats the rate control by 0.03-0.05, but the utility margin is 0.010 on average.
+Leakage caveat: in corr_det the sprite state is a function of the action history, so a z that knows the arm pose "leaks" sprite relative position without carrying any distractor information (reference 0.05 from the true action alone, plus pose); the cleaner leakage numbers are in corr_noisy / corr_glued (pending, see below).
+
+### indep (distractor independent of the action; the case SAM masks were expected to solve) - 3 seeds, SAM arm pending
+raw 0.859 +- 0.012, rate4 0.859 +- 0.004, adv 0.857 +- 0.008, exact silhouette 0.779 +- 0.011, clean 0.705. Residual-velocity and colour leakage of raw z are 0.00: the LAM does not encode the sprites at all.
+
+### Why (mechanism, measured)
+- The harm is input clutter, not leakage: raw z carries ~0 information about sprite velocity or colour (attackers retrained, linear and MLP) and still loses 0.10-0.15 NMSE to the clean oracle. An adversary on z has nothing to remove (adv = raw within 0.002 on indep, 0.013 on corr_det).
+- Only gating the input helps, and only an exact mask gets about half of the way (0.764-0.779 vs raw 0.815-0.859 vs clean 0.705). The zero-shot SAM mask is no better than no mask on corr_det (0.812 vs 0.815): mask IoU with the exact silhouette 0.82, arm recall 0.85, 6.5-7% of decoy pixels inside the mask (sprites sit on top of the arm, so the masked frame is contaminated and the arm is clipped).
+- So B' does not die because SAM "solves" the action-correlated case (it does not), but because nothing learned beats it by the rule's margin, and the margin is larger than the room a mask can give (below).
+
+### Post-hoc exploration (NOT part of the pre-registered rule; seed 0 only unless stated; not replicated)
+- lmask / advmask (learned soft mask, no labels): collapsed to chance (1.00) on corr_det seed 0. The unsupervised mask learns to gate out every pixel that moves (recon error -> 4), because nothing tells it to keep the arm. This is a failed implementation, not evidence about learned masks in general.
+- sup (same 2000 action labels also train an action head on z): 2k-label probe 0.842, all-label probe 0.779: overfits the small labelled set, worse than raw at 2k labels. supadv 0.999 and smask 0.993 collapsed (confusion loss + labels, mask without a keep-the-arm signal). No claim.
+- adv30 (lambda 30): 0.795 (seed 0) vs adv 0.791 on the same seed: no sensitivity to lambda.
+
+## Verdict (against the rule as written)
+**B' = NO-GO.** Rule: the learned arm must beat zero-shot SAM by >= 0.05 NMSE in every seed at equal-or-lower leakage and also beat the rate control. On corr_det (the case the coordinator named, 3 seeds, complete) the best learned arm (`adv`) beats SAM by 0.010 on average (per seed +0.023, +0.009, -0.002): fail. The mask-type learned candidates (lmask, advmask, smask) collapsed and are not a valid test of a learned mask.
+
+**Is the rule decidable?** Only in one direction. The oracle-mask headroom over SAM is 0.048 on corr_det (per seed 0.050, 0.055, 0.039), i.e. below the 0.05 margin, so no mask-type candidate, not even a perfect silhouette, can pass; the rule could only be passed by a latent-type method that gets past the exact-mask ceiling toward the clean oracle (0.107 below SAM). The tested latent method (adv) closes 0.010 of that 0.107 (9%). A rule defined as a fraction of the SAM-to-clean gap would also fail it.
+
+**Status of the other kinds (rule asked for corr_noisy and corr_glued too):** raw / exact-mask / adv jobs for corr_noisy and corr_glued and the SAM-mask generation for them were queued late behind the shared queue; they are NOT in these numbers. Until they land, the verdict rests on corr_det (complete) and indep (raw/mask/adv complete, SAM pending). The one case where a learned method could still plausibly differ is corr_noisy / corr_glued, where an independent residual exists; the measured mechanism (no leakage into z, harm is input clutter) says it will not.
+
+**Caveats (all one-sided toward "learned latents cannot fix clutter"):** synthetic sprites on a MetaWorld render, one fixed draw of the distractor realisation, 64x64 LAM, 3 tasks; the label itself has a ceiling (linear probe from the true EE displacement over the same macro step: NMSE ~0.57; clean LAM 0.705); real DAVIS-style backgrounds could change the clutter/leakage balance. A different learned-mask design with a keep-the-agent signal (prompts, labels, or optical-flow-consistency) is untested and is the only B' route I would not call closed.
+
+## What to do next
+Per FOCUS.md the next field is egocentric wearer privacy (then embedding privacy for retrieval, which the contrarian scout actually scored higher, 26 vs 24, gaze, EEG). Nothing from B' needs to be carried over except the harness idea: retrained attackers with a true-action reference leak, and a pre-declared headroom check (oracle-mask gain over the baseline must exceed the margin) before any margin is fixed.
