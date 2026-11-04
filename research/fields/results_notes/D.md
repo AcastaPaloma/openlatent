@@ -277,7 +277,7 @@ a scheme bug fixed in the next commit); the worker marked it failed. I verified 
 (CPU, no GPU process) so the guarded check jobs could start. Raw GTR-base nDCG@10 dev 0.3039 / test 0.3022 (identical to section 5). Intervals: 95% bootstrap over the 894 sealed C docs, shared resamples, mean of 3 seeds.
 
 **Verdict: H1 FAIL. The check fails; the learned arms (bott_mlp, adv, K1-K4) were NOT run, as pre-registered in 6.2. No margin was needed.**
-* **H1: R_raw - R_prior = 0.010 [0.002, 0.018] (rule: >= 0.05).** The worst retrained attacker on raw GTR-base vectors recovers number tokens at R-precision 0.214 versus 0.204 for the frequency prior (ridge 0.204, mlp 0.215, knn 0.187; the controls hold: shuffled pairs 0.207, const 0.205).
+* **H1: R_raw - R_prior = 0.010 [0.002, 0.018] (rule: >= 0.05).** The worst retrained attacker on raw GTR-base vectors recovers number tokens at R-precision 0.214 versus 0.204 for the frequency prior (ridge 0.204, mlp 0.215, knn 0.187; the controls hold: shuffled pairs 0.205 [0.191, 0.218], const 0.204 [0.190, 0.218]).
   Raw GTR vectors carry almost no information about which numbers a document contains beyond how common each number is.
 * **H2(a) passes, H2(b) is undecidable.** The oracle that deletes every digit run keeps dev 1.005 / test 0.991 of nDCG@10 (so the premise "retrieval does not use numbers" is true), but its attacker recovery is 0.215, the same as raw (0.214):
   there is nothing for it to remove. L = (R - R_prior)/(R_raw - R_prior) divides by 0.010 and is noise (values such as +14, -69, +21 in the tables below); L on n1 must be ignored. In absolute terms every arm sits at 0.204-0.216 R-precision,

@@ -138,7 +138,7 @@ def main():
     preds = {
         "const": lambda r: r["arm"] == "const",
         "raw": lambda r: r["arm"] == "raw" and not r["spec"].get("mask") and not r["spec"].get("shuffle"),
-        "raw|shuffled pairs": lambda r: r["arm"] == "raw" and r["spec"].get("shuffle"),
+        "raw|shuffled pairs": lambda r: r["arm"] == "raw|shuffle",
         f"oracle_mask_{OM}": lambda r: r["spec"].get("mask") == OM,
         f"oracle_mask_{OM2}": lambda r: r["spec"].get("mask") == OM2,
     }
