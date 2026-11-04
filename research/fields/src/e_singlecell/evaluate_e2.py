@@ -59,12 +59,14 @@ def main():
     ap.add_argument("--folds", default="")
     ap.add_argument("--beta_scale", type=float, default=1.0)
     ap.add_argument("--diag", action="store_true")
+    ap.add_argument("--prefix", default="e2", help="arm-name prefix; post hoc runs use e2x so the registered pool is untouched")
+    ap.add_argument("--posthoc", action="store_true")
     ap.add_argument("--kinds", default=",".join(AT.KINDS))
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     sc = SC(a.dataset)
-    cfgs = a.configs.split(",") if a.configs else (IN.DIAG if a.diag else IN.CONFIGS)
+    cfgs = a.configs.split(",") if a.configs else (IN.DIAG if a.diag else (IN.POSTHOC if a.posthoc else IN.CONFIGS))
     folds = [int(x) for x in a.folds.split(",")] if a.folds else ([0] if a.diag else list(range(len(sc.folds))))
     kinds = a.kinds.split(",")
     P, meta = {}, dict(dataset=a.dataset, seed=a.seed, folds=folds, arms=[], dims={}, checks={}, timings={}, beta_scale=a.beta_scale, kinds=kinds, e2=True,
@@ -124,12 +126,12 @@ def main():
             chk = dict(kl=kl, r2=r2, r2_pca16=r2_pca16, acc_linear=acc_l, acc_mlp=acc_m, chance_train=ch, in_linear=ins_l, in_mlp=ins_m, floor_in_noise=floor_in,
                        adapter_ok=bool(max(acc_l, acc_m) <= ch + 0.05 and max(ins_l, ins_m) <= floor_in + 0.05), collapsed=bool(kl < 1.0 or r2 < 0.5 * r2_pca16),
                        last_adv_ce=(float(np.mean(log["adv_ce"][-10:])) if log["adv_ce"] else None), train_s=round(time.time() - t1, 1))
-            meta["checks"][f"{f}|e2_{name}"] = chk
+            meta["checks"][f"{f}|{a.prefix}_{name}"] = chk
             print(f"  fold {f} {name:16s} KL {kl:7.1f} R2 {r2:.3f} (pca16 {r2_pca16:.3f}) in-sample adv lin {acc_l:.3f} mlp {acc_m:.3f} (chance {ch:.3f}) "
                   f"in-sample lin {ins_l:.3f} mlp {ins_m:.3f} (noise floor {floor_in:.3f}) adapter_ok={chk['adapter_ok']} collapsed={chk['collapsed']} [{time.time() - t1:.0f}s]", flush=True)
             if a.diag:
                 continue
-            arm = f"e2_{name}"
+            arm = f"{a.prefix}_{name}"
             pr = AT.run_probes(codes[ptr], ytr, codes[held], K, seed=a.seed)
             for k, v in pr.items():
                 P[f"pr|{arm}|{f}|{k}"] = types[v].astype(np.int16)

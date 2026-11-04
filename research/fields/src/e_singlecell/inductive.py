@@ -15,12 +15,14 @@ EPOCHS, BS, LR, WD, ANNEAL_EPOCHS, ADV_REINIT = 30, 1024, 1e-3, 1e-4, 5, 250
 
 CONFIGS = ([f"vae_b{b}" for b in (2, 10, 50)] + [f"cvae_b{b}" for b in (2, 10, 50)] +
            [f"vaeadv_b10_l{l}" for l in (1, 4, 16)] + [f"cvaeadv_b10_l{l}" for l in (1, 4, 16)] + ["vaeplc_b10_l4"])
+# post hoc fill of the beta/lambda gaps found after the pre-registered run (E.md 6.11, arms named e2x_*): NOT part of the registered pool
+POSTHOC = ["vae_b0p5", "vae_b1", "cvae_b0p5", "cvae_b1", "vaeadv_b1_l16", "vaeadv_b1_l64", "cvaeadv_b1_l16", "cvaeadv_b1_l64"]
 DIAG = ["vae_b2", "vae_b10", "vae_b50", "vaeadv_b10_l1", "vaeadv_b10_l4", "vaeadv_b10_l16"]
 
 
 def parse(name):
-    m = re.match(r"^(vae|cvae|vaeadv|cvaeadv|vaeplc)_b(\d+)(?:_l(\d+))?$", name)
-    fam, beta, lam = m.group(1), float(m.group(2)), float(m.group(3) or 0)
+    m = re.match(r"^(vae|cvae|vaeadv|cvaeadv|vaeplc)_b(\d+(?:p\d+)?)(?:_l(\d+))?$", name)     # beta 0p5 = 0.5
+    fam, beta, lam = m.group(1), float(m.group(2).replace("p", ".")), float(m.group(3) or 0)
     return dict(fam=fam, beta=beta, lam=lam, cond=fam.startswith("cvae"), adv=fam in ("vaeadv", "cvaeadv", "vaeplc"), placebo=fam == "vaeplc")
 
 

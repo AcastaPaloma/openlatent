@@ -1,0 +1,4 @@
+name: e_e2x_s2
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate_e2.py --posthoc --prefix e2x --seed 2 --out $OUT"
+hf_path: runs/e_e2x_s2

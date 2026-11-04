@@ -62,7 +62,7 @@ def load_checks(run_dirs):
 def eligibility(chk, learned, nf):
     out = {}
     for arm in learned:
-        cfg = IN.parse(arm[3:])
+        cfg = IN.parse(arm.split("_", 1)[1])
         why, ok = [], True
         for f in range(nf):
             vs = chk.get(f"{f}|{arm}", [])
@@ -93,6 +93,7 @@ def main():
     ap.add_argument("--runs", nargs="+", required=True)
     ap.add_argument("--B", type=int, default=1000)
     ap.add_argument("--cluster", type=int, default=0)
+    ap.add_argument("--posthoc", action="store_true", help="include the post hoc e2x_* arms in the learned pool (labelled E2-B)")
     ap.add_argument("--json", default="")
     ap.add_argument("--md", default="")
     a = ap.parse_args()
@@ -100,7 +101,8 @@ def main():
     ones = np.ones(D.n)
     fall = list(D.fall)
     arms = D.arms()
-    learned_all = sorted(x for x in arms if x.startswith("e2_"))
+    learned_all = sorted(x for x in arms if x.startswith("e2_") or (a.posthoc and x.startswith("e2x_")))
+    ctrl_arms = [x for x in arms if x.startswith("ctrl_")]
     floors = [x for x in arms if AG._IND_RE.match(x)]
     lo = [x for x in floors if LO_RE.match(x)]
     refs = [x for x in ("T_scvi", "T_harmony") if x in arms]
@@ -110,7 +112,7 @@ def main():
     L, P = [], None
     P = L.append
     P(f"## E2 (HLCA): seeds {sorted(D.S)}, folds {fall}, {D.n} cells, {len(D.units)} donors, B={a.B}; floor pool {len(floors)} arms, learned configs {len(learned_all)} ({len(learned)} eligible)\n")
-    pool_all = sorted(set(floors + learned_all + refs + ["raw50"]))
+    pool_all = sorted(set(floors + learned_all + refs + ctrl_arms + ["raw50"]))
     pt = AG.all_metrics(D, D.S, pool_all, ones, fall)
     Ws = AG.resamples(D, min(a.B, 300))
     boot = {x: {k: [] for k in ("U", "Uh", "L")} for x in learned_all + refs + ["raw50"]}
@@ -135,8 +137,9 @@ def main():
     raw = pt["raw50"]
     ch = pt["_chance"]
     ctrl = {c: pt[c]["worst"] - ch for c in ("ctrl_const", "ctrl_noise16", "ctrl_shuffle_batch") if c in pt}
-    k1 = bool(raw["worst"] - ch >= 0.15 and all(v <= 0.03 for v in ctrl.values()))
-    P(f"\n**E2-K1'**: raw50 worst attacker {raw['worst']:.3f} vs chance {ch:.3f} (excess {raw['worst'] - ch:.3f} >= 0.15); controls {({k: round(v, 3) for k, v in ctrl.items()})}: {'PASS' if k1 else 'FAIL'}")
+    uctrl = {c: pt[c]["U"] - pt["_u0"] for c in ("ctrl_const", "ctrl_noise16", "ctrl_shuffle_labels") if c in pt}
+    k1 = bool(raw["worst"] - ch >= 0.15 and len(ctrl) == 3 and all(v <= 0.03 for v in ctrl.values()) and all(v <= 0.03 for v in uctrl.values()))
+    P(f"\n**E2-K1'**: raw50 worst attacker {raw['worst']:.3f} vs chance {ch:.3f} (excess {raw['worst'] - ch:.3f} >= 0.15); attacker controls (excess over chance) {({k: round(v, 3) for k, v in ctrl.items()})}, probe controls (U minus u0) {({k: round(v, 3) for k, v in uctrl.items()})}: {'PASS' if k1 else 'FAIL'}")
     js["K1"] = dict(passed=k1, raw_excess=raw["worst"] - ch)
 
     res = {}
@@ -212,7 +215,7 @@ def main():
     P("| target | family | config | eligible | U | L |\n|---|---|---|---|---|---|")
     for tname, T in TARGETS.items():
         for fam in ("vae", "cvae", "vaeadv", "cvaeadv", "vaeplc"):
-            c = [x for x in learned_all if IN.parse(x[3:])["fam"] == fam and pt[x]["L"] <= T["L"] + 0.05]
+            c = [x for x in learned_all if IN.parse(x.split("_", 1)[1])["fam"] == fam and pt[x]["L"] <= T["L"] + 0.05]
             if c:
                 b = max(c, key=lambda x: pt[x]["U"])
                 P(f"| {tname} | {fam} | {b} | {elig[b]['eligible']} | {pt[b]['U']:.3f} | {pt[b]['L']:.2f} |")
