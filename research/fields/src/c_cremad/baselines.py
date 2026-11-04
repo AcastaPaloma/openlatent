@@ -111,3 +111,23 @@ def fit_pca(rag, clips, k):
     A = V.T.float()  # [k,d]
     b = -(A.double() @ mu).float()
     return A, b
+
+
+def trim_ragged(rag, spans, stride=320, min_frames=10):
+    """Keep only frames inside the VAD speech span (sample units) of each clip; clips without a span keep everything.
+    Works for [Nfr,D] and [Nfr,L,D] flats (SSL frames are 20 ms = 320 samples)."""
+    off = rag.off.cpu().numpy()
+    keep, lens = [], []
+    n_trim = 0
+    for c in range(rag.n):
+        a, b_ = off[c], off[c + 1]
+        s, t = spans[c]
+        if s >= 0:
+            fs, fe = a + int(s) // stride, min(b_, a + -(-int(t) // stride))
+            if fe - fs >= min_frames:
+                keep.append(np.arange(fs, fe)); lens.append(fe - fs); n_trim += 1
+                continue
+        keep.append(np.arange(a, b_)); lens.append(b_ - a)
+    idx = torch.as_tensor(np.concatenate(keep), device=rag.flat.device)
+    print(f"trim: {n_trim}/{rag.n} clips trimmed, frames {rag.flat.shape[0]} -> {len(idx)}", flush=True)
+    return Ragged(rag.flat[idx], np.concatenate([[0], np.cumsum(lens)]), rag.dev)

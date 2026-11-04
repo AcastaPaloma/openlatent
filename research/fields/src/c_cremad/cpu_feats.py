@@ -163,6 +163,24 @@ def prosody_feats(path):
     return dict(p3=np.array([dur, float(e.mean()), float(np.median(f0v))]), p6=np.array(base), p6n=np.array(norm6), rich=np.array(rich))
 
 
+def span_one(path):
+    sr, x = wavfile.read(path)
+    x = x.astype(np.float64) / 32768.0
+    e, nf, s, t = vad(x)
+    return np.array([-1, -1]) if s is None else np.array([s, min(t, len(x))])
+
+
+def run_span():
+    meta = data.load_meta()
+    paths = [str(data.DATA_ROOT / "AudioWAV" / f"{c}.wav") for c in meta["ids"]]
+    with Pool(int(os.environ.get("NPROC", 8))) as p:
+        sp = np.stack(p.map(span_one, paths, chunksize=80)).astype(np.int32)
+    d = data.FEAT_ROOT / "handcrafted"; d.mkdir(parents=True, exist_ok=True)
+    np.save(d / "vad_span.npy", sp)
+    ok = sp[:, 0] >= 0
+    print("spans", sp.shape, "with speech", int(ok.sum()), "median speech frac", float(np.median((sp[ok, 1] - sp[ok, 0]) / np.array([len(wavfile.read(p_)[1]) for p_ in paths])[ok])) if False else "")
+
+
 def run(name):
     meta = data.load_meta()
     paths = [str(data.DATA_ROOT / "AudioWAV" / f"{c}.wav") for c in meta["ids"]]
@@ -204,4 +222,4 @@ def run(name):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1])
+    run_span() if sys.argv[1] == "span" else run(sys.argv[1])

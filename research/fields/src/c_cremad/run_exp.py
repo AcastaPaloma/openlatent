@@ -35,6 +35,7 @@ def main():
     ap.add_argument("--backbone", default="wavlm-base-plus")
     ap.add_argument("--shuffle", default="none")
     ap.add_argument("--no_secrets", action="store_true")
+    ap.add_argument("--trim", action="store_true", help="keep only VAD speech frames (drops the non-speech head/tail)")
     ap.add_argument("--feat", default=None, help="hand-crafted feature set name under FEAT_ROOT/handcrafted (method feat)")
     a = ap.parse_args()
     cfg = json.loads(a.cfg)
@@ -48,8 +49,13 @@ def main():
     if a.method in ("raw", "mean", "smooth", "pca", "leace_tr", "leace_oracle"):
         x0 = baselines.build_x0(frames, feats.offsets)
     rag4 = None
+    spans = np.load(data.FEAT_ROOT / "handcrafted" / "vad_span.npy") if a.trim else None
+    if x0 is not None and a.trim:
+        x0 = baselines.trim_ragged(x0, spans)
     if need4:
         rag4 = Ragged(torch.from_numpy(np.ascontiguousarray(frames)), feats.offsets)
+        if a.trim:
+            rag4 = baselines.trim_ragged(rag4, spans)
     stats = feats.stats() if a.method == "layers" else None
     feat_rep = None
     if a.method == "feat":
