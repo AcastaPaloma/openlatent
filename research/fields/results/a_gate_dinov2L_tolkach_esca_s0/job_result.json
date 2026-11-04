@@ -1,0 +1,16 @@
+{
+ "name": "a_gate_dinov2L_tolkach_esca_s0",
+ "config": {
+  "name": "a_gate_dinov2L_tolkach_esca_s0",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset tolkach_esca --seed 0 --grid gate",
+  "hf_path": "runs/a_gate_dinov2L_tolkach_esca_s0"
+ },
+ "commit": "cfdfe88",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 320.2,
+ "finished_utc": "2026-11-04T10:17:35Z",
+ "uploaded": true
+}
