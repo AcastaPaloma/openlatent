@@ -1,0 +1,5 @@
+name: h_r0_aae
+priority: 10
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 TF_NUM_INTRAOP_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/aae.py r0 --out $OUT --runs 3"
+hf_path: runs/h_r0_aae
+hf_allow: ["*.json", "*.log", "*.md"]
