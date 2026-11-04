@@ -103,3 +103,6 @@ pooled: not detected at levels 1-2, DETECTED at 4-5 (0.70). G1 passes (0.80; the
   `~/sealed_manifest/manifest.json`, canonical JSON, 143,094 bytes, mode 0400, 704 entries (plant 480, shuf 144, null 80),
   **SHA-256 `e5a511e188eb492afe6a4682459008804a86eb8d1bfa098b45c08ee35f82f912`**. No release has been generated and no S code has touched any base or planted data at the time of this commit.
   Reproducibility: the file is `canon(manifest)`; `sha256sum` of the unsealed copy published at the end must equal the hash above.
+- 2026-11-04 19:10Z (VM clock): RELEASES GENERATED from the committed manifest (`n_control.manifest generate`, clean clone at `8f11607`): 704 files in `~/n_releases/<digest>.npz` (8.9 GB; arrays X, y, unit, split only), 704 distinct digests,
+  **SHA-256 of the sorted digest list (`INDEX.txt`) `fb40e7cce95d0c6cc64c9a8cc1a55d8f9e08b0d2f3c2ec1c2e45753358e22a23`**. The sealed digest -> manifest map and the sealed oracle report were written to `~/sealed_manifest/` (mode 0400) and have not been read.
+  No certificate exists at the time of this commit.
