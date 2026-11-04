@@ -83,10 +83,8 @@ def test_check_flags_prereg_not_ancestor(tmp_path, monkeypatch):
 
 
 def test_freeze_check_detects_edit(tmp_path, monkeypatch):
-    rec = freeze.write_freeze("tmp-tag")
-    try:
-        assert freeze.check() == []
-        monkeypatch.setattr(freeze, "file_sha", lambda n: "0" * 64)
-        assert freeze.check()
-    finally:
-        os.remove(freeze.FREEZE_PATH)
+    monkeypatch.setattr(freeze, "FREEZE_PATH", str(tmp_path / "FREEZE.json"))   # never touch the real record
+    freeze.write_freeze("tmp-tag")
+    assert freeze.check() == []
+    monkeypatch.setattr(freeze, "file_sha", lambda n: "0" * 64)
+    assert freeze.check()

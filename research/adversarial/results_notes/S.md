@@ -1,6 +1,6 @@
 # S: sealed suite, certificate, evidence budget. Pre-registration (v1, 2026-11-04 ~18:50Z VM clock) and results
 
-Builder-S, programme 2, branch `fields-research`. Code: `research/adversarial/src/s_suite/` (CPU only, 43 unit tests pass on numpy 2.5 / py3.12 and, for the library, on numpy 1.21 / py3.10).
+Builder-S, programme 2, branch `fields-research`. Code: `research/adversarial/src/s_suite/` (CPU only, 44 unit tests pass on numpy 2.5 / py3.12 and, for the library, on numpy 1.21 / py3.10).
 This file is written and committed BEFORE any number is computed from programme 1's stored predictions. Results are appended under "Results" in later commits; the text above
 "Results" is never edited except by a dated amendment that tightens (never loosens) a kill.
 
@@ -28,12 +28,12 @@ This file is written and committed BEFORE any number is computed from programme 
 ## 2. Freeze record
 - git tag `s-suite-eval-v1` on the commit that adds this file and `s_suite/FREEZE.json`. The prereg commit is the commit that tag points to (hash recorded in section 9 by a later commit).
 - evaluator sha256 (stats, certificate, selection_bias, evidence_budget, harness_io, locked_eval, ledger, freeze):
-  `b8997e7ac84ed9fb0cf997d725ae9d090c84de24dd25fdb08a73a87e8c333b84`. Analysis scripts hashed per file in `FREEZE.json` (rescore, run_real, run_planted, planted, attackers, oracle).
+  `eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f`. Analysis scripts hashed per file in `FREEZE.json` (rescore, run_real, run_planted, planted, attackers, oracle).
 - `python -m s_suite.freeze --check` must pass before every analysis run and its output is logged; any later edit of a hashed file needs a new tag and an entry in section 0.
 - planted-engine suite declaration (SUITE12, K = 12): `lr_raw_c0.1, lda_raw_auto, knn5_raw, rf_raw_100, lr_feat_c1, lda_feat_auto, knn5_feat, rf_feat_200, et_feat_200, lgbm_feat, mlp_feat_64, knn1_raw`;
   alpha 0.05, 2000 bootstrap resamples, seed 0, margin 0.02, 25 classes; declaration digest `ef9814e1b67b53348648087e60d0f6cfe2b80a35f5a63b6f63a13fd48c9b4902`.
 - Fixture check (determinism, E6): the unit-test fixture certificate (`tests/test_certificate.py::build(0, [0.3,0.2,0.1])`, 3 attackers) has digest
-  `1754367ea6d12ca6b104548367775b48605b59eb943e3a2f4e420107a2d067c4` on the laptop (numpy 2.5, py3.12) and on the VM (numpy 1.21, py3.10).
+  `f860e80038f2ae040e43ac0b0f6c7ad4399df9b00673a2337e839231ea01b98c` on the laptop (numpy 2.5, py3.12) and on the VM (numpy 1.21, py3.10).
 
 ## 3. Data, burned-set ledger, seeds versus test units
 - Data: programme 1's `preds.npz` + `result.json` (HF `KuanKuanKuan/openlatent-privacy`, `harness/<dataset>/eval/<release>/`, 78 files: kth_ilic 16, kth_scenario 15, utdmhad 16, charades 15, hmdb51_vp 16;
@@ -99,7 +99,7 @@ Looks: the number of analysis passes over each real data file is stated in the R
 2. The contrarian's evidence-budget toy numbers (13.5% per window -> 55% at K = 10 if independent, ~20% with a shared session offset at rho = 0.5).
 3. Programme 1's published `report.md` for kth_ilic (headline top-1 per release and CIs, the identity table for four releases) and the structure of `report.json` and SUMMARY.md excerpts. I recomputed NOTHING from any `preds.npz`; I inspected keys, array shapes and id formats only.
 4. Synthetic only: an oracle pilot used to set the dose grid (accuracy of the best attacker with large training data per channel and dose), one planted replicate's attacker accuracies, and a 4-job smoke run of `run_planted` (2 cells x 2 replicates; plumbing check; its outputs were read and are discarded).
-5. Unit tests ran on fabricated predictions only (43 tests).
+5. Unit tests ran on fabricated predictions only (44 tests).
 Everything after the freeze is one pass of each script unless an amendment says otherwise.
 
 ## 7. Run plan (order is binding)
