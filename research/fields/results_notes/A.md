@@ -1006,3 +1006,26 @@ Reading (all cells, V-unselected best-of-N; N = 10 configurations for the fixed-
 
 **Added after seeing null A (post hoc, tightening only):** a dense floor ladder for the two midnight cross-fit cells (`pca` d in {6,10,12,20,24}, `lda_pca` d in {6,10,12,20,24}, `randproj` d in {8,12,24}; same folds, same splits as the cross-fit run). The retention claim (ii) now has to survive the dense ladder
 (Delta >= +0.05 with CI > 0 against the densified inductive envelope) before it is called a win; otherwise "retention: mixed" becomes "retention: not established".
+
+### AUDIT FOLLOW-UP (4): F-02 adversary convergence, midnight/Tolkach, 4-fold cross-fit (as pre-registered: `ae` dl32 beta 1e-3, lam in {30, 100, 300}, 36 rounds x 60 = 2160 encoder steps; reference lam in {0, 1, 3, 10} with 12 rounds from the existing cross-fit run)
+
+`f02_report.py` reads the in-sample accuracy (mean of the linear and the MLP adversary) that the freshly re-initialised adversary reaches against the adapter after each round, on the adapter-train units A (chance 0.5).
+
+| config | rounds | first-round adv acc | last-round adv acc: mean [min, max over folds] | adapter trained (pre-registered: last round <= 0.55)? | rate (bits) | L_worst [95% CI] | held-class acc | retention xc |
+|---|---|---|---|---|---|---|---|---|
+| lam 0 (no adversary) | 12 | n/a | n/a | n/a | 67 | 0.76 [0.70, 0.81] | 0.939 | 0.623 |
+| lam 1 | 12 | 0.697 | 0.917 [0.862, 0.939] | **no** | 86 | 0.51 [0.44, 0.60] | 0.949 | 0.601 |
+| lam 3 | 12 | 0.697 | 0.879 [0.849, 0.908] | **no** | 117 | 0.45 [0.35, 0.55] | 0.931 | 0.578 |
+| lam 10 | 12 | 0.697 | 0.858 [0.834, 0.892] | **no** | 162 | 0.37 [0.29, 0.45] | 0.971 | 0.609 |
+| lam 30 | 36 | 0.697 | 0.832 [0.754, 0.871] | **no** | 391 | 0.33 [0.24, 0.42] | 0.954 | 0.437 |
+| lam 100 | 36 | 0.697 | 0.777 [0.664, 0.866] | **no** | 327 | 0.33 [0.25, 0.42] | 0.940 | 0.403 |
+| lam 300 | 36 | 0.697 | 0.811 [0.733, 0.849] | **no** | 543 | 0.34 [0.24, 0.51] | 0.951 | 0.422 |
+
+**Result: the "adapter trained" criterion is NOT met by any configuration, including lam 300 with three times the encoder steps.** By the pre-registered rule no statement about what the adversary adds (or fails to add) is allowed for this AE; the correct wording is "with lam <= 300 and <= 2160 steps the adversary did not converge" (the earlier "adversary adds nothing" sentence stays struck).
+What the sweep does show: the held-out worst-attacker leakage L stops improving at about 0.33 beyond lam 30 (0.51 at lam 1, 0.37 at lam 10, 0.33-0.34 at lam 30-300) while retention falls from 0.61 (lam 10) to 0.40-0.44, and the rate term (KL of the released channel) grows to 330-540 bits.
+Against the dithered no-adversary floors (leakage-matched, held-class accuracy): lam 100 -0.029 [-0.048, -0.014] (MDE 0.024), lam 30 -0.014 [-0.034, +0.001], lam 300 -0.017 [-0.041, +0.001]; retention -0.078 to -0.111 (all below the floors). Harder adversarial training did not create a utility or retention advantage at lam >= 30.
+
+**Calibration that qualifies the pre-registered criterion (CPU, same adversary code, the fold-0 adapter-train set A of this cell: 1600 patches, 10 slides):** a freshly trained adversary reaches in-sample accuracy (linear, MLP) of **0.574 / 0.771 (mean 0.67) on pure Gaussian-noise latents** that carry no centre information at all (memorisation of 1600 samples in 32 dimensions),
+0.965 / 1.000 on latents that carry only a per-slide fingerprint plus noise of the same size as the signal, 0.982 / 1.000 on PCA-32 of the raw embedding, and 0.81 / 0.98 (r=1), 0.69 / 0.87 (r=2), 0.61 / 0.78 (r=4), 0.60 / 0.77 (r=8) on dithered PCA-32. So an in-sample accuracy within 0.05 of chance (0.55) is **unattainable by construction** at this sample size, and the logged value is largely slide memorisation:
+the adversary reads the slide identity of the training slides, which implies the centre in-sample, and an adapter cannot remove slide identity from patches it still has to describe. Against the calibrated floor (0.67; criterion <= 0.72) lam 100 reaches 0.78 on average (0.66 on one fold) and lam 300 0.81: still not trained, but closer than the pre-registered threshold suggests.
+Consequence: the F-02 question ("does a converged adversary add anything over rate / noise?") cannot be answered with an adversary trained and scored on the same units; it needs an adversary scored on slides it did not fit (adversary trained on half of A's slides, confusion loss on the other half). That is a new method and is listed as a hypothesis, not run.
