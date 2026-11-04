@@ -1,0 +1,32 @@
+{
+ "analysis_files": {
+  "attackers.py": "d09f879bb4d67e44e75331fa2b9f547154c3b4cde7e589fa8fb0958ecd9bf95f",
+  "oracle.py": "3d27a764b122900ba64d2eba6dc8122d129aeb76c13a6b41c4ea3e16f2e53e87",
+  "planted.py": "db9c21a2c3cfdde89741cabf9d5fc69f0142e7901c151c65e15934c635fe099a",
+  "rescore.py": "881134326759da8c26de99f92480e635c044981ff79f1e127f5fc2af3956246d",
+  "run_planted.py": "237ae7e5d0dd198e191092c543ff82274806947c875bc5c0a86e71c529967ea9",
+  "run_real.py": "2e8d339874fa4a20ee0ef9bc9376b664fed7c6b35404c30584a46daf683f6c3b"
+ },
+ "caveat": "rescore/select/budget outputs carry no in-file evaluator hash (E6c literal FAIL, see section 8.6); certificates produced by certify() do.",
+ "commands": [
+  "python -m s_suite.freeze --check   (before every run; passes)",
+  "python -m s_suite.rescore --root HARNESS --reports research/privacy-obfuscation/results/harness --out OUT --datasets kth_ilic,kth_scenario,utdmhad,charades --protocols within",
+  "python -m s_suite.rescore ... --datasets hmdb51_vp --protocols within    (first pass plain mAP: rescore_hmdb51_plain_map_NOT_REPRODUCED.json; second pass conditional AP: rescore_hmdb51_conditional_ap.*)",
+  "python -m s_suite.rescore ... --datasets kth_ilic,kth_scenario --protocols cross_utility,hardest,cross_scenario ; utdmhad --protocols cross_utility,hardest,cross_trial ; charades --protocols cross_scene   (exploratory)",
+  "python -m s_suite.run_real toy|select|budget --root HARNESS --out OUT",
+  "python -m s_suite.summarize real --within OUT --hmdb OUT --budget OUT --select OUT",
+  "VM: python -m s_suite.run_planted --out planted_engine.jsonl --reps 100 --null-reps 300 --procs 36 (stopped after 205 null rows), then --procs 8 (stopped after 220 null rows), then --reps 40 --null-reps 0 --procs 8"
+ ],
+ "environment": {
+  "local": "numpy 2.5.4, scipy 1.18.1, scikit-learn 1.9.1, python 3.12",
+  "vm": "numpy 1.21.5, scipy 1.8.0, scikit-learn 0.23.2, python 3.10 (run_planted only)"
+ },
+ "evaluator_sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
+ "harness_inputs": "HF KuanKuanKuan/openlatent-privacy harness/<dataset>/{dataset.json,eval/<release>/{preds.npz,result.json}} (78 preds files), downloaded to a scratch directory outside the repository",
+ "note": "Provenance of the files in this directory. Evaluator sha256 and analysis-file hashes are those of src/s_suite/FREEZE.json at tags s-suite-eval-v1 (evaluator) and s-suite-analysis-v1.2 (analysis).",
+ "summarize_py_sha256": "48b5b85282c94d170e988f8dc78818aba7c65a7b7902bb47289fb328e034882d",
+ "tags": {
+  "analysis": "s-suite-analysis-v1.2",
+  "evaluator": "s-suite-eval-v1 -> 6cfc65e"
+ }
+}
