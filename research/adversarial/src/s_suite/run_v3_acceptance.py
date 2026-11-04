@@ -120,10 +120,10 @@ def job(j):
 def jobs(mode):
     js = []
     if mode == "pilot":
-        for snr in (0.3, 0.5, 0.8):
+        for snr in (1.0, 1.6, 2.5):
             for g in ("hb", "phase", "inter"):
                 for noise in ("white", "smooth"):
-                    for r in range(5):
+                    for r in range(4):
                         js.append(dict(kind="pilot", group=g, noise=noise, snr=snr, seed=5000 + r))
     else:
         for r in range(40):

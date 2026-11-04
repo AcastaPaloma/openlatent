@@ -81,6 +81,11 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   normalisation is not a universally safe floor against nonlinear attackers.
 - Caveats: scIB context scores for HLCA exist for fold 1 only; scVI is a single seed; Pancreas counts were non-integer; the three seeds share the same held-out units.
 
+## Focus E2 (reopened attempt, Auditor-1 F-06) RESULT ~22:00Z VM clock: E2-NO-GO, RESOLVED (E.md 6.11; pre-registered grid: 3 seeds x 3 folds x 13 inductive configs, HLCA; aggregates results/e_e2/e2_final.{md,json})
+- Delta (V-selected inductive encoder minus the inductive floor envelope at the scVI point) = -0.037 [-0.045, -0.026] with MDE80 0.020 against the 0.05 margin: a well-powered null in the registered direction (upper bound below the margin). verdict_original (SC-0 NO-GO) stands beside it.
+- Post hoc (E2-B), labelled and kept OUT of the registered pool: extra beta/lambda fill configs (arms e2x_*). The registered adversaries failed the amendment-A2 memorisation-floor check at lambda <= 16, so nothing is claimed about adversaries.
+- Reading: an inductive map did not close the gap to the transductive scVI point on HLCA at these settings; the single-cell headroom is transductive for the encoder family tried.
+
 ## Focus F: JUMP Cell Painting (check-only)   [NO-GO at the S4 gate, 2026-11-04 ~16:50Z VM clock; programme-1 stop condition met]
 - Builder F (results_notes/F.md 5.1-5.8; pre-registered before any number; priority 4 used once; 3.2 worker-hours). Literal verdict: R0 passes (S2 mean AP 0.9007 / 0.4096 vs published 0.90 / 0.41); JK1 FIRES via the
   control-AP clause in 3/3 splits (|U(shuffled compounds, raw) - U(noise16)| = 0.042-0.045 > 0.01; the shuffle control sits below chance because cross-source positives face same-plate negatives); the substantive
