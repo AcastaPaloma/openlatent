@@ -73,7 +73,7 @@ def predict(net: Siamese, xa: torch.Tensor, xb: torch.Tensor, ia, ib, bs: int = 
 
 
 def train_siamese(tr: dict, va: dict, te: dict, *, arch="resnet50", pretrained=True, seed=0, lr=1e-4, bs=32, max_epochs=30, patience=5, amp=True, device="cuda",
-                  log=print) -> dict:
+                  log=print, return_model=False) -> dict:
     """tr/va/te = dict(xa=(Na,n,n) float16 tensor of the images used as element A, xb= same for element B, ia, ib = index arrays, y = labels).
     The caller decides what xa/xb ARE (defended / raw) for each phase -> the three conditions.  Early stopping on validation BCE (paper: patience 5).
     Returns val/test scores at the best validation epoch, the per-epoch curve, and the epoch used."""
@@ -105,7 +105,8 @@ def train_siamese(tr: dict, va: dict, te: dict, *, arch="resnet50", pretrained=T
             if bad >= patience:
                 break
     net.load_state_dict(best_state)
-    return dict(val_score=predict(net, va["xa"], va["xb"], va["ia"], va["ib"], amp=amp), test_score=predict(net, te["xa"], te["xb"], te["ia"], te["ib"], amp=amp),
+    extra = dict(model=net) if return_model else {}
+    return dict(**extra, val_score=predict(net, va["xa"], va["xb"], va["ia"], va["ib"], amp=amp), test_score=predict(net, te["xa"], te["xb"], te["ia"], te["ib"], amp=amp),
                 curve=curve, best_val_loss=best, epochs=len(curve))
 
 

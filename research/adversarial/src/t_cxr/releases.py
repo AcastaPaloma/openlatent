@@ -55,8 +55,8 @@ def _random_smooth_flow(ids, name, n=256, corr_px=12.0) -> torch.Tensor:
 class Releases:
     """Factory.  `ctx` carries things fitted on TRAIN images only: pca basis, learned-generator flow statistics, generator weights."""
 
-    def __init__(self, device="cpu", gen_dir: str | None = None, flow_stats: dict | None = None, pca: dict | None = None):
-        self.dev, self.gen_dir, self.flow_stats, self.pca = device, gen_dir, flow_stats or {}, pca or {}
+    def __init__(self, device="cpu", gen_dir: str | None = None, flow_stats: dict | None = None, pca: dict | None = None, pcxr_dir: str | None = None):
+        self.dev, self.gen_dir, self.flow_stats, self.pca, self.pcxr_dir = device, gen_dir, flow_stats or {}, pca or {}, pcxr_dir
         self._gens: dict = {}
 
     # ------------------------------------------------------------------ one release on one batch
@@ -131,6 +131,13 @@ class Releases:
             w = int(par.removeprefix("w"))
             m = torch.zeros_like(x); m[..., w:-w, w:-w] = 1
             y = x * (1 - m) if kind == "rim" else x * m
+        elif kind == "pcxr":                                                                       # in-programme retrain (train_pcx.py), S-role patients only
+            mu = float(par.removeprefix("mu"))
+            key = ("r", mu)
+            if key not in self._gens:
+                self._gens[key] = G.load_generator(f"{self.pcxr_dir}/generator_pcxr_mu{mu:g}.pth", self.dev)
+            with torch.no_grad():
+                y = G.warp(x, self._gens[key](x), mu)
         elif kind == "pcx":
             mu = float(par.removeprefix("mu"))
             if mu not in self._gens:
