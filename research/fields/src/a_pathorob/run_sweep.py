@@ -25,20 +25,21 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--grid", default="main", help="main | controls | all | comma list of method names")
     ap.add_argument("--confound", type=float, default=None, help="centre-class correlation of the adapter-train set A")
+    ap.add_argument("--crossfit", type=int, default=None, help="K: rotate the sealed test units over K unit-disjoint folds (fold = seed % K)")
     ap.add_argument("--holdout", action="store_true", help="adapter sees only half of the classes; also report seen/held-class utility")
     ap.add_argument("--smoke", action="store_true", help="small epochs / subset of configs for a quick check")
     a = ap.parse_args()
     out = Path(os.environ.get("OUT", "./out"))
     (out / "preds").mkdir(parents=True, exist_ok=True)
-    variant = "crossed" if a.confound is None and not a.holdout else "_".join(
-        ([f"conf{a.confound}"] if a.confound is not None else []) + (["holdout"] if a.holdout else []))
+    variant = "crossed" if a.confound is None and not a.holdout and not a.crossfit else "_".join(
+        ([f"conf{a.confound}"] if a.confound is not None else []) + (["holdout"] if a.holdout else []) + ([f"cv{a.crossfit}"] if a.crossfit else []))
     tag = f"{a.encoder}__{a.dataset}__seed{a.seed}" + ("" if variant == "crossed" else f"__{variant}")
     jl = out / f"{tag}.jsonl"
     done = set()
     if jl.exists():
         done = {json.loads(l)["cfg"] for l in jl.read_text().splitlines() if l.strip()}
     P = S.load_pdata(a.encoder, a.dataset)
-    sp = S.make_splits(P, a.seed, confound=a.confound, holdout=a.holdout)
+    sp = S.make_splits(P, a.seed, confound=a.confound, holdout=a.holdout, crossfit=a.crossfit)
     info = dict(variant=variant, encoder=a.encoder, dataset=a.dataset, seed=a.seed, commit=C.git_commit(), device=str(AD.DEV),
                 n_patches=int(len(P.y)), dim=int(P.X.shape[1]), classes=P.classes, centres=P.centres,
                 units={k: int(len(set(P.u[v].tolist()))) for k, v in sp.items()},
@@ -48,7 +49,7 @@ def main():
     np.savez_compressed(out / f"{tag}.splitarrays.npz", **{f"idx_{k}": v for k, v in sp.items()}, y=P.y, c=P.c, u=P.u)
     print(json.dumps(info), flush=True)
     grid = []
-    named = dict(gate=AD.GATE + AD.CONTROLS, learned=AD.LEARNED, rate=AD.RATE, controls=AD.CONTROLS, main=AD.GRID, all=AD.GRID + AD.CONTROLS, p2=AD.P2 + AD.CONTROLS)
+    named = dict(gate=AD.GATE + AD.CONTROLS, learned=AD.LEARNED, rate=AD.RATE, controls=AD.CONTROLS, main=AD.GRID, all=AD.GRID + AD.CONTROLS, p2=AD.P2 + AD.CONTROLS, p3=AD.P3 + AD.CONTROLS)
     if a.grid in named:
         grid = list(named[a.grid])
     else:
@@ -69,7 +70,7 @@ def main():
             rep, extra = AD.build(method, hp, P, sp, a.seed)
             tfit = time.time() - t0
             m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=("orth" if method == "ctrl_shuffle_orth" else method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0), holdout=a.holdout,
-                                  patchsplit=(method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten") and a.grid != "p2"))
+                                  patchsplit=(method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten") and a.grid not in ("p2", "p3")))
             rec = dict(variant=variant, cfg=cid, method=method, hp=hp, seed=a.seed, encoder=a.encoder, dataset=a.dataset, metrics=m, extra=extra,
                        seconds_fit=round(tfit, 1))
             np.savez_compressed(out / "preds" / f"{tag}__{cid}.npz", **preds)

@@ -37,6 +37,15 @@ def fmt(pt, b, nd=3):
     return f"{pt:.{nd}f} [{lo:.{nd}f}, {hi:.{nd}f}]"
 
 
+FLOORS = ("raw", "centre_whiten", "leace", "lda", "lda_pca", "pca", "randproj", "dither")
+
+
+def fmtm(pt, b, nd=3):
+    """point [95% CI] (MDE80 = 2.8 x bootstrap SD of the paired difference)"""
+    lo, hi = ci(b)
+    return f"{pt:+.{nd}f} [{lo:+.{nd}f}, {hi:+.{nd}f}] (MDE {2.8 * float(np.nanstd(b)):.{nd}f})"
+
+
 class Units:
     def __init__(self, units, B, seed=0):
         self.u = np.unique(units)
@@ -85,13 +94,19 @@ class Cell:
             if (r["encoder"], r["dataset"], r.get("variant", "crossed")) == (enc, ds, var):
                 self.by.setdefault(r["cfg"], {})[r["seed"]] = r
         suffix = "" if var == "crossed" else f"__{var}"
-        arr = None
+        self.pooled = "cv" in var            # cross-fit: the sealed test set rotates with the seed -> pool the out-of-fold predictions
+        arrs = {}
         for d in dirs:
-            f = next(iter(Path(d).glob(f"{enc}__{ds}__seed[0-9]{suffix}.splitarrays.npz")), None)
-            if f is not None:
-                arr = np.load(f); break
+            for f in Path(d).glob(f"{enc}__{ds}__seed[0-9]{suffix}.splitarrays.npz"):
+                sd_ = int(f.name.split("__seed")[1][0])
+                arrs.setdefault(sd_, np.load(f))
+        arr = arrs[min(arrs)]
         self.y, self.c, self.u = arr["y"], arr["c"], arr["u"]
-        self.iC = arr["idx_C"]
+        if self.pooled:
+            self.fold_order = sorted(arrs)
+            self.iC = np.concatenate([arrs[k]["idx_C"] for k in self.fold_order])
+        else:
+            self.iC = arr["idx_C"]
         self.iO = np.concatenate([arr["idx_OOD1"], arr["idx_OOD2"]])
         self.UC, self.UO = Units(self.u[self.iC], B), Units(self.u[self.iO], B, 1)
         self.K = int(self.y.max()) + 1
@@ -108,7 +123,16 @@ class Cell:
     def seeds(self, cfg):
         return sorted(self.by[cfg])
 
+    def _pool(self, cfg, key):
+        seeds = self.seeds(cfg)
+        if seeds != self.fold_order:
+            raise KeyError(f"{cfg}: folds {seeds} != {self.fold_order}")
+        return np.concatenate([self.p(self.by[cfg][s])[key] for s in seeds])
+
     def centre(self, cfg, kinds):
+        if self.pooled:
+            res = [self.UC.bacc(self.c[self.iC], self._pool(cfg, f"centre/{k}/C").astype(int)) for k in kinds]
+            return max(r[0] for r in res), np.max(np.stack([r[1] for r in res]), 0)
         pts, bs = [], []
         for s in self.seeds(cfg):
             p = self.p(self.by[cfg][s])
@@ -120,6 +144,15 @@ class Cell:
         """nm in {'', 'seen', 'held'}; where in {'C', 'OOD'}"""
         pts, bs = [], []
         U, idx = (self.UC, self.iC) if where == "C" else (self.UO, self.iO)
+        if self.pooled and where == "C":
+            key = f"label{nm}/{kind}/C"
+            pred = self._pool(cfg, key).astype(int)
+            if nm == "":
+                return U.bacc(self.y[idx], pred)
+            cl = self.seen if nm == "seen" else self.held
+            mask = np.isin(self.y[idx], cl)
+            t = np.array([cl.index(k) for k in self.y[idx][mask]])
+            return self._sub(U, idx, mask, t, pred)
         for s in self.seeds(cfg):
             p = self.p(self.by[cfg][s])
             key = f"label{nm}/{kind}/{where}"
@@ -148,6 +181,8 @@ class Cell:
         return (cor.sum(0) / np.maximum(tot.sum(0), 1))[tot.sum(0) > 0].mean(), np.nanmean(per, 1)
 
     def ret(self, cfg, key):
+        if self.pooled:
+            return self.UC.mean(self._pool(cfg, f"ret/{key}").astype(float))
         pts, bs = [], []
         for s in self.seeds(cfg):
             p = self.p(self.by[cfg][s])
@@ -263,37 +298,32 @@ def main():
             wr = ci(dr[1])[0] > 0
             flag = ("(i) utility " if wu else "") + ("(ii) retention " if wr else "")
             flags[c] = (okL and (wu or wr), flag.strip(), m_, du, dr, dL)
-            L.append(f"| {c} | {tab[c]['dim']} | {m_} | {fmt(*du)} | {fmt(*dr)} | {fmt(*dL, nd=2)} | {'YES: ' + flag if (okL and (wu or wr)) else ('no (L worse by %.2f)' % dL[0] if not okL else 'no')} |")
-        # --- exploratory: same comparison against the best LDA-family / label-free point at <= equal leakage (not dimension matched)
-        L.append(f"\nExploratory, leakage-matched: each learned config minus the BEST (by point estimate on C, so optimistic for the baseline) reference with L_worst <= L(config)+{a.tol:.2f}; "
-                 "refs = LDA family (lda, lda_pca all d) and label-free floors (pca, randproj, centre_whiten). Positive = learned better.\n")
-        L.append("| learned config | L | best LDA-family ref | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | best label-free ref | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | best LDA-family ref (retention) | Δ retention xc [95% CI] | best label-free ref (retention) | Δ retention xc [95% CI] |")
-        L.append("|---|---|---|---|---|---|---|---|---|---|")
+            L.append(f"| {c} | {tab[c]['dim']} | {m_} | {fmtm(*du)} | {fmtm(*dr)} | {fmt(*dL, nd=2)} | {'YES: ' + flag if (okL and (wu or wr)) else ('no (L worse by %.2f)' % dL[0] if not okL else 'no')} |")
+        # --- leakage-matched comparison against the lower envelope of ALL inductive floors (incl. dithered codes)
+        L.append(f"\nLeakage-matched (ranker P2/P3): each learned config minus the BEST inductive floor (by point estimate on C, so optimistic for the baseline) with L_worst <= L(config)+{a.tol:.2f}; "
+                 "floors = raw, centre_whiten, leace, lda, lda_pca, pca, randproj and every dithered code. n_near = number of floor points within +-0.05 of the config's L (< 2: no comparator, no win can be claimed).\n")
+        L.append("| learned config | L | n_near | best floor (utility) | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] (MDE80) | best floor (retention) | Δ retention xc [95% CI] (MDE80) |")
+        L.append("|---|---|---|---|---|---|---|")
         ut = "held" if held_mode else "lab"
-        frontier_wins = {}
+        env = {}
         for c in order:
             if family(c) not in LEARNED:
                 continue
-            row = [f"| {c} | {tab[c]['L'][0]:.2f} "]
-            res = []
-            for fams in (("lda", "lda_pca"), ("pca", "randproj", "centre_whiten")):
-                refs = [x for x in tab if family(x) in fams and tab[x]["L"][0] <= tab[c]["L"][0] + a.tol]
-                for key in (ut, "ret"):
-                    if not refs:
-                        row.append("| (none at this leakage) | n/a "); res.append(None); continue
-                    b = max(refs, key=lambda x: tab[x][key][0])
-                    d_ = (tab[c][key][0] - tab[b][key][0], tab[c][key][1] - tab[b][key][1])
-                    row.append(f"| {b} | {fmt(*d_)} "); res.append(ci(d_[1])[0] > 0)
-            frontier_wins[c] = res
-            # reorder columns to header order: LDA util, LF util, LDA ret, LF ret
-            cells_ = row[1:]
-            order_idx = [0, 2, 1, 3]
-            L.append(row[0] + "".join(cells_[i] for i in order_idx) + "|")
+            refs = [x for x in tab if family(x) in FLOORS and tab[x]["L"][0] <= tab[c]["L"][0] + a.tol]
+            near = [x for x in tab if family(x) in FLOORS and abs(tab[x]["L"][0] - tab[c]["L"][0]) <= 0.05]
+            if not refs:
+                L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | (no floor at this leakage) | n/a | | |")
+                continue
+            bu = max(refs, key=lambda x: tab[x][ut][0]); br = max(refs, key=lambda x: tab[x]["ret"][0])
+            du_ = (tab[c][ut][0] - tab[bu][ut][0], tab[c][ut][1] - tab[bu][ut][1])
+            dr_ = (tab[c]["ret"][0] - tab[br]["ret"][0], tab[c]["ret"][1] - tab[br]["ret"][1])
+            env[c] = (bu, du_, br, dr_, len(near))
+            L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | {bu} ({tab[bu][ut][0]:.3f}) | {fmtm(*du_)} | {br} ({tab[br]['ret'][0]:.3f}) | {fmtm(*dr_)} |")
         # --- V-selected per family (the official line)
         L = Lmain
         L.append(f"\nPer family, configuration selected on V (L_V within +{a.tol:.2f} of the matched LDA arm; then max V {'held-class acc' if held_mode else 'retention xc'}):\n")
-        L.append("| family | config | matched LDA | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | Δ retention xc [95% CI] | Δ L_worst | wins? |")
-        L.append("|---|---|---|---|---|---|---|")
+        L.append("| family | config | matched LDA | Δ " + ("held-class acc" if held_mode else "label acc") + " vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |")
+        L.append("|---|---|---|---|---|---|---|---|---|")
         sel_cfgs = []
         sel_start = len(L)
         for fam in LEARNED:
@@ -305,13 +335,19 @@ def main():
                 if tab[c]["V_L"] <= tab[m_]["V_L"] + a.tol:
                     cand.append((tab[c]["V_held"] if held_mode else tab[c]["V_ret"], c))
             if not cand:
-                L.append(f"| {fam} | (no config within the leakage tolerance on V) | | | | | no |")
+                L.append(f"| {fam} | (no config within the leakage tolerance on V) | | | | | no | | no |")
                 continue
             _, c = max(cand)
             sel_cfgs.append(c)
             ok, flag, m_, du, dr, dL = flags[c]
             wins.append((enc, ds, var, fam, c, ok, flag))
-            L.append(f"| {fam} | {c} | {m_} | {fmt(*du)} | {fmt(*dr)} | {dL[0]:+.2f} | {'YES: ' + flag if ok else 'no'} |")
+            if c in env:
+                bu, du_e, br, dr_e, nn_ = env[c]
+                beat = (nn_ >= 2) and ci(du_e[1])[0] > 0 and du_e[0] >= 0.04
+                etxt = f"{fmtm(*du_e)} vs {bu}, n_near={nn_} | {'YES' if beat else 'no'}"
+            else:
+                etxt = "(no floor at this leakage) | no"
+            L.append(f"| {fam} | {c} | {m_} | {fmtm(*du)} | {fmtm(*dr)} | {dL[0]:+.2f} | {'YES: ' + flag if ok else 'no'} | {etxt} |")
         if a.compact:   # reference rows + the selected configs, inserted before the V-selected comparison table
             hdr_i = main_anchor - 2 if False else None
             refs_ = [c for c in order if family(c) in ("raw", "centre_whiten", "leace", "lda", "lda_pca") or c in ("pca__d4", "pca__d16", "pca__d64")]

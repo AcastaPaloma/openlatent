@@ -458,7 +458,30 @@ def run_control(method, P, sp, seed):
     raise ValueError(method)
 
 
+_BASE = {}
+
+
+def run_dither(hp, P, sp, seed):
+    """Noise-dithered label-free code with NO adversary (H2-014).  base in {pca, lda_pca, randproj, ae}: z0 from the base method fitted on A only;
+    release z = z0 + r * std_A(z0_j) * eps with eps fixed PER PATCH (the same patch always gets the same noise, in attacker training, probe training and test)."""
+    base, r = hp["base"], hp["r"]
+    bh = {k: v for k, v in hp.items() if k not in ("base", "r")}
+    key = (base, tuple(sorted(bh.items())), seed, P.name)
+    if key not in _BASE:
+        if base == "ae":
+            _BASE[key] = train_ae(P, sp, bh["dl"], 0.0, bh["beta"], seed)[0]
+        else:
+            _BASE[key] = run_floor(base, bh, P, sp, seed)[0]
+    z0 = _BASE[key]
+    d = z0["A"].shape[1]
+    sd = z0["A"].std(0) + 1e-8
+    E = np.random.RandomState(900 + seed).randn(len(P.y), d).astype(np.float32)
+    return {s: (z0[s] + r * sd * E[sp[s]]).astype(np.float32) for s in SPLITS}, {}
+
+
 def build(method, hp, P, sp, seed):
+    if method == "dither":
+        return run_dither(hp, P, sp, seed)
     if method in ("raw", "lda", "lda_pca", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten", "pca", "randproj"):
         return run_floor(method, hp, P, sp, seed)
     if method in ("ctrl_const", "ctrl_noise", "ctrl_shuffle", "ctrl_shuffle_orth"):
@@ -501,6 +524,21 @@ GRID = GATE + LEARNED + RATE
 LDA_ARMS = [("lda", {})] + [("lda_pca", dict(d=d)) for d in (4, 8, 16, 32, 64, 128)]
 AE = [("ae", dict(dl=dl, lam=0.0, beta=b)) for dl in (8, 32) for b in (1e-3, 1e-2)] + \
      [("ae", dict(dl=dl, lam=l, beta=1e-3)) for dl in (8, 32) for l in (1.0, 3.0, 10.0)]
+# protocol 3 (cross-fit): floors, dithered label-free codes (H2-014), reconstruction-only AE, the AE grid
+DITHER = (
+    [("dither", dict(base="pca", d=d, r=r)) for d in (16, 32) for r in (0.5, 1.0, 2.0, 4.0)]
+    + [("dither", dict(base="lda_pca", d=32, r=r)) for r in (1.0, 2.0, 4.0)]
+    + [("dither", dict(base="randproj", d=32, r=r)) for r in (1.0, 2.0, 4.0)]
+    + [("dither", dict(base="ae", dl=32, beta=1e-3, r=r)) for r in (0.5, 1.0, 2.0, 4.0)]
+    + [("dither", dict(base="ae", dl=32, beta=1e-4, r=r)) for r in (1.0, 2.0)]
+)
+RECON = [("ae", dict(dl=dl, lam=0.0, beta=1e-4)) for dl in (8, 32)]
+P3 = (
+    [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0))]
+    + [("lda", {})] + [("lda_pca", dict(d=d)) for d in (4, 8, 16, 32, 64)]
+    + [("pca", dict(d=d)) for d in (4, 16, 64)] + [("randproj", dict(d=d)) for d in (4, 16, 64)]
+    + DITHER + RECON + AE
+)
 P2 = (
     [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0))] + LDA_ARMS
     + [("pca", dict(d=d)) for d in (4, 16, 64)] + [("randproj", dict(d=d)) for d in (4, 16, 64)]

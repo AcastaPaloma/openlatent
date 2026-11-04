@@ -110,9 +110,11 @@ def seen_held_classes(P):
     return seen, [k for k in range(K) if k not in seen]
 
 
-def make_splits(P, seed, test_frac=0.25, fracs=(0.45, 0.35, 0.20), confound=None, holdout=False):
+def make_splits(P, seed, test_frac=0.25, fracs=(0.45, 0.35, 0.20), confound=None, holdout=False, crossfit=None):
     """returns dict of patch-index arrays: A, B, V, C (ID centres), OOD1, OOD2, OOD (all unseen-centre patches).
-    confound=rho: A is subsampled to centre-class correlation rho.  holdout: A keeps only the 'seen' half of the classes."""
+    confound=rho: A is subsampled to centre-class correlation rho.  holdout: A keeps only the 'seen' half of the classes.
+    crossfit=K: the sealed test set ROTATES: per stratum the units are shuffled once (RandomState(1234)) and cut into K chunks; the test set of run `seed`
+    is chunk `seed % K` (so seeds 0..K-1 test every unit exactly once and replicate test-unit noise); A/B/V are drawn from the rest with the run seed."""
     idm = ~P.ood
     g = _unit_table(P, idm)
     unit_split = {}
@@ -120,8 +122,15 @@ def make_splits(P, seed, test_frac=0.25, fracs=(0.45, 0.35, 0.20), confound=None
     rng_s = np.random.RandomState(10_000 + seed)
     for _, grp in g.groupby("stratum"):
         us = sorted(grp.u.tolist())
-        nt = max(1, int(np.ceil(test_frac * len(us))))
-        test, rest = _take(rng_c, us, nt)
+        if crossfit:
+            order = list(us)
+            rng_c.shuffle(order)
+            chunks = np.array_split(np.array(order), crossfit)
+            test = [int(x) for x in chunks[seed % crossfit]]
+            rest = [u for u in us if u not in set(test)]
+        else:
+            nt = max(1, int(np.ceil(test_frac * len(us))))
+            test, rest = _take(rng_c, us, nt)
         rest = sorted(rest)
         na = max(1, int(round(fracs[0] * len(rest))))
         nb = max(1, int(round(fracs[1] * len(rest))))
