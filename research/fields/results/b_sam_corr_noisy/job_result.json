@@ -1,0 +1,16 @@
+{
+ "name": "b_sam_corr_noisy",
+ "config": {
+  "name": "b_sam_corr_noisy",
+  "priority": 11,
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind corr_noisy --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_corr_noisy.json $OUT/ && for s in 0 1 2; do B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind corr_noisy --arms sam --epochs 30 --seed $s --out $OUT; done",
+  "hf_path": "runs/b_sam_corr_noisy"
+ },
+ "commit": "8f67bd8",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 3058.8,
+ "finished_utc": "2026-11-04T12:35:51Z",
+ "uploaded": true
+}
