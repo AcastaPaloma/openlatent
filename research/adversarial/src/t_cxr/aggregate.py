@@ -20,6 +20,13 @@ F3 = ["f3a_logreg", "f3b_mlp", "f3c_cosine", "f3c_l2", "f3c_canberra"]
 F4 = ["f4_match", "f4_anon2"]
 F5 = ["f5a", "f5b"]
 LEARNED_PREFIX = ("pcx_", "pcxr_")
+CI_KAPPA = 1.10          # S evaluator v2 (S.md v1.4): the QUOTED interval = the percentile interval widened by this factor about its midpoint; we print BOTH (v1 = plain percentile, v2 = widened)
+
+
+def ci(boot, kappa=1.0):
+    lo, hi = float(np.nanpercentile(boot, 2.5)), float(np.nanpercentile(boot, 97.5))
+    mid, half = (lo + hi) / 2, (hi - lo) / 2
+    return [mid - kappa * half, mid + kappa * half]
 
 
 def _load_json(p):
@@ -136,7 +143,8 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
     floors = {n: r for n, r in R.items() if n not in learned}
     res = dict(evaluator_sha=ledger.evaluator_sha(), prereg_commit=prereg_commit, rots=list(rots), B=B, n_patients_universe=int(len(pb.patients)), releases={}, KT={})
     for n, r in R.items():
-        res["releases"][n] = dict(L=r["L"], L_ci=[float(np.nanpercentile(r["L_boot"], 2.5)), float(np.nanpercentile(r["L_boot"], 97.5))], U=r["U"], U_ci=[float(np.nanpercentile(r["U_boot"], 2.5)), float(np.nanpercentile(r["U_boot"], 97.5))],
+        res["releases"][n] = dict(L=r["L"], L_ci=ci(r["L_boot"]), L_ci_v2=ci(r["L_boot"], CI_KAPPA), L_mde80_single=float(S.Z_MDE * np.nanstd(r["L_boot"], ddof=1)), U=r["U"], U_ci=ci(r["U_boot"]), U_ci_v2=ci(r["U_boot"], CI_KAPPA), U_mde80_single=float(S.Z_MDE * np.nanstd(r["U_boot"], ddof=1)),
+                                  attacker_points={k: float(v) for k, v in r["attacker_points"].items()},
                                   U_fixed=r["U_fixed"], worst_attacker=r["argmax"], val_selected=r["val_selected"], val_selected_test_auc=r["val_selected_test_auc"], f6=r["f6"], learned=n in learned)
     g0 = _load_json(g0_path) if g0_path and Path(g0_path).exists() else None
     # ---- KT0 / KT1
@@ -164,6 +172,14 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
         res["KT"]["KT1"] = k1
         f5 = R["raw"]["f5"]
         res["KT"]["KT3"] = S.kill_demographics(f5, R["raw"]["L"]) if np.isfinite(f5) else None
+    # ---- paired differences against raw (MDE80 printed next to every difference)
+    if "raw" in R:
+        res["differences_vs_raw"] = {}
+        for n, r in R.items():
+            if n == "raw":
+                continue
+            dl = S.paired(R["raw"]["L_boot"], r["L_boot"], R["raw"]["L"], r["L"]); du = S.paired(R["raw"]["U_boot"], r["U_boot"], R["raw"]["U"], r["U"])
+            res["differences_vs_raw"][n] = dict(raw_minus_L=dl, raw_minus_U=du)
     # ---- KT2: envelope per learned defence (FOCUS A2) + sensitivities
     fl = [n for n in floors]
     def env(Dn, floor_names, include_v4=False, extra=None):
@@ -201,15 +217,25 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
     res["KT"]["KT2"] = dict(verdicts=verdicts, fires_primary=bool(verdicts and not any(prim)),
                             fires_any_sensitivity=bool(verdicts and (not any(prim) or all(not v["with_labels14"]["beats_envelope"] for v in verdicts.values() if "with_labels14" in v) and any("with_labels14" in v for v in verdicts.values())
                                                                     or all(not v["nearest_floor_rule"]["beats"] for v in verdicts.values()))))
-    res["verdict_original"] = ("NO-GO (KT1 fires)" if res["KT"].get("KT1", {}).get("fires") else ("NO-GO (KT3 fires)" if (res["KT"].get("KT3") or {}).get("fires") else ("NO-GO (KT2: floors match every learned defence)" if res["KT"]["KT2"]["fires_primary"] else "GO (a learned defence beats the floor envelope)"))) if verdicts or "KT1" in res["KT"] else "incomplete"
-    res["verdict_tightened"] = res["verdict_original"] if res["verdict_original"].startswith("NO-GO") else ("NO-GO (KT2 under a sensitivity rule)" if res["KT"]["KT2"]["fires_any_sensitivity"] else res["verdict_original"])
+    res["labels14"] = None
+    if "raw" in R:
+        l14 = labels14_release(root, rots, pb, R["raw"])
+        if l14:
+            res["labels14"] = dict(L=l14["L"], L_ci=ci(l14["L_boot"]), L_ci_v2=ci(l14["L_boot"], CI_KAPPA), U=l14["U"], U_ci=ci(l14["U_boot"]), U_ci_v2=ci(l14["U_boot"], CI_KAPPA))
+    if not verdicts:
+        k1, k3 = res["KT"].get("KT1", {}), res["KT"].get("KT3") or {}
+        res["verdict_original"] = "NO-GO (KT1 fires)" if k1.get("fires") else ("NO-GO (KT3 fires)" if k3.get("fires") else "STAGE-0 GATE PASSED (no learned defence evaluated yet)")
+        res["verdict_tightened"] = res["verdict_original"]
+    else:
+      res["verdict_original"] = ("NO-GO (KT1 fires)" if res["KT"].get("KT1", {}).get("fires") else ("NO-GO (KT3 fires)" if (res["KT"].get("KT3") or {}).get("fires") else ("NO-GO (KT2: floors match every learned defence)" if res["KT"]["KT2"]["fires_primary"] else "GO (a learned defence beats the floor envelope)"))) if verdicts or "KT1" in res["KT"] else "incomplete"
+      res["verdict_tightened"] = res["verdict_original"] if res["verdict_original"].startswith("NO-GO") else ("NO-GO (KT2 under a sensitivity rule)" if res["KT"]["KT2"]["fires_any_sensitivity"] else res["verdict_original"])
     res["g0"] = dict(passes_all_rotations=g0["passes_all_rotations"]) if g0 else None
     if out:
         o = Path(out); o.mkdir(parents=True, exist_ok=True)
         (o / "result.json").write_text(json.dumps(res, indent=1, default=lambda x: float(x) if np.isscalar(x) else None))
         lines = ["| release | L worst (95% CI) | worst attacker | U (95% CI) | U_fixed | F6 |", "|---|---|---|---|---|---|"]
         for n, r in sorted(res["releases"].items(), key=lambda kv: kv[1]["L"]):
-            lines.append(f"| {n}{' (learned)' if r['learned'] else ''} | {r['L']:.3f} [{r['L_ci'][0]:.3f}, {r['L_ci'][1]:.3f}] | {r['worst_attacker']} | {r['U']:.3f} [{r['U_ci'][0]:.3f}, {r['U_ci'][1]:.3f}] | {r['U_fixed']:.3f} | {'' if r['f6'] is None else format(r['f6'], '.3f')} |")
+            lines.append(f"| {n}{' (learned)' if r['learned'] else ''} | {r['L']:.3f} [{r['L_ci'][0]:.3f}, {r['L_ci'][1]:.3f}] / v2 [{r['L_ci_v2'][0]:.3f}, {r['L_ci_v2'][1]:.3f}] | {r['worst_attacker']} | {r['U']:.3f} [{r['U_ci'][0]:.3f}, {r['U_ci'][1]:.3f}] | {r['U_fixed']:.3f} | {'' if r['f6'] is None else format(r['f6'], '.3f')} |")
         (o / "floors_table.md").write_text("\n".join(lines) + "\n")
     return res
 
