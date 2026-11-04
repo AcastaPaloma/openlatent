@@ -21,7 +21,7 @@ from .common import FAMILIES, TARGET_SESSION, TARGET_WINDOW, sha256_hex  # noqa:
 from .release import build_release, oracle_report  # noqa: E402
 
 GRID = {   # amplitude grids (log-spaced); widened automatically if the top of the grid does not reach the highest target
-    "bias": (0.05, 12.0), "sessoff": (0.002, 1.2), "specin": (0.01, 3.0), "xphase": (0.01, 3.0), "ampfreq": (0.01, 3.0), "stealth": (0.001, 0.5),
+    "bias": (0.04, 8.0), "pooled": (0.004, 1.5), "specin": (0.01, 3.0), "xphase": (0.01, 3.0), "ampfreq": (0.01, 3.0), "stealth": (0.001, 0.5),
 }
 N_GRID, N_DRAW = 16, 4
 _BASE = {}
@@ -85,7 +85,7 @@ def main():
             ms = [float(np.mean([r[4] for r in rows if r[1] == x])) for x in amps]
             sdw = [float(np.std([r[3] for r in rows if r[1] == x])) for x in amps]
             sds = [float(np.std([r[4] for r in rows if r[1] == x])) for x in amps]
-            tgt, key = (TARGET_SESSION, "sess") if fam == "sessoff" else (TARGET_WINDOW, "win")
+            tgt, key = (TARGET_SESSION, "sess") if fam == "pooled" else (TARGET_WINDOW, "win")
             om = ms if key == "sess" else mw
             levels = []
             for L, t in enumerate(tgt, start=1):

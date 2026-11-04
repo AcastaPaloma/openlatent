@@ -16,7 +16,7 @@ import sys
 
 import numpy as np
 
-from .common import N_ID, NBIN, T, canon, sha256_file, sha256_hex
+from .common import N_ID, N_Q, NBIN, T, canon, sha256_file, sha256_hex
 
 CAP = 60            # windows per session (evenly spaced subset of the stride-40 windows)
 BASES = ("msda", "rep")
@@ -61,8 +61,9 @@ def compute_stats(b: Base) -> dict:
         st["scov_act"].append(np.cov(s.T) + 1e-9 * np.eye(2))
     for k in list(st):
         st[k] = np.array(st[k])
-    lq = np.log(X[:, 1, :].std(-1) + 1e-9)                  # window amplitude (channel 1, |acc|) used by ampfreq
-    st["qedges"] = np.quantile(lq, np.arange(1, 6) / 6.0)
+    Pw = np.abs(np.fft.rfft(X, axis=-1)) ** 2
+    st["pref"] = np.array([Pw[b.act == a].mean(0) for a in range(4)])         # (4, 2, NBIN) reference power per activity
+    st["qedges"] = np.quantile(m[:, 0], np.arange(1, N_Q) / N_Q)   # ampfreq level: duodeciles of the channel-0 window mean (tone-invariant)
     return st
 
 
