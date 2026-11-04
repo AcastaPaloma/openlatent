@@ -278,7 +278,7 @@ def main():
             frontier_wins[c] = res
             # reorder columns to header order: LDA util, LF util, LDA ret, LF ret
             cells_ = row[1:]
-            order_idx = [0, 1, 4, 5, 2, 3, 6, 7]
+            order_idx = [0, 2, 1, 3]
             L.append(row[0] + "".join(cells_[i] for i in order_idx) + "|")
         # --- V-selected per family (the official line)
         L.append(f"\nPer family, configuration selected on V (L_V within +{a.tol:.2f} of the matched LDA arm; then max V {'held-class acc' if held_mode else 'retention xc'}):\n")
