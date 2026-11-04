@@ -1,0 +1,16 @@
+{
+ "name": "a_gate_dinov2L_camelyon_s0",
+ "config": {
+  "name": "a_gate_dinov2L_camelyon_s0",
+  "priority": 8,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset camelyon --seed 0 --grid gate",
+  "hf_path": "runs/a_gate_dinov2L_camelyon_s0"
+ },
+ "commit": "e32150d",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 410.3,
+ "finished_utc": "2026-11-04T09:53:08Z",
+ "uploaded": true
+}
