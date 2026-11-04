@@ -179,3 +179,16 @@ Protocol finding (read from the repo's activity notebook `msda_table2_(I)act(sub
 | oracle_act (true activity one-hot) / oracle_id | 0.042 / 1.000 | 1.000 / 0.465 | | |
 Attacker-family spread on the same release (this is the programme-1 "single attacker misleads" finding on IMU): `lda3` linear 0.104, knn 0.188, mlp 0.312, rf 0.354, lgbm 0.365; `rp16` linear 0.104 vs knn 0.656; `pcaphi8` linear 0.365 vs knn 0.646. A linear-only attacker would call the 3-dim activity-LDA code private (10%) while trees and MLPs recover 31-37%. `quant_b3` (3 bits) is not a floor at all (leakage identical to raw), consistent with the stress test's "rate bottleneck alone does not bite" at 3+ bits. Remaining floors (lda1, lda3_r0.5/2, pcaphi3/16/32, pcaraw*, rp3/8/64, noise_s0.5/2/4, quant_b1/2/4, ds*, demean, act8/60 (+_r1)) are still running; the table is extended in 5.4.
 
+### 5.4 PRELIMINARY (19:00Z, tabular suite only, floors still incomplete, `rep`/PD/NN-family not yet in): the shipped AAE `msda` under a retrained attacker suite. Burned-split audit of a released checkpoint (fold O, 96 clean trials), margins from H-A3. Single attacker seed for tabular models, 3 for the torch MLP: not yet replicated. NOT a sealed claim.
+| | trial-level identity L (95% CI) | window-level identity | activity U (retrained) |
+|---|---|---:|---:|
+| published (frozen raw-trained ID CNN, window level) | 6.98% | | >92% (retrained activity CNN) |
+| our R0-AAE (frozen raw-trained CNN) | 4.07% | | 16.7% (frozen) |
+| **`msda`, retrained suite, worst case (mlp)** | **0.826 [0.729, 0.906]** | **0.560** | **0.923 [0.908, 0.934]** |
+| per attacker (trial level): mlp 0.826, lgbm 0.771, rf 0.698, knn 0.656, linear 0.635; held-out SVM-RBF 0.750 | | | activity per attacker 0.88-0.92 |
+| floor `lda3` (activity-LDA, 3 dims) | 0.365 [0.271, 0.479] | 0.207 | 0.935 [0.923, 0.950] |
+| floor `lda2` | 0.271 [0.188, 0.365] | 0.155 | 0.846 |
+| floor `lda3_r1` (LDA-3 + noise) | 0.111 [0.062, 0.198] | 0.081 | 0.726 |
+| raw | 0.972 [0.944, 0.997] | 0.817 | 0.962 |
+Against the lower envelope of the floors available so far, `msda` is DOMINATED, not matched: `Delta_L = L_floor(U_msda) - L_msda = -0.500` (90% interval [-0.599, -0.387]; margin 0.15; the floor `lda3` has 46 points LOWER leakage at HIGHER utility) and `Delta_U = U_msda - U_floor(L_msda) = -0.030` (90% interval [-0.045, -0.022]; margin 0.0273). Outcome label by the pre-registered rule (MATCH iff the 95th percentile of Delta < margin on both axes) = **MATCH** (here meaning the learned point is worse than the floors on both axes, not tied); `verdict_tightened` = NO-GO-MATCHED, preliminary. What this does and does not say: the published "<7% identity at >92% activity" is reproduced exactly under its own frozen raw-trained attacker (R0-AAE) but is not a property of the release: a retrained MLP re-identifies 83% of the 96 held-out trials (56% of windows) at 92% activity, i.e. 79 points more than the frozen attacker's 4%, and a label-supervised 3-d linear code beats the AAE on both leakage and utility. Trial-level numbers pool about 70 windows per trial (evidence budget); the window-level column is the K = 1 reading. Open items before this is final: remaining floors (a lower floor could only strengthen the verdict), the CNN/MLP-flat attackers (could only raise `msda`'s L), `rep`, the PD control, the diagnostics.
+
