@@ -68,6 +68,17 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   Mechanism: rare words are retrieval-critical, so the secret and the utility overlap ("task implies the secret"). Learned kill test not run. Post-hoc learned arms (2 seeds) are queued
   and cannot flip the verdict. Reframe candidate (not started): a secret retrieval does not use (entities, numbers) built from public-licence text.
 
+## Focus E: single-cell batch integration (SC-0, check-only)   [NO-GO for stage 2, never locked; 2026-11-04 ~15:05Z VM clock]
+- Builder E (results_notes/E.md; pre-registration d114264 before any real-data number; amendments A1-A3 logged, none relaxes a kill condition): 3 datasets (scIB Immune, scIB Pancreas: CC BY 4.0 via figshare API; HLCA core: CC BY 4.0
+  under the CELLxGENE policy, platform-wide), 3 seeds, 3 study-grouped folds; HLCA 97k cells / 107 donors / 11 studies. No learned arm was run.
+  SC-K0 instrument: clear on HLCA (median floor-vs-floor MDE80 0.035); Immune/Pancreas use batches as units (MDE80 0.116 / 0.098), descriptive only.
+  SC-K1 measurability: fires on HLCA and Immune under E's capped reading of "3x chance" (raw attacker 0.670 / 0.752 / 0.937 vs threshold 0.843 / 0.850 / 0.850); controls pass.
+  SC-K2 under-determination: FIRES on 3 of 3 (ldaC_pca16 keeps r_fine 0.77 [0.75, 0.79] on HLCA, 0.97 Immune, 0.91 Pancreas; label-free pca16 keeps the same share). K2 alone decides.
+  SC-K3 headroom: clears (HLCA: scVI U 0.816 at L 0.80 beats the V-selected inductive floor by +0.116 [0.099, 0.136]; Harmony at L 0.37 has no floor near its leakage). Note the rule "best reference by U" is lenient toward firing.
+- By-product: per-batch centring and whitening RAISE retrained nonlinear leakage (L 1.54 on HLCA; an independent random-forest check agrees), unlike PathoROB where per-centre whitening was a strong floor (L 0.05-0.58): per-source
+  normalisation is not a universally safe floor against nonlinear attackers.
+- Caveats: scIB context scores for HLCA exist for fold 1 only; scVI is a single seed; Pancreas counts were non-integer; the three seeds share the same held-out units.
+
 ## Focus B': robotics latent actions   [NO-GO, decided 2026-11-04 11:30Z]
 - Verdict (Builder B, results_notes/B.md): on action-correlated distractors (corr_det, 3 seeds) the best learned arm (adv) beats zero-shot SAM by 0.010 NMSE
   (rule: >= 0.05 in every seed): FAIL. Mechanism: the harm is input clutter, not leakage (raw z carries ~0 sprite information), so an adversary on z has nothing to
