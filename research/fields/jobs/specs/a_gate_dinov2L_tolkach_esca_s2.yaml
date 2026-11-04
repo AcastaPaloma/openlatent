@@ -1,0 +1,4 @@
+name: a_gate_dinov2L_tolkach_esca_s2
+priority: 17
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset tolkach_esca --seed 2 --grid gate 
+hf_path: runs/a_gate_dinov2L_tolkach_esca_s2
