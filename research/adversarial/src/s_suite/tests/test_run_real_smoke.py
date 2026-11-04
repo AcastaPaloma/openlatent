@@ -44,12 +44,8 @@ def test_runners_on_fake_harness(tmp_path, monkeypatch):
     monkeypatch.setattr(rr, "FAMILIES", {"kth_ilic": ["pose_canon_down16", "pose_canon_down16_s1", "pose_canon_down16_dino"]})
     monkeypatch.setattr(rr, "K_GRID", [1, 2, 4])
     a = argparse.Namespace(root=root, out=out)
-    rr.cmd_cert(a)
     rr.cmd_select(a)
     rr.cmd_budget(a)
-    cert = json.load(open(os.path.join(out, "harness_cert_halfsplit.json")))["kth_ilic"]
-    assert cert["black"]["verdict"] != "LEAK" or cert["black"]["sel_test"] < 0.4
-    assert cert["pose_canon_down16"]["sel_test"] > cert["black"]["sel_test"]
     sel = json.load(open(os.path.join(out, "harness_selection_bias.json")))
     assert "kth_ilic/black" in sel["cells"] and sel["families"]["kth_ilic"]["P"] == 6
     bud = json.load(open(os.path.join(out, "harness_evidence_budget.json")))

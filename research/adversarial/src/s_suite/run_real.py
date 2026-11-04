@@ -1,7 +1,7 @@
-"""Runs on programme 1's saved HAR harness predictions (checks C6 and C8 of results_notes/S.md) and the toy validation of the evidence-budget module.
+"""Runs on programme 1's saved HAR harness predictions (selection bias and evidence budget; see results_notes/S.md) and the toy validation of the
+evidence-budget module. The per-release re-score (the primary deliverable) is rescore.py. All harness splits are development/burned data.
 
 python -m s_suite.run_real toy    --out DIR
-python -m s_suite.run_real cert   --root HARNESS_DIR --out DIR      (certificate on a recording-level val/sealed half split, K = 2 retrained attackers)
 python -m s_suite.run_real select --root HARNESS_DIR --out DIR      (selection bias of the maximum, release cells and attacker families)
 python -m s_suite.run_real budget --root HARNESS_DIR --out DIR      (evidence budget and independence test)
 HARNESS_DIR holds <dataset>/{dataset.json, eval/<release>/{preds.npz,result.json}} downloaded from HF KuanKuanKuan/openlatent-privacy/harness.
@@ -69,31 +69,6 @@ def _halves(units, seed):
     return set(u[perm[: len(u) // 2]]), set(u[perm[len(u) // 2:]])
 
 
-def cmd_cert(a):
-    out = {}
-    for ds in DATASETS:
-        out[ds] = {}
-        for rel in hio.releases(a.root, ds):
-            cell = hio.load_cell(a.root, ds, rel, "within", ("retrained",))
-            if not all(k in cell.probs for k in PRIMARY):
-                continue
-            vset, sset = _halves(cell.record, 0)
-            vm = np.array([r in vset for r in cell.record])
-            sm = np.array([r in sset for r in cell.record])
-            C = cell.probs[PRIMARY[0]].shape[1]
-            dec = cf.SuiteDecl(f"harness-{ds}", PRIMARY, "accuracy", 0.05, 2000, 0, 0.02, C)
-            val = cf.SplitPreds(cell.y[vm], cell.record[vm], {k: cell.probs[k][vm] for k in PRIMARY})
-            test = cf.SplitPreds(cell.y[sm], cell.record[sm], {k: cell.probs[k][sm] for k in PRIMARY})
-            c = cf.certify(dec, val, test)
-            out[ds][rel] = dict(n_units_sealed=c["data"]["n_test_units"], chance=c["chance"]["used"], selected=c["selected"]["name"],
-                                sel_val=c["selected"]["val"], sel_test=c["selected"]["test"], ci95=c["selected"]["ci95"], se=c["selected"]["se"],
-                                mde80=c["selected"]["mde80"], excess_lcb=c["selected"]["excess_lcb_onesided"], naive_max=c["naive_max"]["test"],
-                                ub_bonf=c["suite_bound"]["bonferroni"], ub_maxt=c["suite_bound"]["maxt"], floor_k2=c["floor"]["ucb_at_baseline_suite"],
-                                verdict=c["verdict"]["label"], norm_leak=c["selected"]["normalised_leakage"], digest=c["digest"][:12])
-    _dump(out, os.path.join(a.out, "harness_cert_halfsplit.json"))
-    print("cert done")
-
-
 def cmd_select(a):
     res = {"cells": {}, "families": {}}
     t0 = time.time()
@@ -143,12 +118,12 @@ def cmd_budget(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["toy", "cert", "select", "budget"])
+    ap.add_argument("cmd", choices=["toy", "select", "budget"])
     ap.add_argument("--root")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    {"toy": cmd_toy, "cert": cmd_cert, "select": cmd_select, "budget": cmd_budget}[a.cmd](a)
+    {"toy": cmd_toy, "select": cmd_select, "budget": cmd_budget}[a.cmd](a)
 
 
 if __name__ == "__main__":

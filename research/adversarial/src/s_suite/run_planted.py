@@ -1,4 +1,9 @@
-"""Planted-leak calibration runner (CPU, multiprocessing). Pre-registered in results_notes/S.md (checks C1-C5).
+"""Planted-leak ENGINE checks (CPU, multiprocessing). Pre-registered in results_notes/S.md.
+
+SCOPE (audit F10, FOCUS A3): the planted channels map onto the attackers' hand features and the oracle is ours, so detection is guaranteed by
+construction. This runner is a unit test of the statistical engine (coverage of the bounds against known true accuracies, false-LEAK rate under
+the null and under label shuffles, truth-based selection bias). It does NOT estimate detection power for real leaks; the detection-vs-dose curve
+is recorded but is not evidence of power. The real calibration belongs to the negative-control builder (sealed manifest, unseen leak families).
 
 python -m s_suite.run_planted --out OUT.jsonl --reps 120 --null-reps 300 --procs 24 [--smoke]
 
@@ -41,10 +46,13 @@ ONE_LINERS = ("knn5_raw", "lda_raw_auto")
 DECL = cf.SuiteDecl("planted-suite12", SUITE12, "accuracy", 0.05, 2000, 0, 0.02, 25)
 
 
+ENGINE_DOSE_IDX = (1, 3, 5)   # engine check uses 3 doses per channel (oracle accuracy about 8%, 14%, 35%) plus the null
+
+
 def cells():
     out = [("null", 0.0)]
     for ch, ds in DOSES.items():
-        out += [(ch, d) for d in ds]
+        out += [(ch, ds[i]) for i in ENGINE_DOSE_IDX]
     return out
 
 
@@ -85,7 +93,7 @@ def run_job(job):
         ct = np.array(["t%d" % u for u in test_u_all[keep]])
         test = cf.SplitPreds(yt, ct, {a: P["test"][a][keep] for a in SUITE12})
         val = cf.SplitPreds(data["val"]["y"], np.array(["v%d" % u for u in val_u]), {a: P["val"][a] for a in SUITE12})
-        c = cf.certify(DECL, val, test, reference=None)
+        c = cf.certify(DECL, val, test, reference=None, split_status="synthetic")
         sel = c["selected"]
         k_sel = SUITE12.index(sel["name"])
         sb_ = c["suite_bound"]
@@ -108,7 +116,7 @@ def run_job(job):
             # unit-level label shuffle of val and test: the same predictions against permuted identities must read as chance
             ysh = _unit_shuffle(yt, ct, rs)
             vsh = _unit_shuffle(val.y, val.cluster, rs)
-            cs = cf.certify(DECL, cf.SplitPreds(vsh, val.cluster, val.scores), cf.SplitPreds(ysh, ct, test.scores))
+            cs = cf.certify(DECL, cf.SplitPreds(vsh, val.cluster, val.scores), cf.SplitPreds(ysh, ct, test.scores), split_status="synthetic")
             out["shuffled"][str(n)] = dict(verdict=cs["verdict"]["label"], sel_test=cs["selected"]["test"], baseline=cs["baseline_used"])
         # truth-based selection bias over the 30-attacker pool
         cv = corr["val"]
@@ -121,9 +129,9 @@ def run_job(job):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
-    ap.add_argument("--reps", type=int, default=120)
+    ap.add_argument("--reps", type=int, default=100)
     ap.add_argument("--null-reps", type=int, default=300)
-    ap.add_argument("--procs", type=int, default=24)
+    ap.add_argument("--procs", type=int, default=40)
     ap.add_argument("--smoke", action="store_true", help="2 replicates of 2 cells, to check the plumbing only (outputs are discarded)")
     a = ap.parse_args()
     jobs = []

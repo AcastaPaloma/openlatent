@@ -1,6 +1,8 @@
 """Learned released-vector maps for Focus D.
 
 All three share the retrieval objective and training budget, so any difference is attributable to the one thing that changes:
+  (D2 repair, 2026-11-04 ~19:00Z: with conf_norm=True the confusion term is divided by its value at step 0, so lambda is a relative weight; every fit is checked for collapse,
+   i.e. final retrieval loss > ln(N docs) - 0.5 = the uniform-softmax value, and flagged `collapsed`.  The original `adv` arm (conf_norm=False, lambda 0.3/3) collapsed in all 24 fits.)
   sup_lin    linear map 768->d (PCA-d init), trained with the retrieval loss only            [task-supervised linear floor at matched d]
   bott_mlp   linear + MLP-residual map 768->d (PCA-d init), retrieval loss only             [rate bottleneck, NO adversary: mandatory control]
   adv        same map as bott_mlp + a token-bag adversary g(z) that is re-trained against the current map; the map is trained to make
@@ -11,6 +13,8 @@ All three share the retrieval objective and training budget, so any difference i
 Retrieval loss: listwise cross-entropy of softmax(cos(f(q), f(d)) / tau) against graded train qrels, over all NFCorpus docs outside the sealed
 split C (C docs, dev and test queries never enter any fit).
 """
+import math
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -50,10 +54,11 @@ def _adv_net(d, V, prior, hidden=1024):
 
 
 class Learned(Arm):
-    def __init__(self, kind, d, lam=0.0, steps=1500, bs=256, lr=1e-3, tau=0.05, reinit=250, warm=150, k_adv=2):
-        self.kind, self.d, self.lam = kind, d, lam
+    def __init__(self, kind, d, lam=0.0, steps=1500, bs=256, lr=1e-3, tau=0.05, reinit=250, warm=150, k_adv=2, conf_norm=False):
+        self.kind, self.d, self.lam, self.conf_norm = kind, d, lam, conf_norm
         self.steps, self.bs, self.lr, self.tau, self.reinit, self.warm, self.k_adv = steps, bs, lr, tau, reinit, warm, k_adv
-        self.name = f"{kind}_d{d}" + (f"_l{lam:g}" if kind == "adv" else "")
+        self.name = f"{kind}_d{d}" + ((f"_n{lam:g}" if conf_norm else f"_l{lam:g}") if kind == "adv" else "")
+        self.collapsed, self.final_ret = False, None
         self.log = []
 
     def fit(self, ctx, seed):
@@ -77,6 +82,7 @@ class Learned(Arm):
             pi = Ya.mean(0).clamp(1e-5, 1 - 1e-5)
             Hpi = (-(pi * pi.log() + (1 - pi) * (1 - pi).log())).sum()
             g = None
+            conf0 = None
         for step in range(self.steps):
             if adv:
                 if step % self.reinit == 0:
@@ -96,14 +102,22 @@ class Learned(Arm):
                 ia = torch.randint(0, len(Xa), (self.bs,), device=DEV)
                 lg = g(f(Xa[ia]))
                 conf = (F.binary_cross_entropy_with_logits(lg, pi.expand_as(lg), reduction="none").sum(1) - Hpi).mean()
-                loss = loss + self.lam * conf
+                if self.conf_norm:
+                    if conf0 is None:  # scale of the confusion term at step 0 (adversary already warmed up on the initial map), detached
+                        conf0 = max(float(conf.detach()), 1e-3)
+                    loss = loss + self.lam * conf / conf0
+                else:
+                    loss = loss + self.lam * conf
             opt.zero_grad()
             loss.backward()
             opt.step()
             sched.step()
             if step % 250 == 0 or step == self.steps - 1:
-                self.log.append(dict(step=step, ret=float(loss_ret), conf=float(conf)))
+                self.log.append(dict(step=step, ret=float(loss_ret), conf=float(conf), conf_rel=(float(conf) / conf0 if adv and self.conf_norm else None)))
         self.f = f.eval()
+        # collapse check: a map whose retrieval loss is still at the uniform-softmax value ln N never trained
+        self.final_ret = float(np.mean([x["ret"] for x in self.log[-2:]]))
+        self.collapsed = bool(self.final_ret > math.log(len(nc)) - 0.5)
         return self
 
     def _adv_step(self, f, g, og, Xa, Ya):
@@ -130,5 +144,5 @@ class Learned(Arm):
 
 
 def make_learned(spec):
-    kw = {k: spec[k] for k in ("steps", "bs", "lr", "tau", "reinit", "warm", "k_adv") if k in spec}
+    kw = {k: spec[k] for k in ("steps", "bs", "lr", "tau", "reinit", "warm", "k_adv", "conf_norm") if k in spec}
     return Learned(spec["family"], spec["d"], spec.get("lam", 0.0), **kw)

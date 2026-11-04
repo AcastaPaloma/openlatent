@@ -31,6 +31,9 @@ def grid(name):
         g += [dict(family="sup_lin", d=d) for d in D_FLOOR]
     elif name == "bott":  # rate bottleneck with MLP, no adversary (mandatory control)
         g += [dict(family="bott_mlp", d=d) for d in D_FLOOR]
+    elif name.startswith("adv2_"):  # D2: normalised confusion term (lambda relative to its initial value), collapse-checked; adv2_<lam>
+        lam = float(name[5:])
+        g += [dict(family="adv", d=d, lam=lam, conf_norm=True) for d in (32, 64, 128, 256, 512)]
     elif name.startswith("adv_l"):  # adv_l<lam>: adversarial candidate, all d
         lam = float(name[5:])
         g += [dict(family="adv", d=d, lam=lam) for d in D_FLOOR]

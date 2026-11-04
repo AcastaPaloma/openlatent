@@ -115,6 +115,8 @@ def evaluate(ctx, spec, seed, boots=None):
                t_fit=round(t_fit, 1), t_attack=round(t_att, 1), n_pool=int(Zpool.shape[0]), dim=int(Znf.shape[1]))
     if hasattr(arm, "log"):
         rec["train_log"] = arm.log
+        rec["collapsed"] = arm.collapsed
+        rec["final_ret"] = arm.final_ret
     if hasattr(arm, "rank"):
         rec["leace_rank"] = arm.rank
     return rec, units

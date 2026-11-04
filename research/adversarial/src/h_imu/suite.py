@@ -49,7 +49,7 @@ def build_release(arm, S, PHI, tr_mask, fold, pd_file=None, seed=0):
         return np.eye(N_ACT, dtype=np.float32)[act], "code"
     if arm == "oracle_id":
         return np.eye(N_ID, dtype=np.float32)[S["sub"]], "code"
-    if arm.startswith("pd_") and pd_file is not None:
+    if (arm.startswith("pd_") or arm in ("msda", "rep")) and pd_file is not None:
         d = np.load(pd_file); R = np.zeros((N, 2, 128), np.float32); R[d["idx"]] = d["release"]
         assert len(d["idx"]) == N, "PD release must cover all of A*"
         return R, "win"
@@ -204,7 +204,7 @@ def labels_for(S, target):
     return {"id": S["sub"], "act": S["act"], "gen": C.gender_by_subject()[S["sub"]]}[target], {"id": N_ID, "act": N_ACT, "gen": N_GEN}[target]
 
 
-def run(arm, folds, family, targets, out_dir, pd_file=None, threads=8, held=True):
+def run(arm, folds, family, targets, out_dir, pd_file=None, threads=8, held=True, tag=""):
     t0 = time.time(); os.makedirs(out_dir, exist_ok=True)
     S = C.analysis_set(); N = len(S["X"]); PHI = C.phi(S["X"])
     pack = {}
@@ -237,15 +237,18 @@ def run(arm, folds, family, targets, out_dir, pd_file=None, threads=8, held=True
                         Ps.append(_torch_fit_predict(nm, (Fr[tr_mask] - mu) / sdv, ytr, (Fr[te_mask] - mu) / sdv, ncls, sd))
                 pack[f"f{f}_{nm}__{tg}"] = np.stack(Ps).astype(np.float16)
         print(f"[{time.time()-t0:.0f}s] arm {arm} fold {f} family {family} done", flush=True)
-    np.savez_compressed(os.path.join(out_dir, f"preds__{arm}__{family}.npz"), **pack)
-    json.dump(dict(arm=arm, family=family, folds=folds, targets=targets, seconds=round(time.time() - t0, 1), n_astar=int(N)), open(os.path.join(out_dir, f"preds__{arm}__{family}.json"), "w"))
+    np.savez_compressed(os.path.join(out_dir, f"preds__{arm}{tag}__{family}.npz"), **pack)
+    json.dump(dict(arm=arm, tag=tag, family=family, folds=folds, targets=targets, pd_file=pd_file, seconds=round(time.time() - t0, 1), n_astar=int(N)), open(os.path.join(out_dir, f"preds__{arm}{tag}__{family}.json"), "w"))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arm", required=True); ap.add_argument("--folds", default="O,A,B"); ap.add_argument("--family", default="tab", choices=["tab", "nn"])
+    ap.add_argument("--arm", required=True, help="one arm or a comma-separated list (run sequentially in this process)"); ap.add_argument("--folds", default="O,A,B"); ap.add_argument("--family", default="tab", choices=["tab", "nn"])
     ap.add_argument("--targets", default="id,act"); ap.add_argument("--out", required=True); ap.add_argument("--pd_file", default=None)
-    ap.add_argument("--threads", type=int, default=8); ap.add_argument("--no_held", action="store_true")
+    ap.add_argument("--threads", type=int, default=8); ap.add_argument("--no_held", action="store_true"); ap.add_argument("--tag", default="")
     a = ap.parse_args()
     import torch; torch.set_num_threads(a.threads)
-    run(a.arm, a.folds.split(","), a.family, a.targets.split(","), a.out, a.pd_file, a.threads, held=not a.no_held)
+    for arm in a.arm.split(","):
+        if os.path.exists(os.path.join(a.out, f"preds__{arm}{a.tag}__{a.family}.npz")):
+            print("skip existing", arm, flush=True); continue
+        run(arm, a.folds.split(","), a.family, a.targets.split(","), a.out, a.pd_file, a.threads, held=not a.no_held, tag=a.tag)
