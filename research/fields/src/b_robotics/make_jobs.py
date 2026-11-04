@@ -14,7 +14,10 @@ def w(name, prio, cmd):
 
 for kind, pr in PRIO.items():
     for seed in (0, 1, 2):
-        w(f"b_m_{kind}_s{seed}", pr, f"{PRE} lam.py --kind {kind} --arms {SEED0 if seed == 0 else NOSAM} --epochs 30 --seed {seed} --out $OUT")
+        arms = SEED0 if seed == 0 else NOSAM
+        if kind in ("corr_noisy", "corr_glued") and seed > 0:
+            arms = "raw,gtmask,adv"   # no rate control for seeds 1-2 of the late kinds (time-boxed by the coordinator)
+        w(f"b_m_{kind}_s{seed}", pr, f"{PRE} lam.py --kind {kind} --arms {arms} --epochs 30 --seed {seed} --out $OUT")
         w(f"b_msam_{kind}_s{seed}", pr + 1, f"until [ -f ~/work/data/b_mw/masks/sam_summary_strong_{kind}.json ]; do sleep 20; done; {PRE} lam.py --kind {kind} --arms sam --epochs 30 --seed {seed} --out $OUT")
     if kind in ("indep", "corr_det"):
         w(f"b_sam_{kind}", pr - 1, f"cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind {kind} --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_{kind}.json $OUT/")
