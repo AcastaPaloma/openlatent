@@ -1,0 +1,16 @@
+{
+ "name": "e_scib_hlca_b",
+ "config": {
+  "name": "e_scib_hlca_b",
+  "priority": 13,
+  "cmd": "n=0; while [ ! -f $HOME/work/cache/e_singlecell/hlca/scvi_latent.npy ] && [ $n -lt 120 ]; do sleep 15; n=$((n+1)); done; OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 JAX_PLATFORMS=cpu $HOME/venvs/e/bin/python research/fields/src/e_singlecell/scib_ctx.py --dataset hlca --out $OUT",
+  "hf_path": "runs/e_scib_hlca_b"
+ },
+ "commit": "05bcec4",
+ "exit_code": 139,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 726.9,
+ "finished_utc": "2026-11-04T14:47:47Z",
+ "uploaded": false
+}
