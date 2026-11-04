@@ -1,0 +1,4 @@
+name: c_feats_hubert_b
+priority: 10
+cmd: python3 research/fields/src/c_cremad/extract_feats.py --model facebook/hubert-base-ls960 --name hubert-base-ls960 --layers 3 6 9 12
+hf_path: runs/c_feats_hubert_b

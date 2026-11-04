@@ -1,0 +1,4 @@
+name: c_feats_wavlm_bp
+priority: 10
+cmd: python3 research/fields/src/c_cremad/extract_feats.py --model microsoft/wavlm-base-plus --name wavlm-base-plus --layers 3 6 9 12
+hf_path: runs/c_feats_wavlm_bp

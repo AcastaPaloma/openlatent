@@ -1,0 +1,4 @@
+name: c_feats_w2v2_b
+priority: 10
+cmd: python3 research/fields/src/c_cremad/extract_feats.py --model facebook/wav2vec2-base --name wav2vec2-base --layers 3 6 9 12
+hf_path: runs/c_feats_w2v2_b
