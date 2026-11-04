@@ -1,0 +1,4 @@
+name: b_smoke_lam
+priority: 5
+cmd: cd research/fields/src/b_robotics && ~/venvs/b/bin/python lam.py --kind corr_noisy --arms raw,adv,gtmask --epochs 3 --seed 0 --out $OUT
+hf_path: runs/b_smoke_lam
