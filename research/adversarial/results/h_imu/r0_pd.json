@@ -1,0 +1,29 @@
+{
+ "n_windows": 13344,
+ "majority_gender_baseline": 0.5699190647482014,
+ "male_frac_windows": 0.5699190647482014,
+ "pd_commit": "4a16222",
+ "w1": 7.8,
+ "w2": 0.05,
+ "seed": 0,
+ "unet_train_mode_dropout_on": true,
+ "raw": {
+  "har_acc": 0.9747452038369304,
+  "har_f1": 0.9659443373921307,
+  "gender_acc": 0.9351768585131894,
+  "gender_bacc": 0.9258783031632765,
+  "gender_f1": 0.9325879986610064,
+  "frac_pred_male": 0.6260491606714629
+ },
+ "sample_seconds": 656.2,
+ "pd": {
+  "har_acc": 0.9683752997601919,
+  "har_f1": 0.9625149204986223,
+  "gender_acc": 0.49872601918465226,
+  "gender_bacc": 0.49038496765787776,
+  "gender_f1": 0.49034681653673484,
+  "frac_pred_male": 0.5583033573141487
+ },
+ "mse_raw_vs_release": 2.342202663421631,
+ "total_seconds": 673.0
+}
