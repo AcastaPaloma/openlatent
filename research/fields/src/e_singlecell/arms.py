@@ -107,6 +107,9 @@ ARMS_INDUCTIVE = ["raw50", "pca8", "pca16", "pca32", "rp16", "rp32", "noise_r0.5
 ARMS_H = ["ldaC", "ldaC_pca16", "ldaC_pca32", "ldaF16"]            # also built with the held-out types hidden: name + "_H"
 ARMS_REF = ["T_centre", "T_bwhiten16", "T_harmony", "T_scvi", "onehot_oracle"]
 ARMS_CTRL = ["ctrl_const", "ctrl_noise16"]
+# post-hoc dense floor frontier (sensitivity for SC-K3 only; NOT part of the pre-registered grid, run as separate jobs)
+DENSE = ([f"pca{d}" for d in (4, 6, 12, 24)] + [f"dith{d}_r{r:g}" for d in (8, 16, 32) for r in (0.25, 0.5, 1, 2, 4)] +
+         ["ldaC_pca8", "ldaC_pca24", "ldaC_pca8_H", "ldaC_pca24_H"])
 
 
 def build_arms(Z, T, sc, seed, fold_batches, scvi=None, only=None):
@@ -153,6 +156,16 @@ def build_arms(Z, T, sc, seed, fold_batches, scvi=None, only=None):
     out["onehot_oracle"] = oh
     out["ctrl_const"] = np.ones((n, 1), np.float32)
     out["ctrl_noise16"] = np.random.RandomState(4000 + seed).randn(n, 16).astype(np.float32)
+    if only is not None and any(x in DENSE for x in only):
+        for d in (4, 6, 12, 24):
+            out[f"pca{d}"] = Z[:, :d]
+        for d in (8, 16, 32):
+            for r in (0.25, 0.5, 1, 2, 4):
+                out[f"dith{d}_r{r:g}"] = (Z[:, :d] + r * sd[:d] * np.random.RandomState(5000 + seed + 100 * d + int(100 * r)).randn(n, d)).astype(np.float32)
+        for suffix, Tm in (("", T), ("_H", T & ~hide)):
+            ycl = np.where(Tm, yc, -1)
+            out["ldaC_pca8" + suffix] = lda_pad(Z, Tm, ycl, 8)
+            out["ldaC_pca24" + suffix] = lda_pad(Z, Tm, ycl, 24)
     if only is not None:
         out = {k: v for k, v in out.items() if k in only}
     return {k: np.ascontiguousarray(v, dtype=np.float32) for k, v in out.items()}

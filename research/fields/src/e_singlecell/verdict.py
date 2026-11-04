@@ -50,6 +50,7 @@ def verdict_tables(D, R, args):
     P("|---|---|---|---|---|---|---|---|")
     order = [a for a in AG.INDUCTIVE + ["ldaF16"] + [x + "_H" for x in ("ldaC", "ldaC_pca16", "ldaC_pca32", "ldaF16")] + AG.REFS +
              ["onehot_oracle", "ctrl_const", "ctrl_noise16", "ctrl_shuffle_batch", "ctrl_shuffle_labels"] if a in arms]
+    order += sorted(a for a in arms if a not in order)
     rows = {}
     for a in order:
         m = pt[a]
@@ -103,7 +104,7 @@ def verdict_tables(D, R, args):
     # --- K3
     fall = list(D.fall)
     refs = [r for r in REFS if r in arms]
-    ind = [a for a in INDUCTIVE if a in arms]
+    ind = [a for a in arms if AG._IND_RE.match(a)]
     k3 = dict(refs={r: dict(U=pt[r]["U"], L=pt[r]["L"]) for r in refs})
     if refs:
         ref = max(refs, key=lambda r: pt[r]["U"])
@@ -191,7 +192,7 @@ def verdict_tables(D, R, args):
 
 
 def hold(a):
-    return a + "_H" if a in ("ldaC", "ldaC_pca16", "ldaC_pca32", "ldaF16") else a
+    return AG.hold_name(a)
 
 
 def combine(paths):

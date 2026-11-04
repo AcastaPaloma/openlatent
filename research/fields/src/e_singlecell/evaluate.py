@@ -91,6 +91,8 @@ def main():
     sc = SC(a.dataset)
     folds = [int(x) for x in a.folds.split(",")] if a.folds else list(range(len(sc.folds)))
     only = a.arms.split(",") if a.arms else None
+    if only == ["dense"]:
+        only = [x for x in A.DENSE if x not in ("pca8", "pca16", "pca32", "dith16_r0.5", "dith16_r1")]
     kinds = a.kinds.split(",")
     scvi_p = CACHE / sc.ds / "scvi_latent.npy"
     scvi = np.load(scvi_p) if (scvi_p.exists() and not a.no_scvi) else None

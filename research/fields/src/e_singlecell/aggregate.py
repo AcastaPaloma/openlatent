@@ -18,6 +18,8 @@ from common import CACHE, DATASETS, MIN_HELD, MIN_TRAIN  # noqa: E402
 
 KINDS = ("linear", "mlp", "knn", "lgbm")
 PROBES = ("lin", "knn")
+import re  # noqa: E402
+_IND_RE = re.compile(r"^(raw50|pca\d+|rp\d+|noise_r[\d.]+|dith\d+_r[\d.]+|ldaC|ldaC_pca\d+|leace|leace_pca16)$")
 INDUCTIVE = ["raw50", "pca8", "pca16", "pca32", "rp16", "rp32", "noise_r0.5", "noise_r1", "noise_r2", "dith16_r0.5", "dith16_r1",
              "ldaC", "ldaC_pca16", "ldaC_pca32", "leace", "leace_pca16"]      # K3 selection set (full-fit versions; ldaF16 and *_H are not candidates)
 REFS = ["T_centre", "T_bwhiten16", "T_harmony", "T_scvi"]
@@ -174,7 +176,7 @@ def u_metrics(D, S, arm, w, fset, hold_arm=None):
 
 
 def hold_name(arm):
-    return arm + "_H" if arm in ("ldaC", "ldaC_pca16", "ldaC_pca32", "ldaF16") else arm
+    return arm + "_H" if (arm in ("ldaC", "ldaF16") or arm.startswith("ldaC_pca")) and not arm.endswith("_H") else arm
 
 
 def all_metrics(D, S, arms, w, fset):
@@ -188,8 +190,6 @@ def all_metrics(D, S, arms, w, fset):
     raw = out["raw50"]["worst"]
     for arm in arms:
         out[arm]["L"] = (out[arm]["worst"] - ch) / max(raw - ch, 1e-6)
-        if arm.endswith("_H") or arm in ("ldaC", "ldaC_pca16", "ldaC_pca32", "ldaF16"):
-            pass
     # L of the H versions needs their own attacker numbers (they are arms themselves)
     out["_chance"] = ch
     out["_u0"] = f1_chance(D, w, fset)
