@@ -25,6 +25,7 @@ sys.path.insert(0, str(HERE))
 import ap as AP  # noqa: E402
 import arms as AR  # noqa: E402
 import common as C  # noqa: E402
+import adapter as AD  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("e_attackers", str(HERE.parent / "e_singlecell" / "attackers.py"))
 EA = importlib.util.module_from_spec(_spec)
@@ -63,6 +64,7 @@ def main():
     ap.add_argument("--no_refs", action="store_true")
     ap.add_argument("--kinds", default=",".join(KINDS))
     ap.add_argument("--no_attackers", action="store_true", help="AP only (debug)")
+    ap.add_argument("--f2", action="store_true", help="F2 job (results_notes/F.md section 6): small-d LDA, oracle, MLP adapters, same-embedding nulls")
     ap.add_argument("--hold_source", default="", help="P-S (descriptive): fit without this source's wells; AP queries restricted to this source")
     a = ap.parse_args()
     torch.set_num_threads(8)
@@ -126,7 +128,7 @@ def main():
     pos_cache = {}
     rng_cap = np.random.RandomState(AR.seed_of(a.salt, "cap") % (2 ** 31))
 
-    def do_ap(name, E, sname, comp_override=None, modes=("xs", "nonrep")):
+    def do_ap(name, E, sname, comp_override=None, modes=("xs", "nonrep"), prefix="apc"):
         S = sets[sname]
         comp = S["comp"] if comp_override is None else comp_override
         for mode in modes:
@@ -139,7 +141,9 @@ def main():
             qm = None if not a.hold_source else (S["src"] == C.SOURCES5.index(a.hold_source))
             apq = AP.ap_queries(E, S["plate"], comp, S["src"], S["well"], S["pert"], mode=mode, pos=pos, qmask=qm)
             ids, mean_ap = AP.per_compound(apq, comp)
-            P[f"apc|{sname}|{name}|{mode}"] = mean_ap.astype(np.float32)
+            P[f"{prefix}|{sname}|{name}|{mode}"] = mean_ap.astype(np.float32)
+            if prefix != "apc":
+                continue
             if s5 and mode == "xs":
                 P[f"apq|{sname}|{name}"] = apq.astype(np.float32)          # per-query AP (NaN = dropped): plate-cluster sensitivity
             if f"cid|{sname}|{mode}" not in P:
@@ -162,13 +166,16 @@ def main():
         for k in kinds:
             P[f"att|{sname}|{name}|{k}"] = res[k]
 
-    def run_arm(name, family, Eall, ap_ok=True):
+    def run_arm(name, family, Eall, ap_ok=True, null=False):
         t1 = time.time()
         Eall_n = Eall.detach().cpu().numpy() if torch.is_tensor(Eall) else Eall
         for sname, sl in (("V", slice(0, nV)), ("H", slice(nV, None))):
             E = Eall_n[sl]
             if ap_ok:
                 do_ap(name, E, sname)
+                if null:
+                    perm = np.random.RandomState(AR.seed_of(a.salt, "null", name, sname) % (2 ** 31)).permutation(len(E))
+                    do_ap(name, E, sname, comp_override=sets[sname]["comp"][perm], modes=("xs",), prefix="apcnull")
             if not a.no_attackers:
                 do_att(name, E, sname)
         meta_out["arms"].append(name)
@@ -180,6 +187,10 @@ def main():
         print(f"  arm {name:22s} d={Eall_n.shape[1]:5d} {time.time() - t1:6.1f}s  (elapsed {time.time() - t0:.0f}s)", flush=True)
 
     want = a.arms.split(",") if a.arms else None
+    if a.f2:
+        run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, src, out)
+        print("done", flush=True)
+        return
     # inductive floors
     for name, family in fac.names():
         if want and name not in want:
@@ -240,6 +251,67 @@ def main():
             meta_out["sphering_eps_chosen"] = float(eps[best[1]])
             run_arm("T_sphering", "ref", best[2])
     print("done", flush=True)
+
+
+def run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, src, out):
+    """F2 (results_notes/F.md section 6): small-d LDA (6 arms), compound-supervised in-sample oracle (2), ONE supervised nonlinear adapter family
+    (SupCon MLP, d in {8,16,32,64} x output dither {0,0.5,1}), controls; every arm also gets a same-embedding shuffled-label AP null."""
+    import json as _json
+    t0 = time.time()
+    meta_out["f2"] = True
+    meta_out["f2_train"] = {}
+    # (c) controls
+    E = torch.randn(Xall.shape[0], 16, generator=torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ctrl")), device=AR.DEV)
+    run_arm("ctrl_noise16", "ctrl", E, null=True)
+    # (a) small-d LDA
+    for lab in ("ldaT2", "ldaP"):
+        for dd in (2, 4, 8):
+            name = f"{lab}_{dd}"
+            run_arm(name, "labelonly", fac.build(name, Xall), null=True)
+    # oracle: PCA-256 -> LDA fitted on the H compounds' OWN labels, scored in-sample (upper reference, not a method)
+    Z = fac.pca(Xall, 256)
+    muo, Wo = AR.lda_fit(Z[nV:], sets["H"]["comp"], AR.SHRINK)
+    for dd in (16, 64):
+        run_arm(f"oracleLDA_{dd}", "oracle", AR.lda_apply(Z, muo, Wo, dd), null=False)
+    del Z
+    # (b) the supervised nonlinear adapter: labels = T' production compounds (>= 2 Fit wells) + Target2 compounds (DMSO excluded)
+    lp, lc, jf = lab_prod[fit_idx], lab_class[fit_idx], jcp[fit_idx]
+    cnts = np.bincount(lp[lp >= 0])
+    lp2 = np.where((lp >= 0) & (cnts[np.maximum(lp, 0)] >= 2), lp, -1)
+    lab_final = -np.ones(len(fit_idx), np.int64)
+    m = lp2 >= 0
+    lab_final[m] = pd.factorize(lp2[m])[0]
+    n_prod = int(lab_final.max()) + 1
+    t2m = (lc >= 0) & (lp < 0) & (jf != "DMSO")
+    lab_final[t2m] = n_prod + pd.factorize(lc[t2m])[0]
+    meta_out["f2_labels"] = dict(n_prod_classes=n_prod, n_t2_classes=int(len(np.unique(lab_final[t2m]))), n_labeled_wells=int((lab_final >= 0).sum()))
+    srcf = pd.Categorical(src[fit_idx], categories=C.SOURCES5).codes.astype(np.int64)
+    rs = np.random.RandomState(AR.seed_of(a.salt, "probe") % (2 ** 31))
+    sub = rs.choice(len(fit_idx), 20000, replace=False)
+    for dd in (8, 16, 32, 64):
+        t1 = time.time()
+        net, info = AD.train_supcon(Xfit, lab_final, n_prod, dd, AR.seed_of(a.salt, "mlp", dd) % (2 ** 31), steps=int(os.environ.get("F2_STEPS", AD.STEPS)))
+        Ef = AD.embed(net, Xfit)
+        info["eff_rank"] = AD.effective_rank(Ef[torch.as_tensor(sub, device=AR.DEV)])
+        # in-sample linear source probe (logging only; no adversary is used)
+        Es = Ef[torch.as_tensor(sub, device=AR.DEV)]
+        Es = (Es - Es.mean(0, keepdim=True)) / (Es.std(0, keepdim=True) + 1e-6)
+        ys = torch.as_tensor(srcf[sub], device=AR.DEV)
+        pr = EA.fit_linear(Es, ys, len(C.SOURCES5), 1e-2)(Es).argmax(1).cpu().numpy()
+        info["insample_source_probe_bacc"] = float(EA.bacc(srcf[sub], pr))
+        info["trained"] = bool(info["loss_last200"] <= 0.8 * info["loss_first20"] and info["eff_rank"] >= dd / 4 and not info["nan"])
+        info["train_seconds"] = round(time.time() - t1, 1)
+        meta_out["f2_train"][f"d{dd}"] = info
+        print(f"  mlp d={dd}: loss {info['loss_first20']:.3f} -> {info['loss_last200']:.3f}, eff_rank {info['eff_rank']:.1f}, probe {info['insample_source_probe_bacc']:.3f}, trained={info['trained']} ({info['train_seconds']}s)", flush=True)
+        Eall = AD.embed(net, Xall)
+        sdv = Ef.std(0, keepdim=True)
+        run_arm(f"mlp_d{dd}", "adapter", Eall, null=True)
+        for r in (0.5, 1):
+            gen = torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "mlpnoise", dd, r))
+            run_arm(f"mlp_d{dd}_r{r:g}", "adapter", Eall + r * sdv * torch.randn(Eall.shape, generator=gen, device=AR.DEV), null=True)
+        del net, Ef, Eall
+        torch.cuda.empty_cache()
+    (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
 
 
 if __name__ == "__main__":
