@@ -1,0 +1,4 @@
+name: a_p2x_midnight_camelyon_s0
+priority: 9
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset camelyon --seed 0 --grid p2 
+hf_path: runs/a_p2x_midnight_camelyon_s0

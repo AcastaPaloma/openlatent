@@ -210,6 +210,69 @@ def train_adv_retrain(P, sp, dl, lam, seed, rounds=12, steps_e=60, steps_a=120, 
     return _release(enc, P, sp, st), dict(adv_train_acc_per_round=logs)
 
 
+def train_ae(P, sp, dl, lam, beta, seed, rounds=12, steps_e=60, steps_a=120, hid=512):
+    """Task-agnostic adapter: reconstruct the (standardised) frozen embedding through a rate-limited Gaussian channel (beta * KL, beta=0
+    -> almost no rate limit), NO class labels.  lam > 0 adds the retrained-from-scratch adversaries (as in adv_retrain) that try to read the
+    centre from the released sample.  Class labels are never used, so held-out classes are on the same footing as seen ones."""
+    st, XA, yA, cA = _prep(P, sp)
+    d = XA.shape[1]
+    Kc = int(P.n_id_centres)
+    torch.manual_seed(seed)
+    enc = nn.Sequential(nn.Dropout(0.2), nn.Linear(d, hid), nn.GELU(), nn.Linear(hid, 2 * dl)).to(DEV)
+    dec = nn.Sequential(nn.Linear(dl, hid), nn.GELU(), nn.Linear(hid, d)).to(DEV)
+    opt = torch.optim.AdamW(list(enc.parameters()) + list(dec.parameters()), lr=1e-3, weight_decay=1e-2)
+
+    def chan(x):
+        mu, lv = enc(x).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        z = mu + torch.exp(0.5 * lv) * torch.randn_like(mu)
+        kl = 0.5 * (mu ** 2 + lv.exp() - 1 - lv).sum(-1).mean()
+        return z, kl
+    logs = []
+    for r in range(rounds):
+        advs, zs = None, None
+        if lam > 0:
+            enc.eval()
+            with torch.no_grad():
+                Z = chan(XA)[0]
+            zs = Std().fit(Z)
+            Zn = zs(Z)
+            advs = nn.ModuleList([nn.Linear(dl, Kc), nn.Sequential(nn.Linear(dl, 256), nn.GELU(), nn.Linear(256, Kc))]).to(DEV)
+            oa = torch.optim.Adam(advs.parameters(), lr=3e-3)
+            for s in range(steps_a):
+                idx = torch.randint(0, len(Zn), (512,), device=DEV)
+                loss = sum(F.cross_entropy(a_(Zn[idx]), cA[idx]) for a_ in advs)
+                oa.zero_grad(); loss.backward(); oa.step()
+            with torch.no_grad():
+                logs.append(round(float(np.mean([(a_(Zn).argmax(1) == cA).float().mean().item() for a_ in advs])), 3))
+        enc.train()
+        for s in range(steps_e):
+            idx = torch.randint(0, len(XA), (256,), device=DEV)
+            z, kl = chan(XA[idx])
+            loss = F.mse_loss(dec(z), XA[idx]) + beta * kl
+            if lam > 0:
+                zn = zs(z)
+                conf = 0.0
+                for a_ in advs:
+                    p = F.softmax(a_(zn), -1)
+                    conf = conf + (p * torch.log(p.clamp(min=1e-8))).sum(-1).mean() + math.log(Kc)
+                loss = loss + lam * conf / len(advs)
+            opt.zero_grad(); loss.backward(); opt.step()
+    enc.eval()
+    g = torch.Generator(device=DEV).manual_seed(5000 + seed)
+
+    def f(x):
+        mu, lv = enc(x).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        return mu + torch.exp(0.5 * lv) * torch.randn(mu.shape, device=DEV, generator=g)
+    rep = _release(f, P, sp, st)
+    with torch.no_grad():
+        mu, lv = enc(st(_t(P.X[sp["C"]]))).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        rate_bits = float((0.5 * (mu ** 2 + lv.exp() - 1 - lv).sum(-1)).mean() / math.log(2))
+    return rep, dict(rate_bits_per_patch=rate_bits, adv_train_acc_per_round=logs)
+
+
 class VQ(nn.Module):
     def __init__(self, m, Kc, dg):
         super().__init__()
@@ -299,6 +362,26 @@ def run_floor(method, hp, P, sp, seed):
         from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
         m = LDA(solver="eigen", shrinkage=hp.get("shrinkage", "auto")).fit(P.X[sp["A"]], P.y[sp["A"]])
         return {s: m.transform(P.X[sp[s]]).astype(np.float32) for s in SPLITS}, {}
+    if method == "lda_pca":      # matched-dimensionality label-only arm: LDA (C-1 dims) + top PCs of the residual after removing the LDA subspace
+        from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+        XA = P.X[sp["A"]].astype(np.float64)
+        m_ = LDA(solver="eigen", shrinkage="auto").fit(XA, P.y[sp["A"]])
+        nl = m_.transform(XA[:2]).shape[1]
+        d = hp["d"]
+        mu = XA.mean(0)
+        Q, _ = np.linalg.qr(m_.scalings_[:, :nl])
+        resid = (XA - mu) - ((XA - mu) @ Q) @ Q.T
+        _, _, Vt = np.linalg.svd(resid, full_matrices=False)
+        V = Vt[: max(d - nl, 0)].T
+        out = {}
+        for s in SPLITS:
+            X64 = P.X[sp[s]].astype(np.float64)
+            Xc_ = X64 - mu
+            parts = [m_.transform(X64)[:, :d]]
+            if d > nl:
+                parts.append((Xc_ - (Xc_ @ Q) @ Q.T) @ V)
+            out[s] = np.concatenate(parts, 1).astype(np.float32)
+        return out, {}
     if method == "leace":
         mu, M = leace_fit(P.X[sp["A"]], P.c[sp["A"]], Kc, hp["rho"])
         out = {}
@@ -371,7 +454,7 @@ def run_control(method, P, sp, seed):
 
 
 def build(method, hp, P, sp, seed):
-    if method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten", "pca", "randproj"):
+    if method in ("raw", "lda", "lda_pca", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten", "pca", "randproj"):
         return run_floor(method, hp, P, sp, seed)
     if method in ("ctrl_const", "ctrl_noise", "ctrl_shuffle", "ctrl_shuffle_orth"):
         if method in ("ctrl_shuffle", "ctrl_shuffle_orth"):
@@ -385,6 +468,8 @@ def build(method, hp, P, sp, seed):
         return train_adv_retrain(P, sp, hp["dl"], hp["lam"], seed)
     if method == "vq":
         return train_vq(P, sp, hp["m"], hp["K"], seed)
+    if method == "ae":
+        return train_ae(P, sp, hp["dl"], hp["lam"], hp["beta"], seed)
     if method == "supcon_xc":
         return train_supcon(P, sp, hp["dl"], hp["tau"], seed)
     raise ValueError(method)
@@ -407,3 +492,17 @@ LEARNED = (
 )
 RATE = [(m, dict(d=d)) for m in ("pca", "randproj") for d in (2, 4, 8, 16, 32, 64, 256)]
 GRID = GATE + LEARNED + RATE
+# protocol 2: matched-dimensionality label-only arm, task-agnostic autoencoder adapters, per-centre whitening, held-out classes
+LDA_ARMS = [("lda", {})] + [("lda_pca", dict(d=d)) for d in (4, 8, 16, 32, 64, 128)]
+AE = [("ae", dict(dl=dl, lam=0.0, beta=b)) for dl in (8, 32) for b in (1e-3, 1e-2)] + \
+     [("ae", dict(dl=dl, lam=l, beta=1e-3)) for dl in (8, 32) for l in (1.0, 3.0, 10.0)]
+P2 = (
+    [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0))] + LDA_ARMS
+    + [("pca", dict(d=d)) for d in (4, 16, 64)] + [("randproj", dict(d=d)) for d in (4, 16, 64)]
+    + [("vib", dict(dl=dl, beta=b)) for dl in (4, 32) for b in (1e-3, 1e-2, 1e-1)]
+    + [("vq", dict(m=m, K=K)) for m, K in ((1, 16), (2, 16), (4, 16), (4, 64), (8, 64))]
+    + [("dann", dict(dl=64, lam=3.0))]
+    + [("adv_retrain", dict(dl=64, lam=l)) for l in (1.0, 3.0, 10.0)] + [("adv_retrain", dict(dl=8, lam=3.0))]
+    + [("supcon_xc", dict(dl=dl, tau=0.1)) for dl in (16, 64)]
+    + AE
+)

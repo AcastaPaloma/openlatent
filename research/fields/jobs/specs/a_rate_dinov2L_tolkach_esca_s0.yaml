@@ -1,4 +1,0 @@
-name: a_rate_dinov2L_tolkach_esca_s0
-priority: 12
-cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset tolkach_esca --seed 0 --grid rate 
-hf_path: runs/a_rate_dinov2L_tolkach_esca_s0

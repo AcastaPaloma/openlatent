@@ -29,6 +29,35 @@ def label_only_floor(c_tr, y_tr, c_te, y_te):
     return bacc(c_te, pred)
 
 
+def knn_retention(Zq, Zg, Rq, Rg, cq, cg, k_raw=10, k_rep=30):
+    """Retention of non-label neighbourhood structure.  Queries = test units C, gallery = attacker-train units B (disjoint units).
+    For each query the k_raw nearest gallery patches in the RAW embedding space (euclidean, B-standardised) are the reference; the score is the
+    fraction of them found among the k_rep nearest gallery patches in the released representation (B-standardised).  `all` uses the whole gallery,
+    `xc` only gallery patches from OTHER centres (cross-centre structure, which a centre-invariant representation should keep).  Chance ~ k_rep/|gallery|."""
+    import torch
+    from .attackers import DEV, _t, Std
+
+    def prep(Q, G):
+        s = Std().fit(_t(G))
+        return s(_t(Q)), s(_t(G))
+    zq, zg = prep(Zq, Zg)
+    rq, rg = prep(Rq, Rg)
+    cq_t, cg_t = _t(cq, torch.long), _t(cg, torch.long)
+    out_all, out_xc = [], []
+    for i in range(0, zq.shape[0], 1024):
+        dz = torch.cdist(zq[i:i + 1024], zg)
+        dr = torch.cdist(rq[i:i + 1024], rg)
+        for dd_z, dd_r, out in ((dz, dr, out_all), (dz.clone(), dr.clone(), out_xc)):
+            if out is out_xc:
+                same = cq_t[i:i + 1024, None] == cg_t[None, :]
+                dd_z[same] = float("inf"); dd_r[same] = float("inf")
+            ref = dd_r.topk(k_raw, largest=False).indices
+            got = dd_z.topk(k_rep, largest=False).indices
+            hit = (ref[:, :, None] == got[:, None, :]).any(-1).float().mean(1)
+            out.append(hit.cpu())
+    return torch.cat(out_all).numpy(), torch.cat(out_xc).numpy()
+
+
 def remap(c):
     u, inv = np.unique(c, return_inverse=True)
     return inv, len(u)
@@ -58,6 +87,9 @@ def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle
             tgt = P.y[ood_idx] if s == "OOD" else P.y[sp[s]]
             preds[f"label/{k}/{s}"] = p.astype(np.uint8)
             m[f"label/{k}/{s}"] = bacc(tgt, p)
+    ra, rx = knn_retention(rep["C"], rep["B"], P.X[sp["C"]], P.X[sp["B"]], P.c[sp["C"]], cB)
+    preds["ret/knn_all"], preds["ret/knn_xc"] = ra.astype(np.float16), rx.astype(np.float16)
+    m["ret/knn_all"], m["ret/knn_xc"] = float(ra.mean()), float(rx.mean())
     if holdout:      # utility on classes the adapter never saw (and on the seen ones), probes trained on B restricted to those classes
         from .splits import seen_held_classes
         seen, held = seen_held_classes(P)
@@ -66,14 +98,18 @@ def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle
             remap_c = {k: i for i, k in enumerate(cl)}
             ytr = np.array([remap_c[k] for k in yB[mb]])
             evs = {}
+            ood_idx_h = np.concatenate([sp["OOD1"], sp["OOD2"]])
             for s in ("V", "C"):
                 ms = np.isin(P.y[sp[s]], cl)
                 evs[s] = rep[s][ms]
+            mo = np.isin(P.y[ood_idx_h], cl)
+            evs["OOD"] = zood[mo]
             r = run_suite(rep["B"][mb], ytr, uB[mb], evs, len(cl), kinds=KINDS_LABEL, seed=seed)
             for k, d in r.items():
                 for s, p in d.items():
-                    ms = np.isin(P.y[sp[s]], cl)
-                    tgt = np.array([remap_c[k2] for k2 in P.y[sp[s]][ms]])
+                    yy = P.y[ood_idx_h] if s == "OOD" else P.y[sp[s]]
+                    ms = np.isin(yy, cl)
+                    tgt = np.array([remap_c[k2] for k2 in yy[ms]])
                     preds[f"label{nm}/{k}/{s}"] = p.astype(np.uint8)
                     m[f"label{nm}/{k}/{s}"] = bacc(tgt, p)
     if do_ood:
