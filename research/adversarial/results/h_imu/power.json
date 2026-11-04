@@ -1,0 +1,1392 @@
+{
+ "analytic": [
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0263,
+   "mde80": 0.0673
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0222,
+   "mde80": 0.0568
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0172,
+   "mde80": 0.044
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0363,
+   "mde80": 0.0927
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0307,
+   "mde80": 0.0784
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0238,
+   "mde80": 0.0607
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.044,
+   "mde80": 0.1125
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0372,
+   "mde80": 0.0951
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0288,
+   "mde80": 0.0737
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0362,
+   "mde80": 0.0926
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0306,
+   "mde80": 0.0782
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0237,
+   "mde80": 0.0606
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0499,
+   "mde80": 0.1276
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0422,
+   "mde80": 0.1079
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0327,
+   "mde80": 0.0835
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0606,
+   "mde80": 0.1549
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0512,
+   "mde80": 0.1309
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0397,
+   "mde80": 0.1014
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0483,
+   "mde80": 0.1234
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0408,
+   "mde80": 0.1043
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0316,
+   "mde80": 0.0808
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0666,
+   "mde80": 0.1702
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0563,
+   "mde80": 0.1438
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0436,
+   "mde80": 0.1114
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0808,
+   "mde80": 0.2066
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0683,
+   "mde80": 0.1746
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0529,
+   "mde80": 0.1352
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0553,
+   "mde80": 0.1414
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0468,
+   "mde80": 0.1195
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0362,
+   "mde80": 0.0926
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0763,
+   "mde80": 0.1949
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0645,
+   "mde80": 0.1648
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0499,
+   "mde80": 0.1276
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0926,
+   "mde80": 0.2366
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0783,
+   "mde80": 0.2
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0606,
+   "mde80": 0.1549
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0604,
+   "mde80": 0.1543
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.051,
+   "mde80": 0.1304
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0395,
+   "mde80": 0.101
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0832,
+   "mde80": 0.2127
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0703,
+   "mde80": 0.1798
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0545,
+   "mde80": 0.1392
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.101,
+   "mde80": 0.2582
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0854,
+   "mde80": 0.2182
+  },
+  {
+   "design": "fold O (96 test trials)",
+   "n_units": 96,
+   "m": 4,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0661,
+   "mde80": 0.169
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0159,
+   "mde80": 0.0406
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0134,
+   "mde80": 0.0343
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0104,
+   "mde80": 0.0266
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0317,
+   "mde80": 0.0811
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0268,
+   "mde80": 0.0686
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0208,
+   "mde80": 0.0531
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.042,
+   "mde80": 0.1073
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0355,
+   "mde80": 0.0907
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0275,
+   "mde80": 0.0702
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0218,
+   "mde80": 0.0558
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0185,
+   "mde80": 0.0472
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0143,
+   "mde80": 0.0365
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0437,
+   "mde80": 0.1117
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0369,
+   "mde80": 0.0944
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0286,
+   "mde80": 0.0731
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0578,
+   "mde80": 0.1477
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0489,
+   "mde80": 0.1248
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0378,
+   "mde80": 0.0967
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0291,
+   "mde80": 0.0744
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0246,
+   "mde80": 0.0629
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0191,
+   "mde80": 0.0487
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0583,
+   "mde80": 0.1489
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0492,
+   "mde80": 0.1258
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0381,
+   "mde80": 0.0975
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0771,
+   "mde80": 0.1969
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0651,
+   "mde80": 0.1664
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0505,
+   "mde80": 0.1289
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0334,
+   "mde80": 0.0853
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0282,
+   "mde80": 0.0721
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0218,
+   "mde80": 0.0558
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0667,
+   "mde80": 0.1706
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0564,
+   "mde80": 0.1441
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0437,
+   "mde80": 0.1117
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0883,
+   "mde80": 0.2256
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0746,
+   "mde80": 0.1907
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0578,
+   "mde80": 0.1477
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0364,
+   "mde80": 0.093
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0308,
+   "mde80": 0.0786
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0238,
+   "mde80": 0.0609
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0728,
+   "mde80": 0.1861
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0615,
+   "mde80": 0.1573
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0477,
+   "mde80": 0.1218
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0963,
+   "mde80": 0.2462
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0814,
+   "mde80": 0.2081
+  },
+  {
+   "design": "pooled cross-fit (264 test trials)",
+   "n_units": 264,
+   "m": 11,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0631,
+   "mde80": 0.1612
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0526,
+   "mde80": 0.1345
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0445,
+   "mde80": 0.1137
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0345,
+   "mde80": 0.0881
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0526,
+   "mde80": 0.1345
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0445,
+   "mde80": 0.1137
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0345,
+   "mde80": 0.0881
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0526,
+   "mde80": 0.1345
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0445,
+   "mde80": 0.1137
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.05,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0345,
+   "mde80": 0.0881
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0725,
+   "mde80": 0.1852
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0612,
+   "mde80": 0.1565
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0474,
+   "mde80": 0.1212
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0725,
+   "mde80": 0.1852
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0612,
+   "mde80": 0.1565
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0474,
+   "mde80": 0.1212
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0725,
+   "mde80": 0.1852
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0612,
+   "mde80": 0.1565
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.1,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0474,
+   "mde80": 0.1212
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.0966,
+   "mde80": 0.2469
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0816,
+   "mde80": 0.2087
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0632,
+   "mde80": 0.1616
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.0966,
+   "mde80": 0.2469
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0816,
+   "mde80": 0.2087
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0632,
+   "mde80": 0.1616
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.0966,
+   "mde80": 0.2469
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0816,
+   "mde80": 0.2087
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.2,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0632,
+   "mde80": 0.1616
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.1107,
+   "mde80": 0.2828
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.0935,
+   "mde80": 0.239
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0725,
+   "mde80": 0.1852
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.1107,
+   "mde80": 0.2828
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.0935,
+   "mde80": 0.239
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0725,
+   "mde80": 0.1852
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.1107,
+   "mde80": 0.2828
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.0935,
+   "mde80": 0.239
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.3,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0725,
+   "mde80": 0.1852
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.3,
+   "se": 0.1208,
+   "mde80": 0.3086
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.5,
+   "se": 0.1021,
+   "mde80": 0.2608
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.0,
+   "r": 0.7,
+   "se": 0.0791,
+   "mde80": 0.202
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.3,
+   "se": 0.1208,
+   "mde80": 0.3086
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.5,
+   "se": 0.1021,
+   "mde80": 0.2608
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.3,
+   "r": 0.7,
+   "se": 0.0791,
+   "mde80": 0.202
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.3,
+   "se": 0.1208,
+   "mde80": 0.3086
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.5,
+   "se": 0.1021,
+   "mde80": 0.2608
+  },
+  {
+   "design": "subject-level (gender, 24 subjects)",
+   "n_units": 24,
+   "m": 1,
+   "p": 0.5,
+   "rho": 0.6,
+   "r": 0.7,
+   "se": 0.0791,
+   "mde80": 0.202
+  }
+ ],
+ "mc": [
+  {
+   "n_units": 96,
+   "m": 4,
+   "p_lo": 0.1,
+   "rho": 0.3,
+   "r_latent": 0.5,
+   "mde80_mc": 0.12,
+   "grid_step": 0.02
+  },
+  {
+   "n_units": 96,
+   "m": 4,
+   "p_lo": 0.3,
+   "rho": 0.3,
+   "r_latent": 0.5,
+   "mde80_mc": 0.16,
+   "grid_step": 0.02
+  },
+  {
+   "n_units": 264,
+   "m": 11,
+   "p_lo": 0.1,
+   "rho": 0.3,
+   "r_latent": 0.5,
+   "mde80_mc": 0.08,
+   "grid_step": 0.02
+  },
+  {
+   "n_units": 264,
+   "m": 11,
+   "p_lo": 0.3,
+   "rho": 0.3,
+   "r_latent": 0.5,
+   "mde80_mc": 0.1,
+   "grid_step": 0.02
+  }
+ ]
+}

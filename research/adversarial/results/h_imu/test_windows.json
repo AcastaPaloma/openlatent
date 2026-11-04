@@ -1,0 +1,40 @@
+{
+ "my_mean": [
+  2.208962782521152,
+  1.1981584413849673
+ ],
+ "my_std": [
+  1.4214638623758757,
+  0.7013940259826438
+ ],
+ "my_n_windows_stride10": 73498,
+ "foldO": {
+  "train": 60117,
+  "test": 13381,
+  "test_trials": 96
+ },
+ "foldA": {
+  "train": 37548,
+  "test": 35950,
+  "test_trials": 96
+ },
+ "foldB": {
+  "train": 49331,
+  "test": 24167,
+  "test_trials": 72
+ },
+ "pd_mean": [
+  2.208962782521192,
+  1.198158441385002
+ ],
+ "pd_std": [
+  1.4214638623758784,
+  0.701394025982631
+ ],
+ "pd_train_windows": 60059,
+ "pd_test_windows": 13344,
+ "mean_close": true,
+ "std_close": true,
+ "max_abs_count_diff_per_sub_act": 1,
+ "rel_count_diff": 0.002772781774580336
+}
