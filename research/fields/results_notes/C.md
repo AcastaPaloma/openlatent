@@ -111,6 +111,106 @@ A winner is then replicated with seeds 1 and 2 (same sign, same thresholds on th
 5-dim projection (or a rate bottleneck) is the method, the contribution is the benchmark and its controls (channel floor, prosody floor,
 retrained-attacker suite), and the next question moves to where a projection cannot be fitted (no labels, new emotion sets, RAVDESS transfer).
 
-## 3. Log
+## 3. Results so far (2026-11-04 ~11:55Z)
 
-(newest last)
+Everything here is WavLM-Base+, audio only, 4 actor-disjoint folds pooled over the 91 test actors, 95% bootstrap over actors, identity =
+worst attacker on T1 (unseen sentences) for actors the encoder never saw. **Seeds: raw reference 3; every other row is a single seed (seed
+0 / one deterministic fit) and is NOT yet replicated.** Attackers: rows run on the GPU queue use the full suite (linear, MLP, kNN, shrinkage
+LDA, LightGBM, plus transformer and x-vector TDNN when a frame sequence is released); `c_fixcpu_*` and `c_lda*` ran on the VM CPU with the
+pooled-feature families only (linear, MLP, kNN, LDA, LightGBM), which is the full suite for utterance-level releases and the strongest
+single family (LDA) for the sequence-level fixed baselines. Raw per-actor counts: HF `runs/c_*`; tables: `results/c_summary.{json,md}`.
+
+**Reference, controls and fixed floors**
+
+| run | seeds | emotion UAR [95% CI] | identity T1, worst attacker [95% CI] | x chance | L vs raw | id T1 seen actors | id T3 |
+|---|---:|---|---|---:|---:|---:|---:|
+| c_ref_raw | 3 | 0.756 [0.736,0.776] | 0.804 [0.775,0.835] | 73.2x | 1.00 | nan | 0.752 |
+| c_ref_raw_trim | 3 | 0.744 [0.725,0.764] | 0.638 [0.593,0.682] | 58.1x | 1.00 | nan | 0.552 |
+| c_ctrl_constant | 3 | 0.167 [0.167,0.167] | 0.011 [0.011,0.038] | 1.0x | 0.00 | nan | 0.011 |
+| c_ctrl_length | 1 | 0.228 [0.222,0.237] | 0.028 [0.022,0.055] | 2.5x | 0.02 | nan | 0.026 |
+| c_ctrl_shuf_emo | 1 | 0.177 [0.170,0.185] | 0.804 [0.775,0.835] | 73.2x | 1.00 | nan | 0.752 |
+| c_fixcpu_mean | 1 | 0.751 [0.730,0.772] | 0.816 [0.787,0.848] | 74.3x | 1.01 | nan | 0.758 |
+| c_fixcpu_mean_trim | 1 | 0.747 [0.728,0.770] | 0.676 [0.635,0.719] | 61.5x | 1.06 | nan | 0.596 |
+| c_fix_leace_tr | 1 | 0.753 [0.732,0.773] | 0.587 [0.539,0.634] | 53.4x | 0.73 | 0.400 | 0.563 |
+| c_fixcpu_leace_oracle | 1 | 0.753 [0.736,0.772] | 0.480 [0.432,0.533] | 43.7x | 0.59 | nan | 0.446 |
+| c_fixcpu_pca16 | 1 | 0.557 [0.537,0.575] | 0.141 [0.111,0.177] | 12.8x | 0.16 | 0.141 | 0.163 |
+
+**Label-supervised linear projection (shrinkage LDA on emotion), pooled attackers**
+
+| run | seeds | emotion UAR [95% CI] | identity T1, worst attacker [95% CI] | x chance | L vs raw | id T1 seen actors | id T3 |
+|---|---:|---|---|---:|---:|---:|---:|
+| c_lda_k5 | 1 | 0.743 [0.725,0.763] | 0.076 [0.060,0.102] | 7.0x | 0.08 | 0.040 | 0.067 |
+| c_lda_k5_trim | 1 | 0.732 [0.711,0.752] | 0.081 [0.058,0.107] | 7.4x | 0.11 | 0.035 | 0.063 |
+| c_lda_k8 | 1 | 0.741 [0.722,0.762] | 0.088 [0.065,0.112] | 8.0x | 0.10 | 0.050 | 0.072 |
+| c_lda_k16 | 1 | 0.744 [0.724,0.764] | 0.092 [0.073,0.115] | 8.4x | 0.10 | 0.097 | 0.105 |
+
+**Learned encoders (full-emotion supervision)**
+
+| run | seeds | emotion UAR [95% CI] | identity T1, worst attacker [95% CI] | x chance | L vs raw | id T1 seen actors | id T3 |
+|---|---:|---|---|---:|---:|---:|---:|
+| c_rate_d4 | 1 | 0.721 [0.700,0.741] | 0.052 [0.035,0.078] | 4.8x | 0.05 | 0.021 | 0.061 |
+| c_rate_d16 | 1 | 0.728 [0.707,0.747] | 0.071 [0.056,0.097] | 6.5x | 0.08 | 0.043 | 0.061 |
+| c_rate_d64 | 1 | 0.731 [0.710,0.750] | 0.090 [0.066,0.118] | 8.2x | 0.10 | 0.060 | 0.076 |
+| c_adv_d16_l1 | 1 | 0.723 [0.705,0.744] | 0.058 [0.045,0.081] | 5.3x | 0.06 | 0.033 | 0.056 |
+| c_vq_g2k64 | 1 | 0.725 [0.703,0.746] | 0.045 [0.034,0.069] | 4.1x | 0.04 | 0.022 | 0.043 |
+
+**Held-out-emotion protocol (encoder/projection fitted with ANG, HAP, NEU, SAD only; probes on z trained with all six labels)**
+
+| run | seeds | 6-way UAR | recall DIS+FEA (never seen by encoder) | recall ANG,HAP,NEU,SAD | identity T1 | x chance | L |
+|---|---:|---|---|---|---|---:|---:|
+| c_lda4_k3 | 1 | 0.634 [0.619,0.652] | 0.363 [0.332,0.396] | 0.807 [0.788,0.826] | 0.049 [0.035,0.066] | 4.4x | 0.05 |
+| c_lda4_k5 | 1 | 0.641 [0.624,0.661] | 0.369 [0.340,0.401] | 0.799 [0.777,0.821] | 0.079 [0.055,0.108] | 7.2x | 0.09 |
+| c_lda4_k16 | 1 | 0.669 [0.649,0.689] | 0.450 [0.411,0.489] | 0.795 [0.775,0.814] | 0.071 [0.053,0.093] | 6.5x | 0.08 |
+| c_he_rate_d4 | 1 | 0.600 [0.584,0.616] | 0.279 [0.254,0.304] | 0.836 [0.817,0.855] | 0.047 [0.032,0.073] | 4.3x | 0.05 |
+| c_he_rate_d16 | 1 | 0.621 [0.607,0.638] | 0.354 [0.328,0.380] | 0.820 [0.802,0.839] | 0.067 [0.047,0.092] | 6.1x | 0.07 |
+| c_he_rate_d64 | 1 | 0.635 [0.619,0.652] | 0.376 [0.350,0.404] | 0.810 [0.789,0.831] | 0.081 [0.061,0.102] | 7.3x | 0.09 |
+| c_he_adv_d16_l1 | 1 | 0.607 [0.590,0.623] | 0.301 [0.276,0.326] | 0.823 [0.803,0.842] | 0.061 [0.044,0.081] | 5.5x | 0.06 |
+| c_he_vq_g2k64 | 1 | 0.594 [0.581,0.609] | 0.309 [0.283,0.336] | 0.847 [0.830,0.865] | 0.052 [0.036,0.079] | 4.7x | 0.05 |
+
+
+Paired differences to the label-supervised LDA-5 floor (seed 0, bootstrap over actors, learned minus LDA): rate d16 emotion UAR -0.015
+[-0.026,-0.007], identity -0.006 [-0.027,+0.017]; rate d4 -0.022 [-0.034,-0.012] / -0.024 [-0.048,-0.003]; adversarial d16 (lambda 1)
+-0.020 [-0.030,-0.010] / -0.019 [-0.037,+0.003]; VQ g2k64 (12 bits) -0.018 [-0.029,-0.009] / -0.031 [-0.053,-0.008]. Adversarial d16 vs rate-only d16:
+identity -0.013 [-0.027,+0.003], UAR -0.005 [-0.013,+0.006] (no measurable adversary effect at this width).
+
+### Held-out-emotion protocol against the pre-registered criterion (section 2b)
+
+Comparator = LDA fitted on the same four emotions, width-matched: `c_lda4_k5` for the d4/d16/VQ encoders, `c_lda4_k16` for d16/d64 (paired
+bootstrap, seed 0). U_HE = recall of the never-seen DIS and FEA with the best six-way probe on z.
+
+| learned encoder | U_HE | vs LDA comparator (dU_HE [95% CI]) | identity T1 (x chance) | dID vs comparator | criteria 1/2/3 |
+|---|---|---|---|---|---|
+| rate d4 | 0.279 | vs k5: -0.090 [-0.116,-0.066] | 0.047 (4.3x) | -0.032 | fail / pass / fail |
+| rate d16 | 0.354 | vs k16: -0.096 [-0.128,-0.068] | 0.067 (6.1x) | -0.004 | fail / pass / fail |
+| rate d64 | 0.376 | vs k16: -0.074 [-0.102,-0.048] | 0.081 (7.3x) | +0.010 | fail / pass / fail |
+| adversarial d16 (lambda 1) | 0.301 | vs k5: -0.068 [-0.096,-0.043] | 0.061 (5.5x) | -0.019 | fail / pass / fail |
+| VQ g2k64 (12 bits) | 0.309 | vs k5: -0.060 [-0.088,-0.033] | 0.052 (4.7x) | -0.028 | fail / pass / fail |
+
+**No learned encoder meets criterion 1 (needs +0.05 and an interval above 0); the best case is d64 vs the 3-dim comparator, +0.014 [-0.010,+0.036].**
+An LDA projection padded to 16 dims with residual PCA directions keeps the most about the unseen emotions (U_HE 0.450 [0.411,0.489] at identity
+6.5x chance); raw frozen features give 0.692. Per the pre-registration the learned-encoder arm of Focus C is closed on this evidence (single seed,
+but every difference has the wrong sign or an interval containing zero, so replication seeds were not spent). Unqueried: encoders with a
+reconstruction or self-supervised term (they keep unseen-emotion information by construction and would be the next thing to try, at a leakage cost
+that must be measured), and a larger held-out set than two emotions.
+
+## 4. Log
+
+- 08:25Z Builder-C started. CREMA-D downloaded from the official GitHub LFS media endpoint (7,442 clips / 91 actors / 6 emotions / 12 sentences
+  verified; 3 byte-identical wav pairs carry two emotion labels). WavLM-Base+, HuBERT-Base and wav2vec2-Base features cached on the VM disk only.
+- 08:55Z Mistake of mine: six job specs had an unquoted `cmd` containing `: ` (YAML error), which crashed workers 0 and 3 for ~15 min. Fixed in
+  `make_jobs.py` (cmd is now a JSON-quoted YAML scalar) and every spec is validated with `yaml.safe_load` in a staging dir before entering `pending`.
+- 09:05Z First real raw numbers: identity T1 0.71-0.80 across attackers, with shrinkage LDA strongest (0.804); LDA added to the suite (it beats the
+  neural attackers on pooled embeddings, as in few-shot speaker ID) and the raw reference rerun with the full suite.
+- 09:20Z H-C-006: the non-speech head/tail (300 ms) identifies actors at 56x chance. Escalation rule met (>=10x chance, >0.5 of the speech
+  accuracy 0.839): every full-clip identity number is partly a channel number; speech-trimmed input (`--trim`) is run next to it.
+- 09:40Z H-C-005: six prosody numbers give emotion UAR 0.454 at 11.6x chance identity; the learned encoders are far above that pair
+  (UAR 0.72, identity 5-8x), so the prosody floor does not bind. Oracle per-actor standardisation of the same six numbers: 0.535 / 2.0x.
+- 10:00Z First learned results: a plain 16-dim emotion-supervised bottleneck already cuts identity from 73x to 6.5x chance at 96% of the raw
+  emotion UAR; the adversary adds nothing measurable (paired, seed 0). LEACE fitted on the 56 training actors leaves 53x on unseen actors
+  (L = 0.73), as H-C-001(c) predicted; oracle LEACE (fitted on the attacked actors) still leaves 44x.
+- 11:15Z Coordinator's lesson from Focus A applied: LDA on emotion to 5 dims reaches UAR 0.743 at 7.0x chance (trimmed 0.732 / 7.4x), at least as
+  good as every learned encoder (paired UAR difference -0.015 to -0.022). Held-out-emotion criterion pre-registered at 11:35Z before any
+  c_he_* or c_lda4_* number was read; result above: no learned encoder passes.
+- Open and not run by 11:55Z (queued, will upload to HF as they finish): rate ladder d1/d2/d8/d32/d128/d256, posterior-6 and hard-label
+  releases, adversarial d16 lambda 3, d64 lambda 1, strong-adversary arms, VQ g4k64, seeds 1-2 for rate d16 and adversarial d16, trimmed learned
+  encoders. Re-run `summarize_all.py` + `notes_tables.py` on the VM to refresh `results/c_summary.*`.
