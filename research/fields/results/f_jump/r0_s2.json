@@ -1,0 +1,45 @@
+{
+ "tag": "s2",
+ "n_wells": 14194,
+ "n_features": 1027,
+ "published": {
+  "negcon": 0.9,
+  "nonrep": 0.41
+ },
+ "ours": {
+  "negcon": {
+   "mean_average_precision": 0.9006639321841645,
+   "fraction_below_p": 0.9375,
+   "fraction_below_corrected_p": 0.9375,
+   "n_compounds": 16,
+   "n_queries": 11388
+  },
+  "nonrep": {
+   "mean_average_precision": 0.4095925329963962,
+   "fraction_below_p": 0.9965870307167235,
+   "fraction_below_corrected_p": 0.9965870307167235,
+   "n_compounds": 293,
+   "n_queries": 11388
+  }
+ },
+ "stat_rows": {
+  "mean_average_precision": {
+   "negcon": 0.9006639321841645,
+   "nonrep": 0.4095925329963962
+  },
+  "fraction_below_p": {
+   "negcon": 0.9375,
+   "nonrep": 0.9965870307167235
+  },
+  "fraction_below_corrected_p": {
+   "negcon": 0.9375,
+   "nonrep": 0.9965870307167235
+  }
+ },
+ "match_within_0p03": {
+  "mean_average_precision": true,
+  "fraction_below_p": false,
+  "fraction_below_corrected_p": false
+ },
+ "R0_pass": true
+}

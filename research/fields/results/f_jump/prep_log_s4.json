@@ -1,0 +1,16 @@
+{
+ "scenario": 4,
+ "n_plates": 66,
+ "n_wells_raw": 25329,
+ "n_features_raw": 4762,
+ "n_wells_with_meta": 25329,
+ "n_feat_finite": 4751,
+ "n_plates_with_dmso": 66,
+ "n_variant_features": 4497,
+ "n_wells_dropped_no_dmso_plate": 0,
+ "n_removed_variance": 0,
+ "n_removed_correlation": 3479,
+ "n_features_final": 1018,
+ "n_wells_final": 25329,
+ "seconds": 44.5
+}

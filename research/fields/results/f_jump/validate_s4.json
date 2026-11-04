@@ -1,0 +1,50 @@
+{
+ "raw|xs": {
+  "n_gpu": 20348,
+  "n_copairs": 20348,
+  "n_both": 20348,
+  "max_abs_diff": 0.0010581951058585837,
+  "n_diff_gt_1e6": 20,
+  "p9999_abs_diff": 0.0001509034828408122,
+  "mean_abs_diff": 1.527208739272326e-07,
+  "mean_gpu": 0.3096789420317439,
+  "mean_copairs": 0.30967907496103503,
+  "seconds_gpu": 0.64
+ },
+ "raw|nonrep": {
+  "n_gpu": 20348,
+  "n_copairs": 20348,
+  "n_both": 20348,
+  "max_abs_diff": 0.0005680524929990716,
+  "n_diff_gt_1e6": 27,
+  "p9999_abs_diff": 0.00011308096321461097,
+  "mean_abs_diff": 1.0552379468966849e-07,
+  "mean_gpu": 0.44125555709285613,
+  "mean_copairs": 0.4412556294852599,
+  "seconds_gpu": 0.19
+ },
+ "rp32|xs": {
+  "n_gpu": 20348,
+  "n_copairs": 20348,
+  "n_both": 20348,
+  "max_abs_diff": 0.000320249865190525,
+  "n_diff_gt_1e6": 19,
+  "p9999_abs_diff": 9.585505301069475e-05,
+  "mean_abs_diff": 5.5152524190103725e-08,
+  "mean_gpu": 0.2878200980516655,
+  "mean_copairs": 0.2878201250216368,
+  "seconds_gpu": 0.13
+ },
+ "rp32|nonrep": {
+  "n_gpu": 20348,
+  "n_copairs": 20348,
+  "n_both": 20348,
+  "max_abs_diff": 0.0002652201928297071,
+  "n_diff_gt_1e6": 22,
+  "p9999_abs_diff": 0.00012099477096335937,
+  "mean_abs_diff": 7.050157363353823e-08,
+  "mean_gpu": 0.40815265281614727,
+  "mean_copairs": 0.40815265400849515,
+  "seconds_gpu": 0.14
+ }
+}
