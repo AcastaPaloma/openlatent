@@ -96,6 +96,9 @@ class Split:
         self.B = B
         self.label_prefix = label_prefix
 
+    def has_att(self, arm):
+        return (arm, self.kinds[0]) in self.leak["H"].stats
+
     def apc(self, s, arm, mode="xs"):
         key = f"apc|{s}|{arm}|{mode}"
         return self.z[key].astype(np.float64) if key in self.z.files else None
@@ -131,7 +134,7 @@ class Split:
 
     # ---- selection and the JK3 / JK2 ingredients
     def pick_ref(self, how="U"):
-        refs = [a for a in self.names(("ref",)) if self.U("V", a) is not None]
+        refs = [a for a in self.names(("ref",)) if self.U("V", a) is not None and self.has_att(a)]
         if not refs:
             return None
         if how == "U":
@@ -140,7 +143,7 @@ class Split:
 
     def jk3(self, R):
         out = dict(R=R, U_V_R=self.U("V", R), L_V_R=self.L("V", R), U_H_R=self.U("H", R), L_H_R=self.L("H", R))
-        inds = self.names(FAM_IND)
+        inds = [a for a in self.names(FAM_IND) if self.has_att(a) and self.U("V", a) is not None]
         # U-axis
         cand = [a for a in inds if self.L("V", a) <= out["L_V_R"] + 0.05]
         if cand:
@@ -164,7 +167,7 @@ class Split:
         return out
 
     def jk2(self, R):
-        lab = [a for a in self.names(("labelonly",))]
+        lab = [a for a in self.names(("labelonly",)) if self.has_att(a)]
         res = dict(R=R, U_H_R=self.U("H", R))
         cons = [a for a in lab if self.L("V", a) <= 0.25]
         res["constrained_candidates"] = len(cons)
@@ -224,6 +227,10 @@ def arm_table(sp):
     rows = ["| arm | family | d | U_V | U_H xs [95% CI] | U_H nonrep | worst att H [CI] | L_V | L_H [CI] | lin / mlp / knn / lgbm (H) |", "|---|---|---|---|---|---|---|---|---|---|"]
     for a in sp.arms:
         f = sp.fam[a]
+        if not sp.has_att(a):
+            uH = sp.U("H", a)
+            rows.append(f"| {a} | {f} | {sp.meta['dims'][a]} | {fmt(sp.U('V', a))} | {fmt(uH)} | {fmt(sp.U('H', a, 'nonrep'))} | n/a | n/a | n/a | n/a |")
+            continue
         uH = sp.U("H", a)
         uci = ci(sp.U_boot("H", a)) if uH is not None else [float("nan")] * 2
         w = sp.worst("H", a)
@@ -267,7 +274,7 @@ def main():
         if R is not None:
             r["R"] = R
             r["JK3"] = sp.jk3(R)
-            r["JK3_per_ref"] = {x: sp.jk3(x) for x in sp.names(("ref",)) if sp.U("V", x) is not None}
+            r["JK3_per_ref"] = {x: sp.jk3(x) for x in sp.names(("ref",)) if sp.U("V", x) is not None and sp.has_att(x)}
             Rl = sp.pick_ref("L")
             r["JK3_lowestL_ref"] = sp.jk3(Rl)
             r["JK2"] = sp.jk2(R)
