@@ -268,7 +268,7 @@ def main():
         base = raw_w >= r["JK1"]["threshold"] and all(v <= CHANCE + 0.03 for v in r["JK1"]["controls"].values())
         us, un = r["JK1"]["U_shuffle_compound"], r["JK1"]["U_noise16"]
         v0 = base and (us is None or un is None or abs(us - un) <= 0.01)                  # v0 text: two-sided
-        j0 = base and (us is None or un is None or us <= un + 0.03)                        # JUMP0 text / amendment A2: one-sided
+        j0 = base and (us is None or un is None or us <= un + 0.03)                        # JUMP0 text / deviation D1: one-sided
         r["JK1"].update(pass_v0_literal=bool(v0), pass_jump0_text=bool(j0), substantive_pass=bool(base))
         r["JK1"]["pass"] = bool(v0)
         v_jk1.append(v0)
@@ -289,7 +289,7 @@ def main():
         md.append(f"## split {sp.salt}: {sp.meta['n_compounds']} compounds (V/H), wells H {sp.meta['n_wells']['H']}, V {sp.meta['n_wells']['V']}, fit {sp.meta['n_wells']['fit']}\n")
         md.append(arm_table(sp) + "\n")
         md.append(f"**JK1**: raw worst-of-4 {fci(raw_w, r['JK1']['raw_worst_ci'], 3)} (needs >= {r['JK1']['threshold']:.2f}); controls {json.dumps({k: round(v, 3) for k, v in r['JK1']['controls'].items()})}; "
-                  f"U(shuffled compound) {fmt(r['JK1']['U_shuffle_compound'])} vs U(noise16) {fmt(r['JK1']['U_noise16'])} -> pass v0-literal={r['JK1']['pass_v0_literal']}, pass JUMP0-text (A2)={r['JK1']['pass_jump0_text']}\n")
+                  f"U(shuffled compound) {fmt(r['JK1']['U_shuffle_compound'])} vs U(noise16) {fmt(r['JK1']['U_noise16'])} -> pass v0-literal={r['JK1']['pass_v0_literal']}, pass JUMP0-text (D1, post-hoc sensitivity)={r['JK1']['pass_jump0_text']}\n")
         if R is not None:
             j = r["JK3"]
             md.append(f"**JK3** (R = {R}: U_V {fmt(j['U_V_R'])}, U_H {fmt(j['U_H_R'])}, L_V {fmt(j['L_V_R'], 2)}, L_H {fmt(j['L_H_R'], 2)}): U-axis F* = {j.get('F_star')} "
