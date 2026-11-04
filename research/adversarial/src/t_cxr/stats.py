@@ -4,7 +4,8 @@
   paired differences and worst-case-over-attackers are taken INSIDE each resample),
 * paired AUC difference with SE, percentile CI and MDE80 = (z_.975 + z_.80) * SE,
 * Hanley-McNeil analytic power table (published patient counts -> smallest resolvable AUC difference),
-* floor-envelope comparison at matched leakage (selection on validation only), and the three kill predicates of T.md.
+* floor-envelope comparison (FOCUS A2: linear interpolation of the floors' Pareto frontier at the learned point's worst-suite leakage / utility, the frontier recomputed inside every
+  patient resample) and the kill predicates of T.md.
 """
 from __future__ import annotations
 
@@ -90,38 +91,60 @@ def power_table(units=(("official test, pairs from 1,424 patients", 1424), ("off
     return rows
 
 
-# ---------------------------------------------------------------- floors envelope and kill predicates
-def pick_floor(D: dict, floors: list[dict], tol_leak: float) -> dict | None:
-    """F* = the floor with the highest VALIDATION utility among those whose VALIDATION leakage is <= L_val(D) + tol_leak.  None if no floor
-    reaches D's leakage (then D has headroom by definition).  Dicts need keys name, L_val, U_val."""
-    ok = [f for f in floors if f["L_val"] <= D["L_val"] + tol_leak]
-    return max(ok, key=lambda f: f["U_val"]) if ok else None
+# ---------------------------------------------------------------- floors envelope (FOCUS A2 matching rule) and kill predicates
+def _frontier(L: np.ndarray, U: np.ndarray):
+    """Pareto frontier of floor operating points (lower leakage L, higher utility U), sorted by L; returns arrays (Lf, Uf) with Uf non-decreasing."""
+    o = np.argsort(L, kind="stable")
+    Ls, Us = L[o], U[o]
+    keepL, keepU, best = [], [], -np.inf
+    for l, u in zip(Ls, Us):
+        if u > best + 1e-12:
+            keepL.append(l); keepU.append(u); best = u
+    return np.array(keepL), np.array(keepU)
 
 
-def pick_floor_leak(D: dict, floors: list[dict], tol_util: float) -> dict | None:
-    """Mirror axis: among floors with U_val >= U_val(D) - tol_util, the one with the lowest VALIDATION leakage."""
-    ok = [f for f in floors if f["U_val"] >= D["U_val"] - tol_util]
-    return min(ok, key=lambda f: f["L_val"]) if ok else None
+def envelope_at(Lf: np.ndarray, Uf: np.ndarray, L_at: float) -> float:
+    """utility envelope of the floors at leakage L_at: LINEAR interpolation of the Pareto frontier; constant beyond the ends."""
+    fl, fu = _frontier(Lf, Uf)
+    return float(np.interp(L_at, fl, fu))
 
 
-def envelope_verdict(D: dict, floors: list[dict], tol_leak: float, tol_util: float, margin_u: float, margin_l: float) -> dict:
-    """D beats the envelope iff (utility axis) U_test(D) - U_test(F*) >= margin_u with the paired CI lower bound > 0, OR (leakage axis)
-    L_test(F_L) - L_test(D) >= margin_l with CI lower bound > 0.  D/floors carry test-level `U_boot`, `L_boot` (B,) and `U`, `L` points."""
-    out = dict(name=D["name"], utility_axis=None, leak_axis=None)
-    fs = pick_floor(D, floors, tol_leak)
-    if fs is None:
-        out["utility_axis"] = dict(floor=None, beats=True, note="no floor reaches D's validation leakage + tol")
-    else:
-        r = paired(D["U_boot"], fs["U_boot"], D["U"], fs["U"])
-        out["utility_axis"] = dict(floor=fs["name"], beats=bool(r["diff"] >= margin_u and r["lo"] > 0), **r)
-    fl = pick_floor_leak(D, floors, tol_util)
-    if fl is None:
-        out["leak_axis"] = dict(floor=None, beats=True, note="no floor holds D's validation utility - tol")
-    else:
-        r = paired(fl["L_boot"], D["L_boot"], fl["L"], D["L"])           # floor leaks MORE than D  <=>  D better
-        out["leak_axis"] = dict(floor=fl["name"], beats=bool(r["diff"] >= margin_l and r["lo"] > 0), **r)
-    out["beats_envelope"] = bool(out["utility_axis"]["beats"] or out["leak_axis"]["beats"])
-    return out
+def envelope_leak_at(Lf: np.ndarray, Uf: np.ndarray, U_at: float) -> float:
+    """lower envelope of leakage at utility U_at: the smallest leakage reachable at utility >= U_at (linear interpolation of the frontier, inverse)."""
+    fl, fu = _frontier(Lf, Uf)
+    if U_at <= fu[0]:
+        return float(fl[0])
+    if U_at > fu[-1]:
+        return float("nan")                                  # no floor reaches that utility: D is above the floors' utility range
+    return float(np.interp(U_at, fu, fl))
+
+
+def envelope_boot(floors_L: np.ndarray, floors_U: np.ndarray, L_D: np.ndarray, U_D: np.ndarray) -> dict:
+    """floors_L / floors_U: (n_floors, B) bootstrap matrices on the SAME patient resamples as L_D / U_D (B,).  The frontier is recomputed INSIDE each
+    resample (the maximum over floors is therefore not given a free pass).  Returns per-resample deltas
+       dU = U_D - E_U(L_D)   (positive: D keeps more utility than the floors at D's leakage)
+       dL = E_L(U_D) - L_D   (positive: D leaks less than the floors at D's utility)   [nan if D's utility is above every floor's]."""
+    B = L_D.shape[0]
+    dU, dL = np.empty(B), np.empty(B)
+    for b in range(B):
+        dU[b] = U_D[b] - envelope_at(floors_L[:, b], floors_U[:, b], L_D[b])
+        dL[b] = envelope_leak_at(floors_L[:, b], floors_U[:, b], U_D[b]) - L_D[b]
+    return dict(dU=dU, dL=dL)
+
+
+def envelope_verdict(point_floors_L, point_floors_U, L_D, U_D, boot: dict, margin_u: float, margin_l: float) -> dict:
+    """Machine-checkable verdict.  D beats the floor envelope iff the LOWER 95% bound of dU >= margin_u (utility axis) OR the lower 95% bound of dL >= margin_l (leakage axis).
+    dL is nan (floors never reach D's utility) -> that axis counts as passed with a note.  margin_* are fixed from the printed MDE80 (T.md 3.8)."""
+    pu = U_D - envelope_at(np.asarray(point_floors_L), np.asarray(point_floors_U), L_D)
+    pl = envelope_leak_at(np.asarray(point_floors_L), np.asarray(point_floors_U), U_D) - L_D
+    dU, dL = boot["dU"], boot["dL"]
+    loU, hiU = float(np.nanpercentile(dU, 2.5)), float(np.nanpercentile(dU, 97.5))
+    ok_l = ~np.isnan(dL)
+    loL = float(np.nanpercentile(dL, 2.5)) if ok_l.mean() > 0.5 else float("nan")
+    util = bool(loU >= margin_u)
+    leak = True if np.isnan(pl) else bool(loL >= margin_l)
+    return dict(point_dU=float(pu), dU_lo=loU, dU_hi=hiU, point_dL=float(pl), dL_lo=loL, utility_axis_beats=util, leak_axis_beats=leak,
+                beats_envelope=bool(util or leak), mde80_dU=float(Z_MDE * np.nanstd(dU, ddof=1)), mde80_dL=float(Z_MDE * np.nanstd(dL, ddof=1)) if ok_l.mean() > 0.5 else float("nan"))
 
 
 def kill_floor_envelope(verdicts: list[dict]) -> bool:
@@ -129,11 +152,17 @@ def kill_floor_envelope(verdicts: list[dict]) -> bool:
     return not any(v["beats_envelope"] for v in verdicts)
 
 
-def kill_measurability(raw_worst_auc: float, metadata_floor_auc: float, controls_auc: list[float], min_auc: float = 0.65, min_over_meta: float = 0.03, ctrl_tol: float = 0.03) -> dict:
-    """KT1: raw worst-case matched-negative AUC must be >= min_auc AND >= metadata floor + min_over_meta, every control within ctrl_tol of 0.5."""
-    c = max(abs(a - 0.5) for a in controls_auc) if controls_auc else 0.0
-    return dict(fires=bool(raw_worst_auc < min_auc or raw_worst_auc < metadata_floor_auc + min_over_meta or c > ctrl_tol), raw_worst=raw_worst_auc,
-                metadata_floor=metadata_floor_auc, max_control_dev=c)
+def control_tolerance(se: float, n_pos: int, n_neg: int) -> float:
+    """FOCUS A2: control tolerance = max(1.96 SE of the control, design-effect-aware MDE of a single AUC at chance)."""
+    return float(max(1.96 * se, Z_MDE * hm_se(0.5, n_pos, n_neg)))
+
+
+def kill_measurability(raw_worst_auc: float, metadata_floor_auc: float, controls: list[tuple[float, float]], n_pos: int, n_neg: int,
+                       min_auc: float = 0.65, min_over_meta: float = 0.03) -> dict:
+    """KT1: raw worst-case matched-negative AUC must be >= min_auc AND >= metadata floor + min_over_meta, and every control (auc, se) within control_tolerance of 0.5."""
+    bad = [(a, se) for a, se in controls if abs(a - 0.5) > control_tolerance(se, n_pos, n_neg)]
+    return dict(fires=bool(raw_worst_auc < min_auc or raw_worst_auc < metadata_floor_auc + min_over_meta or bad), raw_worst=raw_worst_auc,
+                metadata_floor=metadata_floor_auc, controls_failed=bad)
 
 
 def kill_demographics(auc_demo: float, auc_worst: float, share: float = 0.90) -> dict:

@@ -36,13 +36,13 @@ def make_fake(root, ds="kth_ilic", n_p=6, n_scen=3, acts=("boxing", "walking"), 
         json.dump(dict(secrets=dict(identity=dict(within=dict(test_ids=ids)))), open(os.path.join(d, "result.json"), "w"))
 
 
-def test_runners_on_fake_harness(tmp_path):
+def test_runners_on_fake_harness(tmp_path, monkeypatch):
     root, out = str(tmp_path / "h"), str(tmp_path / "o")
     make_fake(root)
     os.makedirs(out)
-    rr.DATASETS = ("kth_ilic",)
-    rr.FAMILIES = {"kth_ilic": ["pose_canon_down16", "pose_canon_down16_s1", "pose_canon_down16_dino"]}
-    rr.K_GRID = [1, 2, 4]
+    monkeypatch.setattr(rr, "DATASETS", ("kth_ilic",))
+    monkeypatch.setattr(rr, "FAMILIES", {"kth_ilic": ["pose_canon_down16", "pose_canon_down16_s1", "pose_canon_down16_dino"]})
+    monkeypatch.setattr(rr, "K_GRID", [1, 2, 4])
     a = argparse.Namespace(root=root, out=out)
     rr.cmd_cert(a)
     rr.cmd_select(a)
@@ -61,10 +61,6 @@ def test_runners_on_fake_harness(tmp_path):
 
 def test_toy_command(tmp_path):
     a = argparse.Namespace(root=None, out=str(tmp_path))
-    import s_suite.run_real as r2
-    # shrink: 2 seeds
-    orig = r2.eb.toy_items
-    r2.cmd_toy.__globals__["range"] = range
-    r2.cmd_toy(a)
+    rr.cmd_toy(a)
     d = json.load(open(os.path.join(str(tmp_path), "toy_budget.json")))
     assert set(d) >= {"0.0", "0.5", "0.9", "shuffled_person_control"}

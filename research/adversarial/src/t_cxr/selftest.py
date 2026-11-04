@@ -57,21 +57,27 @@ def t_stats():
     ba, bb = S.auc_boot(y, s1, codes, pb), S.auc_boot(y, s2, codes, pb)
     r = S.paired(ba, bb, S.auc(y, s1), S.auc(y, s2))
     check("paired SE at n=1400 patients, rho=.6 within 40% of the analytic value", abs(r["se"] / (S.hm_mde_paired(0.70, P, P, 0.6) / S.Z_MDE) - 1) < 0.4, f"SE {r['se']:.4f}, analytic {S.hm_mde_paired(0.70, P, P, 0.6) / S.Z_MDE:.4f}, MDE80 {r['mde80']:.4f}")
-    # 3. envelope toy: a defence strictly better than the floors beats the envelope; one equal to the best floor does not
-    B = 300
-    mk = lambda name, Lv, Uv, L, U, sd=0.01: dict(name=name, L_val=Lv, U_val=Uv, L=L, U=U, L_boot=L + sd * rng.standard_normal(B), U_boot=U + sd * rng.standard_normal(B))
-    floors = [mk("blur_s2", 0.60, 0.70, 0.60, 0.70, 0.004), mk("down_f4", 0.70, 0.75, 0.70, 0.75, 0.004), mk("rw_mu.01", 0.80, 0.78, 0.80, 0.78, 0.004)]
-    good = mk("learned_good", 0.60, 0.76, 0.60, 0.76, 0.004)
-    same = mk("learned_same", 0.60, 0.70, 0.60, 0.70, 0.004)
-    # shared resample noise would be needed for real paired CIs; here independent noise makes the CI wider (conservative), which the test accounts for
-    vg = S.envelope_verdict(good, floors, 0.02, 0.01, 0.02, 0.03)
-    vs = S.envelope_verdict(same, floors, 0.02, 0.01, 0.02, 0.03)
-    check("envelope: strictly better defence beats the floor envelope", vg["beats_envelope"], f"floor {vg['utility_axis']['floor']}, dU {vg['utility_axis'].get('diff', None)}")
-    check("envelope: defence equal to the best floor does NOT beat it", not vs["beats_envelope"], f"floor {vs['utility_axis']['floor']}")
-    check("KT2 fires when no defence beats the envelope, not otherwise", S.kill_floor_envelope([vs]) and not S.kill_floor_envelope([vs, vg]))
+    # 3. envelope toy (FOCUS A2): floors on a frontier; a defence ABOVE the frontier beats it, one ON it does not
+    B = 400
+    rngb = np.random.default_rng(5)
+    shared = rngb.standard_normal(B) * 0.004                  # resample-level noise shared by all releases = paired
+    mkb = lambda L, U: (L + shared + 0.002 * rngb.standard_normal(B), U + shared + 0.002 * rngb.standard_normal(B))
+    fl = [(0.50, 0.50), (0.60, 0.70), (0.70, 0.75), (0.80, 0.78), (0.95, 0.805)]
+    FL = np.stack([mkb(l, u)[0] for l, u in fl]); FU = np.stack([mkb(l, u)[1] for l, u in fl])
+    pl, pu = np.array([l for l, _ in fl]), np.array([u for _, u in fl])
+    for nm, (L, U) in dict(good=(0.65, 0.78), on_frontier=(0.65, 0.725), leaks_less=(0.55, 0.70)).items():
+        LD, UD = mkb(L, U)
+        bt = S.envelope_boot(FL, FU, LD, UD)
+        v = S.envelope_verdict(pl, pu, L, U, bt, margin_u=0.02, margin_l=0.03)
+        globals().setdefault("_V", {})[nm] = v
+    check("envelope: a defence above the frontier beats it on the utility axis", _V["good"]["utility_axis_beats"] and _V["good"]["beats_envelope"], f"dU {_V['good']['point_dU']:.3f} [{_V['good']['dU_lo']:.3f}, {_V['good']['dU_hi']:.3f}]")
+    check("envelope: a defence ON the frontier (interpolated) does not beat it", not _V["on_frontier"]["beats_envelope"], f"dU {_V['on_frontier']['point_dU']:.3f}, dL {_V['on_frontier']['point_dL']:.3f}")
+    check("envelope: a defence that leaks less at equal utility beats it on the leakage axis", _V["leaks_less"]["leak_axis_beats"], f"dL {_V['leaks_less']['point_dL']:.3f} lo {_V['leaks_less']['dL_lo']:.3f}")
+    check("KT2 fires when no defence beats the envelope, not otherwise", S.kill_floor_envelope([_V["on_frontier"]]) and not S.kill_floor_envelope([_V["on_frontier"], _V["good"]]))
     # 4. kill predicates
     check("KT1 fires for a weak raw attacker and for a failed control, passes otherwise",
-          S.kill_measurability(0.62, 0.52, [0.5, 0.51])["fires"] and S.kill_measurability(0.80, 0.52, [0.5, 0.60])["fires"] and not S.kill_measurability(0.80, 0.52, [0.5, 0.51])["fires"])
+          S.kill_measurability(0.62, 0.52, [(0.5, 0.011), (0.51, 0.011)], 1400, 1400)["fires"] and S.kill_measurability(0.80, 0.52, [(0.5, 0.011), (0.60, 0.011)], 1400, 1400)["fires"]
+          and not S.kill_measurability(0.80, 0.52, [(0.5, 0.011), (0.51, 0.011)], 1400, 1400)["fires"])
     check("KT3 fires when demographics explain >= 90% of the excess", S.kill_demographics(0.885, 0.90)["fires"] and not S.kill_demographics(0.70, 0.90)["fires"])
     # 5. power table sanity: MDE shrinks with n
     t = {r["units"]: r for r in S.power_table(aucs=(0.7,))}
@@ -181,6 +187,20 @@ def t_heads_planted():
           str([(a, round(b, 3), round(c, 3), round(e, 3)) for a, b, c, e in res]))
 
 
+def t_roles(data, pri):
+    P = data
+    d = meta.load(f"{P}/Data_Entry_2017_v2020.csv", f"{P}/test_list.txt", f"{P}/train_val_list.txt")
+    seen = meta.seen_patients([f"{pri}/image_pairs_training_10000.txt", f"{pri}/image_pairs_validation_2000.txt"], d)
+    dr = meta.assign_roles(d, seen, "PROVISIONAL-selftest", 0)
+    rc = meta.role_counts(dr)
+    sets = {r: set(dr.loc[dr.role == r, "pid"]) for r in "SAVT"}
+    check("roles are patient-disjoint and cover all 30,805 patients", all(not (sets[a] & sets[b]) for a in "SAVT" for b in "SAVT" if a < b) and sum(len(v) for v in sets.values()) == 30805, str({k: v["ge2"] for k, v in rc.items()}))
+    check("generator-seen patients: 10,795 (8,714 multi-visit), none in T/V/A", rc["S"]["patients"] == 10795 and rc["S"]["ge2"] == 8714)
+    pte, rte = pairs.build(dr, "T", "N2", 1, "te0", col="role"); ptr, rtr = pairs.build(dr, "A", "N2", 2, "tr0", col="role"); pv, rv = pairs.build(dr, "V", "N2", 1, "v0", col="role")
+    check("N2 on T: <= 1% positives dropped; gate: metadata-only GBM (all fields) <= 0.56 on T and on V", rte["dropped"] / rte["positives_requested"] < 0.01 and pairs.metadata_floor(ptr, pte, dr, "all") <= 0.56 and pairs.metadata_floor(ptr, pv, dr, "all") <= 0.56,
+          f"T {pairs.metadata_floor(ptr, pte, dr, 'all'):.3f} V {pairs.metadata_floor(ptr, pv, dr, 'all'):.3f} device-only T {pairs.metadata_floor(ptr, pte, dr, 'device'):.3f}")
+
+
 def t_pairs(data):
     P = data
     d = meta.load(f"{P}/Data_Entry_2017_v2020.csv", f"{P}/test_list.txt", f"{P}/train_val_list.txt")
@@ -203,10 +223,10 @@ def t_pairs(data):
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default="")
+    ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt")
     a = ap.parse_args()
     torch.set_num_threads(4)
-    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("pairs", lambda: t_pairs(a.data))]:
+    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []):
         if nm in a.skip:
             continue
         print(f"== {nm}", flush=True)

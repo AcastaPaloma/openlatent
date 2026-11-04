@@ -2,6 +2,8 @@
 
 Contract
 --------
+* Every certificate prints the evaluator's sha256, the frozen sha256 and the git tag (freeze.py); `split_status` is "sealed" only when the
+  query was recorded in the sealed-query ledger (ledger.py), otherwise it names what the split is ("development", "burned", "synthetic").
 * A suite is DECLARED before any sealed number exists: an ordered tuple of attacker names, the metric, alpha, bootstrap size and seed
   (`SuiteDecl`). Its digest is part of the certificate. `certify` refuses predictions that omit a declared attacker or carry an
   undeclared one (no post-hoc additions, no silent drops).
@@ -28,9 +30,10 @@ from typing import Dict, Optional, Tuple
 
 import numpy as np
 
+from . import freeze, ledger
 from . import stats as st
 
-VERSION = "s_suite/1"
+VERSION = "s_suite/2"
 
 
 @dataclass(frozen=True)
@@ -135,12 +138,20 @@ def _chance(decl: SuiteDecl, test: SplitPreds):
 
 
 def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Optional[np.ndarray] = None,
-            reference: Optional[float] = None) -> dict:
+            reference: Optional[float] = None, split_status: str = "development", sealed_ledger_dir: Optional[str] = None,
+            release_digest: Optional[str] = None, split_id: Optional[str] = None, amendment: Optional[str] = None) -> dict:
     """Build the certificate. `label_only`: predictions (same format as one attacker) of a model that uses only the public/utility
     label (or nothing); evaluated on the test and used as baseline if above chance. `reference`: ceiling attacker value (e.g. the raw
     release) used to normalise leakage; default 1.0."""
     _check_suite(decl, val, "val")
     _check_suite(decl, test, "test")
+    ledger_entry = None
+    if sealed_ledger_dir is not None:
+        # a split is called SEALED only if its one query is on the ledger; the ledger refuses a repeat for the same release digest
+        ledger_entry = ledger.record_sealed_query(sealed_ledger_dir, release_digest, split_id, amendment)
+        split_status = "sealed"
+    elif split_status == "sealed":
+        raise ValueError("split_status='sealed' requires sealed_ledger_dir, release_digest and split_id")
     names = list(decl.attackers)
     K = len(names)
     inv, m = st.unit_index(test.cluster)
@@ -232,7 +243,9 @@ def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Opti
         verdict = "NOT_RESOLVED"
 
     payload = dict(
-        version=VERSION, declaration={**asdict(decl), "attackers": names}, decl_digest=decl.digest(),
+        version=VERSION, evaluator=freeze.evaluator_block(VERSION), split_status=split_status,
+        ledger_entry=(None if ledger_entry is None else dict(split_id=ledger_entry["split_id"], git_head=ledger_entry["git_head"], repeat=ledger_entry["repeat"])),
+        declaration={**asdict(decl), "attackers": names}, decl_digest=decl.digest(),
         data=dict(n_test_items=n_items, n_test_units=m, n_val_items=len(val.y), n_val_units=st.unit_index(val.cluster)[1],
                   val_digest=val.digest(names), test_digest=test.digest(names)),
         chance=ch, label_only=lab, baseline_used=base, reference=ref,

@@ -37,10 +37,10 @@ def _rng(key) -> np.random.Generator:
     return np.random.default_rng(int(unit(key, "t_cxr:rng") * 2**32))
 
 
-def positives(d: pd.DataFrame, split: str, per_patient: int = 1, seed: str = "p0", require_distinct_fu: bool = True) -> pd.DataFrame:
+def positives(d: pd.DataFrame, split: str, per_patient: int = 1, seed: str = "p0", require_distinct_fu: bool = True, col: str = "split") -> pd.DataFrame:
     """One (or more) same-patient pairs per multi-visit patient of `split`; i = earlier visit, j = later visit."""
     rows = []
-    sub = d[d.split == split]
+    sub = d[d[col] == split]
     for pid, g in sub.groupby("pid", sort=True):
         if len(g) < 2:
             continue
@@ -81,10 +81,10 @@ def _candidates(d_arr, pool_idx_by_cell, pool_all, i, j, tier, used_pid):
     return c
 
 
-def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1, seed: str = "p0", positives_df: pd.DataFrame | None = None) -> tuple[pd.DataFrame, dict]:
+def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1, seed: str = "p0", positives_df: pd.DataFrame | None = None, col: str = "split") -> tuple[pd.DataFrame, dict]:
     """Return (pairs, report).  pairs columns: triple, label, a, b (image rows), pid_a, pid_b, tier, design, long_gap, fu_gap."""
-    pos = positives(d, split, per_patient, seed) if positives_df is None else positives_df
-    sub = d[d.split == split]
+    pos = positives(d, split, per_patient, seed, col=col) if positives_df is None else positives_df
+    sub = d[d[col] == split]
     sex, view, age = d["male"].to_numpy(), d["pa"].to_numpy(), d["age"].to_numpy().astype(int)
     W, H = d["W"].to_numpy().astype(float), d["H"].to_numpy().astype(float)
     sx, pid = d["sx"].to_numpy(), d["pid"].to_numpy()

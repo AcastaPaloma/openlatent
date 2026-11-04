@@ -77,10 +77,11 @@ def run(job_path, gpu):
     logdir.mkdir(parents=True, exist_ok=True)
     git("pull", "-q", "--ff-only", "origin", "fields-research")
     env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(gpu), OUT=str(out), JOB_NAME=name, PYTHONUNBUFFERED="1")
+    commit0 = git("rev-parse", "--short", "HEAD")  # commit the job starts on (pull happened above)
     t0 = time.time()
     with open(logdir / f"{name}.log", "a") as lf:
         rc = subprocess.call(cfg["cmd"], shell=True, cwd=REPO, env=env, stdout=lf, stderr=subprocess.STDOUT)
-    res = dict(name=name, config=cfg, commit=git("rev-parse", "--short", "HEAD"), exit_code=rc, gpu=gpu,
+    res = dict(name=name, config=cfg, commit=commit0, commit_after=git("rev-parse", "--short", "HEAD"), exit_code=rc, gpu=gpu,
                host=socket.gethostname(), seconds=round(time.time() - t0, 1), finished_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     shutil.copy(logdir / f"{name}.log", out / "train.log")
     (out / "job_result.json").write_text(json.dumps(res, indent=1))

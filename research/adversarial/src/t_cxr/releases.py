@@ -10,6 +10,7 @@ Name grammar (parameters after the underscore):
   rw2_mu0.01   random SMOOTH flow (corr. length ~12 px) with sup-norm of the raw flow = 1, i.e. the same hard bound mu as the paper
   rw3_mu0.01   random flow with the radially averaged power spectrum and RMS distribution MEASURED on the learned generator at that mu
   blur_s2 | down_f4 | noise_s0.1 | quant_l8 | quantd_l8 (dithered) | jpeg_q10 | pca_k32 | dppix_b8
+  rim_w24 | core_w24   keep ONLY the 24-px frame / ZERO the frame (acquisition-fingerprint controls; T.md stage 1)
   pcx_mu0.01   PriCheXy-Net released generator (learned)
 """
 from __future__ import annotations
@@ -126,6 +127,10 @@ class Releases:
             p = F.avg_pool2d(x, b)
             nz = torch.stack([_laplace(_tg(i, name), p.shape[-2:], m / (b * b * eps)) for i in ids]).unsqueeze(1).to(self.dev)
             y = F.interpolate((p + nz).clamp(0, 1), scale_factor=b, mode="nearest")
+        elif kind in ("rim", "core"):                                                              # acquisition-fingerprint controls
+            w = int(par.removeprefix("w"))
+            m = torch.zeros_like(x); m[..., w:-w, w:-w] = 1
+            y = x * (1 - m) if kind == "rim" else x * m
         elif kind == "pcx":
             mu = float(par.removeprefix("mu"))
             if mu not in self._gens:
@@ -164,5 +169,9 @@ FLOOR_GRID = (
     + [f"rw1_mu{m}" for m in (0.005, 0.01, 0.02)] + [f"rw2_mu{m}" for m in (0.005, 0.01, 0.02, 0.04)] + [f"rw3_mu{m}" for m in (0.005, 0.01)]
     + [f"blur_s{s}" for s in (0.5, 1, 2, 4)] + [f"down_f{f}" for f in (2, 4, 8)] + [f"noise_s{s}" for s in (0.02, 0.05, 0.1, 0.2)]
     + [f"quant_l{l}" for l in (32, 8, 4)] + [f"quantd_l{l}" for l in (8, 4)] + [f"jpeg_q{q}" for q in (30, 10, 3)] + [f"pca_k{k}" for k in (8, 32, 128)]
-    + ["dppix_b8"])
+    + ["dppix_b8", "rim_w24", "core_w24"])
 LEARNED = [f"pcx_mu{m}" for m in (0.001, 0.005, 0.01)]
+
+
+import hashlib
+FROZEN_FLOORS_SHA256 = hashlib.sha256("\n".join(sorted(FLOOR_GRID + ["labels14"])).encode()).hexdigest()   # the list frozen in T.md section 4 (labels14 = code floor, heads.py/utility.py)

@@ -48,6 +48,40 @@ def load(csv: str | Path, test_list: str | Path, trval_list: str | Path, val_fra
     return d
 
 
+def seen_patients(pair_files, d: pd.DataFrame) -> set:
+    """Patients that appear in PriCheXy-Net's training or validation pair lists = patients the released generator was fitted / early-stopped on."""
+    row = dict(zip(d["img"], d["pid"]))
+    seen = set()
+    for f in pair_files:
+        for line in Path(f).read_text().split("\n"):
+            t = line.split()
+            if len(t) >= 2:
+                seen.add(row[t[0]]); seen.add(row[t[1]])
+    return seen
+
+
+def assign_roles(d: pd.DataFrame, seen: set, salt: str, rot: int = 0, val_share: float = 0.39) -> pd.DataFrame:
+    """Three-way patient-disjoint roles (Auditor-2 F4 / FOCUS A2):
+       S  defender-SEEN (released generator trained / early-stopped on them)   -> sensitivity arm and attacker-scaling rungs only
+       among the generator-UNSEEN patients (multi- and single-visit alike), three hash buckets b = floor(3 * unit(pid, salt:rot)):
+       T  sealed test = bucket `rot`;  V  validation = `val_share` of bucket (rot+1) % 3;  A  attacker-train = everything else unseen.
+    `salt` is committed by the sealed-split custodian (main agent) AFTER the floor list is frozen; rot in {0,1,2} rotates the test units."""
+    d = d.copy()
+    bucket = d["pid"].map(lambda p: int(3 * unit(p, f"{salt}:rot")))
+    u2 = d["pid"].map(lambda p: unit(p, f"{salt}:val"))
+    d["role"] = np.where(d["pid"].isin(seen), "S", np.where(bucket == rot, "T", np.where((bucket == (rot + 1) % 3) & (u2 < val_share), "V", "A")))
+    return d
+
+
+def role_counts(d: pd.DataFrame) -> dict:
+    n = d.groupby("pid").size()
+    out = {}
+    for r in ("S", "A", "V", "T"):
+        p = d.loc[d.role == r, "pid"].unique()
+        out[r] = dict(images=int((d.role == r).sum()), patients=int(len(p)), ge2=int((n[p] >= 2).sum()))
+    return out
+
+
 def counts(d: pd.DataFrame) -> dict:
     """Published-count audit: images, patients, multi-visit patients per split (feeds the power audit)."""
     out = {}
