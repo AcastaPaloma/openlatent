@@ -84,6 +84,33 @@ normalisation lowered identity by 0.05 at an emotion cost of 0.02 (as predicted)
 raises emotion to 0.535 while identity drops to 2x chance. It needs the actor's own statistics (oracle), so it is a different threat
 model, but it is the floor to beat for any per-actor-calibrated release (H-X-008 on C).
 
+## 2b. Pre-registration: held-out-emotion protocol (written 2026-11-04 ~11:35Z, before any c_he_* or c_lda4_* number was read)
+
+Why: on the full-emotion protocol the label-supervised LDA projection to 5 dims (UAR 0.743 [0.725,0.763], identity 7.0x chance) is
+at least as good as every learned encoder run so far (paired UAR difference -0.015 to -0.022, significant; identity difference
+-0.006 to -0.031, significant only for VQ). A learned encoder can only justify itself where a 5-dim linear projection of the labels
+throws away information the task still needs: emotions the projection never saw.
+
+Protocol: encoder / projection fitted with the labels ANG, HAP, NEU, SAD only (train-fold actors). The released z is then probed with
+six-way probes trained on train+val actors (all six labels visible to the PROBE, never to the encoder) and scored on the sealed test actors.
+Primary utility U_HE = mean recall of DIS and FEA on test actors (chance 1/6 = 0.167; a z that kept nothing about the unseen emotions
+sits near the recall that the four known-class directions happen to give them, which `c_lda4_*` measures). Secondary: recall of the four
+trained emotions; identity T1 with the full attacker suite (unseen test actors), unchanged.
+
+Comparators (same inputs, same attackers, same folds): `c_lda4_k3` (C-1 = 3 LDA dims), `c_lda4_k5` (3 LDA + 2 residual-PCA dims, width
+matched to d=4/16 encoders as closely as possible) and `c_lda4_k16` (width matched to the d=16 encoder); raw frozen features as the
+upper reference.
+
+Success (all must hold, learned encoder vs the width-matched LDA comparator, paired bootstrap over the 91 actors, seed 0 first):
+1. U_HE(learned) - U_HE(LDA) >= +0.05 with the 95% interval of the difference above 0;
+2. identity T1 (worst attacker) of the learned z not above the LDA comparator by more than 0.02 absolute (upper end of the 95% interval of
+   the difference <= 0.02);
+3. recall of the four trained emotions within 0.03 of the comparator.
+A winner is then replicated with seeds 1 and 2 (same sign, same thresholds on the 3-seed mean) before any claim. If no learned encoder
+(rate d4/d16/d64, adversarial d16, VQ g2k64) meets 1-3, the learned-encoder arm of Focus C is closed: on CREMA-D audio the supervised
+5-dim projection (or a rate bottleneck) is the method, the contribution is the benchmark and its controls (channel floor, prosody floor,
+retrained-attacker suite), and the next question moves to where a projection cannot be fitted (no labels, new emotion sets, RAVDESS transfer).
+
 ## 3. Log
 
 (newest last)
