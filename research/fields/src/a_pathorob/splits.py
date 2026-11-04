@@ -88,8 +88,31 @@ def _take(rng, units, n):
     return units[:n], units[n:]
 
 
-def make_splits(P, seed, test_frac=0.25, fracs=(0.45, 0.35, 0.20)):
-    """returns dict of patch-index arrays: A, B, V, C (ID centres), OOD1, OOD2, OOD (all unseen-centre patches)."""
+def confound_A(P, idxA, rho, seed):
+    """Make the adapter-train set shortcut-prone: class j has a 'home' centre (j mod #centres); a share `rho` of the class-j patches
+    in A comes from the home centre, the rest from the other centres (patch-level subsampling of the units already in A)."""
+    rng = np.random.RandomState(20_000 + seed)
+    Kc = P.n_id_centres
+    keep = []
+    for j in range(len(P.classes)):
+        ij = idxA[P.y[idxA] == j]
+        h, o = ij[P.c[ij] == j % Kc], ij[P.c[ij] != j % Kc]
+        n_o = int(round(len(h) * (1 - rho) / rho))
+        keep.append(h)
+        if len(o):
+            keep.append(rng.choice(o, size=min(n_o, len(o)), replace=False))
+    return np.sort(np.concatenate(keep))
+
+
+def seen_held_classes(P):
+    K = len(P.classes)
+    seen = list(range((K + 1) // 2))
+    return seen, [k for k in range(K) if k not in seen]
+
+
+def make_splits(P, seed, test_frac=0.25, fracs=(0.45, 0.35, 0.20), confound=None, holdout=False):
+    """returns dict of patch-index arrays: A, B, V, C (ID centres), OOD1, OOD2, OOD (all unseen-centre patches).
+    confound=rho: A is subsampled to centre-class correlation rho.  holdout: A keeps only the 'seen' half of the classes."""
     idm = ~P.ood
     g = _unit_table(P, idm)
     unit_split = {}
@@ -110,6 +133,11 @@ def make_splits(P, seed, test_frac=0.25, fracs=(0.45, 0.35, 0.20)):
             for u in us_:
                 unit_split[u] = name
     sp = {k: np.where(idm & np.array([unit_split.get(u, "") == k for u in P.u]))[0] for k in "ABVC"}
+    if holdout:
+        seen, _ = seen_held_classes(P)
+        sp["A"] = sp["A"][np.isin(P.y[sp["A"]], seen)]
+    if confound is not None:
+        sp["A"] = confound_A(P, sp["A"], confound, seed)
     # OOD: fixed halves by unit, stratified by centre
     oodm = P.ood
     go = _unit_table(P, oodm)

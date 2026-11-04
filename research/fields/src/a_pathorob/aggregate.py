@@ -39,12 +39,13 @@ def load_runs(dirs):
 class Cell:
     """one (encoder, dataset): sealed-test unit table + bootstrap weights"""
 
-    def __init__(self, enc, ds, recs, dirs, B, seed=0):
-        self.enc, self.ds = enc, ds
-        self.recs = [r for r in recs if r["encoder"] == enc and r["dataset"] == ds]
+    def __init__(self, enc, ds, var, recs, dirs, B, seed=0):
+        self.enc, self.ds, self.var = enc, ds, var
+        self.recs = [r for r in recs if r["encoder"] == enc and r["dataset"] == ds and r.get("variant", "crossed") == var]
         arr = None
+        suffix = "" if var == "crossed" else f"__{var}"
         for d in dirs:
-            f = next(iter(Path(d).glob(f"{enc}__{ds}__seed*.splitarrays.npz")), None)
+            f = next(iter(Path(d).glob(f"{enc}__{ds}__seed[0-9]{suffix}.splitarrays.npz")), None)
             if f is not None:
                 arr = np.load(f)
                 break
@@ -132,14 +133,14 @@ def main():
     ap.add_argument("--csv", default=None)
     a = ap.parse_args()
     recs = load_runs(a.runs)
-    cells = sorted({(r["encoder"], r["dataset"]) for r in recs})
+    cells = sorted({(r["encoder"], r["dataset"], r.get("variant", "crossed")) for r in recs})
     lines = []
-    csv = ["encoder,dataset,cfg,family,n_seeds,label_lin,label_lin_lo,label_lin_hi,label_mlp,worst_centre,worst_lo,worst_hi,leak_norm,leak_lo,leak_hi,"
+    csv = ["encoder,dataset,variant,cfg,family,n_seeds,label_lin,label_lin_lo,label_lin_hi,label_mlp,worst_centre,worst_lo,worst_hi,leak_norm,leak_lo,leak_hi,"
            "label_V,worst_V,ood_label_lin,onA_linear,rate_bits"]
     verdict = []
     verdict2 = []
-    for enc, ds in cells:
-        cell = Cell(enc, ds, recs, a.runs, a.B)
+    for enc, ds, var in cells:
+        cell = Cell(enc, ds, var, recs, a.runs, a.B)
         cfgs = sorted(cell.by)
         if "raw" not in cell.by:
             continue
@@ -163,9 +164,10 @@ def main():
             ood = np.mean([r["metrics"]["label/linear/OOD"] for r in rs])
             ona = np.mean([r["metrics"]["centre_onA/linear/C"] for r in rs])
             rate = np.mean([r["extra"]["rate_bits_per_patch"] for r in rs]) if "rate_bits_per_patch" in rs[0]["extra"] else float("nan")
-            table[cfg] = dict(lab=lab, labm=labm, wc=wc, leak=(leak, leak_b), lv=lv, wv=wv, ood=ood, ona=ona, rate=rate, n=len(rs))
+            held = np.mean([r["metrics"]["labelheld/linear/C"] for r in rs]) if "labelheld/linear/C" in rs[0]["metrics"] else float("nan")
+            table[cfg] = dict(held=held, lab=lab, labm=labm, wc=wc, leak=(leak, leak_b), lv=lv, wv=wv, ood=ood, ona=ona, rate=rate, n=len(rs))
             lo, hi = ci(lab[1]); wlo, whi = ci(wc[1]); llo, lhi = ci(leak_b)
-            csv.append(f"{enc},{ds},{cfg},{family(cfg)},{len(rs)},{lab[0]:.4f},{lo:.4f},{hi:.4f},{labm[0]:.4f},{wc[0]:.4f},{wlo:.4f},{whi:.4f},"
+            csv.append(f"{enc},{ds},{var},{cfg},{family(cfg)},{len(rs)},{lab[0]:.4f},{lo:.4f},{hi:.4f},{labm[0]:.4f},{wc[0]:.4f},{wlo:.4f},{whi:.4f},"
                        f"{leak:.4f},{llo:.4f},{lhi:.4f},{lv:.4f},{wv:.4f},{ood:.4f},{ona:.4f},{rate:.2f}")
         # controls
         ctrl = []
@@ -174,14 +176,14 @@ def main():
                 wc = cell.metric(cfg, "centre", KC)
                 ctrl.append((cfg, wc, sorted(cell.by[cfg])))
         ctrl = sorted(ctrl, key=lambda x: x[0])
-        lines.append(f"\n### {enc} / {ds}  (seeds {seeds_raw}; chance {chance:.3f}; label-only floor {floor:.3f}; raw label acc {fmt(*raw_lab[:2])}; raw worst-case centre acc {fmt(*raw_worst[:2])})\n")
+        lines.append(f"\n### {enc} / {ds} / {var}  (seeds {seeds_raw}; chance {chance:.3f}; label-only floor {floor:.3f}; raw label acc {fmt(*raw_lab[:2])}; raw worst-case centre acc {fmt(*raw_worst[:2])})\n")
         if ctrl:
             lines.append("Controls (worst-case over the 4 attackers, centre balanced accuracy on C; must be at chance):  " +
                          "; ".join(f"{c} {fmt(w[0], w[1])}" for c, w, _ in ctrl))
         # family-level selection on V
         lines.append("\nSelected per family on V (label within delta of raw), reported on sealed C:\n")
-        lines.append("| delta | family | config | label acc (linear) | worst-case centre acc | leak (0=chance, 1=raw) | label acc on unseen centres | A-trained linear attacker | rate bits |")
-        lines.append("|---|---|---|---|---|---|---|---|---|")
+        lines.append("| delta | family | config | label acc (linear) | worst-case centre acc | leak (0=chance, 1=raw) | label acc on unseen centres | A-trained linear attacker | rate bits | held-out-class label acc |")
+        lines.append("|---|---|---|---|---|---|---|---|---|---|")
         fams = sorted({family(c) for c in table})
         sel_all = {}
         for dl in a.deltas:
@@ -192,7 +194,7 @@ def main():
                 wv, c = min(cand)
                 t = table[c]
                 sel_all[(dl, fam)] = c
-                lines.append(f"| {dl:.2f} | {fam} | {c} | {fmt(*t['lab'][:2])} | {fmt(*t['wc'][:2])} | {fmt(t['leak'][0], t['leak'][1], 2)} | {t['ood']:.3f} | {t['ona']:.3f} | {t['rate']:.1f} |")
+                lines.append(f"| {dl:.2f} | {fam} | {c} | {fmt(*t['lab'][:2])} | {fmt(*t['wc'][:2])} | {fmt(t['leak'][0], t['leak'][1], 2)} | {t['ood']:.3f} | {t['ona']:.3f} | {t['rate']:.1f} | {t['held']:.3f} |")
         # kill criterion: best learned (selected on V) vs LEACE, paired bootstrap
         learned = ("vib", "adv_retrain", "dann", "vq", "supcon_xc")
         for dl in a.deltas:
@@ -211,7 +213,7 @@ def main():
             d_b = table[best]["wc"][1] - table[cl]["wc"][1]
             lo, hi = ci(d_b)
             dlab = table[best]["lab"][0] - table[cl]["lab"][0]
-            verdict.append((enc, ds, dl, best, cl, d_pt, lo, hi, dlab))
+            verdict.append((f"{enc}/{var}", ds, dl, best, cl, d_pt, lo, hi, dlab))
             bn = [sel_all[(dl, f)] for f in ("vib", "vq") if (dl, f) in sel_all]
             ad = [sel_all[(dl, f)] for f in ("adv_retrain", "dann", "supcon_xc") if (dl, f) in sel_all]
             if bn and ad:
@@ -219,12 +221,12 @@ def main():
                 a0 = min(ad, key=lambda c: table[c]["wv"])
                 db = table[a0]["wc"][1] - table[b0]["wc"][1]
                 lo2, hi2 = ci(db)
-                verdict2.append((enc, ds, dl, a0, b0, table[a0]["wc"][0] - table[b0]["wc"][0], lo2, hi2, table[a0]["lab"][0] - table[b0]["lab"][0]))
+                verdict2.append((f"{enc}/{var}", ds, dl, a0, b0, table[a0]["wc"][0] - table[b0]["wc"][0], lo2, hi2, table[a0]["lab"][0] - table[b0]["lab"][0]))
         lines.append("\nFull ladder (C numbers; 95% CI from unit bootstrap):\n")
-        lines.append("| config | seeds | label acc (linear) | label acc (mlp) | worst-case centre acc | leak | V label | V worst | unseen-centre label | rate bits |")
-        lines.append("|---|---|---|---|---|---|---|---|---|---|")
+        lines.append("| config | seeds | label acc (linear) | label acc (mlp) | worst-case centre acc | leak | V label | V worst | unseen-centre label | rate bits | held-out-class label |")
+        lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
         for cfg, t in table.items():
-            lines.append(f"| {cfg} | {t['n']} | {fmt(*t['lab'][:2])} | {t['labm'][0]:.3f} | {fmt(*t['wc'][:2])} | {fmt(t['leak'][0], t['leak'][1], 2)} | {t['lv']:.3f} | {t['wv']:.3f} | {t['ood']:.3f} | {t['rate']:.1f} |")
+            lines.append(f"| {cfg} | {t['n']} | {fmt(*t['lab'][:2])} | {t['labm'][0]:.3f} | {fmt(*t['wc'][:2])} | {fmt(t['leak'][0], t['leak'][1], 2)} | {t['lv']:.3f} | {t['wv']:.3f} | {t['ood']:.3f} | {t['rate']:.1f} | {t['held']:.3f} |")
     lines.append("\n### Kill criterion A: best learned adapter (selected on V) minus LEACE (selected on V) at equal label accuracy, worst-case centre accuracy on C\n")
     lines.append("| encoder | dataset | delta | best learned | LEACE cfg | diff (learned - LEACE) [95% CI] | label diff | learned beats LEACE (CI < 0)? |")
     lines.append("|---|---|---|---|---|---|---|---|")

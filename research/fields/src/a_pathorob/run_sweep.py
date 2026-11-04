@@ -24,18 +24,22 @@ def main():
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--grid", default="main", help="main | controls | all | comma list of method names")
+    ap.add_argument("--confound", type=float, default=None, help="centre-class correlation of the adapter-train set A")
+    ap.add_argument("--holdout", action="store_true", help="adapter sees only half of the classes; also report seen/held-class utility")
     ap.add_argument("--smoke", action="store_true", help="small epochs / subset of configs for a quick check")
     a = ap.parse_args()
     out = Path(os.environ.get("OUT", "./out"))
     (out / "preds").mkdir(parents=True, exist_ok=True)
-    tag = f"{a.encoder}__{a.dataset}__seed{a.seed}"
+    variant = "crossed" if a.confound is None and not a.holdout else "_".join(
+        ([f"conf{a.confound}"] if a.confound is not None else []) + (["holdout"] if a.holdout else []))
+    tag = f"{a.encoder}__{a.dataset}__seed{a.seed}" + ("" if variant == "crossed" else f"__{variant}")
     jl = out / f"{tag}.jsonl"
     done = set()
     if jl.exists():
         done = {json.loads(l)["cfg"] for l in jl.read_text().splitlines() if l.strip()}
     P = S.load_pdata(a.encoder, a.dataset)
-    sp = S.make_splits(P, a.seed)
-    info = dict(encoder=a.encoder, dataset=a.dataset, seed=a.seed, commit=C.git_commit(), device=str(AD.DEV),
+    sp = S.make_splits(P, a.seed, confound=a.confound, holdout=a.holdout)
+    info = dict(variant=variant, encoder=a.encoder, dataset=a.dataset, seed=a.seed, commit=C.git_commit(), device=str(AD.DEV),
                 n_patches=int(len(P.y)), dim=int(P.X.shape[1]), classes=P.classes, centres=P.centres,
                 units={k: int(len(set(P.u[v].tolist()))) for k, v in sp.items()},
                 patches={k: int(len(v)) for k, v in sp.items()}, torch=torch.__version__,
@@ -65,8 +69,8 @@ def main():
         try:
             rep, extra = AD.build(method, hp, P, sp, a.seed)
             tfit = time.time() - t0
-            m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=(method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0))
-            rec = dict(cfg=cid, method=method, hp=hp, seed=a.seed, encoder=a.encoder, dataset=a.dataset, metrics=m, extra=extra,
+            m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=(method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0), holdout=a.holdout)
+            rec = dict(variant=variant, cfg=cid, method=method, hp=hp, seed=a.seed, encoder=a.encoder, dataset=a.dataset, metrics=m, extra=extra,
                        seconds_fit=round(tfit, 1))
             np.savez_compressed(out / "preds" / f"{tag}__{cid}.npz", **preds)
             with open(jl, "a") as fh:

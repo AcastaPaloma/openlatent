@@ -34,7 +34,7 @@ def remap(c):
     return inv, len(u)
 
 
-def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True):
+def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True, holdout=False):
     t0 = time.time()
     m, preds, timing = {}, {}, {}
     Kc, Ky = int(P.n_id_centres), len(P.classes)
@@ -58,6 +58,24 @@ def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, 
             tgt = P.y[ood_idx] if s == "OOD" else P.y[sp[s]]
             preds[f"label/{k}/{s}"] = p.astype(np.uint8)
             m[f"label/{k}/{s}"] = bacc(tgt, p)
+    if holdout:      # utility on classes the adapter never saw (and on the seen ones), probes trained on B restricted to those classes
+        from .splits import seen_held_classes
+        seen, held = seen_held_classes(P)
+        for nm, cl in (("seen", seen), ("held", held)):
+            mb = np.isin(yB, cl)
+            remap_c = {k: i for i, k in enumerate(cl)}
+            ytr = np.array([remap_c[k] for k in yB[mb]])
+            evs = {}
+            for s in ("V", "C"):
+                ms = np.isin(P.y[sp[s]], cl)
+                evs[s] = rep[s][ms]
+            r = run_suite(rep["B"][mb], ytr, uB[mb], evs, len(cl), kinds=KINDS_LABEL, seed=seed)
+            for k, d in r.items():
+                for s, p in d.items():
+                    ms = np.isin(P.y[sp[s]], cl)
+                    tgt = np.array([remap_c[k2] for k2 in P.y[sp[s]][ms]])
+                    preds[f"label{nm}/{k}/{s}"] = p.astype(np.uint8)
+                    m[f"label{nm}/{k}/{s}"] = bacc(tgt, p)
     if do_ood:
         cO, Ko = remap(P.c[ood_idx])
         n1 = len(sp["OOD1"])
