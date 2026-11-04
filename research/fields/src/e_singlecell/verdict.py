@@ -78,10 +78,18 @@ def verdict_tables(D, R, args):
     k1["controls_excess_U"] = uctrl
     k1["controls_ok"] = bool(all(v <= 0.03 for v in ctrl.values()) and all(v <= 0.03 for v in uctrl.values()))
     k1["pass"] = bool(k1["raw_ok"] and k1["controls_ok"])
+    pf = {}
+    ones = np.ones(D.n)
+    for f in D.fall:
+        a_, ch_ = AG.acc_by_kind(D, D.S, "raw50", ones, [f])
+        pf[f] = dict(batches=[D.meta["batches"][b] for b in D.folds[f]], chance=ch_, worst=max(a_.values()), per_kind=a_)
+    k1["per_fold_raw"] = pf
     js["K1"] = k1
     P(f"\n**K1 measurability**: raw50 worst-attacker accuracy {raw['worst']:.3f} {ci(boot['raw50']['worst'])} vs chance {chance:.3f} (excess {k1['raw_acc'] - chance:.3f}, "
       f"needs >= 0.15 and >= min(3 x chance, 0.85) = {min(3 * chance, 0.85):.3f}): {'ok' if k1['raw_ok'] else 'FAIL'}. "
       f"Controls (attacker excess over chance; probe U minus the analytic random-guess macro-F1 u0={u0:.3f}): {ctrl} / {uctrl}; allowed <= 0.03: {'ok' if k1['controls_ok'] else 'FAIL'}. => K1 {'PASS' if k1['pass'] else 'FAIL'}")
+
+    P("per-fold raw50 attackers: " + "; ".join(f"fold {f} ({len(x['batches'])} batches, chance {x['chance']:.2f}): worst {x['worst']:.3f}" for f, x in pf.items()))
 
     # --- K2
     def ratio(num_arm, key, den_arm):
@@ -165,6 +173,19 @@ def verdict_tables(D, R, args):
             bh = max(candh, key=lambda a: pt[a]["Uh"])
             k3["hold_sens"] = dict(ref=refh, arm=bh, Uh_ref=pt[refh]["Uh"], Uh=pt[bh]["Uh"], gap=pt[refh]["Uh"] - pt[bh]["Uh"],
                                    fires=bool(pt[refh]["Uh"] - pt[bh]["Uh"] <= 0.05))
+        per_ref = {}
+        for r in refs:
+            cand_r = [a for a in ind if pt[a]["L"] <= pt[r]["L"] + 0.05]
+            if cand_r:
+                bst = max(cand_r, key=lambda a: pt[a]["U"])
+                per_ref[r] = dict(U=pt[r]["U"], L=pt[r]["L"], floor=bst, floor_U=pt[bst]["U"], floor_L=pt[bst]["L"], gap=pt[r]["U"] - pt[bst]["U"],
+                                  gap_ci=ci(np.asarray(boot[r]["U"]) - np.asarray(boot[bst]["U"])))
+            else:
+                best_l = min(ind, key=lambda a: pt[a]["L"])
+                per_ref[r] = dict(U=pt[r]["U"], L=pt[r]["L"], floor=None, lowest_floor_L=pt[best_l]["L"], lowest_floor=best_l)
+        k3["per_reference"] = per_ref
+        pareto = [a for a in ind if not any((pt[b]["L"] <= pt[a]["L"] and pt[b]["U"] >= pt[a]["U"] and (pt[b]["L"] < pt[a]["L"] or pt[b]["U"] > pt[a]["U"])) for b in ind)]
+        k3["inductive_pareto"] = sorted([(a, round(pt[a]["L"], 3), round(pt[a]["U"], 3)) for a in pareto], key=lambda t: t[1])
         P(f"\n**K3 headroom**: best transductive reference = {ref} (U {pt[ref]['U']:.3f}, L {pt[ref]['L']:.2f}); references: "
           + ", ".join(f"{r} U {pt[r]['U']:.3f} L {pt[r]['L']:.2f}" for r in refs))
         P(f"V-selected inductive floor per fold (selection on the other folds, L <= L_ref + 0.05): {sel}")
@@ -174,7 +195,29 @@ def verdict_tables(D, R, args):
         else:
             P("no inductive configuration reaches L <= L_ref + 0.05 in the selection folds of at least one fold: headroom exists on the leakage axis (K3 does not fire)")
         P(f"sensitivity: test-selected floor {k3['test_selected']}; hold-type version {k3.get('hold_sens')}")
+        P("per-reference reading (each reference as the comparator; test-selected best inductive floor with L <= L_ref + 0.05; negative gap = floor better):")
+        for r, x in per_ref.items():
+            if x["floor"] is None:
+                P(f"  - {r}: U {x['U']:.3f} L {x['L']:.2f}; NO inductive floor reaches L <= {x['L'] + 0.05:.2f} (lowest {x['lowest_floor']} L {x['lowest_floor_L']:.2f})")
+            else:
+                P(f"  - {r}: U {x['U']:.3f} L {x['L']:.2f}; best floor {x['floor']} U {x['floor_U']:.3f} L {x['floor_L']:.2f}; U_ref - U_floor = {x['gap']:.3f} {tuple(round(g, 3) for g in x['gap_ci'])}")
+        P(f"inductive Pareto set (arm, L, U): {k3['inductive_pareto']}")
     js["K3"] = k3
+
+    if "cluster" in R:
+        Rc = R["cluster"]
+        P(f"\n**Study-cluster bootstrap** (resample the {js['n_studies']} studies, then donors inside; B={len(Rc['Ws'])}); conservative interval for the cross-study claim:")
+        P("| arm | U_fine | U_hold | L |\n|---|---|---|---|")
+        cl = {}
+        for a in [x for x in ("raw50", "pca16", "pca32", "ldaC_pca16", "ldaC_pca16_H", "leace", "T_centre", "T_harmony", "T_scvi", "dith16_r0.5") if x in arms]:
+            b = Rc["boot"][a]
+            P(f"| {a} | {fmt(pt[a]['U'], b['U'])} | {fmt(pt[a]['Uh'], b['Uh'])} | {fmt(pt[a]['L'], b['L'], 2)} |")
+            cl[a] = dict(U_ci=ci(b["U"]), Uh_ci=ci(b["Uh"]), L_ci=ci(b["L"]))
+        u0c, u0hc = np.asarray(Rc["boot_u0"]), np.asarray(Rc["boot_u0h"])
+        rf = (np.asarray(Rc["boot"]["ldaC_pca16"]["U"]) - u0c) / np.maximum(np.asarray(Rc["boot"]["raw50"]["U"]) - u0c, 1e-6)
+        rh = (np.asarray(Rc["boot"]["ldaC_pca16"]["Uh"]) - u0hc) / np.maximum(np.asarray(Rc["boot"]["raw50"]["Uh"]) - u0hc, 1e-6)
+        P(f"r_fine cluster CI {ci(rf)}, r_hold cluster CI {ci(rh)}")
+        js["cluster"] = dict(arms=cl, r_fine_ci=ci(rf), r_hold_ci=ci(rh))
 
     # --- power audit (K0)
     pa = [a for a in POWER_ARMS if a in arms]

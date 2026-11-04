@@ -260,13 +260,13 @@ def power_audit(D, arms, nperm=2000, B=1000, seed=7):
 
 
 # ------------------------------------------------------------------------------------------------ main
-def run(D, B, label=""):
+def run(D, B, label="", cluster=False):
     arms = D.arms()
     S = D.S
     fall = list(D.fall)
     ones = np.ones(D.n)
     pt = all_metrics(D, S, arms, ones, fall)
-    Ws = resamples(D, B)
+    Ws = resamples(D, B, cluster=cluster)
     boot = {a: {k: [] for k in ("U", "Uh", "L", "worst")} for a in arms}
     boot_ch, boot_u0, boot_u0h = [], [], []
     for w in Ws:
@@ -287,11 +287,14 @@ def main():
     ap.add_argument("--B", type=int, default=1000)
     ap.add_argument("--json", default="")
     ap.add_argument("--md", default="")
+    ap.add_argument("--cluster", type=int, default=0, help="B for the study-cluster bootstrap (HLCA only), 0 = skip")
     a = ap.parse_args()
     D = Data(a.dataset, a.runs)
     print(f"{a.dataset}: seeds {sorted(D.S)}, cells {D.n}, units {len(D.units)}, folds done per seed "
           f"{ {s: sorted(v['folds_done']) for s, v in D.S.items()} }", flush=True)
     R = run(D, a.B)
+    if a.cluster and D.meta["has_donor"]:
+        R["cluster"] = run(D, a.cluster, cluster=True)
     from verdict import verdict_tables
     md, js = verdict_tables(D, R, a)
     if a.md:
