@@ -1,0 +1,4 @@
+name: d_hr2_gtr_s0
+priority: 12
+cmd: "USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/run_kill.py --name d_hr2_gtr_s0 --embedder gtr_base --grid floors_a --seeds 0 --out $OUT"
+hf_path: runs/d_hr2_gtr_s0
