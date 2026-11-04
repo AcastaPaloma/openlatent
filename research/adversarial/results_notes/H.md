@@ -131,6 +131,8 @@ State: no defender-attack number has been read (the retrained-suite predictions 
 
 ## 4. Status log
 
+* 18:3xZ: **reserved priority 4 (my one-time allowance) was used for the first-wave jobs `h_pd_smoke` and `h_r0_pd_pub`, and, by the main agent's promotion at ~18:35Z, for the three pre-registered batches `h_nn_aae`, `h_nn_floors_a`, `h_nn_floors_b` (each < 1 GPU-h).** All other `h_` jobs run at priorities 10-24. CPU etiquette after the main agent's request: stage-0 floors run at 3 concurrent processes x 8 threads (xargs lowered with SIGUSR2); the `msda` tabular run and the diagnostics were suspended (SIGSTOP) until stage 0 ends.
+
 * 17:30-17:55Z: licences verified (section 0); VM set up (`~/work/h_imu`: PD clone at `4a16222`, sha256-verified LFS objects, MotionSense copy); window builder verified against PD's loader; zero-GPU power audit run; this pre-registration committed.
 
 ## 5. Results
