@@ -1,0 +1,16 @@
+{
+ "name": "a_gate_phikon_tcga_s0",
+ "config": {
+  "name": "a_gate_phikon_tcga_s0",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset tcga --seed 0 --grid gate",
+  "hf_path": "runs/a_gate_phikon_tcga_s0"
+ },
+ "commit": "f36d200",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 251.1,
+ "finished_utc": "2026-11-04T11:01:28Z",
+ "uploaded": true
+}
