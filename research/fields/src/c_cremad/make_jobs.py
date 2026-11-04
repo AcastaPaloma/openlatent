@@ -34,6 +34,12 @@ def ref():
     return out
 
 
+def trim():
+    """Speech-only variants (VAD-trimmed frames): identity net of the non-speech channel cue (H-C-006)."""
+    return [spec("c_ref_raw_trim", "raw", seeds=(0, 1, 2), prio=12, extra="--trim"),
+            spec("c_fix_mean_trim", "mean", seeds=(0,), prio=13, extra="--trim")]
+
+
 def learned_configs():
     cf = {}
     for d in (2, 4, 8, 16, 32, 64, 128, 256):
@@ -63,5 +69,5 @@ def sweep(seeds, prio):
 
 if __name__ == "__main__":
     what = sys.argv[1]
-    names = ref() if what == "ref" else sweep((0,), 20) if what == "sweep0" else sweep((1, 2), 30)
+    names = trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 20) if what == "sweep0" else sweep((1, 2), 30)
     print(len(names), "specs", names[:3], "...")
