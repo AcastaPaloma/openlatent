@@ -51,8 +51,12 @@ def main():
     if a.grid not in ("main", "all", "controls"):
         want = set(a.grid.split(","))
         grid = [g for g in AD.GRID + AD.CONTROLS if g[0] in want]
-    if a.smoke:
-        grid = [g for g in grid if g[0] in ("raw", "leace", "vib", "ctrl_const")][:5]
+    if a.smoke:      # first config of every method
+        seen, g2 = set(), []
+        for g in grid:
+            if g[0] not in seen:
+                seen.add(g[0]); g2.append(g)
+        grid = g2
     for method, hp in grid:
         cid = cfg_id(method, hp)
         if cid in done:
