@@ -325,6 +325,26 @@ def t_handstats_utility():
     check("utility pipeline runs (fine-tune, predict, macro AUC finite)", np.isfinite(a) and per.shape == (14,), f"mean AUC {a:.3f}")
 
 
+def t_dups(data, pri, exclude):
+    import json
+    d = meta.load(f"{data}/Data_Entry_2017_v2020.csv", f"{data}/test_list.txt", f"{data}/train_val_list.txt", exclude_json=exclude)
+    ex = json.loads(open(exclude).read())
+    seen = meta.seen_patients([f"{pri}/{f}" for f in meta.PRI], d)
+    check("duplicate rule: D2 images flagged not-ok, D1 groups labelled, the bank row of every image unchanged", int((~d.ok).sum()) == len(ex["D2_exclude"]) and int((d.dupgroup >= 0).sum()) == sum(len(g) for g in ex["D1_groups"]) and (d.row.to_numpy() == np.arange(len(d))).all(),
+          f"{int((~d.ok).sum())} excluded, {int((d.dupgroup >= 0).sum())} in D1 groups")
+    bad_img = set(d.loc[~d.ok, "row"]); d1 = d.set_index("row")["dupgroup"]
+    viol = 0; dropped = 0
+    for rot in (0, 1, 2):
+        dr = meta.assign_roles(d, seen, "PROVISIONAL-selftest", rot)
+        for role, per in (("T", 1), ("V", 1), ("A", 2)):
+            pr, rep = pairs.build(dr, role, "N2", per, role + "0", col="role")
+            dropped += rep["patients_without_valid_positive"]
+            viol += int(pr.a.isin(bad_img).sum() + pr.b.isin(bad_img).sum())
+            pos = pr[pr.label == 1]
+            viol += int(((d1.loc[pos.a.to_numpy()].to_numpy() >= 0) & (d1.loc[pos.a.to_numpy()].to_numpy() == d1.loc[pos.b.to_numpy()].to_numpy())).sum())
+    check("duplicate rule: no excluded image and no D1 duplicate positive pair in any pair of any role/rotation", viol == 0, f"violations {viol}, patients with no valid positive due to duplicates {dropped}")
+
+
 def t_pairs(data):
     P = data
     d = meta.load(f"{P}/Data_Entry_2017_v2020.csv", f"{P}/test_list.txt", f"{P}/train_val_list.txt")
@@ -347,10 +367,10 @@ def t_pairs(data):
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt")
+    ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt"); ap.add_argument("--exclude", default=None)
     a = ap.parse_args()
     torch.set_num_threads(4)
-    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []):
+    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []) + ([("dups", lambda: t_dups(a.data, a.pri, a.exclude))] if a.exclude and a.pri else []):
         if nm in a.skip:
             continue
         print(f"== {nm}", flush=True)

@@ -65,11 +65,14 @@ def main():
     ap.add_argument("--synthetic", type=int, default=0, help="N patients; builds a planted-leak bank at --res")
     ap.add_argument("--res", type=int, default=64); ap.add_argument("--alpha", type=float, default=1.0)
     ap.add_argument("--feat", default="dinov2", choices=["dinov2", "random"]); ap.add_argument("--no-ledger", action="store_true")
+    ap.add_argument("--exclude", default=None, help="exclude_dups.json (T.md A2 b); required for real runs")
     ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
     a = ap.parse_args()
     t0 = time.time()
     out = Path(a.out) / f"{a.release}_rot{a.rot}{'_shuf' if a.shuffle_labels else ''}"; out.mkdir(parents=True, exist_ok=True)
-    d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt")
+    if not a.synthetic and not a.exclude:
+        raise SystemExit("--exclude exclude_dups.json is required for real runs (T.md A2)")
+    d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
     seen = meta.seen_patients([f"{a.pri}/{f}" for f in PRI], d)
     if a.synthetic:
         salt = "PROVISIONAL-selftest"
@@ -91,7 +94,7 @@ def main():
     ledger_rec = None if (a.no_ledger or a.synthetic) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
     flow = torch.load(a.flow_stats) if a.flow_stats else None
-    pca = R.fit_pca(bank, d.loc[d.role == "A", "row"].to_numpy()[:10000], size=min(64, a.res)) if a.release.startswith("pca_") else None
+    pca = R.fit_pca(bank, d.loc[(d.role == "A") & d.ok, "row"].to_numpy()[:10000], size=min(64, a.res)) if a.release.startswith("pca_") else None
     rel = R.Releases(dev, gen_dir=a.gen_dir, flow_stats=flow, pca=pca)
     ids = d["img"].to_numpy()[need].tolist()
     Xr = rel.materialize("raw", bank, need, ids)

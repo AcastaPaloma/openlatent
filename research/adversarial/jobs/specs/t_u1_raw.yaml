@@ -1,6 +1,6 @@
 # DRAFT, NOT QUEUED until t_prep has finished and its integrity check passed (the queue has no dependencies). Stage 1 = first wave: no defended release.
 name: t_u1_raw
 priority: 6
-cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src $HOME/venvs/t/bin/python -m t_cxr.run_utility --release raw --rot 0 --labels14 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --out $OUT"
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src $HOME/venvs/t/bin/python -m t_cxr.run_utility --release raw --rot 0 --labels14 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT"
 hf_path: runs/t_u1_raw
 hf_allow: ["*.json","*.log","*.md"]

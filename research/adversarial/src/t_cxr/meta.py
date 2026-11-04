@@ -7,6 +7,7 @@ so every assignment is a pure function of ids and a salt (no RNG state, no row-o
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -33,7 +34,7 @@ def unit(key, salt: str = SALT) -> float:
     return int.from_bytes(hashlib.sha256(f"{salt}:{key}".encode()).digest()[:8], "big") / 2**64
 
 
-def load(csv: str | Path, test_list: str | Path, trval_list: str | Path, val_frac: float = 0.15) -> pd.DataFrame:
+def load(csv: str | Path, test_list: str | Path, trval_list: str | Path, val_frac: float = 0.15, exclude_json: str | Path | None = None) -> pd.DataFrame:
     d = pd.read_csv(csv)
     d.columns = [c.strip() for c in d.columns]
     d = d.rename(columns=COLS)[list(COLS.values())].copy()
@@ -52,7 +53,14 @@ def load(csv: str | Path, test_list: str | Path, trval_list: str | Path, val_fra
     d = d.sort_values(["pid", "fu", "img"], kind="stable").reset_index(drop=True)
     d["male"] = (d["sex"].str.strip().str.upper().str[0] == "M").astype(np.int8)
     d["pa"] = (d["view"].str.strip() == "PA").astype(np.int8)
-    d["row"] = np.arange(len(d))
+    d["row"] = np.arange(len(d))                       # row in the 256-px bank (assigned BEFORE any exclusion, so excluded images keep their bank row)
+    d["ok"] = True
+    d["dupgroup"] = -1
+    if exclude_json is not None:                       # T.md A2 (b): D2 groups excluded everywhere; D1 groups never form a positive pair
+        ex = json.loads(Path(exclude_json).read_text())
+        d.loc[d["img"].isin(set(ex["D2_exclude"])), "ok"] = False
+        for gi, g in enumerate(ex["D1_groups"]):
+            d.loc[d["img"].isin(set(g)), "dupgroup"] = gi
     return d
 
 
@@ -82,11 +90,11 @@ def assign_roles(d: pd.DataFrame, seen: set, salt: str, rot: int = 0, val_share:
 
 
 def role_counts(d: pd.DataFrame) -> dict:
-    n = d.groupby("pid").size()
+    n = d[d["ok"]].groupby("pid").size() if "ok" in d else d.groupby("pid").size()
     out = {}
     for r in ("S", "A", "V", "T"):
         p = d.loc[d.role == r, "pid"].unique()
-        out[r] = dict(images=int((d.role == r).sum()), patients=int(len(p)), ge2=int((n[p] >= 2).sum()))
+        out[r] = dict(images=int(((d.role == r) & (d["ok"] if "ok" in d else True)).sum()), patients=int(len(p)), ge2=int((n.reindex(p).fillna(0) >= 2).sum()))
     return out
 
 

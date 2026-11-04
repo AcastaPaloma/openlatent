@@ -1,0 +1,522 @@
+{
+ "rule": "T.md A2(b): D2 groups (identical 256-px arrays across patients) excluded entirely; D1 groups (same patient) only never form a positive pair",
+ "D2_exclude": [
+  "00005403_024.png",
+  "00005537_011.png",
+  "00005681_024.png",
+  "00007108_008.png",
+  "00008182_001.png",
+  "00011504_008.png",
+  "00012388_000.png",
+  "00012388_001.png",
+  "00017214_007.png",
+  "00027864_000.png",
+  "00027864_001.png",
+  "00027864_002.png",
+  "00027864_003.png",
+  "00028328_000.png",
+  "00028591_002.png",
+  "00029402_001.png",
+  "00029476_004.png"
+ ],
+ "D1_groups": [
+  [
+   "00000820_015.png",
+   "00000820_016.png"
+  ],
+  [
+   "00001989_004.png",
+   "00001989_005.png"
+  ],
+  [
+   "00002658_001.png",
+   "00002658_002.png"
+  ],
+  [
+   "00007633_003.png",
+   "00007633_004.png"
+  ],
+  [
+   "00007670_030.png",
+   "00007670_031.png"
+  ],
+  [
+   "00008273_005.png",
+   "00008273_004.png"
+  ],
+  [
+   "00008727_014.png",
+   "00008727_015.png"
+  ],
+  [
+   "00009325_002.png",
+   "00009325_005.png"
+  ],
+  [
+   "00011702_060.png",
+   "00011702_061.png"
+  ],
+  [
+   "00011723_001.png",
+   "00011723_002.png"
+  ],
+  [
+   "00015262_003.png",
+   "00015262_001.png"
+  ],
+  [
+   "00016518_001.png",
+   "00016518_002.png"
+  ],
+  [
+   "00016568_052.png",
+   "00016568_053.png"
+  ],
+  [
+   "00016940_003.png",
+   "00016940_004.png"
+  ],
+  [
+   "00018721_003.png",
+   "00018721_005.png"
+  ],
+  [
+   "00019479_008.png",
+   "00019479_010.png"
+  ],
+  [
+   "00019535_003.png",
+   "00019535_005.png"
+  ]
+ ],
+ "groups": [
+  {
+   "images": [
+    "00000820_015.png",
+    "00000820_016.png"
+   ],
+   "patients": [
+    820,
+    820
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00001989_004.png",
+    "00001989_005.png"
+   ],
+   "patients": [
+    1989,
+    1989
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00002658_001.png",
+    "00002658_002.png"
+   ],
+   "patients": [
+    2658,
+    2658
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00005403_024.png",
+    "00005537_011.png"
+   ],
+   "patients": [
+    5403,
+    5537
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00005681_024.png",
+    "00027864_003.png"
+   ],
+   "patients": [
+    5681,
+    27864
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "A",
+    "S"
+   ],
+   "cross_role_any_rotation": true,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00007108_008.png",
+    "00027864_002.png"
+   ],
+   "patients": [
+    7108,
+    27864
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00007633_003.png",
+    "00007633_004.png"
+   ],
+   "patients": [
+    7633,
+    7633
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "V",
+    "V"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00007670_030.png",
+    "00007670_031.png"
+   ],
+   "patients": [
+    7670,
+    7670
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "A",
+    "A"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00008182_001.png",
+    "00011504_008.png"
+   ],
+   "patients": [
+    8182,
+    11504
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "A",
+    "S"
+   ],
+   "cross_role_any_rotation": true,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00008273_005.png",
+    "00008273_004.png"
+   ],
+   "patients": [
+    8273,
+    8273
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00008727_014.png",
+    "00008727_015.png"
+   ],
+   "patients": [
+    8727,
+    8727
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "T",
+    "T"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00009325_002.png",
+    "00009325_005.png"
+   ],
+   "patients": [
+    9325,
+    9325
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "A",
+    "A"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00011702_060.png",
+    "00011702_061.png"
+   ],
+   "patients": [
+    11702,
+    11702
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "A",
+    "A"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00011723_001.png",
+    "00011723_002.png"
+   ],
+   "patients": [
+    11723,
+    11723
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00012388_000.png",
+    "00012388_001.png",
+    "00017214_007.png"
+   ],
+   "patients": [
+    12388,
+    12388,
+    17214
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "A",
+    "A",
+    "V"
+   ],
+   "cross_role_any_rotation": true,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00015262_003.png",
+    "00015262_001.png"
+   ],
+   "patients": [
+    15262,
+    15262
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "A",
+    "A"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00016518_001.png",
+    "00016518_002.png"
+   ],
+   "patients": [
+    16518,
+    16518
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00016568_052.png",
+    "00016568_053.png"
+   ],
+   "patients": [
+    16568,
+    16568
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "A",
+    "A"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00016940_003.png",
+    "00016940_004.png"
+   ],
+   "patients": [
+    16940,
+    16940
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00018721_003.png",
+    "00018721_005.png"
+   ],
+   "patients": [
+    18721,
+    18721
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "V",
+    "V"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00019479_008.png",
+    "00019479_010.png"
+   ],
+   "patients": [
+    19479,
+    19479
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00019535_003.png",
+    "00019535_005.png"
+   ],
+   "patients": [
+    19535,
+    19535
+   ],
+   "cross_patient": false,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D1"
+  },
+  {
+   "images": [
+    "00027864_000.png",
+    "00028328_000.png"
+   ],
+   "patients": [
+    27864,
+    28328
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "S",
+    "T"
+   ],
+   "cross_role_any_rotation": true,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00027864_001.png",
+    "00028591_002.png"
+   ],
+   "patients": [
+    27864,
+    28591
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "S",
+    "S"
+   ],
+   "cross_role_any_rotation": false,
+   "class_": "D2"
+  },
+  {
+   "images": [
+    "00029402_001.png",
+    "00029476_004.png"
+   ],
+   "patients": [
+    29402,
+    29476
+   ],
+   "cross_patient": true,
+   "roles_rot0": [
+    "T",
+    "T"
+   ],
+   "cross_role_any_rotation": true,
+   "class_": "D2"
+  }
+ ]
+}

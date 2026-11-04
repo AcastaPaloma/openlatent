@@ -34,9 +34,9 @@ def gate(d, tier_max=3, seed=0):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--pri", required=True); ap.add_argument("--salt-file", required=True); ap.add_argument("--out", required=True)
+    ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--pri", required=True); ap.add_argument("--salt-file", required=True); ap.add_argument("--out", required=True); ap.add_argument("--exclude", default=None)
     a = ap.parse_args()
-    d0 = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt")
+    d0 = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
     seen = meta.seen_patients([f"{a.pri}/{f}" for f in PRI], d0)
     salt = Path(a.salt_file).read_text().strip()
     res = {}

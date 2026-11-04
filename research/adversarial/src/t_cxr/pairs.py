@@ -40,14 +40,17 @@ def _rng(key) -> np.random.Generator:
 def positives(d: pd.DataFrame, split: str, per_patient: int = 1, seed: str = "p0", require_distinct_fu: bool = True, col: str = "split") -> pd.DataFrame:
     """One (or more) same-patient pairs per multi-visit patient of `split`; i = earlier visit, j = later visit."""
     rows = []
-    sub = d[d[col] == split]
+    sub = d[(d[col] == split) & d["ok"]] if "ok" in d else d[d[col] == split]
+    dropped_dup = 0
     for pid, g in sub.groupby("pid", sort=True):
         if len(g) < 2:
             continue
         idx = g["row"].to_numpy()
         fu = g["fu"].to_numpy()
-        combos = [(a, b) for a, b in combinations(range(len(idx)), 2) if (fu[a] != fu[b] or not require_distinct_fu)]
+        dg = g["dupgroup"].to_numpy() if "dupgroup" in g else np.full(len(g), -1)
+        combos = [(a, b) for a, b in combinations(range(len(idx)), 2) if (fu[a] != fu[b] or not require_distinct_fu) and not (dg[a] >= 0 and dg[a] == dg[b])]
         if not combos:
+            dropped_dup += 1
             continue
         r = _rng(f"{seed}:{pid}")
         order = r.permutation(len(combos))[:per_patient]
@@ -56,7 +59,9 @@ def positives(d: pd.DataFrame, split: str, per_patient: int = 1, seed: str = "p0
             if fu[a] > fu[b]:
                 a, b = b, a
             rows.append((pid, idx[a], idx[b]))
-    return pd.DataFrame(rows, columns=["pid", "i", "j"])
+    out = pd.DataFrame(rows, columns=["pid", "i", "j"])
+    out.attrs["patients_without_valid_positive"] = dropped_dup
+    return out
 
 
 def _candidates(d_arr, pool_idx_by_cell, pool_all, i, j, tier, used_pid):
@@ -84,7 +89,7 @@ def _candidates(d_arr, pool_idx_by_cell, pool_all, i, j, tier, used_pid):
 def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1, seed: str = "p0", positives_df: pd.DataFrame | None = None, col: str = "split") -> tuple[pd.DataFrame, dict]:
     """Return (pairs, report).  pairs columns: triple, label, a, b (image rows), pid_a, pid_b, tier, design, long_gap, fu_gap."""
     pos = positives(d, split, per_patient, seed, col=col) if positives_df is None else positives_df
-    sub = d[d[col] == split]
+    sub = d[(d[col] == split) & d["ok"]] if "ok" in d else d[d[col] == split]
     sex, view, age = d["male"].to_numpy(), d["pa"].to_numpy(), d["age"].to_numpy().astype(int)
     W, H = d["W"].to_numpy().astype(float), d["H"].to_numpy().astype(float)
     sx, pid = d["sx"].to_numpy(), d["pid"].to_numpy()
@@ -122,7 +127,8 @@ def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1,
             a, b = (partner, i) if swap else (i, partner)
             out.append((len(out) // 2 if False else t, lab, a, b, int(pid[a]), int(pid[b]), tier_used, design, int(gap >= 1), fu_gap, int(p)))
     pairs = pd.DataFrame(out, columns=["triple", "label", "a", "b", "pid_a", "pid_b", "tier", "design", "long_gap", "fu_gap", "anchor_pid"])
-    rep = dict(split=split, design=design, positives_requested=len(pos), dropped=dropped, kept=len(pos) - dropped, tier_hist=tier_hist)
+    rep = dict(split=split, design=design, positives_requested=len(pos), dropped=dropped, kept=len(pos) - dropped, tier_hist=tier_hist,
+               patients_without_valid_positive=int(pos.attrs.get("patients_without_valid_positive", 0)))
     return pairs, rep
 
 

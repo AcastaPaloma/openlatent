@@ -34,12 +34,14 @@ def main():
     ap.add_argument("--release", required=True); ap.add_argument("--rot", type=int, default=0); ap.add_argument("--labels14", action="store_true")
     ap.add_argument("--data", required=True); ap.add_argument("--pri", required=True); ap.add_argument("--bank", default=None); ap.add_argument("--salt-file", default=None)
     ap.add_argument("--gen-dir", required=True); ap.add_argument("--flow-stats", default=None); ap.add_argument("--out", required=True)
-    ap.add_argument("--device", default="cuda"); ap.add_argument("--epochs", type=int, default=3); ap.add_argument("--synthetic", type=int, default=0); ap.add_argument("--res", type=int, default=64)
+    ap.add_argument("--device", default="cuda"); ap.add_argument("--epochs", type=int, default=3); ap.add_argument("--exclude", default=None); ap.add_argument("--synthetic", type=int, default=0); ap.add_argument("--res", type=int, default=64)
     ap.add_argument("--feat", default="dinov2", choices=["dinov2", "random"]); ap.add_argument("--tiny", action="store_true", help="tests only: tiny classifier, no weights")
     a = ap.parse_args()
     t0 = time.time(); dev = a.device
     csv = f"{a.data}/Data_Entry_2017_v2020.csv"
-    d = meta.load(csv, f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt")
+    if not a.synthetic and not a.exclude:
+        raise SystemExit("--exclude exclude_dups.json is required for real runs (T.md A2)")
+    d = meta.load(csv, f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
     seen = meta.seen_patients([f"{a.pri}/{f}" for f in PRI], d)
     if a.synthetic:
         salt = "PROVISIONAL-selftest"; rng = np.random.default_rng(0)
@@ -50,9 +52,9 @@ def main():
     d = meta.assign_roles(d, seen, salt, a.rot)
     Y = findings_matrix(d, csv)
     flow = torch.load(a.flow_stats) if a.flow_stats else None
-    pca = R.fit_pca(bank, d.loc[d.role == "A", "row"].to_numpy()[:10000], size=min(64, a.res)) if a.release.startswith("pca_") else None
+    pca = R.fit_pca(bank, d.loc[(d.role == "A") & d.ok, "row"].to_numpy()[:10000], size=min(64, a.res)) if a.release.startswith("pca_") else None
     rel = R.Releases(dev, gen_dir=a.gen_dir, flow_stats=flow, pca=pca)
-    rows = {r: d.index[d.role == r].to_numpy() for r in "SAVT"}
+    rows = {r: d.index[(d.role == r) & d.ok].to_numpy() for r in "SAVT"}
     ids = d["img"].to_numpy()
     mat = lambda idx: rel.materialize(a.release, bank, idx, ids[idx].tolist())
     tr_idx = np.r_[rows["A"], rows["S"]]

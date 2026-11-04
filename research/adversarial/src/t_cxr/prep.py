@@ -33,10 +33,13 @@ def _process_zip(args):
     """worker: decode every PNG of one zip, resize, write into the shared memmap rows; returns (zip name, written row ids, bad_dims, missing_in_csv)."""
     zpath, bank_path, row, size = args
     bank = np.load(bank_path, mmap_mode="r+")
-    written, bad, miss = [], 0, 0
+    written, bad, miss, forks = [], 0, 0, 0
     with zipfile.ZipFile(zpath) as z:
         for info in z.infolist():
             base = Path(info.filename).name
+            if info.filename.startswith("__MACOSX/") or base.startswith("._"):   # macOS AppleDouble resource forks shipped in some zips: not images (T.md A2a)
+                forks += 1
+                continue
             if not base.endswith(".png"):
                 continue
             if base not in row:
@@ -48,7 +51,7 @@ def _process_zip(args):
             bank[row[base]] = np.asarray(im.convert("L").resize((size, size), Image.BILINEAR))
             written.append(row[base])
     bank.flush()
-    return Path(zpath).name, written, bad, miss
+    return Path(zpath).name, written, bad, miss, forks
 
 
 def main():
@@ -84,9 +87,9 @@ def main():
         paths.append(p)
     filled = np.zeros(N, bool)
     with Pool(min(a.procs, len(paths))) as pool:
-        for name, written, bad, miss in pool.imap_unordered(_process_zip, [(str(p), str(bank_path), row, a.size) for p in paths]):
+        for name, written, bad, miss, forks in pool.imap_unordered(_process_zip, [(str(p), str(bank_path), row, a.size) for p in paths]):
             filled[written] = True; rep["bad_dims"] += bad; rep["missing_in_csv"] += miss
-            rep["zips"][name]["images"] = len(written)
+            rep["zips"][name]["images"] = len(written); rep["zips"][name]["macosx_forks_skipped"] = forks
             print(name, "done; filled so far", int(filled.sum()), flush=True)
     bank = np.load(bank_path, mmap_mode="r")
     rep["filled"] = int(filled.sum()); rep["expected"] = N
