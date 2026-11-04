@@ -1,7 +1,8 @@
 """Stimuli for the human re-identification study (KTH; four obfuscators, every query masked).
 
-Each trial shows an obfuscated "mystery person" clip and a raw lineup of four people
-(walking, d4 indoors). Queries come from d1/d2, where actors wear the same clothes as in d4,
+Each trial shows an obfuscated "mystery person" clip and a lineup of four people (walking,
+d4 indoors), each shown raw and, beneath, through the trial's filter: the human gets labelled
+obfuscated examples of every candidate, like the strong-protocol attacker that trains on them. Queries come from d1/d2, where actors wear the same clothes as in d4,
 so the background differs but the person does not: only the obfuscator hides identity.
 Only the AVIs the trials need are read from the official KTH zips with HTTP range requests.
 
@@ -105,8 +106,11 @@ def design(seed=0):
         for p in lineup:
             used[p] += 1
         lineup.insert("ABCD".index(letters[k]), t)
+        lseq = k % 4 + 1
+        if any(x["target"] == t and x["lineup_seq"] == lseq for x in trials):  # a target's two lineups differ
+            lseq = lseq % 4 + 1
         trials.append(dict(trial=k + 1, target=t, condition=conds[k], action=clips[k][0], scenario=clips[k][1],
-                           lineup_seq=k % 4 + 1, lineup=lineup, answer=letters[k]))
+                           lineup_seq=lseq, lineup=lineup, answer=letters[k]))
     return trials
 
 
@@ -247,6 +251,30 @@ def grid(clips, labels, scale=2, gap=6, cols=2):
     return np.stack(frames)
 
 
+def lineup_grid(pairs, letters, filter_label, scale=2, inner=2, outer=14, cols=2):
+    """Candidates in a 2x2 grid; each cell is the raw clip with the filtered clip right beneath it."""
+    h, w = 120 * scale, 160 * scale
+    cell_h = 2 * h + inner
+    rows = -(-len(pairs) // cols)
+    out = np.full((N_FRAMES, rows * cell_h + (rows - 1) * outer, cols * w + (cols - 1) * outer), 255, np.uint8)
+    boxes = []
+    for i, (raw, filt) in enumerate(pairs):
+        r, c = divmod(i, cols)
+        y, x = r * (cell_h + outer), c * (w + outer)
+        out[:, y:y + h, x:x + w] = tile(raw, scale)
+        out[:, y + h + inner:y + cell_h, x:x + w] = tile(filt, scale)
+        boxes += [(x, y, letters[i]), (x, y + h + inner, f"{letters[i]} {filter_label.lower()}")]
+    frames = []
+    for f in out:
+        img = Image.fromarray(f)
+        for x, y, text in boxes:
+            sub = img.crop((x, y, x + w, y + h))
+            label(sub, text)
+            img.paste(sub, (x, y))
+        frames.append(np.asarray(img))
+    return np.stack(frames)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", required=True, help="where downloaded KTH AVIs are kept")
@@ -304,16 +332,26 @@ def main():
                 break
         video, seq, s, raw, q, rank, seen = best
         save_gif(os.path.join(out_dir, f"t{t:02d}_query.gif"), tile(q, 2))
-        cands = []
+        # every candidate: the same walking window raw and through this trial's filter; if the filter
+        # shows nothing in that window (a pose miss), the candidate's next subsequence
+        pairs, used_seqs = [], []
         for p in tr["lineup"]:
             v = f"person{p:02d}_{LINEUP[0]}_d{LINEUP[1]}"
-            cands.append(window(fetch(args.cache, v), centre(seqs, v, tr["lineup_seq"])))
-        save_gif(os.path.join(out_dir, f"t{t:02d}_lineup.gif"), grid(cands, list("ABCD")))
+            lraw = fetch(args.cache, v)
+            order = [tr["lineup_seq"]] + [x for x in range(1, len(seqs[v]) + 1) if x != tr["lineup_seq"]]
+            for lseq in order:
+                ls = centre(seqs, v, lseq)
+                filt = render(cond, lraw, ls)
+                if (activity(filt) >= VISIBLE).mean() >= 0.5:
+                    break
+            pairs.append((window(lraw, ls), filt))
+            used_seqs.append(lseq)
+        save_gif(os.path.join(out_dir, f"t{t:02d}_lineup.gif"), lineup_grid(pairs, "ABCD", CONDS[cond][3]))
         bdq_act = activity(render("bdq", raw, s)).mean()
         key.append(dict(trial=t, target_person=tr["target"], condition=cond, run=CONDS[cond][0],
                         query=f"{video} seq{seq} start{s}", window_rank=rank, bdq_active_pct=round(100 * bdq_act, 2),
                         lineup=" ".join(f"{l}=p{p:02d}" for l, p in zip("ABCD", tr["lineup"])),
-                        lineup_seq=tr["lineup_seq"], answer=tr["answer"]))
+                        lineup_seqs=" ".join(map(str, used_seqs)), answer=tr["answer"]))
         print(f"trial {t:2d}: p{tr['target']:02d} {cond:5s} {video} -> {tr['answer']}  (window rank {rank}, bdq {100 * bdq_act:.2f}%)", flush=True)
     with open(os.path.join(HERE, "answer_key.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(key[0]))

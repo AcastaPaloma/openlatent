@@ -1,21 +1,21 @@
-trial,target_person,condition,run,query,window_rank,bdq_active_pct,lineup,lineup_seq,answer
-1,12,pose,p12_kth_pose_canon_e16,person12_running_d2 seq2 start99,0,2.9,A=p07 B=p01 C=p12 D=p14,1,C
-2,20,bdq,p2_bdq_a3_ens,person20_jogging_d1 seq4 start409,0,5.07,A=p20 B=p19 C=p16 D=p21,2,A
-3,11,unet,p2_unet_a1_ens,person11_walking_d2 seq4 start679,0,4.41,A=p11 B=p09 C=p13 D=p10,3,A
-4,8,bdq,p2_bdq_a3_ens,person08_handwaving_d2 seq1 start2,0,1.47,A=p04 B=p08 C=p05 D=p24,4,B
-5,22,pose,p12_kth_pose_canon_e16,person22_jogging_d1 seq4 start435,0,4.01,A=p22 B=p18 C=p23 D=p05,1,A
-6,15,unet,p2_unet_a1_ens,person15_jogging_d1 seq1 start12,0,6.15,A=p24 B=p15 C=p21 D=p07,2,B
-7,2,blur,p1_blur8,person02_running_d1 seq3 start159,0,6.46,A=p09 B=p02 C=p18 D=p14,3,B
-8,17,bdq,p2_bdq_a3_ens,person17_boxing_d1 seq1 start4,0,1.65,A=p17 B=p13 C=p10 D=p01,4,A
-9,6,pose,p12_kth_pose_canon_e16,person06_jogging_d2 seq2 start125,0,5.21,A=p23 B=p19 C=p06 D=p16,1,C
-10,3,blur,p1_blur8,person03_running_d1 seq1 start0,0,3.14,A=p04 B=p01 C=p03 D=p13,2,C
-11,12,bdq,p2_bdq_a3_ens,person12_handwaving_d1 seq4 start552,0,1.79,A=p02 B=p11 C=p15 D=p12,3,D
-12,22,blur,p1_blur8,person22_handwaving_d2 seq1 start26,0,5.53,A=p14 B=p16 C=p22 D=p03,4,C
-13,8,unet,p2_unet_a1_ens,person08_handclapping_d1 seq1 start4,0,0.52,A=p07 B=p19 C=p08 D=p09,1,C
-14,20,pose,p12_kth_pose_canon_e16,person20_walking_d2 seq4 start750,0,4.24,A=p08 B=p20 C=p04 D=p22,2,B
-15,3,bdq,p2_bdq_a3_ens,person03_handclapping_d2 seq1 start34,0,1.75,A=p18 B=p06 C=p05 D=p03,3,D
-16,17,unet,p2_unet_a1_ens,person17_running_d2 seq3 start259,0,3.7,A=p20 B=p17 C=p24 D=p23,4,B
-17,11,pose,p12_kth_pose_canon_e16,person11_boxing_d1 seq1 start6,0,3.21,A=p21 B=p12 C=p17 D=p11,1,D
-18,6,blur,p1_blur8,person06_boxing_d1 seq1 start2,0,1.47,A=p06 B=p10 C=p18 D=p12,2,A
-19,2,unet,p2_unet_a1_ens,person02_walking_d2 seq4 start889,0,4.38,A=p04 B=p01 C=p10 D=p02,3,D
-20,15,blur,p1_blur8,person15_handclapping_d2 seq1 start10,0,4.25,A=p20 B=p14 C=p06 D=p15,4,D
+trial,target_person,condition,run,query,window_rank,bdq_active_pct,lineup,lineup_seqs,answer
+1,12,pose,p12_kth_pose_canon_e16,person12_running_d2 seq2 start99,0,2.9,A=p07 B=p01 C=p12 D=p14,1 1 1 1,C
+2,20,bdq,p2_bdq_a3_ens,person20_jogging_d1 seq4 start409,0,5.07,A=p20 B=p19 C=p16 D=p21,2 2 2 2,A
+3,11,unet,p2_unet_a1_ens,person11_walking_d2 seq4 start679,0,4.41,A=p11 B=p09 C=p13 D=p10,3 3 3 3,A
+4,8,bdq,p2_bdq_a3_ens,person08_handwaving_d2 seq1 start2,0,1.47,A=p04 B=p08 C=p05 D=p24,4 4 4 4,B
+5,22,pose,p12_kth_pose_canon_e16,person22_jogging_d1 seq4 start435,0,4.01,A=p22 B=p18 C=p23 D=p05,1 1 1 1,A
+6,15,unet,p2_unet_a1_ens,person15_jogging_d1 seq1 start12,0,6.15,A=p24 B=p15 C=p21 D=p07,2 2 2 2,B
+7,2,blur,p1_blur8,person02_running_d1 seq3 start159,0,6.46,A=p09 B=p02 C=p18 D=p14,3 3 3 3,B
+8,17,bdq,p2_bdq_a3_ens,person17_boxing_d1 seq1 start4,0,1.65,A=p17 B=p13 C=p10 D=p01,4 4 4 4,A
+9,6,pose,p12_kth_pose_canon_e16,person06_jogging_d2 seq2 start125,0,5.21,A=p23 B=p19 C=p06 D=p16,1 1 1 1,C
+10,3,blur,p1_blur8,person03_running_d1 seq1 start0,0,3.14,A=p04 B=p01 C=p03 D=p13,2 2 2 2,C
+11,12,bdq,p2_bdq_a3_ens,person12_handwaving_d1 seq4 start552,0,1.79,A=p02 B=p11 C=p15 D=p12,3 3 3 3,D
+12,22,blur,p1_blur8,person22_handwaving_d2 seq1 start26,0,5.53,A=p14 B=p16 C=p22 D=p03,4 4 4 4,C
+13,8,unet,p2_unet_a1_ens,person08_handclapping_d1 seq1 start4,0,0.52,A=p07 B=p19 C=p08 D=p09,1 1 1 1,C
+14,20,pose,p12_kth_pose_canon_e16,person20_walking_d2 seq4 start750,0,4.24,A=p08 B=p20 C=p04 D=p22,3 3 3 3,B
+15,3,bdq,p2_bdq_a3_ens,person03_handclapping_d2 seq1 start34,0,1.75,A=p18 B=p06 C=p05 D=p03,3 3 3 3,D
+16,17,unet,p2_unet_a1_ens,person17_running_d2 seq3 start259,0,3.7,A=p20 B=p17 C=p24 D=p23,1 1 1 1,B
+17,11,pose,p12_kth_pose_canon_e16,person11_boxing_d1 seq1 start6,0,3.21,A=p21 B=p12 C=p17 D=p11,1 1 1 1,D
+18,6,blur,p1_blur8,person06_boxing_d1 seq1 start2,0,1.47,A=p06 B=p10 C=p18 D=p12,2 2 2 2,A
+19,2,unet,p2_unet_a1_ens,person02_walking_d2 seq4 start889,0,4.38,A=p04 B=p01 C=p10 D=p02,4 4 4 4,D
+20,15,blur,p1_blur8,person15_handclapping_d2 seq1 start10,0,4.25,A=p20 B=p14 C=p06 D=p15,4 4 4 4,D

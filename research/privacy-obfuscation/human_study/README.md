@@ -29,9 +29,29 @@ picks who it is (forced choice, chance 25%) and rates confidence 1-5.
 
 - Query: one filter, 32 frames at stride 2 (the attackers' clip stride), any of the six actions,
   scenario d1 or d2 (outdoors; same clothes as d4, unlike d3).
-- Lineup: always raw, walking, d4 (indoors), so the background never matches the query but the
-  person's clothes do. Only the filter stands between the viewer and the identity. This is the
-  attacker's view: a raw gallery, an obfuscated probe.
+- Lineup: four people walking in d4 (indoors), each shown raw and, directly beneath, the same
+  window through the trial's filter. The background never matches the query but the person's
+  clothes do, so only the filter stands between the viewer and the identity.
+
+### Why the lineup shows each candidate raw and filtered
+
+The human plays the identity adversary. On KTH the adversaries predict one thing: which of the 25
+people a clip shows (`priv_task="person"` in `ppv/run.py`); the lineup asks the same question,
+4-way. The machine numbers above are the strong protocol: the attacker is trained on labelled
+*obfuscated* clips. A raw-only lineup would instead match the weak protocol (attacker trained on
+raw, tested on obfuscated), where every filter is near chance for machines:
+
+| filter | strong (trained on obfuscated) | weak (trained on raw) |
+|---|---|---|
+| blur | 95.0 | 8.7 |
+| unet | 89.1 | 4.3 |
+| bdq | 68.6 | 3.8 |
+| pose | 29.1 | 4.0 |
+
+Showing each candidate through the filter gives people labelled obfuscated examples, so human
+accuracy is comparable to the strong column. The attribute adversaries (face, skin colour,
+gender, nudity, relationship) belong to the VP-UCF101 / HMDB51 runs; KTH has no such labels, so
+the study asks identity only.
 
 ## Design (20 trials)
 
@@ -41,7 +61,8 @@ picks who it is (forced choice, chance 25%) and rates confidence 1-5.
 - Trials 1-10 show every target once, trials 11-20 the other filter (5+ trials later); each filter
   has 2-3 trials per half, and the first half is a carryover-free comparison on its own.
 - No filter twice in a row. A target's two trials differ in action, scenario, lineup subsequence,
-  distractors and answer letter. Each action appears 3-4 times; each filter gets >= 4 actions.
+  distractors and answer letter. If the filter shows nothing in a candidate's lineup window (a
+  pose-detector miss), that candidate's next walking subsequence is used (`lineup_seqs` in the key). Each action appears 3-4 times; each filter gets >= 4 actions.
 - Every person appears in 3-4 lineups (targets included), so "I've seen this one before" carries
   no information. Answers: 5 per letter.
 - Query windows are ranked by BDQ activity (one motion measure for every filter) and each trial
@@ -59,7 +80,9 @@ raw KTH is near-trivial for people with matching clothes).
   anonymizers built from the privacy-research branch's `ppv` with checkpoints from the HF repo,
   GIF rendering. Writes `stimuli/*.gif` and `answer_key.csv`.
 - `answer_key.csv`: per trial: target, filter, run, query clip and window, BDQ activity, lineup,
-  correct letter.
+  lineup subsequence per candidate, correct letter.
+- `verify.py`: asserts every lineup holds its target exactly once at the keyed letter, and draws
+  `verify_1.png` / `verify_2.png` (raw query next to the lineup, target outlined) for checking by eye.
 
 ```bash
 PYTHONPATH=<privacy-research>/research/privacy-obfuscation \
