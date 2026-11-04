@@ -1,0 +1,4 @@
+name: h_r0_pd_pub
+priority: 4
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 TF_NUM_INTRAOP_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/pd_release.py r0 --out $OUT --w1 7.8 --w2 0.05 --seed 0"
+hf_path: runs/h_r0_pd_pub
