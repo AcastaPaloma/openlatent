@@ -172,10 +172,15 @@ def main():
         for sname, sl in (("V", slice(0, nV)), ("H", slice(nV, None))):
             E = Eall_n[sl]
             if ap_ok:
-                do_ap(name, E, sname)
+                do_ap(name, E, sname, modes=("xs",) if a.f2 else ("xs", "nonrep"))
                 if null:
-                    perm = np.random.RandomState(AR.seed_of(a.salt, "null", name, sname) % (2 ** 31)).permutation(len(E))
-                    do_ap(name, E, sname, comp_override=sets[sname]["comp"][perm], modes=("xs",), prefix="apcnull")
+                    if ("null", sname) not in pos_cache:
+                        perm = np.random.RandomState(AR.seed_of(a.salt, "null", sname) % (2 ** 31)).permutation(len(E))
+                        pos_cache[("null", sname)] = (sets[sname]["comp"][perm], AP.build_pos(sets[sname]["comp"][perm], sets[sname]["src"], sets[sname]["well"], "xs"))
+                    cn, pn = pos_cache[("null", sname)]
+                    qm = None
+                    apq = AP.ap_queries(E, sets[sname]["plate"], cn, sets[sname]["src"], sets[sname]["well"], sets[sname]["pert"], mode="xs", pos=pn)
+                    P[f"apcnull|{sname}|{name}|xs"] = AP.per_compound(apq, cn)[1].astype(np.float32)
             if not a.no_attackers:
                 do_att(name, E, sname)
         meta_out["arms"].append(name)
@@ -258,21 +263,26 @@ def run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_clas
     (SupCon MLP, d in {8,16,32,64} x output dither {0,0.5,1}), controls; every arm also gets a same-embedding shuffled-label AP null."""
     import json as _json
     t0 = time.time()
+    only = a.arms.split(",") if a.arms else None
+    ok = lambda nm: only is None or nm in only or nm.split("_")[0] in only  # noqa: E731
     meta_out["f2"] = True
     meta_out["f2_train"] = {}
     # (c) controls
     E = torch.randn(Xall.shape[0], 16, generator=torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ctrl")), device=AR.DEV)
-    run_arm("ctrl_noise16", "ctrl", E, null=True)
+    if ok("ctrl_noise16"):
+        run_arm("ctrl_noise16", "ctrl", E, null=True)
     # (a) small-d LDA
     for lab in ("ldaT2", "ldaP"):
         for dd in (2, 4, 8):
             name = f"{lab}_{dd}"
-            run_arm(name, "labelonly", fac.build(name, Xall), null=True)
+            if ok(name):
+                run_arm(name, "labelonly", fac.build(name, Xall), null=True)
     # oracle: PCA-256 -> LDA fitted on the H compounds' OWN labels, scored in-sample (upper reference, not a method)
     Z = fac.pca(Xall, 256)
     muo, Wo = AR.lda_fit(Z[nV:], sets["H"]["comp"], AR.SHRINK)
     for dd in (16, 64):
-        run_arm(f"oracleLDA_{dd}", "oracle", AR.lda_apply(Z, muo, Wo, dd), null=False)
+        if ok(f"oracleLDA_{dd}") or ok("oracleLDA"):
+            run_arm(f"oracleLDA_{dd}", "oracle", AR.lda_apply(Z, muo, Wo, dd), null=False)
     del Z
     # (b) the supervised nonlinear adapter: labels = T' production compounds (>= 2 Fit wells) + Target2 compounds (DMSO excluded)
     lp, lc, jf = lab_prod[fit_idx], lab_class[fit_idx], jcp[fit_idx]
@@ -289,6 +299,8 @@ def run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_clas
     rs = np.random.RandomState(AR.seed_of(a.salt, "probe") % (2 ** 31))
     sub = rs.choice(len(fit_idx), 20000, replace=False)
     for dd in (8, 16, 32, 64):
+        if not ok(f"mlp_d{dd}"):
+            continue
         t1 = time.time()
         net, info = AD.train_supcon(Xfit, lab_final, n_prod, dd, AR.seed_of(a.salt, "mlp", dd) % (2 ** 31), steps=int(os.environ.get("F2_STEPS", AD.STEPS)))
         Ef = AD.embed(net, Xfit)
