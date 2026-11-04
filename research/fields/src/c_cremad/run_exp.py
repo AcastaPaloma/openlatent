@@ -139,6 +139,11 @@ def main():
                     ev.merge_fold(acc["layers"].setdefault(l, {}), o)
                 print(f"[{a.name} s{seed} f{fold}] layers done {time.time()-tf:.0f}s", flush=True)
                 continue
+            if cfg.get("dither_r") and a.method in ("ae", "lda_emo", "pca"):  # post-hoc control: noise-dithered label-free code, fixed noise per clip
+                Zc = rep.pooled.detach().cpu()
+                sdz = Zc[S["tr"]].std(0)
+                g_ = torch.Generator().manual_seed(777 + seed * 10 + fold)
+                rep = Rep(Zc + torch.randn(Zc.shape, generator=g_) * sdz * float(cfg["dither_r"]), None, rep.name + "_dither")
             indep = a.method in ("raw", "mean", "smooth", "feat", "ctrl_constant", "ctrl_length", "leace_oracle")
             id_mode = "fold" if not indep else ("all" if fold == a.folds[0] else "skip")
             o = ev.evaluate_rep(ctx, rep, fold, seed, shuffle=a.shuffle, secrets=not a.no_secrets, extra_emo=head_pred, id_mode=id_mode, val_report=a.val_report)

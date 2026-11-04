@@ -1,0 +1,4 @@
+name: c_dith_lda4_k32_r1_s0
+priority: 9
+cmd: "OMP_NUM_THREADS=4 LGBM_THREADS=6 python3 research/fields/src/c_cremad/run_exp.py --name c_dith_lda4_k32_r1_s0 --method lda_emo --cfg '{\"k\": 32, \"train_emotions\": [0, 3, 4, 5], \"dither_r\": 1.0}' --seeds 0 --no_secrets"
+hf_path: runs/c_dith_lda4_k32_r1_s0

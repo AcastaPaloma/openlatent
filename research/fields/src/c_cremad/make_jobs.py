@@ -68,6 +68,23 @@ def ae_jobs(names=None, trim=False, seeds=(0, 1, 2)):
     return out
 
 
+def dither_jobs():
+    """Post-hoc H2-014-style control (added after the AE grid was read): Gaussian dither r x std per dimension on a label-free code, no adversary."""
+    te = [0, 3, 4, 5]
+    out = []
+    for r_ in (1.0, 2.0):
+        n = f"c_dith_ae_d32_r{r_:g}"
+        cmd = (f"OMP_NUM_THREADS=4 LGBM_THREADS=6 python3 research/fields/src/c_cremad/run_exp.py --name {n}_s0 --method ae "
+               f"--cfg '{json.dumps(dict(dz=32, lam=0.0, beta=0.001, dither_r=r_))}' --seeds 0 --no_secrets --val_report")
+        (SPECS / f"{n}_s0.yaml").write_text(f"name: {n}_s0\npriority: 9\ncmd: {json.dumps(cmd)}\nhf_path: runs/{n}_s0\n")
+        n2 = f"c_dith_lda4_k32_r{r_:g}"
+        cmd2 = (f"OMP_NUM_THREADS=4 LGBM_THREADS=6 python3 research/fields/src/c_cremad/run_exp.py --name {n2}_s0 --method lda_emo "
+                f"--cfg '{json.dumps(dict(k=32, train_emotions=te, dither_r=r_))}' --seeds 0 --no_secrets")
+        (SPECS / f"{n2}_s0.yaml").write_text(f"name: {n2}_s0\npriority: 9\ncmd: {json.dumps(cmd2)}\nhf_path: runs/{n2}_s0\n")
+        out += [f"{n}_s0", f"{n2}_s0"]
+    return out
+
+
 def learned_configs():
     cf = {}
     for d in (2, 4, 8, 16, 32, 64, 128, 256):
@@ -108,5 +125,5 @@ def sweeptrim(seeds=(0,), prio=22):
 
 if __name__ == "__main__":
     what = sys.argv[1]
-    names = ae_jobs() if what == "ae" else held_out_emotion() if what == "he" else sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
+    names = dither_jobs() if what == "dither" else ae_jobs() if what == "ae" else held_out_emotion() if what == "he" else sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
     print(len(names), "specs", names[:3], "...")
