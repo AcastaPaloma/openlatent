@@ -184,6 +184,7 @@ def main():
     ap.add_argument("--out", default="-")
     ap.add_argument("--B", type=int, default=1000)
     ap.add_argument("--tol", type=float, default=0.05)
+    ap.add_argument("--compact", action="store_true", help="print only reference rows, V-selected configs and the tally")
     a = ap.parse_args()
     recs = load(a.runs)
     cells = sorted({(r["encoder"], r["dataset"], r.get("variant", "crossed")) for r in recs if "raw" == r["cfg"] and any(x["cfg"].startswith("lda_pca") for x in recs if x["encoder"] == r["encoder"] and x["dataset"] == r["dataset"])})
@@ -224,17 +225,25 @@ def main():
         hdr = "| config | dim | rate (bits) | "
         hdr += ("seen-class acc | held-class acc [95% CI] | held-class acc, unseen centres | " if held_mode else "label acc | label acc, unseen centres | ")
         hdr += "L_worst [95% CI] | L (+LightGBM, RFF) | retention xc [95% CI] | retention all |"
-        L.append(hdr)
-        L.append("|" + "---|" * (hdr.count("|") - 1))
+        main_hdr, main_sep = hdr, "|" + "---|" * (hdr.count("|") - 1)
+        if not a.compact:
+            L.append(hdr)
+            L.append(main_sep)
         order = sorted(tab, key=lambda c: ({"raw": 0, "centre_whiten": 1, "leace": 2, "lda": 3, "lda_pca": 4}.get(family(c), 5), family(c), tab[c]["dim"], c))
+        main_rows = {}
         for c in order:
             t = tab[c]
             if held_mode:
                 u_ = f"{t['seen'][0]:.3f} | {fmt(*t['held'][:2])} | {t['heldO'][0]:.3f} | "
             else:
                 u_ = f"{t['lab'][0]:.3f} | {t['labO'][0]:.3f} | "
-            L.append(f"| {c} | {t['dim']} | {t['rate']:.1f} | {u_}{fmt(t['L'][0], t['L'][1], 2)} | {t['La']:.2f} | {fmt(*t['ret'][:2])} | {t['reta'][0]:.3f} |")
+            main_rows[c] = f"| {c} | {t['dim']} | {t['rate']:.1f} | {u_}{fmt(t['L'][0], t['L'][1], 2)} | {t['La']:.2f} | {fmt(*t['ret'][:2])} | {t['reta'][0]:.3f} |"
+            if not a.compact:
+                L.append(main_rows[c])
+        main_anchor = len(L)
         # --- comparison with the matched LDA arm
+        Lmain = L
+        L = [] if a.compact else Lmain
         L.append("\nLearned configurations minus the matched-dimensionality LDA arm (sealed C; paired unit bootstrap; positive utility/retention delta = better, positive L delta = more leakage):\n")
         L.append("| learned config | dim | matched LDA arm | Δ " + ("held-class acc" if held_mode else "label acc") + f" [95% CI] | Δ retention xc [95% CI] | Δ L_worst [95% CI] | meets criterion (i)/(ii) at L within +{a.tol:.2f}? |")
         L.append("|---|---|---|---|---|---|---|")
@@ -281,9 +290,12 @@ def main():
             order_idx = [0, 2, 1, 3]
             L.append(row[0] + "".join(cells_[i] for i in order_idx) + "|")
         # --- V-selected per family (the official line)
+        L = Lmain
         L.append(f"\nPer family, configuration selected on V (L_V within +{a.tol:.2f} of the matched LDA arm; then max V {'held-class acc' if held_mode else 'retention xc'}):\n")
         L.append("| family | config | matched LDA | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] | Δ retention xc [95% CI] | Δ L_worst | wins? |")
         L.append("|---|---|---|---|---|---|---|")
+        sel_cfgs = []
+        sel_start = len(L)
         for fam in LEARNED:
             cand = []
             for c in tab:
@@ -296,9 +308,15 @@ def main():
                 L.append(f"| {fam} | (no config within the leakage tolerance on V) | | | | | no |")
                 continue
             _, c = max(cand)
+            sel_cfgs.append(c)
             ok, flag, m_, du, dr, dL = flags[c]
             wins.append((enc, ds, var, fam, c, ok, flag))
             L.append(f"| {fam} | {c} | {m_} | {fmt(*du)} | {fmt(*dr)} | {dL[0]:+.2f} | {'YES: ' + flag if ok else 'no'} |")
+        if a.compact:   # reference rows + the selected configs, inserted before the V-selected comparison table
+            hdr_i = main_anchor - 2 if False else None
+            refs_ = [c for c in order if family(c) in ("raw", "centre_whiten", "leace", "lda", "lda_pca") or c in ("pca__d4", "pca__d16", "pca__d64")]
+            block = [main_hdr, main_sep] + [main_rows[c] for c in refs_ + sel_cfgs if c in main_rows]
+            L[sel_start - 3:sel_start - 3] = ["", "References and V-selected learned configurations (absolute numbers on sealed C):", ""] + block
         # controls
         ct = []
         for c in sorted(cell.by):
