@@ -1,0 +1,10 @@
+{
+ "dataset": "hlca",
+ "cells": 97232,
+ "latent": 30,
+ "seconds": 664.3,
+ "scvi": "1.3.3",
+ "epochs": 82,
+ "final_elbo_train": 630.9465942382812,
+ "counts_were_integer": true
+}

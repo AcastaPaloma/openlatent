@@ -1,0 +1,10 @@
+{
+ "dataset": "pancreas",
+ "cells": 16382,
+ "latent": 30,
+ "seconds": 129.7,
+ "scvi": "1.3.3",
+ "epochs": 100,
+ "final_elbo_train": 1234.964599609375,
+ "counts_were_integer": false
+}
