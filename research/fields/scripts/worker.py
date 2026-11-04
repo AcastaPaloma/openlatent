@@ -23,13 +23,15 @@ WORK = Path.home() / "work"
 HF_REPO = os.environ.get("FIELDS_HF_REPO", "KuanKuanKuan/openlatent-fields")
 
 
-def claim(gpu):
+def claim(gpu, max_priority=None):
     keyed = []
     (Q / "bad").mkdir(exist_ok=True)
     for p in (Q / "pending").glob("*.yaml"):
         try:
             cfg = yaml.safe_load(p.read_text())
             assert isinstance(cfg, dict) and "name" in cfg and "cmd" in cfg
+            if max_priority is not None and cfg.get("priority", 50) > max_priority:
+                continue  # express worker: reserved-priority jobs only
             keyed.append(((cfg.get("priority", 50), p.stat().st_mtime, p.name), p))  # ties: oldest submission first, then name
         except Exception as e:  # one malformed spec must never kill a worker: quarantine it
             print(f"quarantine {p.name}: {str(e)[:120]}", flush=True)
@@ -100,11 +102,12 @@ def run(job_path, gpu):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gpu", type=int, required=True)
+    ap.add_argument("--max_priority", type=int, default=None, help="express worker: only claim jobs with priority <= this")
     a = ap.parse_args()
     for d in ("pending", "running", "done", "failed"):
         (Q / d).mkdir(parents=True, exist_ok=True)
     while True:
-        j = claim(a.gpu)
+        j = claim(a.gpu, a.max_priority)
         if j is None:
             time.sleep(20)
             continue
