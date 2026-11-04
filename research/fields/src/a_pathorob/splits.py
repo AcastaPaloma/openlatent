@@ -75,7 +75,10 @@ def _unit_table(P, mask):
     assert (g.c == 1).all(), "unit spans several centres"
     cen = df.groupby("u").c.first()
     g["c"] = g.u.map(cen)
-    g["stratum"] = [f"{c}|{y if ny == 1 else 'm'}" for c, y, ny in zip(g.c, g.y, g.ny)]
+    if (g.ny == 1).all():
+        g["stratum"] = [f"{c}|{y}" for c, y in zip(g.c, g.y)]
+    else:                                  # units span classes (tolkach cases): stratify by centre only
+        g["stratum"] = [str(c) for c in g.c]
     return g
 
 

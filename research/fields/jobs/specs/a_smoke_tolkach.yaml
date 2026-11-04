@@ -1,0 +1,4 @@
+name: a_smoke_tolkach
+priority: 5
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset tolkach_esca --seed 0 --grid raw,leace,vib,vq,adv_retrain,ctrl_const,ctrl_shuffle --smoke
+hf_path: runs/a_smoke_tolkach
