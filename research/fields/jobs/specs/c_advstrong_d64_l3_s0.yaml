@@ -1,0 +1,4 @@
+name: c_advstrong_d64_l3_s0
+priority: 13
+cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_advstrong_d64_l3_s0 --method learned --cfg '{\"dz\": 64, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 3.0, \"adv_warm\": 500, \"adv_reinit\": 5}' --seeds 0"
+hf_path: runs/c_advstrong_d64_l3_s0
