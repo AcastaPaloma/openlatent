@@ -191,7 +191,8 @@ def all_metrics(D, S, arms, w, fset):
         out[arm] = dict(U=uf, Uh=uh, worst=max(a.values()) if a else np.nan, **{f"acc_{k}": v for k, v in a.items()})
     raw = out["raw50"]["worst"]
     for arm in arms:
-        out[arm]["L"] = (out[arm]["worst"] - ch) / max(raw - ch, 1e-6)
+        # L is undefined when the raw attacker is not above chance in the resample (denominator < 0.10): NaN, ignored by the intervals
+        out[arm]["L"] = (out[arm]["worst"] - ch) / (raw - ch) if raw - ch >= 0.10 else float("nan")
     # L of the H versions needs their own attacker numbers (they are arms themselves)
     out["_chance"] = ch
     out["_u0"] = f1_chance(D, w, fset)
