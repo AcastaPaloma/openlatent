@@ -1,0 +1,5 @@
+name: h_nn_pd_plain_s0
+priority: 14
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm pd_plain --tag _s0 --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/runs/h_pd_plain_s0/pd_plain""_s0.npz"
+hf_path: runs/h_nn_pd_plain_s0
+hf_allow: ["*.json", "*.log", "*.md"]
