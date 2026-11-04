@@ -29,10 +29,10 @@ from .base import BASES, load_base  # noqa: E402
 from .common import FAMILIES, LEVELS, canon, sha256_hex  # noqa: E402
 from .release import build_release, digest, oracle_report, save  # noqa: E402
 
-REPS = 12            # plant replicates per (base, family, level)
-N_NULL = 60          # null releases per base (unplanted, random pseudo-identities)
+REPS = 8             # plant replicates per (base, family, level)
+N_NULL = 40          # null releases per base (unplanted, random pseudo-identities)
 SHUF_LEVELS = (2, 4, 5)
-N_SHUF = 6           # label-shuffled planted twins per (base, family, shuffle level)
+N_SHUF = 4           # label-shuffled planted twins per (base, family, shuffle level)
 VERSION = "N-manifest-v1"
 
 
