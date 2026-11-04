@@ -1,0 +1,4 @@
+name: e_tscvi_pancreas
+priority: 12
+cmd: "n=0; while [ ! -f $HOME/work/cache/e_singlecell/pancreas/scvi_latent.npy ] && [ $n -lt 120 ]; do sleep 15; n=$((n+1)); done; for s in 0 1 2; do OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate.py --dataset pancreas --seed $s --arms T_scvi --out $OUT/s$s || exit 1; done"
+hf_path: runs/e_tscvi_pancreas

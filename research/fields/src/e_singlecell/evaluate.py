@@ -84,6 +84,7 @@ def main():
     ap.add_argument("--folds", default="")
     ap.add_argument("--kinds", default=",".join(AT.KINDS))
     ap.add_argument("--no_retention", action="store_true")
+    ap.add_argument("--no_scvi", action="store_true", help="do not attach the scVI reference even if its latent exists (it has its own job)")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -92,7 +93,9 @@ def main():
     only = a.arms.split(",") if a.arms else None
     kinds = a.kinds.split(",")
     scvi_p = CACHE / sc.ds / "scvi_latent.npy"
-    scvi = np.load(scvi_p) if scvi_p.exists() else None
+    scvi = np.load(scvi_p) if (scvi_p.exists() and not a.no_scvi) else None
+    if only is not None and "T_scvi" in only and scvi is None:
+        raise SystemExit("T_scvi requested but scvi_latent.npy is missing")
     P, meta = {}, dict(dataset=a.dataset, seed=a.seed, folds=folds, arms=[], timings={}, kinds=kinds,
                        commit=subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip(),
                        scvi_available=scvi is not None)
@@ -102,8 +105,6 @@ def main():
         held = np.where(Hm)[0]
         Z = get_z0(sc, f, T)
         arms = A.build_arms(Z, T, sc, a.seed, sc.folds[f], scvi=scvi, only=only)
-        if only is not None and "raw50" not in only:
-            arms["raw50"] = Z
         t_arms = time.time() - t0
         # probe label set of this fold
         ntr = np.bincount(sc.fine[T & (sc.fine >= 0)], minlength=len(sc.fine_names))
@@ -143,8 +144,7 @@ def main():
         for name, X in arms.items():
             t1 = time.time()
             do_probe(name, X, ytr)
-            if not name.startswith("onehot") or True:
-                do_att(name, X)
+            do_att(name, X)
             if not a.no_retention and not name.startswith(("ctrl", "onehot")):
                 P[f"ret|{name}|{f}"] = np.array([retention(Z, X, T, held, f)], np.float32)
             meta["timings"][f"{f}|{name}"] = round(time.time() - t1, 1)
@@ -152,7 +152,7 @@ def main():
                 meta["arms"].append(name)
             meta.setdefault("dims", {})[name] = int(X.shape[1])
             print(f"  fold {f} arm {name:14s} d={X.shape[1]:3d} {time.time() - t1:5.1f}s", flush=True)
-        if only is None or "raw50" in (only or []):
+        if "raw50" in arms:
             do_att("ctrl_shuffle_batch", arms["raw50"], shuffle=True)
             do_probe("ctrl_shuffle_labels", arms["raw50"], np.random.RandomState(31 + a.seed).permutation(ytr))
             for nm in ("ctrl_shuffle_batch", "ctrl_shuffle_labels"):
