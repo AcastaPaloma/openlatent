@@ -30,7 +30,7 @@ def claim(gpu):
         try:
             cfg = yaml.safe_load(p.read_text())
             assert isinstance(cfg, dict) and "name" in cfg and "cmd" in cfg
-            keyed.append(((cfg.get("priority", 50), p.name), p))
+            keyed.append(((cfg.get("priority", 50), p.stat().st_mtime, p.name), p))  # ties: oldest submission first, then name
         except Exception as e:  # one malformed spec must never kill a worker: quarantine it
             print(f"quarantine {p.name}: {str(e)[:120]}", flush=True)
             try:
