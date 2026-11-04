@@ -115,12 +115,18 @@ def main():
     A = Agg(recs, units)
     taus = [float(t) for t in a.taus.split(",")]
     seeds = A.seeds
+    orc = [r for r in recs.values() if r["spec"].get("mask") == "rare"]
+    if orc:  # H2 when the oracle cannot reach tau=0.97: compare floors at the oracle's own (dev) retention
+        tauO = float(np.floor(np.mean([A.retention(r, "dev") for r in orc]) * 1000) / 1000)
+        if tauO < min(taus):
+            taus.append(tauO)
+            print(f"(oracle_mask_rare reaches dev retention {tauO:.3f} < tau: added as an oracle-matched operating point for H2)\n")
     print(f"records {len(recs)}, seeds {seeds}, C docs {A.n_c}, test queries {A.n_q}\n")
 
     # ---- controls / references
     print("### References and controls (sealed C docs; R-precision of the worst of ridge/mlp/knn; mean over seeds; bootstrap over C docs)\n")
-    print("| arm | tier | R_worst [95% CI] | per attacker (ridge/mlp/knn) | nDCG@10 test | retention |")
-    print("|---|---|---|---|---|---|")
+    print("| arm | tier | R_worst [95% CI] | per attacker (ridge/mlp/knn) | L = (R-R_prior)/(R_raw-R_prior) [95% CI] | nDCG@10 test | retention (dev / test) |")
+    print("|---|---|---|---|---|---|---|")
     preds = {
         "const": lambda r: r["arm"] == "const",
         "raw": lambda r: r["arm"] == "raw" and not r["spec"].get("mask") and not r["spec"].get("shuffle"),
@@ -130,7 +136,7 @@ def main():
     }
     for arm, pred in preds.items():
         for tier in TIERS:
-            xs, per, nd, rt = [], [], [], []
+            xs, per, nd, rt, rd, Ls = [], [], [], [], [], []
             for s in seeds:
                 cand = [r for r in recs.values() if r["seed"] == s and pred(r)]
                 if not cand:
@@ -141,12 +147,16 @@ def main():
                 per.append([np.nanmean(u) for u in U])
                 nd.append(r["ndcg_test"])
                 rt.append(A.retention(r))
+                rd.append(A.retention(r, "dev"))
+                if A.ref(s, tier) is not None:
+                    Ls.append(A.L_boot(r["rid"], s, tier)[0])
             if not xs:
                 continue
             bx = np.mean(xs, axis=0)
             lo, hi = ci(bx)
             pm = np.mean(per, axis=0)
-            print(f"| {arm} | {tier} | {fmt(bx.mean(), lo, hi)} | {pm[0]:.3f}/{pm[1]:.3f}/{pm[2]:.3f} | {np.mean(nd):.4f} | {np.mean(rt):.3f} |")
+            Lt = fmt(np.mean(Ls, axis=0).mean(), *ci(np.mean(Ls, axis=0)), nd=2) if Ls else "n/a"
+            print(f"| {arm} | {tier} | {fmt(bx.mean(), lo, hi)} | {pm[0]:.3f}/{pm[1]:.3f}/{pm[2]:.3f} | {Lt} | {np.mean(nd):.4f} | {np.mean(rd):.3f} / {np.mean(rt):.3f} |")
     print()
 
     # ---- curve table (all configs)
