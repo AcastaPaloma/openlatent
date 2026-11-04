@@ -1,4 +1,4 @@
 name: b_leakref
-priority: 11
+priority: 6
 cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python leak_ref.py --out $OUT
 hf_path: runs/b_leakref
