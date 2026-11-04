@@ -22,6 +22,7 @@ def main():
     ap.add_argument("--out", default=os.environ.get("OUT", "out"))
     ap.add_argument("--n", type=int, default=8000)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--folds", default="", help="comma list; each fold also gets its own json (a crash in one fold must not lose the others)")
     a = ap.parse_args()
     import anndata as ad
     from scib_metrics.benchmark import BatchCorrection, Benchmarker, BioConservation
@@ -30,7 +31,8 @@ def main():
     scvi = np.load(scvi_p) if scvi_p.exists() else None
     arms_w = [x for x in ARMS if x != "T_scvi" or scvi is not None]
     res = {}
-    for f in range(len(sc.folds)):
+    folds = [int(x) for x in a.folds.split(",")] if a.folds else list(range(len(sc.folds)))
+    for f in folds:
         T, H = sc.fold_masks(f)
         Z = get_z0(sc, f, T)
         arms = A.build_arms(Z, T, sc, a.seed, sc.folds[f], scvi=scvi, only=arms_w)
@@ -53,7 +55,8 @@ def main():
             res[f] = {"error": repr(e)[:300]}
             print(f"fold {f}: FAILED {e!r}"[:400], flush=True)
     Path(a.out).mkdir(parents=True, exist_ok=True)
-    (Path(a.out) / f"scib_ctx_{a.dataset}.json").write_text(json.dumps(res, indent=1))
+    tag = "_f" + "".join(str(f) for f in folds) if a.folds else ""
+    (Path(a.out) / f"scib_ctx_{a.dataset}{tag}.json").write_text(json.dumps(res, indent=1))
 
 
 if __name__ == "__main__":

@@ -7,9 +7,12 @@ import numpy as np
 
 
 def main(paths):
+    import re
+    groups = {}
     for p in paths:
-        d = json.loads(Path(p).read_text())
-        ds = Path(p).stem.replace("scib_ctx_", "")
+        ds = re.sub(r"_f\d+$", "", Path(p).stem.replace("scib_ctx_", ""))
+        groups.setdefault(ds, {}).update(json.loads(Path(p).read_text()))
+    for ds, d in groups.items():
         folds = [f for f, v in d.items() if "error" not in v]
         errs = {f: v["error"] for f, v in d.items() if "error" in v}
         arms = sorted({a for f in folds for a in d[f]}, key=lambda a: list(d[folds[0]]).index(a) if a in d[folds[0]] else 99)
