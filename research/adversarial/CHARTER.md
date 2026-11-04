@@ -41,8 +41,20 @@ against a suite that generalises to attacker families it never saw.
 - Queue hygiene: validate YAML with yaml.safe_load before queueing; cap CPU threads <= 8; priorities are relative inside your own prefix; <5 is reserved for the main
   agent (a new focus's first jobs may use priority 4 once; short pre-registered batches < 1 GPU-h may be promoted on request); one job per GPU worker.
 - Stop rule: if cheap gates (floors, headroom, power) fail, stop the focus and write the negative result with its by-products; do not spend GPU to fill the queue.
+- Changing a test after data: a kill criterion may only be TIGHTENED after numbers are seen, and then both verdicts (original and tightened) are reported side by side;
+  loosening after data is a deviation, is labelled as such, and does not change the verdict (programme 1, Focus A and F, 2026-11-04).
+- Data-use gate (added at the 2026-11-04 audit): identity or re-identification experiments run only on datasets whose terms allow them (ChestX-ray14, which OpenLatent already uses;
+  CC-BY / MIT IMU sets that ship user IDs; programme-1 artefacts). Datasets whose terms forbid identifying individuals (CT-RATE, NLST/TCIA, Capture-24 per its record, BOXRR-23) are excluded
+  from identity work; borderline cases go to the owner before download. Journal time stamps use the VM clock.
 
 ## Layout
 ```
 CHARTER.md  FOCUS.md  literature/  hypotheses/{H-*.md,INDEX.md,RANKING.md}  jobs/specs/*.yaml  results/  results_notes/<focus>.md  journal/YYYY-MM-DD.md  src/<focus>/
 ```
+
+## Added after the 2026-11-04 audit
+- Data-use gate: no identity or re-identification attack on any dataset whose terms forbid identifying individuals (flagged so far: CT-RATE, NLST/TCIA, Capture-24 per a snippet, BOXRR-23); defaults are ChestX-ray14 (already used by OpenLatent) and
+  CC-BY / MIT IMU sets that ship user IDs; edge cases go to the owner before download.
+- Kill criteria may be tightened after data only with the original verdict reported alongside; they are never loosened after data (programme-1 lesson, Focus A and Focus F).
+- Every pre-registration names its seeds-vs-test-units design (cross-fit or rotating test units) so seeds replicate test noise, not only training noise.
+- Literature numbers quoted in FOCUS.md or any write-up must be verified against the primary source (programme-2 scouts read mostly abstracts).

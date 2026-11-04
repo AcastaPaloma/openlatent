@@ -79,6 +79,17 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   normalisation is not a universally safe floor against nonlinear attackers.
 - Caveats: scIB context scores for HLCA exist for fold 1 only; scVI is a single seed; Pancreas counts were non-integer; the three seeds share the same held-out units.
 
+## Focus F: JUMP Cell Painting (check-only)   [NO-GO at the S4 gate, 2026-11-04 ~16:50Z VM clock; programme-1 stop condition met]
+- Builder F (results_notes/F.md 5.1-5.8; pre-registered before any number; priority 4 used once; 3.2 worker-hours). Literal verdict: R0 passes (S2 mean AP 0.9007 / 0.4096 vs published 0.90 / 0.41); JK1 FIRES via the
+  control-AP clause in 3/3 splits (|U(shuffled compounds, raw) - U(noise16)| = 0.042-0.045 > 0.01; the shuffle control sits below chance because cross-source positives face same-plate negatives); the substantive
+  measurability clause passes (raw worst-of-4 source attacker 0.885 [0.865, 0.914] vs 0.60). Amendment A2 (written after the S4 numbers, relaxing that clause) was ruled a deviation (D1); the literal verdict stands.
+- Post-hoc sensitivity on S5 (cannot revive the line): JK0 clears (40.4k held-out compounds, MDE80 0.0010); JK3 FIRES 3/3: Harmony (U 0.077, L 0.99) is beaten by the 16-d compound-supervised LDA (U 0.183, L 0.39),
+  dU -0.106 [-0.107, -0.104]; JK2 does not fire on the registered grid (lowest L_V 0.37 at d=16, grid edge; d<=8 not run). K2 answer: LDA-301 leaks source at raw level (L 0.99). Stage 2 (label-free AE/cVAE vs the ldaP_16 envelope) not run.
+
+## PROGRAMME 1 STOPPED (2026-11-04 ~16:50Z VM clock)
+Stop rule (hypotheses/RANKING_R2.md section 7) met: AE lead dead (A), C closed, SC-0 fails K2 (E), D-digits fails H1, JUMP fails at the S4 gate (F). No further GPU work under research/fields; the shared VM stays up for programme 2.
+Remaining: SUMMARY.md (scoped claims, per-focus table, limits, by-products) after the independent audit (research/fields/AUDIT_findings.md) lands.
+
 ## Focus B': robotics latent actions   [NO-GO, decided 2026-11-04 11:30Z]
 - Verdict (Builder B, results_notes/B.md): on action-correlated distractors (corr_det, 3 seeds) the best learned arm (adv) beats zero-shot SAM by 0.010 NMSE
   (rule: >= 0.05 in every seed): FAIL. Mechanism: the harm is input clutter, not leakage (raw z carries ~0 sprite information), so an adversary on z has nothing to
