@@ -103,7 +103,7 @@ class Data:
 
     def arms(self):
         s = self.S[min(self.S)]
-        return sorted({a for a, _ in s["pr"]})
+        return sorted({a for a, _ in s["pr"]} | {a for a, _ in s["att"]})
 
 
 # ------------------------------------------------------------------------------------------------ metric kernels
@@ -172,6 +172,8 @@ def u_metrics(D, S, arm, w, fset, hold_arm=None):
         if a:
             uf.append(np.mean(a))
             uh.append(np.mean(b))
+    if not uf:
+        return float("nan"), float("nan")
     return float(np.max(uf)), float(np.max(uh))
 
 
