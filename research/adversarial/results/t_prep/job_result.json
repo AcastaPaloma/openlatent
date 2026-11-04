@@ -1,0 +1,21 @@
+{
+ "name": "t_prep",
+ "config": {
+  "name": "t_prep",
+  "priority": 3,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 PYTHONPATH=research/adversarial/src $HOME/venvs/t/bin/python -m t_cxr.prep --data $HOME/work/t_data/cxr_meta --out $HOME/work/t_data/cxr --report $OUT --procs 8",
+  "hf_path": "runs/t_prep",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "74f66dc",
+ "exit_code": 1,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 1579.8,
+ "finished_utc": "2026-11-04T19:09:24Z",
+ "uploaded": false
+}
