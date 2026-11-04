@@ -238,6 +238,18 @@ def detail(runs):
     return "\n".join(lines)
 
 
+def compare(runs_a, runs_b):
+    """Paired difference B - A (same actor resamples): worst-case identity T1 unseen and best emotion UAR."""
+    out = {}
+    ba, pa, _ = stat_over_seeds(runs_a, lambda r: worst_id(r, "T1", "unseen")[:2])
+    bb, pb, _ = stat_over_seeds(runs_b, lambda r: worst_id(r, "T1", "unseen")[:2])
+    out["d_identity_T1"] = dict(point=pb - pa, ci=ci(bb - ba))
+    ea, qa, _ = stat_over_seeds(runs_a, lambda r: best_emo(r)[:2])
+    eb, qb, _ = stat_over_seeds(runs_b, lambda r: best_emo(r)[:2])
+    out["d_emotion_uar"] = dict(point=qb - qa, ci=ci(eb - ea))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", nargs="+", required=True)
@@ -245,7 +257,11 @@ def main():
     ap.add_argument("--out", default=None)
     ap.add_argument("--md", default=None)
     ap.add_argument("--detail", action="store_true")
+    ap.add_argument("--compare", nargs=2, default=None, help="A B : paired difference B - A")
     a = ap.parse_args()
+    if a.compare:
+        print(json.dumps(compare(load(a.compare[0]), load(a.compare[1])), indent=1))
+        return
     raw = load(a.raw) if a.raw else None
     sums = []
     for d in a.runs:
