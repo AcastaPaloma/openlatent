@@ -1,0 +1,16 @@
+{
+ "name": "e_scib_hlca_c",
+ "config": {
+  "name": "e_scib_hlca_c",
+  "priority": 13,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 JAX_PLATFORMS=cpu XLA_FLAGS=--xla_cpu_multi_thread_eigen=false; for f in 0 1 2; do $HOME/venvs/e/bin/python research/fields/src/e_singlecell/scib_ctx.py --dataset hlca --n 4000 --folds $f --out $OUT; done; true",
+  "hf_path": "runs/e_scib_hlca_c"
+ },
+ "commit": "bfdcf06",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 569.0,
+ "finished_utc": "2026-11-04T15:02:16Z",
+ "uploaded": true
+}
