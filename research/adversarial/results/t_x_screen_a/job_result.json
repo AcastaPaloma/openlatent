@@ -1,0 +1,22 @@
+{
+ "name": "t_x_screen_a",
+ "config": {
+  "name": "t_x_screen_a",
+  "priority": 10,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; for r in raw warp0 rw1_mu0.005 rw1_mu0.01 rw1_mu0.02 rw2_mu0.005 rw2_mu0.01 rw2_mu0.02 rw2_mu0.04; do $HOME/venvs/t/bin/python -m t_cxr.run_suite --release $r --rot 0 --screen --attackers f3 --conds match --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT; done",
+  "hf_path": "runs/t_x_screen_a",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "ee7acd2",
+ "commit_after": "ee7acd2",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 585.5,
+ "finished_utc": "2026-11-04T23:10:42Z",
+ "uploaded": true
+}
