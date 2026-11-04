@@ -5,6 +5,8 @@ while read -r H; do
   [ -z "$H" ] && continue
   echo "=== $H  $(date -u +%H:%MZ)"
   ssh -o BatchMode=yes -o ConnectTimeout=15 "$H" '
+    git -C ~/openlatent pull -q --ff-only origin fields-research 2>/dev/null
+    python3 ~/openlatent/research/fields/scripts/normalize_queue.py
     nvidia-smi --query-gpu=index,utilization.gpu,memory.used --format=csv,noheader | sed "s/^/gpu /"
     echo "workers: $(pgrep -fc "[w]orker.py --gpu")"
     for d in pending running done failed; do echo "$d: $(ls ~/queue/$d 2>/dev/null | wc -l)"; done

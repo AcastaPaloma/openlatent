@@ -1,0 +1,16 @@
+{
+ "name": "b_leakref",
+ "config": {
+  "name": "b_leakref",
+  "priority": 6,
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python leak_ref.py --out $OUT",
+  "hf_path": "runs/b_leakref"
+ },
+ "commit": "7fe0171",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 103.2,
+ "finished_utc": "2026-11-04T10:06:59Z",
+ "uploaded": true
+}

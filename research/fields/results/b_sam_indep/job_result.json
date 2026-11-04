@@ -2,15 +2,15 @@
  "name": "b_sam_indep",
  "config": {
   "name": "b_sam_indep",
-  "priority": 12,
+  "priority": 10,
   "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind indep --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_indep.json $OUT/",
   "hf_path": "runs/b_sam_indep"
  },
- "commit": "4b09e69",
- "exit_code": -15,
- "gpu": 0,
+ "commit": "565f2cc",
+ "exit_code": 0,
+ "gpu": 3,
  "host": "192-222-52-237",
- "seconds": 577.7,
- "finished_utc": "2026-11-04T09:18:59Z",
- "uploaded": false
+ "seconds": 2251.6,
+ "finished_utc": "2026-11-04T10:00:14Z",
+ "uploaded": true
 }

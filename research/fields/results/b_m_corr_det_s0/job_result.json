@@ -1,0 +1,16 @@
+{
+ "name": "b_m_corr_det_s0",
+ "config": {
+  "name": "b_m_corr_det_s0",
+  "priority": 11,
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind corr_det --arms raw,rate4,rateb,gtmask,adv,adv30,lmask,advmask --epochs 30 --seed 0 --out $OUT",
+  "hf_path": "runs/b_m_corr_det_s0"
+ },
+ "commit": "6a829ed",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 2278.1,
+ "finished_utc": "2026-11-04T10:00:42Z",
+ "uploaded": true
+}
