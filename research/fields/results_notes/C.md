@@ -111,6 +111,37 @@ A winner is then replicated with seeds 1 and 2 (same sign, same thresholds on th
 5-dim projection (or a rate bottleneck) is the method, the contribution is the benchmark and its controls (channel floor, prosody floor,
 retrained-attacker suite), and the next question moves to where a projection cannot be fitted (no labels, new emotion sets, RAVDESS transfer).
 
+## 2c. Pre-registration: task-agnostic adversarial autoencoder (written 2026-11-04 ~12:05Z, before any AE number exists)
+
+Why: the label-supervised family (rate, adversary, VQ) loses to the LDA floor and fails 2b. Builder A found one exploratory lead for the family not yet
+tested here: an autoencoder trained WITHOUT class labels through a rate-limited Gaussian channel, with identity adversaries retrained from scratch
+(A.md PROTOCOL 2, `ae`, beta 0.001, dl 32, lam 10; midnight only, post hoc, one seed). This is the one targeted round for it on CREMA-D audio.
+
+Model (`ae.py`, method `ae`): input = per-clip mean+std of the uniform layer mix of the frozen WavLM-Base+ frames (1,536 numbers, standardised with
+train-actor statistics); encoder Dropout(0.2) -> Linear(1536,512) -> GELU -> Linear(512, 2 d_z) (mean, log-variance); decoder d_z -> 512 -> 1536;
+loss = MSE reconstruction + beta KL + lam x confusion, where the confusion term is the mean KL(p || uniform) of two adversaries (a linear and an MLP
+classifier of the 56-57 encoder-train actors, re-initialised from scratch and re-trained on the current z in each of 12 rounds, 150 steps, then
+the encoder takes 100 steps). NO emotion labels are used anywhere in encoder training. Released z = the mean (no sampling noise: the
+conservative choice for privacy). Trained on encoder-train actors only, fold by fold, exactly like the other encoders.
+Grid (all run, none dropped after seeing results): d_z in {16, 32}, beta = 0.001, lam in {0, 3, 10} -> 6 configurations x 3 seeds x 4 folds.
+Self-supervised variant (contrastive or masked-frame): NOT run in this round (not cheap on this budget); the reconstruction objective is the
+task-agnostic arm.
+
+Selection (validation actors only, never test): per configuration pool the 12 validation actors of each fold across seeds; U_HE_val = recall of DIS+FEA
+with the best six-way probe fitted on the train actors (probe sees all six labels, the encoder none); ID_val = worst-attacker identity T1 on the
+validation actors. Eligible if ID_val <= 0.10; choose the eligible configuration with the highest U_HE_val (ties: lower ID_val); if none is eligible,
+the one with the lowest ID_val. The chosen configuration is then also run on speech-trimmed input (`--trim`), same seeds.
+
+Comparators (same folds, same attackers, fitted on the same four emotions, `c_lda4_k{16,32}` = 3 LDA dims + residual-PCA dims padded to the AE width;
+trimmed input for the trimmed variant) and the prosody floors (`c_pros_*`, probes on the six hand-built descriptors; their DIS+FEA recall is read from
+the existing runs). The AE is trained without the four-emotion subset, so the 4-class recall criterion of 2b does not apply and is only reported.
+
+Success (the 2b criterion, unchanged, on the 3-seed mean, paired bootstrap over the 91 actors): (1) U_HE(AE) - U_HE(LDA-4 padded to the same d_z) >= +0.05
+with the 95% interval above 0; (2) identity T1 of the AE not above the comparator by more than 0.02 (upper end of the 95% interval of the difference
+<= 0.02); (3) the same holds on the speech-trimmed variant (otherwise the gain leans on the channel and is reported as such). Failing any of 1-3 closes
+Focus C as a negative result with the by-products already measured (channel floor 56x chance, LDA beating the neural attackers, oracle per-actor
+prosody floor 0.535 UAR at 2x chance, LEACE fitted on train actors leaving 53x on unseen actors).
+
 ## 3. Results so far (2026-11-04 ~11:55Z)
 
 Everything here is WavLM-Base+, audio only, 4 actor-disjoint folds pooled over the 91 test actors, 95% bootstrap over actors, identity =
