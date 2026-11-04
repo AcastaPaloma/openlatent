@@ -173,7 +173,7 @@ H-D and H-E stay as parked options (data friction).
 - Capture-24 re-identification: licence record asks users not to identify individuals.
 
 ## 9. Caveats on this scout
-- About 30 searches; WebFetch could not parse PDFs, so I read arXiv HTML where it existed. PrivDiffuser/CLOAK/PATN/PMR/ImmCOGNITO/GaitProtector were read through targeted extraction, not line by line; the protocol facts in section 1 come from those extracts and should be re-checked against the PDFs before being cited as quotes.
+- About 20 searches plus about 40 page fetches. `docs/harness.md` does not exist; I used `docs/design/video-harness.md`. WebFetch could not parse PDFs, so I read arXiv HTML where it existed. PrivDiffuser/CLOAK/PATN/PMR/ImmCOGNITO/GaitProtector were read through targeted extraction, not line by line; the protocol facts in section 1 come from those extracts and should be re-checked against the PDFs before being cited as quotes.
 - Dataset licences for UCF101, HMDB51, UTD-MHAD, Charades, Ego-Exo4D, CASIA-B, PantoRad, MHomeGes, CSI datasets were not opened.
 - I did not find "Exposing and Erasing Identity in Skeleton Motion" (a title surfaced on a GitHub list) or any IMU foundation-model identity probe; absence in my searches is not evidence of absence.
 - ArXiv IDs in the 26xx range are accurate for this timeline (today 2026-11-04) but I could not independently confirm acceptance venues beyond what each page states.
