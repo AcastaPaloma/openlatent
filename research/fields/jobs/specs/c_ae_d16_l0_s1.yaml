@@ -1,0 +1,4 @@
+name: c_ae_d16_l0_s1
+priority: 7
+cmd: "OMP_NUM_THREADS=4 LGBM_THREADS=6 python3 research/fields/src/c_cremad/run_exp.py --name c_ae_d16_l0_s1 --method ae --cfg '{\"dz\": 16, \"lam\": 0.0, \"beta\": 0.001}' --seeds 1 --no_secrets --val_report"
+hf_path: runs/c_ae_d16_l0_s1

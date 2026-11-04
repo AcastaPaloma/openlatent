@@ -34,7 +34,7 @@ class Ctx:
         f = self.sp["folds"][fold]
         m = lambda lst: np.isin(self.actor, lst) & self.keep
         return dict(tr=np.where(m(f["train"]))[0], val=np.where(m(f["val"]))[0], te=np.where(m(f["test"]))[0],
-                    te_actors=f["test"], tr_actors=f["train"])
+                    te_actors=f["test"], tr_actors=f["train"], val_actors=f["val"])
 
 
 def _label_only_identity(ctx, tr_idx, test_idx):
@@ -45,12 +45,12 @@ def _label_only_identity(ctx, tr_idx, test_idx):
     return guess[ctx.emo[test_idx]] == ctx.actor_idx[test_idx]
 
 
-def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=None, id_mode="fold", log=print):
+def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=None, id_mode="fold", val_report=False, log=print):
     """id_mode: 'fold' = split identity counts into encoder-unseen (test actors) / seen (train actors);
     'all' = representation does not depend on the fold: attack once, every actor goes into 'unseen'; 'skip' = no identity."""
     S = ctx.fold_sets(fold)
     rs = np.random.RandomState(1234 + seed)
-    out = dict(emo={}, id={}, secrets={}, hp={})
+    out = dict(emo={}, id={}, secrets={}, hp={}, emo_val={})
     # ------------------------------------------------------------------ emotion utility on sealed test actors
     y = ctx.emo.copy()
     train_all = np.concatenate([S["tr"], S["val"]])
@@ -61,6 +61,12 @@ def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=N
         p = r["preds"]["test"]
         out["emo"][k] = actor_confusions(ctx.actor[S["te"]], ctx.emo[S["te"]], p, 6)
         out["hp"][f"emo_{k}"] = dict(r["hp"], val=r["val"])
+    if val_report:  # honest validation-actor emotion predictions: probes fitted on 3/4 of the train actors, hp on the rest, scored on val actors
+        tra = np.array(sorted(S["tr_actors"])); hold = tra[3 * len(tra) // 4:]
+        fit_i = S["tr"][~np.isin(ctx.actor[S["tr"]], hold)]; hv_i = S["tr"][np.isin(ctx.actor[S["tr"]], hold)]
+        rv = attack(rep, ctx.emo, fit_i, hv_i, S["tr"], dict(val=S["val"]), suite_for(rep), "cls", 6, seed)
+        for k, r in rv.items():
+            out["emo_val"][k] = actor_confusions(ctx.actor[S["val"]], ctx.emo[S["val"]], r["preds"]["val"], 6)
     if extra_emo is not None:  # in-pipeline head of a learned encoder (not a retrained probe)
         out["emo"]["head"] = actor_confusions(ctx.actor[S["te"]], ctx.emo[S["te"]], extra_emo, 6)
     # ------------------------------------------------------------------ identity attackers (91-way closed set)
@@ -75,6 +81,7 @@ def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=N
     if shuffle == "id":
         y[idx["atk_train"]] = rs.permutation(y[idx["atk_train"]])
     res = attack(rep, y, idx["atk_fit"], idx["atk_val"], idx["atk_train"], evs, suite_for(rep), "cls", 91, seed) if evs else {}
+    va_set = set(S["val_actors"]) if (id_mode == "fold" and val_report) else set()
     te_set = set(S["te_actors"]) if id_mode == "fold" else set(all_actors)
     tr_set = set(S["tr_actors"]) if id_mode == "fold" else set()
     for k, r in res.items():
@@ -84,6 +91,9 @@ def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=N
             act = ctx.actor[ii]
             un = np.isin(act, list(te_set)); se = np.isin(act, list(tr_set))
             out["id"][k][t] = dict(unseen=actor_counts(act[un], correct[un]), seen=actor_counts(act[se], correct[se]))
+            if va_set:
+                vv = np.isin(act, list(va_set))
+                out["id"][k][t]["val"] = actor_counts(act[vv], correct[vv])
         out["hp"][f"id_{k}"] = dict(r["hp"], val=r["val"])
     lo = {}
     for t, ii in evs.items():
@@ -117,6 +127,10 @@ def merge_fold(acc, fold_out):
     """Accumulate per-fold outputs into one dict (actors are disjoint across folds for 'unseen'/emotion; 'seen' sums)."""
     for k, v in fold_out["emo"].items():
         acc.setdefault("emo", {}).setdefault(k, {}).update(v)
+    for k, v in fold_out.get("emo_val", {}).items():  # validation actors recur across folds: sum their confusion matrices
+        tgt = acc.setdefault("emo_val", {}).setdefault(k, {})
+        for a_, C in v.items():
+            tgt[a_] = (np.array(tgt[a_]) + np.array(C)).tolist() if a_ in tgt else C
     for k, d in fold_out["id"].items():
         for t, g in d.items():
             for grp, cnts in g.items():

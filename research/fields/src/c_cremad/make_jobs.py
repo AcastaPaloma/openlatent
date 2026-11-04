@@ -51,6 +51,23 @@ def held_out_emotion():
     return [spec(f"{n}_s0", "learned", c, seeds=(0,), prio=20 + i) for i, (n, c) in enumerate(cf.items())]
 
 
+def ae_jobs(names=None, trim=False, seeds=(0, 1, 2)):
+    """Pre-registered task-agnostic adversarial autoencoder grid (results_notes/C.md 2c). CPU threads capped at <= 8."""
+    out = []
+    for dz in (16, 32):
+        for lam in (0, 3, 10):
+            n = f"c_ae{'trim' if trim else ''}_d{dz}_l{lam}"
+            if names and n not in names:
+                continue
+            for sd in seeds:
+                cfg = dict(dz=dz, lam=float(lam), beta=0.001)
+                cmd = (f"OMP_NUM_THREADS=4 LGBM_THREADS=6 python3 research/fields/src/c_cremad/run_exp.py --name {n}_s{sd} --method ae "
+                       f"--cfg '{json.dumps(cfg)}' --seeds {sd} --no_secrets --val_report" + (" --trim" if trim else ""))
+                (SPECS / f"{n}_s{sd}.yaml").write_text(f"name: {n}_s{sd}\npriority: {6 + sd}\ncmd: {json.dumps(cmd)}\nhf_path: runs/{n}_s{sd}\n")
+                out.append(f"{n}_s{sd}")
+    return out
+
+
 def learned_configs():
     cf = {}
     for d in (2, 4, 8, 16, 32, 64, 128, 256):
@@ -91,5 +108,5 @@ def sweeptrim(seeds=(0,), prio=22):
 
 if __name__ == "__main__":
     what = sys.argv[1]
-    names = held_out_emotion() if what == "he" else sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
+    names = ae_jobs() if what == "ae" else held_out_emotion() if what == "he" else sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
     print(len(names), "specs", names[:3], "...")

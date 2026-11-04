@@ -35,6 +35,7 @@ def main():
     ap.add_argument("--backbone", default="wavlm-base-plus")
     ap.add_argument("--shuffle", default="none")
     ap.add_argument("--no_secrets", action="store_true")
+    ap.add_argument("--val_report", action="store_true", help="also report validation-actor emotion/identity (for pre-registered configuration selection)")
     ap.add_argument("--trim", action="store_true", help="keep only VAD speech frames (drops the non-speech head/tail)")
     ap.add_argument("--feat", default=None, help="hand-crafted feature set name under FEAT_ROOT/handcrafted (method feat)")
     a = ap.parse_args()
@@ -46,7 +47,7 @@ def main():
     need4 = a.method == "learned"
     t_load = time.time()
     x0 = None
-    if a.method in ("raw", "mean", "smooth", "pca", "leace_tr", "leace_oracle", "lda_emo"):
+    if a.method in ("raw", "mean", "smooth", "pca", "leace_tr", "leace_oracle", "lda_emo", "ae"):
         x0 = baselines.build_x0(frames, feats.offsets)
     rag4 = None
     spans = np.load(data.FEAT_ROOT / "handcrafted" / "vad_span.npy") if a.trim else None
@@ -57,7 +58,7 @@ def main():
         if a.trim:
             rag4 = baselines.trim_ragged(rag4, spans)
     stats = feats.stats() if a.method == "layers" else None
-    lda_pool = baselines.rep_from_ragged(x0, "x0") if a.method == "lda_emo" else None
+    lda_pool = baselines.rep_from_ragged(x0, "x0") if a.method in ("lda_emo", "ae") else None
     feat_rep = None
     if a.method == "feat":
         hc = data.FEAT_ROOT / "handcrafted"
@@ -105,6 +106,11 @@ def main():
                 mu_, sd_, W_, alpha_, vs_ = baselines.fit_lda_proj(P, ctx.emo, trc, S["val"][np.isin(ctx.emo[S["val"]], te)] if te is not None else S["val"], cfg.get("k", 5), None)
                 info.update(lda_alpha=alpha_, lda_val_ncm_uar=vs_)
                 rep = Rep(((P - mu_) / sd_) @ W_, None, "lda_emo")
+            elif a.method == "ae":
+                from ae import train_ae
+                Z, ainfo = train_ae(lda_pool.pooled, S["tr"], ctx.actor_idx, cfg["dz"], cfg.get("lam", 0.0), cfg.get("beta", 1e-3), seed * 100 + fold)
+                info.update(ainfo)
+                rep = Rep(Z, None, "ae")
             elif a.method == "feat":
                 rep = feat_rep
             elif a.method == "ctrl_constant":
@@ -135,7 +141,7 @@ def main():
                 continue
             indep = a.method in ("raw", "mean", "smooth", "feat", "ctrl_constant", "ctrl_length", "leace_oracle")
             id_mode = "fold" if not indep else ("all" if fold == a.folds[0] else "skip")
-            o = ev.evaluate_rep(ctx, rep, fold, seed, shuffle=a.shuffle, secrets=not a.no_secrets, extra_emo=head_pred, id_mode=id_mode)
+            o = ev.evaluate_rep(ctx, rep, fold, seed, shuffle=a.shuffle, secrets=not a.no_secrets, extra_emo=head_pred, id_mode=id_mode, val_report=a.val_report)
             ev.merge_fold(acc, o)
             extra["folds"].append(dict(fold=fold, seconds=round(time.time() - tf, 1), **info))
             # compact log line (progress only; headline numbers come from aggregate.py with intervals)
