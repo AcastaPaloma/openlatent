@@ -63,7 +63,7 @@ def leace_fit(X, z, K, rho):
     U = U[:, s > 1e-8 * max(s.max(), 1e-30)]
     P = U @ U.T
     M = Wi @ P @ Wh                       # x' = x - M (x - mu)
-    return mu, M.astype(np.float32)
+    return mu, M
 
 
 def isp_fit(X, z, K, n_iter, wd=1e-2):
@@ -292,7 +292,11 @@ def run_floor(method, hp, P, sp, seed):
         return {s: m.transform(P.X[sp[s]]).astype(np.float32) for s in SPLITS}, {}
     if method == "leace":
         mu, M = leace_fit(P.X[sp["A"]], P.c[sp["A"]], Kc, hp["rho"])
-        return {s: (P.X[sp[s]] - ((P.X[sp[s]] - mu) @ M.T)).astype(np.float32) for s in SPLITS}, {}
+        out = {}
+        for s in SPLITS:
+            X64 = P.X[sp[s]].astype(np.float64)
+            out[s] = (X64 - (X64 - mu) @ M.T).astype(np.float32)
+        return out, {}
     if method == "isp":
         XA = P.X[sp["A"]]
         mu, sd = XA.mean(0), XA.std(0) + 1e-6
