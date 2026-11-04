@@ -1,0 +1,4 @@
+name: d_d2_lam0p1_gtr_s0
+priority: 4
+cmd: "n=0; while [ ! -f $HOME/work/cache/d_embedpriv/gtr_base/meta.json ] && [ $n -lt 120 ]; do sleep 15; n=$((n+1)); done; USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/run_kill.py --name d_d2_lam0p1_gtr_s0 --embedder gtr_base --grid adv2_0.1 --seeds 0 --scheme words --out $OUT"
+hf_path: runs/d_d2_lam0p1_gtr_s0

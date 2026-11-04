@@ -42,6 +42,10 @@ if __name__ == "__main__":
         out.append("d_dig_extract_gtr")
         for s in (0, 1, 2):
             out.append(write(f"d_dig_check_gtr_s{s}", ["ctrl", "oracle_dig", "floors_a2", "floors_b2", "suplin2"], s, 4, scheme="digits"))
+    elif mode == "d2":  # D2: repaired adversarial arm, seeds 0,1, one job per (lambda, seed); priority 4 (reserved) used once at the coordinator's instruction
+        for s in (0, 1):
+            for lam in ("0.001", "0.01", "0.1", "1", "3"):
+                out.append(write(f"d_d2_lam{lam.replace('.', 'p')}_gtr_s{s}", [f"adv2_{lam}"], s, 4))
     elif mode == "digits_learned":  # only after H1 and H2 pass and the margin is frozen in D.md
         for s in (0, 1, 2):
             out.append(write(f"d_dig_lrn_gtr_s{s}", ["bott", "adv_l0.3", "adv_l3"], s, 4, scheme="digits"))
