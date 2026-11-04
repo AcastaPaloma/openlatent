@@ -164,8 +164,39 @@ Zero-leak resolution floor (smallest Bonferroni bound the design can return, obs
 ### 8.5 Locked evaluator (engine tests)
 5 unit tests including a subprocess client that holds no labels, a Ladder rule, a query budget, a single sealed query bound to an artifact digest, and the shuffled-label null of the search loop. 200 loops of 40 random designs on shuffled labels (25 classes, 150 dev / 600 sealed items): best dev score shown 0.076 (chance 0.04), sealed final 0.040: the selection-bias floor of the loop is +3.6 points on the dev split and exactly zero on the sealed one.
 
-### 8.6 E4-E6 (synthetic engine, reproducibility)
-(pending: run_planted on the VM is still running at 8 processes)
+### 8.6 E4-E6: synthetic engine and reproducibility (planted data = unit test of the statistics, NOT a power claim)
+Run: 220 null replicates and 360 leak replicates (9 cells x 40: bias 0.18 / 0.31 / 0.60, gain 0.053 / 0.092 / 0.19, spectral 0.17 / 0.24 / 0.41; suite-best true accuracy about 6-7%, 9-12%, 22-30% against chance 4%), SUITE12, n_test = 150 / 600 / 1,425 / 3,000 sessions (4 windows each). Raw rows: `planted_engine.jsonl.gz`; table: `summary_planted.json`.
+
+**E4 (pass/fail).** Original wording (clauses pooled over n <= 1,425) and a stricter per-n reading, side by side:
+| n sessions | Bonferroni suite bound covers the best declared attacker's true accuracy (need >= 93%) | max-t bound | 95% CI of the selected attacker covers its true value (need >= 90%) | null false-LEAK (need <= 8%, 220 reps) | label-shuffled false-LEAK (need <= 8%, 360 reps) | selected value minus its true value |
+|---:|---:|---:|---:|---:|---:|---:|
+| 150 | 100% | 100% | 96.1% | 2.7% | 2.5% | +0.1 pt |
+| 600 | 99.7% | 99.7% | 92.8% | 2.7% | n/a | 0.0 |
+| 1,425 | 99.7% | 99.2% | 88.3% | 3.2% | 5.8% | 0.0 |
+| 3,000 | 96.9% | 96.7% | 81.9% | 5.0% | n/a | 0.0 |
+- Original wording: PASS. Bonferroni coverage 99.8% pooled (minimum cell 97.5% at n <= 1,425), CI coverage 92.4% pooled, both false-LEAK rates <= 5.8%, bias <= 0.1 point. K3 does not fire.
+- Stricter per-n reading: the CI-coverage clause FAILS at n = 1,425 (88.3%) and n = 3,000 (81.9%). Diagnostic (exploratory, not a rescue): the spread of (selected - true) / SE is 0.97, 1.10, 1.19, 1.45 at n = 150 / 600 / 1,425 / 3,000, which implies a roughly constant extra error of 0.4 point (0.41, 0.38, 0.43 at n >= 600), the size of the sampling error of the 2,500-session truth sample itself. The shortfall is therefore consistent with the truth sample's noise, which grows relatively as the certificate's SE shrinks, but a small under-coverage of the percentile CI at large n is not excluded. What S ships as its guarantee is the suite bound (>= 96.9% everywhere) and the one-sided LEAK test (false-LEAK <= 5.8%), both of which pass; the two-sided CI of the selected attacker should be quoted with this caveat at n >= 1,425.
+- The Bonferroni bound is conservative (about 100% against 95% nominal) and the max-t bound is not tighter in this setting (q = 2.6-2.8 against z = 2.64 at K = 12; attackers are weakly correlated).
+- Exploratory and CIRCULAR (the planted channels map onto the declared features, F10): the LEAK verdict fires in 35-57% of replicates at n = 150 and 90-95% at n = 1,425 when the best attacker's true accuracy is 6-7% (2-3 points over chance), and in >= 95% from 9-12% at n = 150; the one-line statistics (kNN-5 and LDA on raw windows) match the suite within 1 point on the bias channel (LDA) and are 1.5-24 points below it on the gain and spectral channels. No power claim for real leaks follows; no K2 verdict is drawn.
+
+**E5 (truth-based selection bias, 30 fitted attackers, 150 validation sessions).** Mean over replicates with 95% bootstrap intervals, points of accuracy; null = no identity signal, leak = pooled over the nine leak cells.
+| scored on n sessions | K | best-of-K on the scored split minus its attacker's true accuracy (winner's curse) | best-of-K minus validation-selected (inflation) | validation-selected value minus its true accuracy | selection loss (true best minus selected) |
+|---|---:|---|---|---|---|
+| 150, null | 2 / 10 / 30 | 0.40 [0.33, 0.47] / 1.17 [1.10, 1.25] / 1.56 [1.47, 1.64] | 0.46 / 1.22 [1.16, 1.30] / 1.63 [1.52, 1.73] | -0.05 / -0.06 / -0.09 | 0.11 / 0.27 / 0.35 |
+| 150, leak | 2 / 10 / 30 | 0.32 [0.21, 0.43] / 1.09 [0.96, 1.23] / 1.51 [1.35, 1.66] | 0.28 / 0.98 [0.92, 1.05] / 1.36 [1.24, 1.50] | +0.05 / +0.09 / +0.14 | 0.13 / 0.41 / 0.56 |
+| 1,425, null | 2 / 10 / 30 | 0.13 / 0.40 [0.36, 0.43] / 0.52 [0.47, 0.56] | 0.14 / 0.40 / 0.55 [0.51, 0.59] | -0.02 / -0.03 / -0.06 | 0.10 / 0.28 / 0.35 |
+| 1,425, leak | 2 / 10 / 30 | 0.04 / 0.16 [0.11, 0.22] / 0.27 [0.21, 0.34] | 0.13 / 0.46 [0.43, 0.50] / 0.60 [0.53, 0.68] | 0.00 / 0.00 / +0.02 | 0.12 / 0.42 / 0.56 |
+- Pass: the validation-selected value is unbiased (|bias| <= 0.14 point at every K, n and cell type; threshold 0.5). The best-of-K reported on the scored split is optimistic by 1.1-1.2 points at K = 10 and 1.5-1.6 at K = 30 with 150 sessions, by 0.2-0.4 and 0.3-0.5 at 1,425.
+- Pre-registered rule "selection correction matters iff inflation at K = 10 >= 1 point at n = 150": null 1.22 [1.16, 1.30] yes, leak 0.98 [0.92, 1.05] on the boundary. So at KTH/MotionSense scale (150 units) the best-of-K reported on the test set adds about 1 point at K = 10 and 1.4-1.6 at K = 30, the size of programme 1's 2-3 point effects; at CXR scale it adds 0.5 point. Choosing on a separate split costs 0.3-0.6 point of true accuracy at K = 10-30 (selection loss), the price of the honest number.
+- Real-data comparison: the half-split optimism on the harness (E2, 75 + 75 units) is 2.1-2.8 points at K = 10 on KTH families against 1.2 here at 150 + 150, consistent with a 1/sqrt(n) scale-down.
+
+**E6 (reproducibility).** (a) Fixture certificate digest `f860e80038f2...` identical on the laptop (numpy 2.5, py3.12) and on the VM (numpy 1.21, py3.10) after all runs. (b) `freeze --check` passed before every run (laptop and VM). (c) LITERAL FAIL: the per-release outputs of `rescore`, `run_real` and `summarize` do not embed the evaluator sha256 (only `certify` does); the sha, the analysis hashes, the tags and the exact commands are recorded in `results/S/provenance.json`. Fix going forward: any certificate produced by `certify` prints it.
+
+### 8.7 Verdicts
+- Primary endpoints: E1 done (selection moves programme 1's headlines by <= 2 points; 2 of 48 non-saturated accuracy cells move beyond MDE80; the binding limit is test-unit noise: 5.7-8.0 points MDE80 on adjacent gaps at 150-213 units; HMDB51 not interpretable); E2 negligible at K = 2, material at K >= 5-10 (2.1-5.1 points at half-split sizes); E3 evidence accumulates (kill i and ii did not fire) but a shared session nuisance halves it on KTH and the independence test resolves it in 9 of 24 cells; E4 PASS (original wording; per-n CI clause fails at n >= 1,425, caveated); E5 PASS; E6 (a), (b) pass, (c) literal fail.
+- K1 holds at HAR scale (150 units), is not triggered at CXR scale (arithmetic). K2 undecided (planted data cannot carry it; carried to the negative-control manifest); K2r triggers (r3d alone equals the K = 2 suite on programme 1's data).
+- Does S earn its place? As an evaluator for R-CXR: yes on statistical grounds (a bound that covers, a verdict that does not fire on null or shuffled labels, an honest selected value, MDE printed beside every number, floor of chance + 1.6 points at 1,424 patients) but its detection power for real, unseen leak types is NOT established and belongs to the negative-control builder. For R-IMU and KTH: it earns its place only as the reporter of what is unresolved (it cannot certify "private" below chance + 6 points at 150 units; programme 1's orderings with gaps of 0-5 points are unresolved). It does not rescue the KTH headline comparison: more attackers do not help, more units do (cross-fit rotation, 4 x attacker cost, buys about 1.4 x; 245 / 680 recordings needed for 5 / 3 point paired MDE).
+- No new attacker families on KTH were started: E1 shows no release where selection or an extra retrained attacker (programme 1's headline attacker was always frame_r50 or r3d) moves the verdict; the headroom is unit count, not attacker count.
 
 
 ## 9. Record
