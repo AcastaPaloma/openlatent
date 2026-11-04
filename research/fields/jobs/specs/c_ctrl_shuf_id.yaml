@@ -1,4 +1,4 @@
 name: c_ctrl_shuf_id
 priority: 12
-cmd: python3 research/fields/src/c_cremad/run_exp.py --name c_ctrl_shuf_id --method raw --cfg '{}' --seeds 0 --shuffle id --no_secrets
+cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_ctrl_shuf_id --method raw --cfg '{}' --seeds 0 --shuffle id --no_secrets"
 hf_path: runs/c_ctrl_shuf_id

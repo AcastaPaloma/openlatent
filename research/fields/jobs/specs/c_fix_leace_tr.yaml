@@ -1,4 +1,4 @@
 name: c_fix_leace_tr
 priority: 13
-cmd: python3 research/fields/src/c_cremad/run_exp.py --name c_fix_leace_tr --method leace_tr --cfg '{}' --seeds 0 1 2
+cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_fix_leace_tr --method leace_tr --cfg '{}' --seeds 0 1 2"
 hf_path: runs/c_fix_leace_tr

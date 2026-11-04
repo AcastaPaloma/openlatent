@@ -11,7 +11,9 @@ RUN = "python3 research/fields/src/c_cremad/run_exp.py"
 
 def spec(name, method, cfg=None, seeds=(0,), prio=20, extra=""):
     cmd = f"{RUN} --name {name} --method {method} --cfg '{json.dumps(cfg or {})}' --seeds {' '.join(map(str, seeds))} {extra}".strip()
-    (SPECS / f"{name}.yaml").write_text(f"name: {name}\npriority: {prio}\ncmd: {cmd}\nhf_path: runs/{name}\n")
+    # json.dumps gives a valid double-quoted YAML scalar (a plain scalar containing ': ' from the JSON cfg is a YAML error
+    # that crashes every worker's claim() -- happened once, 08:55Z)
+    (SPECS / f"{name}.yaml").write_text(f"name: {name}\npriority: {prio}\ncmd: {json.dumps(cmd)}\nhf_path: runs/{name}\n")
     return name
 
 
