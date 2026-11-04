@@ -7,6 +7,7 @@ export OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=
 PY=$HOME/venvs/e/bin/python; SRC=$HOME/openlatent/research/fields/src/e_singlecell
 RUNS="$R/e_floors_${ds}_s0 $R/e_floors_${ds}_s1 $R/e_floors_${ds}_s2 $R/e_tscvi_${ds}/s0 $R/e_tscvi_${ds}/s1 $R/e_tscvi_${ds}/s2"
 nice -n 10 $PY $SRC/aggregate.py --dataset $ds --runs $RUNS --B $B --cluster $BC --json $O/${ds}_final.json --md $O/${ds}_final.md > $O/${ds}_final.log 2>&1
-# sensitivity: same plus the dense floor frontier (seed 0 only): changes only the inductive candidate pool of K3
-nice -n 10 $PY $SRC/aggregate.py --dataset $ds --runs $RUNS $R/e_dense_${ds}_s0 --B 200 --json $O/${ds}_dense.json --md $O/${ds}_dense.md > $O/${ds}_dense.log 2>&1
+# sensitivity: SEED 0 ONLY plus the dense floor frontier (the dense arms exist for seed 0 only): changes only the inductive candidate pool of K3
+RUNS0="$R/e_floors_${ds}_s0 $R/e_tscvi_${ds}/s0 $R/e_dense_${ds}_s0"
+nice -n 10 $PY $SRC/aggregate.py --dataset $ds --runs $RUNS0 --B 200 --json $O/${ds}_dense.json --md $O/${ds}_dense.md > $O/${ds}_dense.log 2>&1
 echo done $ds
