@@ -64,6 +64,7 @@ def main():
     ap.add_argument("--no_refs", action="store_true")
     ap.add_argument("--kinds", default=",".join(KINDS))
     ap.add_argument("--no_attackers", action="store_true", help="AP only (debug)")
+    ap.add_argument("--f3", action="store_true", help="F3 job (results_notes/F.md section 8): label-budget curve, matched LDA, AE control, permuted-label memorisation floor")
     ap.add_argument("--f2", action="store_true", help="F2 job (results_notes/F.md section 6): small-d LDA, oracle, MLP adapters, same-embedding nulls")
     ap.add_argument("--hold_source", default="", help="P-S (descriptive): fit without this source's wells; AP queries restricted to this source")
     a = ap.parse_args()
@@ -166,13 +167,13 @@ def main():
         for k in kinds:
             P[f"att|{sname}|{name}|{k}"] = res[k]
 
-    def run_arm(name, family, Eall, ap_ok=True, null=False):
+    def run_arm(name, family, Eall, ap_ok=True, null=False, att=True):
         t1 = time.time()
         Eall_n = Eall.detach().cpu().numpy() if torch.is_tensor(Eall) else Eall
         for sname, sl in (("V", slice(0, nV)), ("H", slice(nV, None))):
             E = Eall_n[sl]
             if ap_ok:
-                do_ap(name, E, sname, modes=("xs",) if a.f2 else ("xs", "nonrep"))
+                do_ap(name, E, sname, modes=("xs",) if (a.f2 or a.f3) else ("xs", "nonrep"))
                 if null:
                     if ("null", sname) not in pos_cache:
                         perm = np.random.RandomState(AR.seed_of(a.salt, "null", sname) % (2 ** 31)).permutation(len(E))
@@ -181,7 +182,7 @@ def main():
                     qm = None
                     apq = AP.ap_queries(E, sets[sname]["plate"], cn, sets[sname]["src"], sets[sname]["well"], sets[sname]["pert"], mode="xs", pos=pn)
                     P[f"apcnull|{sname}|{name}|xs"] = AP.per_compound(apq, cn)[1].astype(np.float32)
-            if not a.no_attackers:
+            if att and not a.no_attackers:
                 do_att(name, E, sname)
         meta_out["arms"].append(name)
         meta_out["families"][name] = family
@@ -194,6 +195,10 @@ def main():
     want = a.arms.split(",") if a.arms else None
     if a.f2:
         run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, src, out)
+        print("done", flush=True)
+        return
+    if a.f3:
+        run_f3(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, src, out)
         print("done", flush=True)
         return
     # inductive floors
@@ -321,6 +326,141 @@ def run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_clas
         for r in (0.5, 1):
             gen = torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "mlpnoise", dd, r))
             run_arm(f"mlp_d{dd}_r{r:g}", "adapter", Eall + r * sdv * torch.randn(Eall.shape, generator=gen, device=AR.DEV), null=True)
+        del net, Ef, Eall
+        torch.cuda.empty_cache()
+    (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
+
+
+def run_f3(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, src, out):
+    """F3 (results_notes/F.md section 8): label-budget curve for the SupCon MLP adapter.  Regimes: a (Target2 ids), b1/b10 (Target2 + 1% / 10% of T' compounds),
+    c (replicate pairs from Metadata_Well position on Target2 plates, no ids); b100 = the F2 arms (not retrained).  Matched LDA on the same labels, label-free AE,
+    permuted-label memorisation floors (d = 64)."""
+    import hashlib
+    import json as _json
+    only = a.arms.split(",") if a.arms else None
+    ok = lambda nm: only is None or nm in only or nm.split("_")[0] in only  # noqa: E731
+    steps = int(os.environ.get("F2_STEPS", AD.STEPS))
+    meta_out["f3"] = True
+    meta_out["f3_train"] = {}
+    meta_out["regime"] = {}
+    lp, lc, jf, wf, pf = lab_prod[fit_idx], lab_class[fit_idx], jcp[fit_idx], well[fit_idx], ptype[fit_idx]
+    cnts = np.bincount(lp[lp >= 0])
+    lp2 = np.where((lp >= 0) & (cnts[np.maximum(lp, 0)] >= 2), lp, -1)
+    m_prod = lp2 >= 0
+    cls_j = pd.DataFrame({"c": lp2[m_prod], "j": jf[m_prod]}).drop_duplicates("c").set_index("c")["j"]
+    t2m = (lc >= 0) & (lp < 0) & (jf != "DMSO")
+
+    def frac_mask(f):
+        if f >= 1.0:
+            return m_prod
+        keep = {c: int(hashlib.md5((str(j) + a.salt + "lab").encode()).hexdigest(), 16) % 10000 < int(round(f * 10000)) for c, j in cls_j.items()}
+        sel = np.zeros(int(cls_j.index.max()) + 1, bool)
+        for c, k in keep.items():
+            sel[c] = k
+        return m_prod & sel[np.maximum(lp2, 0)]
+
+    def make_labels(R):
+        lab = -np.ones(len(fit_idx), np.int64)
+        if R == "c":
+            m = pf == "TARGET2"
+            lab[m] = pd.factorize(wf[m])[0]
+            return lab, 0
+        m = {"a": np.zeros(len(fit_idx), bool), "b1": frac_mask(0.01), "b10": frac_mask(0.10), "b100": frac_mask(1.0)}[R]
+        n_prod = 0
+        if m.any():
+            lab[m] = pd.factorize(lp2[m])[0]
+            n_prod = int(lab[m].max()) + 1
+        lab[t2m] = n_prod + pd.factorize(lc[t2m])[0]
+        return lab, n_prod
+
+    labels = {R: make_labels(R) for R in ("a", "b1", "b10", "b100", "c")}
+    meta_out["f3_labels"] = {R: dict(n_prod_classes=int(npd), n_classes=int(len(np.unique(l[l >= 0]))), n_labeled_wells=int((l >= 0).sum())) for R, (l, npd) in labels.items()}
+    print("  label sets:", meta_out["f3_labels"], flush=True)
+    # controls
+    E = torch.randn(Xall.shape[0], 16, generator=torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ctrl")), device=AR.DEV)
+    if ok("ctrl_noise16"):
+        run_arm("ctrl_noise16", "ctrl", E, null=True)
+    # matched LDA (PCA-256 -> shrinkage LDA on exactly the regime's labelled wells)
+    Zfit, Zall = fac.pca(Xfit, 256), fac.pca(Xall, 256)
+    for R in ("a", "b1", "b10", "b100", "c"):
+        lab, _ = labels[R]
+        idx = torch.as_tensor(np.where(lab >= 0)[0], device=AR.DEV)
+        if not any(ok(f"ldaM_{R}_{dd}") for dd in (8, 64)):
+            continue
+        mu, W = AR.lda_fit(Zfit[idx], lab[lab >= 0], AR.SHRINK)
+        for dd in (8, 64):
+            nm = f"ldaM_{R}_{dd}"
+            if ok(nm):
+                run_arm(nm, "matched", AR.lda_apply(Zall, mu, W, dd), null=True)
+                meta_out["regime"][nm] = R
+    del Zfit, Zall
+    torch.cuda.empty_cache()
+    srcf = pd.Categorical(src[fit_idx], categories=C.SOURCES5).codes.astype(np.int64)
+    sub = np.random.RandomState(AR.seed_of(a.salt, "probe") % (2 ** 31)).choice(len(fit_idx), 20000, replace=False)
+    subt = torch.as_tensor(sub, device=AR.DEV)
+
+    def probe_and_rank(Ef):
+        Es = Ef[subt]
+        rk = AD.effective_rank(Es)
+        Es = (Es - Es.mean(0, keepdim=True)) / (Es.std(0, keepdim=True) + 1e-6)
+        pr = EA.fit_linear(Es, torch.as_tensor(srcf[sub], device=AR.DEV), len(C.SOURCES5), 1e-2)(Es).argmax(1).cpu().numpy()
+        return rk, float(EA.bacc(srcf[sub], pr))
+
+    rng_perm = np.random.RandomState(AR.seed_of(a.salt, "perm") % (2 ** 31))
+    for R in ("a", "b1", "b10", "c", "b100"):
+        lab, npd = labels[R]
+        kw = dict(n_prod_batch=192 if npd > 0 else 0, n_t2_batch=32 if npd > 0 else 192, k_t2=4)
+        for dd in (8, 64):
+            if R == "b100" or not ok(f"mlp_{R}_d{dd}"):
+                continue
+            t1 = time.time()
+            net, info = AD.train_supcon(Xfit, lab, npd, dd, AR.seed_of(a.salt, "f3", R, dd) % (2 ** 31), steps=steps, **kw)
+            Ef = AD.embed(net, Xfit)
+            info["eff_rank"], info["insample_source_probe_bacc"] = probe_and_rank(Ef)
+            info["regime"], info["train_seconds"] = R, round(time.time() - t1, 1)
+            meta_out["f3_train"][f"{R}_d{dd}"] = info
+            print(f"  {R} d={dd}: loss {info['loss_first20']:.3f} -> {info['loss_last200']:.3f}, eff_rank {info['eff_rank']:.1f}, probe {info['insample_source_probe_bacc']:.3f} ({info['train_seconds']}s)", flush=True)
+            Eall = AD.embed(net, Xall)
+            sdv = Ef.std(0, keepdim=True)
+            run_arm(f"mlp_{R}_d{dd}", "adapter", Eall, null=True)
+            meta_out["regime"][f"mlp_{R}_d{dd}"] = R
+            gen = torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "f3noise", R, dd))
+            run_arm(f"mlp_{R}_d{dd}_r0.5", "adapter", Eall + 0.5 * sdv * torch.randn(Eall.shape, generator=gen, device=AR.DEV), null=True)
+            meta_out["regime"][f"mlp_{R}_d{dd}_r0.5"] = R
+            del net, Ef, Eall
+            torch.cuda.empty_cache()
+        # memorisation floor: same d = 64 adapter, labels permuted among the labelled wells
+        if ok(f"perm_{R}_d64") or ok("perm"):
+            t1 = time.time()
+            labp = lab.copy()
+            idx = np.where(lab >= 0)[0]
+            labp[idx] = lab[idx][rng_perm.permutation(len(idx))]
+            net, info = AD.train_supcon(Xfit, labp, npd, 64, AR.seed_of(a.salt, "f3perm", R) % (2 ** 31), steps=steps, **kw)
+            info["regime"], info["train_seconds"] = R, round(time.time() - t1, 1)
+            meta_out["f3_train"][f"perm_{R}_d64"] = info
+            print(f"  perm {R} d=64: loss {info['loss_first20']:.3f} -> {info['loss_last200']:.3f} ({info['train_seconds']}s)", flush=True)
+            run_arm(f"perm_{R}_d64", "permctrl", AD.embed(net, Xall), null=True, att=False)
+            meta_out["regime"][f"perm_{R}_d64"] = R
+            del net
+            torch.cuda.empty_cache()
+    # label-free rate/dither control: bottleneck autoencoder
+    for dd in (8, 64):
+        if not ok(f"ae_d{dd}"):
+            continue
+        t1 = time.time()
+        net, info = AD.train_ae(Xfit, dd, AR.seed_of(a.salt, "f3ae", dd) % (2 ** 31), steps=steps)
+        with torch.no_grad():
+            Ef = torch.cat([net(Xfit[i:i + 65536]) for i in range(0, Xfit.shape[0], 65536)])
+            Eall = torch.cat([net(Xall[i:i + 65536]) for i in range(0, Xall.shape[0], 65536)])
+        info["eff_rank"], info["insample_source_probe_bacc"] = probe_and_rank(Ef)
+        info["regime"], info["train_seconds"] = "ae", round(time.time() - t1, 1)
+        meta_out["f3_train"][f"ae_d{dd}"] = info
+        print(f"  ae d={dd}: recon {info['loss_first20']:.3f} -> {info['loss_last200']:.3f}, eff_rank {info['eff_rank']:.1f} ({info['train_seconds']}s)", flush=True)
+        sdv = Ef.std(0, keepdim=True)
+        run_arm(f"ae_d{dd}", "adapter_lf", Eall, null=True)
+        gen = torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "f3aenoise", dd))
+        run_arm(f"ae_d{dd}_r0.5", "adapter_lf", Eall + 0.5 * sdv * torch.randn(Eall.shape, generator=gen, device=AR.DEV), null=True)
+        meta_out["regime"][f"ae_d{dd}"] = meta_out["regime"][f"ae_d{dd}_r0.5"] = "ae"
         del net, Ef, Eall
         torch.cuda.empty_cache()
     (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
