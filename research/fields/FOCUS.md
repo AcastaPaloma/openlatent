@@ -4,7 +4,18 @@ Basis: six phase-1 scouts, then two contrarian scouts (missed fields: ~25 fields
 confidence; stress test: A and C go with changes, B no-go as stated). Evidence in `literature/`. Change this file only with a
 journal entry that says why, and only when a result or a newer scout falsifies a premise below.
 
-## Focus A: source-invariant embeddings, PathoROB first   [GO-WITH-CHANGES]
+## Focus A: source-invariant embeddings, PathoROB first   [CLOSED as a negative result, 2026-11-04 ~14:15Z VM clock]
+- Outcome (Builder A, results_notes/A.md, "ROUND 2"): the only lead (post-hoc task-agnostic adversarial AE on held-out classes) is DEAD.
+  * Seed-0 gains (+0.083 midnight/Tolkach, +0.164 midnight/TCGA) were measured against the LDA family only; against the lower envelope of ALL inductive floors (per-centre whitening, PCA, random projection, dithered codes)
+    they are +0.021 [+0.002,+0.046] and +0.007 [-0.081,+0.097]; the midnight/TCGA gain does not reproduce at seed 1 (+0.011 vs LDA, -0.014 vs the envelope). The two AE picks were chosen post hoc, best of 10.
+  * 3 seeds, validation-selected AE vs floor envelope, held-class accuracy: midnight/TCGA -0.056 [-0.108,-0.010], midnight/Tolkach -0.002 [-0.011,+0.010]; neither reaches the +0.02 margin.
+  * Cross-fit (rotating sealed test, K=4, pooled out-of-fold): midnight/TCGA -0.028 [-0.063,+0.001] (MDE80 0.048, excludes gains above ~+0.05); midnight/Tolkach +0.003 [-0.007,+0.012] (MDE80 0.014, null resolved).
+  * Dither control: noise-dithered label-free codes with no adversary match or beat the adversarial AE at equal leakage; reconstruction-only AE is the weakest family.
+  * Gate G1 (LEACE leaves L_worst 0.63-0.89 under retrained attackers) stays a valid by-product: closed-form erasure fitted on seen units does not hold against retrained attackers on held-out units.
+  * Not run: H2-015 selection-null, phikon-v2 holdout, dinov2-L cross-fit. Parked on the VM: ~27 gate seed replications.
+- Original text kept below for the record.
+
+## Focus A (original text): source-invariant embeddings, PathoROB first   [GO-WITH-CHANGES]
 - Keep: tissue/diagnostic label.  Hide: medical centre (and stain) signature.
 - Benchmark: PathoROB (arXiv 2507.17845; 3 ungated HF datasets, ~1.9 GB, fixed seeds). Drop BatchBench (sealed, server-side, 30-257 GB).
   Second domain only after A works on PathoROB: astronomy instrument latents (GalSim + HSC/Legacy cross-matches) and Cell Painting (JUMP), as generality checks.
