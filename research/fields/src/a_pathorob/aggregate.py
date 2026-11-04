@@ -163,7 +163,7 @@ def main():
             lab = cell.metric(cfg, "label", ("linear",))
             labm = cell.metric(cfg, "label", ("mlp",))
             wc = cell.metric(cfg, "centre", KC)
-            leak_b = (wc[1] - floor) / max(raw_worst[1] - floor, 1e-6)
+            leak_b = (wc[1] - floor) / np.maximum(raw_worst[1] - floor, 1e-6)
             leak = (wc[0] - floor) / max(raw_worst[0] - floor, 1e-6)
             lv, wv = vmetrics(cell, cfg)
             rs = list(cell.by[cfg].values())
@@ -201,7 +201,7 @@ def main():
             Lk = {k: (ks[k][0] - floor) / max(raw_k[k] - floor, 1e-6) for k in kinds_all}
             wc4 = cell.metric(cfg, "centre", KC)
             raw4 = cell.metric("raw", "centre", KC)
-            L4 = (wc4[1] - floor) / max(raw4[1] - floor, 1e-6)
+            L4 = (wc4[1] - floor) / np.maximum(raw4[1] - floor, 1e-6)
             L4p = (wc4[0] - floor) / max(raw4[0] - floor, 1e-6)
             lab_ = cell.metric(cfg, "label", ("linear",))
             rs_ = list(cell.by[cfg].values())
