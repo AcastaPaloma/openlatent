@@ -63,6 +63,7 @@ def main():
     ap.add_argument("--no_refs", action="store_true")
     ap.add_argument("--kinds", default=",".join(KINDS))
     ap.add_argument("--no_attackers", action="store_true", help="AP only (debug)")
+    ap.add_argument("--hold_source", default="", help="P-S (descriptive): fit without this source's wells; AP queries restricted to this source")
     a = ap.parse_args()
     torch.set_num_threads(8)
     out = Path(a.out)
@@ -94,6 +95,8 @@ def main():
         lab_class = -np.ones(len(meta), np.int64)
         lab_class[fitm] = pd.factorize(jcp[fitm])[0]
         lab_prod = None
+    if a.hold_source:
+        fitm = fitm & (src != a.hold_source)
     fit_idx = np.where(fitm)[0]
     Xfit = AR.T(X[fit_idx])
     fac = AR.ArmFactory(Xfit, lab_class[fit_idx], None if lab_prod is None else lab_prod[fit_idx], a.salt, s5)
@@ -133,7 +136,8 @@ def main():
                 pos = pos_cache[(sname, mode)]
             else:
                 pos = None
-            apq = AP.ap_queries(E, S["plate"], comp, S["src"], S["well"], S["pert"], mode=mode, pos=pos)
+            qm = None if not a.hold_source else (S["src"] == C.SOURCES5.index(a.hold_source))
+            apq = AP.ap_queries(E, S["plate"], comp, S["src"], S["well"], S["pert"], mode=mode, pos=pos, qmask=qm)
             ids, mean_ap = AP.per_compound(apq, comp)
             P[f"apc|{sname}|{name}|{mode}"] = mean_ap.astype(np.float32)
             if s5 and mode == "xs":

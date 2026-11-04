@@ -39,7 +39,7 @@ def build_pos(comp, source, well, mode):
     return pos
 
 
-def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=None):
+def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=None, qmask=None):
     """E: (n, d) array of the eval universe; comp/source: int arrays; plate/well: any hashable arrays; pert in {'trt','negcon','poscon'}.
     Queries = 'trt' wells with >= 1 positive and >= 1 negative.  Returns per-query AP (NaN for dropped queries)."""
     n = len(comp)
@@ -55,7 +55,7 @@ def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=Non
     trt = pert == "trt"
     for a, b in zip(bounds[:-1], bounds[1:]):
         wp = order[a:b]
-        q = np.array([i for i in wp[trt[wp]] if pos[i] is not None and len(pos[i]) > 0], dtype=np.int64)
+        q = np.array([i for i in wp[trt[wp]] if pos[i] is not None and len(pos[i]) > 0 and (qmask is None or qmask[i])], dtype=np.int64)
         if len(q) == 0:
             continue
         cand = wp[trt[wp]] if mode in ("xs", "nonrep") else wp[pert[wp] == "negcon"]
