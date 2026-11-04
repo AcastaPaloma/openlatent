@@ -1,0 +1,16 @@
+{
+ "name": "b_str_indep",
+ "config": {
+  "name": "b_str_indep",
+  "priority": 9,
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind indep --arms raw,gtmask --epochs 30 --seed 0 --out $OUT",
+  "hf_path": "runs/b_str_indep"
+ },
+ "commit": "aa989a0",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 479.6,
+ "finished_utc": "2026-11-04T09:05:00Z",
+ "uploaded": true
+}

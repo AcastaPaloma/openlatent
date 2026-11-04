@@ -1,0 +1,16 @@
+{
+ "name": "a_extract_dinov2L",
+ "config": {
+  "name": "a_extract_dinov2L",
+  "priority": 10,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/extract.py --model dinov2L_clsmean --num_workers 6",
+  "hf_path": "runs/a_extract_dinov2L"
+ },
+ "commit": "ea14ec7",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 1166.1,
+ "finished_utc": "2026-11-04T08:43:59Z",
+ "uploaded": true
+}

@@ -1,0 +1,16 @@
+{
+ "name": "c_ctrl_constant",
+ "config": {
+  "name": "c_ctrl_constant",
+  "priority": 12,
+  "cmd": "python3 research/fields/src/c_cremad/run_exp.py --name c_ctrl_constant --method ctrl_constant --cfg '{}' --seeds 0 1 2 --no_secrets",
+  "hf_path": "runs/c_ctrl_constant"
+ },
+ "commit": "aa989a0",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 701.1,
+ "finished_utc": "2026-11-04T09:10:46Z",
+ "uploaded": true
+}

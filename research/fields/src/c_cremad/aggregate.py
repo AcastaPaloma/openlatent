@@ -210,12 +210,31 @@ HEAD = ("| run | seeds | emotion UAR [95% CI] | identity top-1, worst attacker, 
         "id T1 seen | id T3 unseen | rate (bits) |\n|---|---:|---|---|---:|---|---:|---:|---:|")
 
 
+def detail(runs):
+    """per-attacker table: identity top-1 on T1/T2/T3 (x chance, bootstrap CI over actors) and emotion UAR per probe."""
+    lines = ["| run | attacker | id T1 | x chance | id T2 | id T3 | emotion UAR |", "|---|---|---|---:|---|---|---|"]
+    ks = [k for k in EMO_KINDS if k in runs[0]["id"]]
+    for k in ks + ["label_only"]:
+        cells = []
+        for T in ("T1", "T2", "T3"):
+            b, p, _ = stat_over_seeds(runs, lambda r: boot_ratio(*top1(r, k, T, "unseen")))
+            cells.append((p, ci(b)))
+        emo = ""
+        if k in runs[0]["emo"]:
+            b, p, _ = stat_over_seeds(runs, lambda r: emo_uar_curve(r, k))
+            emo = f"{p:.3f} [{ci(b)[0]:.3f},{ci(b)[1]:.3f}]"
+        f = lambda c: f"{c[0]:.3f} [{c[1][0]:.3f},{c[1][1]:.3f}]"
+        lines.append(f"| {runs[0]['name']} | {k} | {f(cells[0])} | {cells[0][0] * 91:.1f}x | {f(cells[1])} | {f(cells[2])} | {emo} |")
+    return "\n".join(lines)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", nargs="+", required=True)
     ap.add_argument("--raw", default=None)
     ap.add_argument("--out", default=None)
     ap.add_argument("--md", default=None)
+    ap.add_argument("--detail", action="store_true")
     a = ap.parse_args()
     raw = load(a.raw) if a.raw else None
     sums = []
@@ -225,6 +244,11 @@ def main():
             sums.append(summarize(runs, raw))
     md = HEAD + "\n" + "\n".join(row(s) for s in sums)
     print(md)
+    if a.detail:
+        for d in a.runs:
+            runs = load(d)
+            if runs and "id" in runs[0]:
+                print("\n" + detail(runs))
     if a.out:
         json.dump(sums, open(a.out, "w"), indent=1)
     if a.md:

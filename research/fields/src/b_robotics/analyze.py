@@ -8,7 +8,7 @@ import sys, glob, json, os, re
 import numpy as np
 
 MARGIN, LEAK_TOL = 0.05, 0.02
-ORDER = ["clean", "raw", "rate4", "rateb", "sam", "gtmask", "adv", "adv30"]
+ORDER = ["clean", "raw", "rate4", "rateb", "sam", "gtmask", "adv", "adv30", "lmask", "advmask"]
 
 
 def load(dirs):
@@ -54,7 +54,7 @@ def main(dirs):
         # kill rule
         if kind in ("corr_det", "corr_noisy", "corr_glued"):
             sam, gt = R.get((kind, "sam"), {}), R.get((kind, "gtmask"), {})
-            for cand in ("adv", "adv30"):
+            for cand in ("adv", "adv30", "lmask", "advmask"):
                 c = R.get((kind, cand), {})
                 seeds = sorted(set(c) & set(sam))
                 if not seeds:

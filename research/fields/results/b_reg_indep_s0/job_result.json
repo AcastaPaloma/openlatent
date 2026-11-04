@@ -1,0 +1,16 @@
+{
+ "name": "b_reg_indep_s0",
+ "config": {
+  "name": "b_reg_indep_s0",
+  "priority": 10,
+  "cmd": "cd research/fields/src/b_robotics && ~/venvs/b/bin/python lam.py --kind indep --arms clean,raw,rate4,rateb,gtmask,adv --epochs 30 --seed 0 --out $OUT",
+  "hf_path": "runs/b_reg_indep_s0"
+ },
+ "commit": "be866de",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 1291.5,
+ "finished_utc": "2026-11-04T09:04:28Z",
+ "uploaded": true
+}

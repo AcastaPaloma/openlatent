@@ -1,0 +1,16 @@
+{
+ "name": "a_sw1_phikon_camelyon_s0",
+ "config": {
+  "name": "a_sw1_phikon_camelyon_s0",
+  "priority": 20,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset camelyon --seed 0 --grid all",
+  "hf_path": "runs/a_sw1_phikon_camelyon_s0"
+ },
+ "commit": "2a31b1a",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 879.7,
+ "finished_utc": "2026-11-04T08:55:11Z",
+ "uploaded": true
+}

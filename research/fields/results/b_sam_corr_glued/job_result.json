@@ -1,0 +1,16 @@
+{
+ "name": "b_sam_corr_glued",
+ "config": {
+  "name": "b_sam_corr_glued",
+  "priority": 12,
+  "cmd": "cd research/fields/src/b_robotics && ~/venvs/b/bin/python sam_masks.py --kind corr_glued --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_corr_glued.json $OUT/",
+  "hf_path": "runs/b_sam_corr_glued"
+ },
+ "commit": "3d3ea1d",
+ "exit_code": -15,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 301.8,
+ "finished_utc": "2026-11-04T08:51:07Z",
+ "uploaded": false
+}

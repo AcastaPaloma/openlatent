@@ -1,0 +1,16 @@
+{
+ "name": "b_smoke_lam",
+ "config": {
+  "name": "b_smoke_lam",
+  "priority": 5,
+  "cmd": "cd research/fields/src/b_robotics && ~/venvs/b/bin/python lam.py --kind corr_noisy --arms raw,adv,gtmask --epochs 3 --seed 0 --out $OUT",
+  "hf_path": "runs/b_smoke_lam"
+ },
+ "commit": "48b8778",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 265.8,
+ "finished_utc": "2026-11-04T08:42:54Z",
+ "uploaded": true
+}
