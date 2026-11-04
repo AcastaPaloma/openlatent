@@ -1,4 +1,4 @@
 name: c_fix_smooth25
 priority: 14
-cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_fix_smooth25 --method smooth --cfg '{\"P\": 25}' --seeds 0 1 2"
+cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_fix_smooth25 --method smooth --cfg '{\"P\": 25}' --seeds 0"
 hf_path: runs/c_fix_smooth25

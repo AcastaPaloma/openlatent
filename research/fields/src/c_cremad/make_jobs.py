@@ -24,13 +24,13 @@ def ref():
            spec("c_ctrl_shuf_id", "raw", seeds=(0,), prio=12, extra="--shuffle id --no_secrets"),
            spec("c_ctrl_shuf_emo", "raw", seeds=(0,), prio=12, extra="--shuffle emo --no_secrets"),
            spec("c_layers", "layers", seeds=(0,), prio=12),
-           spec("c_fix_mean", "mean", seeds=(0, 1, 2), prio=13),
-           spec("c_fix_leace_tr", "leace_tr", seeds=(0, 1, 2), prio=13),
-           spec("c_fix_leace_oracle", "leace_oracle", seeds=(0, 1, 2), prio=13)]
+           spec("c_fix_mean", "mean", seeds=(0,), prio=13),
+           spec("c_fix_leace_tr", "leace_tr", seeds=(0,), prio=13),
+           spec("c_fix_leace_oracle", "leace_oracle", seeds=(0,), prio=13)]
     for P in (5, 25, 100):
-        out.append(spec(f"c_fix_smooth{P}", "smooth", {"P": P}, seeds=(0, 1, 2), prio=14))
+        out.append(spec(f"c_fix_smooth{P}", "smooth", {"P": P}, seeds=(0,), prio=14))
     for k in (4, 16, 64):
-        out.append(spec(f"c_fix_pca{k}", "pca", {"k": k}, seeds=(0, 1, 2), prio=14))
+        out.append(spec(f"c_fix_pca{k}", "pca", {"k": k}, seeds=(0,), prio=14))
     return out
 
 
