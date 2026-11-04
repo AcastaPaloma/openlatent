@@ -257,7 +257,7 @@ def main():
     pairs_arms = ["pca64", "dpca64_r0.5", "rp64", ("ldaP_64" if s5 else "ldaT_64"), (f"{lab}_max"), "raw"]
     res = dict(scenario=a.scenario, salts=salts, splits={})
     md = [f"# JS-1 aggregate, scenario {a.scenario} (B={a.B}); units: compounds (U), plates (L). Point estimates drive the registered decisions; intervals are conditional on V-selection.\n"]
-    v_jk1, v_jk2, v_jk3, v_mde = [], [], [], []
+    v_jk1, v_jk1b, v_jk2, v_jk3, v_mde = [], [], [], [], []
     for sp in splits:
         r = dict(meta=sp.meta["n_compounds"] | {"wells_H": sp.meta["n_wells"]["H"], "wells_V": sp.meta["n_wells"]["V"]})
         lk = sp.leak["H"]
@@ -265,11 +265,14 @@ def main():
         r["JK1"] = dict(raw_worst=raw_w, raw_worst_ci=ci(lk.worst_boot("raw", sp.kinds, sp.W["H"])), threshold=max(min(3 * CHANCE, 0.85), CHANCE + 0.15),
                         controls={c: sp.worst("H", c) for c in ("ctrl_const", "ctrl_noise16", "ctrl_shuffle_source") if (c, sp.kinds[0]) in lk.stats},
                         U_shuffle_compound=sp.U("H", "ctrl_shuffle_compound"), U_noise16=sp.U("H", "ctrl_noise16"))
-        j1 = raw_w >= r["JK1"]["threshold"] and all(v <= CHANCE + 0.03 for v in r["JK1"]["controls"].values())
-        if r["JK1"]["U_shuffle_compound"] is not None and r["JK1"]["U_noise16"] is not None:
-            j1 = j1 and abs(r["JK1"]["U_shuffle_compound"] - r["JK1"]["U_noise16"]) <= 0.01
-        r["JK1"]["pass"] = bool(j1)
-        v_jk1.append(j1)
+        base = raw_w >= r["JK1"]["threshold"] and all(v <= CHANCE + 0.03 for v in r["JK1"]["controls"].values())
+        us, un = r["JK1"]["U_shuffle_compound"], r["JK1"]["U_noise16"]
+        v0 = base and (us is None or un is None or abs(us - un) <= 0.01)                  # v0 text: two-sided
+        j0 = base and (us is None or un is None or us <= un + 0.03)                        # JUMP0 text / amendment A2: one-sided
+        r["JK1"].update(pass_v0_literal=bool(v0), pass_jump0_text=bool(j0), substantive_pass=bool(base))
+        r["JK1"]["pass"] = bool(v0)
+        v_jk1.append(v0)
+        v_jk1b.append(j0)
         R = sp.pick_ref("U")
         if R is not None:
             r["R"] = R
@@ -286,7 +289,7 @@ def main():
         md.append(f"## split {sp.salt}: {sp.meta['n_compounds']} compounds (V/H), wells H {sp.meta['n_wells']['H']}, V {sp.meta['n_wells']['V']}, fit {sp.meta['n_wells']['fit']}\n")
         md.append(arm_table(sp) + "\n")
         md.append(f"**JK1**: raw worst-of-4 {fci(raw_w, r['JK1']['raw_worst_ci'], 3)} (needs >= {r['JK1']['threshold']:.2f}); controls {json.dumps({k: round(v, 3) for k, v in r['JK1']['controls'].items()})}; "
-                  f"U(shuffled compound) {fmt(r['JK1']['U_shuffle_compound'])} vs U(noise16) {fmt(r['JK1']['U_noise16'])} -> pass={r['JK1']['pass']}\n")
+                  f"U(shuffled compound) {fmt(r['JK1']['U_shuffle_compound'])} vs U(noise16) {fmt(r['JK1']['U_noise16'])} -> pass v0-literal={r['JK1']['pass_v0_literal']}, pass JUMP0-text (A2)={r['JK1']['pass_jump0_text']}\n")
         if R is not None:
             j = r["JK3"]
             md.append(f"**JK3** (R = {R}: U_V {fmt(j['U_V_R'])}, U_H {fmt(j['U_H_R'])}, L_V {fmt(j['L_V_R'], 2)}, L_H {fmt(j['L_H_R'], 2)}): U-axis F* = {j.get('F_star')} "
@@ -300,7 +303,8 @@ def main():
     # verdict
     ns = len(splits)
     res["verdict"] = dict(
-        JK1_pass_splits=int(sum(v_jk1)), JK1_pass=bool(all(v_jk1)),
+        JK1_v0_literal_pass_splits=int(sum(v_jk1)), JK1_v0_literal_pass=bool(all(v_jk1)),
+        JK1_jump0_text_pass_splits=int(sum(v_jk1b)), JK1_jump0_text_pass=bool(all(v_jk1b)),
         JK2_fires_splits=int(sum(v_jk2)), JK2_fires=bool(sum(v_jk2) >= 2) if ns == 3 else None,
         JK3_fires_splits=int(sum(v_jk3)), JK3_fires=bool(sum(v_jk3) >= 2) if ns == 3 else None,
         median_mde80_per_split=v_mde, JK0c_pass=bool(np.median(v_mde) <= 0.02))
