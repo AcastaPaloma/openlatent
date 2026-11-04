@@ -91,6 +91,18 @@ could hide topical context that deleting words leaves in).
 
 ## 3. Disclosure log (things seen before the numbers they could bias)
 * 11:20Z vocabulary statistics (sizes, words per doc by split) and a 24-document CPU smoke embedding (no metric computed). Nothing else before this pre-registration.
+* Pipeline mechanics were smoke-tested on SYNTHETIC vectors (`fake_embed.py`: random projection of the bag of words plus noise, CPU, `D_FAST=1` shrinks the MLP attacker). Those
+  numbers (e.g. the control attackers returning the frequency prior, R_prior 0.004 vs raw 0.16 on synthetic vectors) only show that the code path runs and that the
+  const/shuffle controls fall to the prior; they say nothing about GTR-base and are not reported as results. No learned-arm number on real embeddings exists as of this edit.
 
-## 4. Results
-(filled in below as jobs finish)
+## 4. Status log
+* 11:34Z `d_extract_gtr_base` (GTR-base embeddings of NFCorpus docs/queries, SciFact docs and the two masked-text oracle variants; about 3 GPU-minutes) queued; 11:57Z six guarded
+  headroom jobs queued (`d_hr1_gtr_s{0,1,2}` = controls + oracle + LEACE + sup_lin; `d_hr2_gtr_s{0,1,2}` = random projection, PCA, noise). 12:04Z: **no d_ job has had a GPU yet**
+  (29 min); builder C/A added 17 + 7 jobs at priority 6-10 ahead of them. CPU extraction is not an alternative (measured 0.8 docs/s with 24 threads on the shared machine: 3.6k docs = 75 min).
+  Nothing has been run on real embeddings, so no headroom check, no margin, no result exists yet.
+* Resume recipe once the extraction job is done: `d_hr*` jobs start by themselves (they wait up to 30 min for `~/work/cache/d_embedpriv/gtr_base/meta.json`); then
+  `src/d_embedpriv/pull_runs.sh <dir>` and `python src/d_embedpriv/aggregate.py <dir>/d_hr*` give the controls/oracle/floors tables for the headroom check (section 2.5); the margin is then frozen here,
+  and only then `python make_jobs.py learned 0,1,2` writes the learned-arm jobs (bott_mlp control + adv lambda 0.1/0.3/1/3, d 16..512).
+
+## 5. Results
+(none yet)
