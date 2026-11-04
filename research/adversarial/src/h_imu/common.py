@@ -124,3 +124,22 @@ def sha256(path):
         for b in iter(lambda: f.read(1 << 20), b""):
             h.update(b)
     return h.hexdigest()
+
+
+# ---------------------------------------------------------------- analysis window set A*
+def analysis_set(trials=None):
+    """A* of the pre-registration (2.1): stride-40 windows (j mod 4 == 0) of every trial, plus stride-20 windows (j mod 2 == 0) of the fold-O test trials.
+    Returns dict X (N,2,128), sub, act, trial, start, j; plus bool 'is_train_window' (j mod 4 == 0) used for attacker TRAINING."""
+    if trials is None:
+        trials = load_trials()
+    mean, std = pd_train_stats(trials)
+    allw = build_windows(trials, mean, std, stride=10)
+    n = len(allw["X"])
+    # window index j within the trial
+    j = (allw["start"] // 10).astype(np.int64)
+    in_o_test = np.array([(ACTS[a], int(t)) in FOLD_TEST["O"] for a, t in zip(allw["act"], allw["trial"])])
+    keep = (j % 4 == 0) | (in_o_test & (j % 2 == 0))
+    out = {k: v[keep] for k, v in allw.items()}
+    out["j"] = j[keep]
+    out["is_train_window"] = (out["j"] % 4 == 0)
+    return out
