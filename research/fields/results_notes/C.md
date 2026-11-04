@@ -142,6 +142,39 @@ with the 95% interval above 0; (2) identity T1 of the AE not above the comparato
 Focus C as a negative result with the by-products already measured (channel floor 56x chance, LDA beating the neural attackers, oracle per-actor
 prosody floor 0.535 UAR at 2x chance, LEACE fitted on train actors leaving 53x on unseen actors).
 
+## 2d. Result of the pre-registered AE round (3 seeds x 4 folds, 2026-11-04 ~12:45Z): FAIL
+
+Selection on validation actors only (`select_ae.py`; U_HE_val / ID_val T1, worst attacker): d16 lam0 0.470 / 0.110 (not eligible, ID > 0.10),
+d16 lam3 0.241 / 0.046, d16 lam10 0.235 / 0.053, d32 lam0 0.570 / 0.331 (not eligible), **d32 lam3 0.317 / 0.055 (selected)**, d32 lam10 0.297 / 0.068.
+Test results, 3 seeds, 95% bootstrap over actors, comparator = LDA fitted on ANG/HAP/NEU/SAD padded with residual-PCA dims to the same width (`ae_report.py`;
+comparator is one seed, LDA being deterministic apart from the attackers):
+
+| AE config | seeds | U_HE = recall DIS+FEA [95% CI] | identity T1 [95% CI] | x chance | comparator | dU_HE vs comparator [95% CI] | dID vs comparator [95% CI] | seeds with dU_HE >= +0.05 |
+|---|---:|---|---|---:|---|---|---|---|
+| d16 lam0 (no adversary) | 3 | 0.468 [0.432,0.505] | 0.152 [0.123,0.189] | 13.8x | LDA4 k16 (0.450 / 6.5x) | +0.018 [-0.007,+0.043] | +0.081 [+0.055,+0.111] | 0/3 |
+| d16 lam3 | 3 | 0.261 [0.244,0.278] | 0.042 [0.035,0.056] | 3.9x | LDA4 k16 | -0.189 [-0.224,-0.155] | -0.028 [-0.048,-0.008] | 0/3 |
+| d16 lam10 | 3 | 0.246 [0.232,0.262] | 0.059 [0.046,0.073] | 5.3x | LDA4 k16 | -0.204 [-0.240,-0.168] | -0.012 [-0.035,+0.008] | 0/3 |
+| d32 lam0 (no adversary) | 3 | 0.576 [0.538,0.614] | 0.382 [0.337,0.430] | 34.8x | LDA4 k32 (0.534 / 36.8x) | +0.042 [+0.027,+0.057] | -0.022 [-0.049,+0.004] | 1/3 |
+| **d32 lam3 (validation-selected)** | 3 | **0.326 [0.307,0.345]** | 0.073 [0.061,0.089] | 6.6x | LDA4 k32 | **-0.208 [-0.240,-0.179]** | -0.331 [-0.376,-0.289] | **0/3** |
+| d32 lam10 | 3 | 0.294 [0.275,0.316] | 0.060 [0.052,0.077] | 5.5x | LDA4 k32 | -0.240 [-0.273,-0.208] | -0.344 [-0.387,-0.301] | 0/3 |
+
+Per-seed point estimates of the selected configuration: U_HE 0.322 / 0.338 / 0.317, identity 0.082 / 0.072 / 0.065 (7.5x / 6.5x / 5.9x).
+
+**Verdict: FAIL, 0 of 3 seeds, for the validation-selected configuration (d32, lam 3) and for every adversarial configuration.** Criterion 1 (dU_HE >= +0.05,
+interval above 0) is not met by any configuration: the adversarial AEs lose 0.19-0.24 of held-out-emotion recall to the width-matched LDA comparator. The
+"identity within 0.02" criterion is met only trivially, because the 32-dim LDA+residual-PCA comparator itself leaks 36.8x chance (the residual PCA
+dimensions carry the speaker/channel). The fair view is therefore equal leakage: the selected AE (identity 6.6x chance) against the leakage-matched LDA-4 comparators
+(k16 at 6.5x, U_HE 0.450; k5 at 7.2x, 0.369; k3 at 4.4x, 0.363) gives dU_HE = -0.132 [-0.164,-0.100], -0.051 [-0.078,-0.022] and -0.044 [-0.072,-0.017]
+with identity differences within +-0.02 for the first two. The adversary-free AE (lam 0) is the only variant with a positive difference (d32: +0.042 [+0.027,+0.057], 1 of 3 seeds
+above +0.05; d16: +0.018 [-0.007,+0.043]), but it is not eligible under the selection rule (validation identity 0.331 and 0.110) and it leaks 34.8x / 13.8x chance
+at test; its gain over the matched LDA is a reconstruction effect, not an adversary effect.
+What the adversary buys: at d32, lam 0 -> 3 cuts identity 34.8x -> 6.6x chance and costs U_HE 0.576 -> 0.326; the resulting point sits below the label-supervised
+LDA-4 frontier (0.450 at 6.5x).
+Against the hand-built floors in the same metric (DIS+FEA recall at 91-way identity x chance): six prosody numbers 0.268 at 11.6x, 26 numbers 0.346 at 23x, 26 numbers with
+oracle per-actor standardisation 0.459 [0.433,0.485] at 6.0x, six numbers with oracle standardisation 0.373 at 2.0x, label-free PCA-16 of the pooled features 0.431 at 12.8x. The selected AE (0.326
+at 6.6x) is below every one of the three oracle/label-free floors with comparable leakage.
+Trimmed variant and dithered-code control: see 2e (pending at the time of writing this block).
+
 ## 3. Results so far (2026-11-04 ~11:55Z)
 
 Everything here is WavLM-Base+, audio only, 4 actor-disjoint folds pooled over the 91 test actors, 95% bootstrap over actors, identity =
