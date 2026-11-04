@@ -1,0 +1,16 @@
+{
+ "name": "h_pd_pub_s0",
+ "config": {
+  "name": "h_pd_pub_s0",
+  "priority": 10,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/pd_release.py rel --out $OUT --name pd_pub --w1 7.8 --w2 0.05 --seed 0 --batch 512",
+  "hf_path": "runs/h_pd_pub_s0"
+ },
+ "commit": "de7a7ec",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 1018.6,
+ "finished_utc": "2026-11-04T18:19:51Z",
+ "uploaded": true
+}

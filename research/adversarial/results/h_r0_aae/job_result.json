@@ -1,0 +1,21 @@
+{
+ "name": "h_r0_aae",
+ "config": {
+  "name": "h_r0_aae",
+  "priority": 10,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 TF_NUM_INTRAOP_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/aae.py r0 --out $OUT --runs 3",
+  "hf_path": "runs/h_r0_aae",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "850fe1b",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 581.3,
+ "finished_utc": "2026-11-04T18:21:12Z",
+ "uploaded": true
+}
