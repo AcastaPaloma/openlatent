@@ -1,4 +1,4 @@
 name: a_sw2conf_midnight_tcga_s2
 priority: 32
-cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tcga --seed 2 --grid all --confound 0.8
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tcga --seed 2 --grid raw,lda,leace,isp,vib,vq,dann,adv_retrain,supcon_xc --confound 0.8
 hf_path: runs/a_sw2conf_midnight_tcga_s2

@@ -1,4 +1,4 @@
 name: a_sw2conf_phikonv2_camelyon_s0
 priority: 30
-cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset camelyon --seed 0 --grid all --confound 0.8
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset camelyon --seed 0 --grid raw,lda,leace,isp,vib,vq,dann,adv_retrain,supcon_xc --confound 0.8
 hf_path: runs/a_sw2conf_phikonv2_camelyon_s0
