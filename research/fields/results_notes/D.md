@@ -245,3 +245,28 @@ The coordinator asked for the learned kill test to be run after the headroom tab
 selection on V as in 2.5, comparison margin fixed post hoc at 0.10 (the cap in the pre-registered formula) for K1-K4. Results are added below when the jobs finish.
 
 (pending)
+
+## 6. H2-009 check: digit/number secret (pre-registered 15:10Z VM clock, before any attacker, floor or oracle number on this secret)
+
+Requested by the coordinator as the cheap check in the programme's stop/pivot rule (hypotheses/RANKING_R2.md section 7, H2-009). Budget ~0.5 GPU-h, one builder-hour, **one attempt**.
+Queue priority 4 (reserved for the main agent) is used **once**, for the `d_dig_*` jobs, at the coordinator's explicit instruction. PII-Masking-300K is not used.
+
+### 6.1 What changes relative to section 2 (everything else - splits D/A/V/C and ED/EA, release definition, utility, attackers, floors, controls, selection on V / numbers on C, bootstrap over C docs, seeds 0,1,2 - is unchanged)
+* **Secret tiers** (`World("digits")`): **n1 (primary)** = numeric tokens = maximal digit runs with internal "." or "," (`\d+([.,]\d+)*`: years, doses, sample sizes, p-values; "95%" gives "95") with df >= 3 over NFCorpus D+A and all SciFact (no upper df cap, as in H2-009); 1,745 tokens, 8.8 per C doc, 11.2% of C docs have none (excluded from means).
+  **n2 (secondary, descriptive, never used for pass/fail)** = capitalised mid-sentence words (not after . ! ? : ; and not in the title or the first body word; crude named-entity proxy, **no NER model**) with df >= 3: 1,285 tokens, 2.7 per C doc, 34% of C docs have none.
+  **n1s (descriptive)** = n1 tokens with 3 <= df <= 30: 1,432 tokens, 1.9 per C doc, 47% of C docs have none. Metric: R-precision per document, as in 2.1. The frequency prior is the strongest trivial reference here (the top n1 tokens are "1", "2", "3", "4", "95" with df 880-2,660), so L is normalised exactly as before: L = (R - R_prior)/(R_raw - R_prior).
+* **Oracle** `oracle_mask_digits`: every digit run is deleted from the document text before embedding (queries untouched); attackers are retrained on those vectors and scored against the ORIGINAL n1 bag. `oracle_mask_n2` (descriptive) deletes the n2 words outside the title.
+* Floors: same families; the LEACE concept is the SVD-r span of the defender-pool n1+n2 bag; the noise grid is {0.25, 0.5, 1, 2, 3, 4} (adds 0.25, drops 6, because section 5 showed the 3% boundary lies between r = 0 and r = 0.5). Controls: const, shuffled pairs.
+
+### 6.2 Pass conditions (fixed now)
+* **H1 (measurability) PASS** iff, on the sealed C docs, mean over 3 seeds, R_raw - R_prior on n1 (worst of ridge/mlp/knn) >= 0.05 with the 95% bootstrap CI (over C docs) excluding 0, and the const / shuffled-pairs controls are within 0.02 of R_prior. (H2-009's own wording; "GTR-base recovers the number tier above its frequency prior".)
+* **H2 (room) PASS** iff both: (a) `oracle_mask_digits` retention >= 0.97 on the test queries AND >= 0.97 on the dev queries (seed-independent, the oracle embeddings are fixed; retention = nDCG@10 / raw nDCG@10 on the same queries);
+  (b) headroom = L_n1(F\*, tau = 0.97) - L_n1(oracle_mask_digits) >= 0.10 with a 95% paired bootstrap lower bound > 0, where F\* is the floor family (randproj, pca, noise, leace, sup_lin) that reaches tau on V in **every** seed, with the lowest seed-mean V leakage, selected exactly as in 2.5.
+  If no floor family reaches 0.97 in every seed, (b) is judged at tau = 0.90 and flagged. Headroom >= 0.30 is the H2-009 prediction and is reported as "strong", it is not the gate.
+* **Margin** (computed from this floors + oracle run, then frozen in this file before any learned job is created): m = min(0.10, 0.5 x headroom).
+* **Both H1 and H2 must pass before any learned arm.** If both pass, exactly one learned kill test runs (jobs `d_dig_lrn_gtr_s{0,1,2}`: `bott_mlp` control and `adv` lambda in {0.3, 3}, d in {16..512}, 3 seeds), judged by K1-K4 of 2.5 with tier n1 as the primary and n2 as the second tier in K4, F\* named from the same run. Fail on any of H1, H2, K1-K4 = this check fails; no second attempt.
+
+### 6.3 Disclosure (before the numbers)
+* Seen before this pre-registration: tier sizes, tokens per doc, df quantiles and example tokens from the text only (stage 0); the section 5 results for the *word* secret, including the retention curves of the secret-agnostic floors (random projection, PCA, noise use the same embeddings and seeds, so their retention numbers on this run are already known; what is new is the attacker side and the oracle).
+* `d_ph_lrn_gtr_s{0,1}` (post-hoc learned arms for the word secret) have finished but were not aggregated at the time of writing; they are unrelated to this check.
+* An N2 bug (words after a title were counted as mid-sentence) was fixed in stage 0 before any model number; the numbers above are after the fix.
