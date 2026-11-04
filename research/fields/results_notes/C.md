@@ -111,7 +111,7 @@ A winner is then replicated with seeds 1 and 2 (same sign, same thresholds on th
 5-dim projection (or a rate bottleneck) is the method, the contribution is the benchmark and its controls (channel floor, prosody floor,
 retrained-attacker suite), and the next question moves to where a projection cannot be fitted (no labels, new emotion sets, RAVDESS transfer).
 
-## 2c. Pre-registration: task-agnostic adversarial autoencoder (written 2026-11-04 ~12:05Z, before any AE number exists)
+## 2c. Pre-registration: task-agnostic adversarial autoencoder (written 2026-11-04 ~11:58Z by the VM clock, before any AE number exists)
 
 Why: the label-supervised family (rate, adversary, VQ) loses to the LDA floor and fails 2b. Builder A found one exploratory lead for the family not yet
 tested here: an autoencoder trained WITHOUT class labels through a rate-limited Gaussian channel, with identity adversaries retrained from scratch
