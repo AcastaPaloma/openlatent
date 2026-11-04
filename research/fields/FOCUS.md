@@ -108,6 +108,11 @@ A-retention rescoring plus dinov2-L cross-fit, phikon-v2 holdout, the H2-015 sel
 Stop rule (hypotheses/RANKING_R2.md section 7) met: AE lead dead (A), C closed, SC-0 fails K2 (E), D-digits fails H1, JUMP fails at the S4 gate (F). No further GPU work under research/fields; the shared VM stays up for programme 2.
 Remaining: SUMMARY.md (scoped claims, per-focus table, limits, by-products) after the independent audit (research/fields/AUDIT_findings.md) lands.
 
+## Focus B' REOPENED ATTEMPT (Auditor-1 F-11), result ~21:30Z VM clock: B' STAYS NO-GO under the rule as written, now on all three correlated kinds (3 seeds each; B.md appended section)
+- The learned latent arm (adv) is WORSE than zero-shot SAM in every seed on corr_noisy (SAM minus adv -0.013, -0.031, -0.003) and corr_glued (-0.022, -0.051, -0.032), and about equal on corr_det (+0.023, +0.009, -0.002); the rule needs >= +0.05. Mean NMSE SAM vs adv: corr_noisy 0.830 vs 0.846, corr_glued 0.769 vs 0.804, corr_det 0.812 vs 0.802.
+- Leakage: adv leaks less than SAM on corr_det (0.065 vs 0.204) and corr_noisy (0.046 vs 0.230), more on corr_glued (0.066 vs 0.016; relative sprite position, confounded by arm pose). The truly independent residual leaks ~0.00 on corr_noisy for every arm; on corr_glued raw leaks 0.05 and adv does not remove it. corr_det stays degenerate as a leakage test (nuisance is a function of the action). Rate control exists for seed 0 only on noisy/glued.
+- Caveat unchanged: one learned latent arm, synthetic sprites, one fixed distractor draw, 64x64 LAM. Learned masks collapsed (failed implementation).
+
 ## Focus B': robotics latent actions   [NO-GO, decided 2026-11-04 11:30Z]
 - Verdict (Builder B, results_notes/B.md): on action-correlated distractors (corr_det, 3 seeds) the best learned arm (adv) beats zero-shot SAM by 0.010 NMSE
   (rule: >= 0.05 in every seed): FAIL. Mechanism: the harm is input clutter, not leakage (raw z carries ~0 sprite information), so an adversary on z has nothing to

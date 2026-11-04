@@ -1,0 +1,17 @@
+{
+ "name": "f2_eval_s2",
+ "config": {
+  "name": "f2_eval_s2",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 5 --salt s2 --f2 --out $OUT",
+  "hf_path": "runs/f2_eval_s2"
+ },
+ "commit": "ff73415",
+ "commit_after": "9d85ab7",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 1192.3,
+ "finished_utc": "2026-11-04T19:58:10Z",
+ "uploaded": true
+}

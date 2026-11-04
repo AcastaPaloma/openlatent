@@ -1,0 +1,22 @@
+{
+ "name": "h_nn_floors_a",
+ "config": {
+  "name": "h_nn_floors_a",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm raw --folds O,A,B --family nn --targets id,act --out $OUT && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm shuf_raw,noise_s0.5,noise_s1,noise_s2,noise_s4 --folds O --family nn --targets id,act --out $OUT",
+  "hf_path": "runs/h_nn_floors_a",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "62c7d14",
+ "commit_after": "9d85ab7",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 1017.9,
+ "finished_utc": "2026-11-04T19:57:56Z",
+ "uploaded": true
+}

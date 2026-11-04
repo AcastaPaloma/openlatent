@@ -1,0 +1,17 @@
+{
+ "name": "b_m_corr_noisy_s2",
+ "config": {
+  "name": "b_m_corr_noisy_s2",
+  "priority": 18,
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind corr_noisy --arms raw,gtmask,adv --epochs 30 --seed 2 --out $OUT",
+  "hf_path": "runs/b_m_corr_noisy_s2"
+ },
+ "commit": "8dea3b9",
+ "commit_after": "8dea3b9",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 872.0,
+ "finished_utc": "2026-11-04T21:18:34Z",
+ "uploaded": true
+}
