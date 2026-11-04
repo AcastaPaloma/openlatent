@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 ATT = ("ridge", "mlp", "knn")
+FIXED_SCALE = False
 P, S2, OM, OM2 = "rare", "mid", "rare", "all"  # primary tier, second tier, oracle mask names (set from the records in main)
 FLOORS = ("randproj", "pca", "noise", "leace", "sup_lin")
 CONTROLS = ("bott_mlp",)
@@ -77,7 +78,10 @@ class Agg:
         Rarm = boot_worst(rp_units(self.units, rid, split, tier), idx)
         Rraw = boot_worst(rp_units(self.units, f"raw|s{seed}", split, tier), idx)
         Rpri = boot_worst(rp_units(self.units, f"const|s{seed}", split, tier), idx)
-        return (Rarm - Rpri) / np.maximum(Rraw - Rpri, 1e-6), Rarm, Rraw, Rpri
+        den = np.maximum(Rraw - Rpri, 1e-6)
+        if FIXED_SCALE:  # tiny raw excess: keep the denominator at its bootstrap mean so that resamples with a near-zero denominator cannot explode L
+            den = max(float(np.mean(Rraw - Rpri)), 1e-6)
+        return (Rarm - Rpri) / den, Rarm, Rraw, Rpri
 
     def retention(self, rec, split="test"):
         return rec[f"ndcg_{split}"] / rec["ndcg_raw"][split]
@@ -109,23 +113,29 @@ def fmt(x, lo=None, hi=None, nd=3):
 
 
 def main():
-    global P, S2, OM, OM2
+    global P, S2, OM, OM2, FIXED_SCALE
     ap = argparse.ArgumentParser()
     ap.add_argument("dirs", nargs="+")
     ap.add_argument("--taus", default="0.97,0.90")
     ap.add_argument("--margin", type=float, default=None, help="frozen margin m (normalised leakage); enables the kill-rule evaluation")
     ap.add_argument("--margins", default="", help="per-tau frozen margins, e.g. 0.90:0.0775,0.97:0.10 (D2)")
     ap.add_argument("--mde", action="store_true", help="print the paired-bootstrap SD and MDE80 of F* vs the bott_mlp control at each tau, then continue")
+    ap.add_argument("--primary", default="", help="override the primary tier (e.g. n1s for the scale-aware digit re-analysis); the second tier is the next recorded tier that differs")
+    ap.add_argument("--fixed-scale", action="store_true", help="normalise L by the bootstrap-mean raw excess (use when R_raw - R_prior is tiny, e.g. n1s)")
     ap.add_argument("--legacy-adv", action="store_true", help="keep the original collapsed adv fits")
     ap.add_argument("--families", default="")
     a = ap.parse_args()
     recs, units = load(a.dirs, a.legacy_adv)
+    FIXED_SCALE = a.fixed_scale
     margins = {float(x.split(":")[0]): float(x.split(":")[1]) for x in a.margins.split(",") if x}
     if a.margin is not None and not margins:
         margins = {0.97: a.margin}
     tiers = list(next(iter(recs.values()))["attackers"]["ridge"]["V"].keys())
     P, S2 = tiers[0], tiers[1]
-    if P == "n1":  # digits / entity scheme (H2-009)
+    if a.primary:
+        P = a.primary
+        S2 = next(t for t in tiers if t != P)
+    if "n1" in tiers:  # digits / entity scheme (H2-009)
         OM, OM2 = "digits", "n2"
     A = Agg(recs, units)
     taus = [float(t) for t in a.taus.split(",")]
@@ -243,6 +253,12 @@ def headroom(A, seeds, taus, tauO):
         Rp = boot_worst(rp_units(A.units, con, "C", P), A.idx_c)
         d.append(Rr - Rp)
     d = np.mean(d, axis=0)
+    rat = np.mean([boot_worst(rp_units(A.units, f"raw|s{s}", "C", P), A.idx_c) / np.maximum(boot_worst(rp_units(A.units, f"const|s{s}", "C", P), A.idx_c), 1e-9)
+                   for s in seeds if f"raw|s{s}" in A.recs and f"const|s{s}" in A.recs], axis=0)
+    Rr0 = np.mean([worst(A.recs[f"raw|s{s}"], "C", P) for s in seeds if f"raw|s{s}" in A.recs])
+    Rp0 = np.mean([worst(A.recs[f"const|s{s}"], "C", P) for s in seeds if f"const|s{s}" in A.recs])
+    print(f"Scale-aware H1s (post hoc): R_raw = {Rr0:.4f}, R_prior = {Rp0:.4f}, ratio = {rat.mean():.2f} [{ci(rat)[0]:.2f}, {ci(rat)[1]:.2f}] (rule: >= 1.5, lower bound >= 1.25, absolute excess lower bound > 0): "
+          f"{'PASS' if rat.mean() >= 1.5 and ci(rat)[0] >= 1.25 and ci(d)[0] > 0 else 'FAIL'}\n")
     print(f"H1 measurability: R_raw - R_prior ({P} tier, worst of 3 attackers) = {d.mean():.3f} [{ci(d)[0]:.3f}, {ci(d)[1]:.3f}] (rule: >= 0.05 and CI excludes 0): "
           f"{'PASS' if ci(d)[0] > 0 and d.mean() >= 0.05 else 'FAIL'}\n")
     orc = {s: next((r for r in A.recs.values() if r["seed"] == s and r["spec"].get("mask") == OM), None) for s in seeds}
