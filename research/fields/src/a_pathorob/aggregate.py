@@ -19,7 +19,8 @@ from pathlib import Path
 
 import numpy as np
 
-KC = ("linear", "mlp", "knn", "tfm")
+KC = ("linear", "mlp", "knn", "tfm")          # used for adapter selection
+KX = ("lgbm", "rff")                          # held-out attacker families (never used to select)
 KL = ("linear", "mlp", "knn")
 
 
@@ -33,7 +34,12 @@ def load_runs(dirs):
                     r["_dir"] = str(Path(d))
                     r["_tag"] = jl.stem
                     recs.append(r)
-    return recs
+    best = {}
+    for r in recs:               # same (encoder, dataset, variant, seed, config) from several jobs: keep the one with the held-out attackers
+        k = (r["encoder"], r["dataset"], r.get("variant", "crossed"), r["seed"], r["cfg"])
+        if k not in best or ("centre/lgbm/C" in r["metrics"] and "centre/lgbm/C" not in best[k]["metrics"]):
+            best[k] = r
+    return list(best.values())
 
 
 class Cell:
@@ -180,9 +186,34 @@ def main():
         if ctrl:
             lines.append("Controls (worst-case over the 4 attackers, centre balanced accuracy on C; must be at chance):  " +
                          "; ".join(f"{c} {fmt(w[0], w[1])}" for c, w, _ in ctrl))
+        # gate / floors table with every attacker separately (read before any learned result)
+        have_x = all(f"centre/{k}/C" in cell.by["raw"][seeds_raw[0]]["metrics"] for k in KX)
+        kinds_all = KC + (KX if have_x else ())
+        lines.append("\nGate cell: floors and controls, every attacker separately (balanced accuracy on sealed C, mean over seeds; "
+                     "L = (acc - floor)/(raw acc of that attacker - floor); floor = max(chance, label-only))\n")
+        lines.append("| config | label acc | " + " | ".join(kinds_all) + " | L_worst (4 selection families) [95% CI] | L_worst (all families) | L_linear | unseen-centre worst acc | A-trained linear |")
+        lines.append("|---|---|" + "---|" * (len(kinds_all) + 5))
+        raw_k = {k: cell.metric("raw", "centre", (k,))[0] for k in kinds_all}
+        for cfg in cfgs:
+            if family(cfg) not in ("raw", "lda", "centre_mean", "centre_zscore", "centre_whiten", "leace", "isp", "ctrl_const", "ctrl_noise", "ctrl_shuffle", "pca", "randproj"):
+                continue
+            ks = {k: cell.metric(cfg, "centre", (k,)) for k in kinds_all}
+            Lk = {k: (ks[k][0] - floor) / max(raw_k[k] - floor, 1e-6) for k in kinds_all}
+            wc4 = cell.metric(cfg, "centre", KC)
+            raw4 = cell.metric("raw", "centre", KC)
+            L4 = (wc4[1] - floor) / max(raw4[1] - floor, 1e-6)
+            L4p = (wc4[0] - floor) / max(raw4[0] - floor, 1e-6)
+            lab_ = cell.metric(cfg, "label", ("linear",))
+            rs_ = list(cell.by[cfg].values())
+            ood_w = np.mean([max(r["metrics"][f"oodcentre/{k}/OOD2"] for k in ("linear", "mlp", "knn")) for r in rs_])
+            ona_ = np.mean([r["metrics"]["centre_onA/linear/C"] for r in rs_])
+            lo_, hi_ = ci(L4)
+            lall = max(Lk.values())
+            lines.append(f"| {cfg} | {lab_[0]:.3f} | " + " | ".join(f"{ks[k][0]:.3f}" for k in kinds_all)
+                         + f" | {L4p:.2f} [{lo_:.2f}, {hi_:.2f}] | {lall:.2f} | {Lk['linear']:.2f} | {ood_w:.3f} | {ona_:.3f} |")
         # family-level selection on V
         lines.append("\nSelected per family on V (label within delta of raw), reported on sealed C:\n")
-        lines.append("| delta | family | config | label acc (linear) | worst-case centre acc | leak (0=chance, 1=raw) | label acc on unseen centres | A-trained linear attacker | rate bits | held-out-class label acc |")
+        lines.append("| delta | family | config | label acc (linear) | worst-case centre acc | leak (0=chance, 1=raw) | label acc on unseen centres | A-trained linear attacker | rate (bits/patch) | held-out-class label acc |")
         lines.append("|---|---|---|---|---|---|---|---|---|---|")
         fams = sorted({family(c) for c in table})
         sel_all = {}
@@ -223,7 +254,7 @@ def main():
                 lo2, hi2 = ci(db)
                 verdict2.append((f"{enc}/{var}", ds, dl, a0, b0, table[a0]["wc"][0] - table[b0]["wc"][0], lo2, hi2, table[a0]["lab"][0] - table[b0]["lab"][0]))
         lines.append("\nFull ladder (C numbers; 95% CI from unit bootstrap):\n")
-        lines.append("| config | seeds | label acc (linear) | label acc (mlp) | worst-case centre acc | leak | V label | V worst | unseen-centre label | rate bits | held-out-class label |")
+        lines.append("| config | seeds | label acc (linear) | label acc (mlp) | worst-case centre acc | leak | V label | V worst | unseen-centre label | rate (bits/patch) | held-out-class label |")
         lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
         for cfg, t in table.items():
             lines.append(f"| {cfg} | {t['n']} | {fmt(*t['lab'][:2])} | {t['labm'][0]:.3f} | {fmt(*t['wc'][:2])} | {fmt(t['leak'][0], t['leak'][1], 2)} | {t['lv']:.3f} | {t['wv']:.3f} | {t['ood']:.3f} | {t['rate']:.1f} | {t['held']:.3f} |")

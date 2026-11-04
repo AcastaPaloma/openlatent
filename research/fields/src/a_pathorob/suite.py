@@ -12,7 +12,7 @@ import time
 
 import numpy as np
 
-from .attackers import run_suite, bacc
+from .attackers import run_suite, bacc, EXTRA
 
 KINDS_CENTRE = ("linear", "mlp", "knn", "tfm")
 KINDS_LABEL = ("linear", "mlp", "knn")
@@ -34,7 +34,7 @@ def remap(c):
     return inv, len(u)
 
 
-def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True, holdout=False):
+def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle=False, shuffle_rep=0, do_ood=True, do_onA=True, holdout=False):
     t0 = time.time()
     m, preds, timing = {}, {}, {}
     Kc, Ky = int(P.n_id_centres), len(P.classes)

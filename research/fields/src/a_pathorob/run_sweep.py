@@ -48,11 +48,10 @@ def main():
     np.savez_compressed(out / f"{tag}.splitarrays.npz", **{f"idx_{k}": v for k, v in sp.items()}, y=P.y, c=P.c, u=P.u)
     print(json.dumps(info), flush=True)
     grid = []
-    if a.grid in ("main", "all"):
-        grid += AD.GRID
-    if a.grid in ("controls", "all"):
-        grid += AD.CONTROLS
-    if a.grid not in ("main", "all", "controls"):
+    named = dict(gate=AD.GATE + AD.CONTROLS, learned=AD.LEARNED, rate=AD.RATE, controls=AD.CONTROLS, main=AD.GRID, all=AD.GRID + AD.CONTROLS)
+    if a.grid in named:
+        grid = list(named[a.grid])
+    else:
         want = set(a.grid.split(","))
         grid = [g for g in AD.GRID + AD.CONTROLS if g[0] in want]
     if a.smoke:      # first config of every method

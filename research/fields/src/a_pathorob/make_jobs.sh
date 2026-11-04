@@ -6,7 +6,7 @@ for ds in ${DS:-camelyon tcga tolkach_esca}; do for s in ${SEEDS:-0 1 2}; do
   cat > research/fields/jobs/specs/$n.yaml <<EOT
 name: $n
 priority: $pr
-cmd: USE_TF=0 \$HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder $enc --dataset $ds --seed $s --grid all $@
+cmd: USE_TF=0 \$HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder $enc --dataset $ds --seed $s --grid ${GRID:-all} $@
 hf_path: runs/$n
 EOT
 done; done

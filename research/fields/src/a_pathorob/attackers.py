@@ -12,7 +12,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-KINDS = ("linear", "mlp", "knn", "tfm")
+KINDS = ("linear", "mlp", "knn", "tfm")          # the four families used for adapter selection
+EXTRA = ("lgbm", "rff")                          # held-out families: never used to select or train an adapter
 
 
 def bacc(y, p, K=None):
@@ -160,6 +161,64 @@ def knn_logits(Xtr, ytr, Xte, K, k):
     return torch.cat(out)
 
 
+# ----------------------------------------------------------------------------- held-out families
+def fit_sqhinge(X, y, K, wd, iters=60):
+    """one-vs-rest squared-hinge linear SVM (L-BFGS), class-balanced sample weights."""
+    d = X.shape[1]
+    W = torch.zeros(d, K, device=DEV, requires_grad=True)
+    b = torch.zeros(K, device=DEV, requires_grad=True)
+    w = _cw(y, K)[y]
+    T = 2 * F.one_hot(y, K).float() - 1
+    opt = torch.optim.LBFGS([W, b], lr=1.0, max_iter=iters, history_size=10, line_search_fn="strong_wolfe")
+
+    def closure():
+        opt.zero_grad()
+        loss = (w[:, None] * F.relu(1 - T * (X @ W + b)) ** 2).sum(1).mean() + 0.5 * wd * (W ** 2).sum()
+        loss.backward()
+        return loss
+    opt.step(closure)
+    W, b = W.detach(), b.detach()
+    return lambda Z: Z @ W + b
+
+
+def rff_map(X, Wr, br):
+    return torch.cos(X @ Wr + br) * np.sqrt(2.0 / Wr.shape[1])
+
+
+def fit_rff_svm(Xtr, ytr, K, g, wd, seed, D=2048):
+    """RBF-kernel SVM approximated with random Fourier features (gamma = g / (2 d)) + squared-hinge OvR."""
+    d = Xtr.shape[1]
+    gen = torch.Generator(device="cpu").manual_seed(1234 + seed)
+    Wr = (torch.randn(d, D, generator=gen) * np.sqrt(g / d)).to(DEV)
+    br = (torch.rand(D, generator=gen) * 2 * np.pi).to(DEV)
+    f = fit_sqhinge(rff_map(Xtr, Wr, br), ytr, K, wd, iters=60)
+    return lambda Z: f(rff_map(Z, Wr, br))
+
+
+def _pca_fit(X, k=64):
+    mu = X.mean(0, keepdim=True)
+    if X.shape[1] <= k:
+        return lambda Z: Z
+    U, S, V = torch.pca_lowrank(X - mu, q=k, center=False, niter=3)
+    return lambda Z: (Z - mu) @ V
+
+
+def fit_lgbm(Xtr, ytr, K, seed, Xva=None, yva=None, n_iter=None):
+    import lightgbm as lgb
+    pca = _pca_fit(Xtr, 64)
+    A = pca(Xtr).cpu().numpy()
+    kw = dict(learning_rate=0.05, num_leaves=15, subsample=0.8, subsample_freq=1, colsample_bytree=0.8, min_child_samples=20,
+              class_weight="balanced", verbose=-1, n_jobs=8, random_state=seed)
+    if Xva is not None:
+        m = lgb.LGBMClassifier(n_estimators=400, **kw)
+        m.fit(A, ytr.cpu().numpy(), eval_set=[(pca(Xva).cpu().numpy(), yva.cpu().numpy())],
+              callbacks=[lgb.early_stopping(30, verbose=False)])
+        return max(int(m.best_iteration_ or 50), 20)
+    m = lgb.LGBMClassifier(n_estimators=n_iter, **kw)
+    m.fit(A, ytr.cpu().numpy())
+    return lambda Z: torch.as_tensor(m.predict_proba(pca(Z).cpu().numpy()))
+
+
 # ----------------------------------------------------------------------------- suite
 def run_suite(Xb, yb, ub, evals, K, kinds=KINDS, seed=0, epochs_nn=40, secret_shuffle=False, shuffle_rep=0):
     """Train every attacker kind on (Xb, yb) from scratch and predict each array in `evals` (dict name->X).
@@ -211,6 +270,20 @@ def run_suite(Xb, yb, ub, evals, K, kinds=KINDS, seed=0, epochs_nn=40, secret_sh
                 if a > best[0] + 1e-9:
                     best = (a, k)
             out[kind] = {k: knn_logits(Xf, yb_t, v, K, best[1]).argmax(1).cpu().numpy() for k, v in evf.items()}
+        elif kind == "rff":
+            best = (-1, None)
+            for g in (0.5, 1.0, 2.0):
+                for wd in (1e-3, 1e-2, 1e-1):
+                    f = fit_rff_svm(Xtr_i, ytr_i, K, g, wd, seed)
+                    a = bacc(yva_np, f(Xva_i).argmax(1).cpu().numpy())
+                    if a > best[0] + 1e-9:
+                        best = (a, (g, wd))
+            f = fit_rff_svm(Xf, yb_t, K, best[1][0], best[1][1], seed)
+            out[kind] = {k: f(v).argmax(1).cpu().numpy() for k, v in evf.items()}
+        elif kind == "lgbm":
+            n_it = fit_lgbm(Xtr_i, ytr_i, K, seed, Xva_i, yva_i)
+            f = fit_lgbm(Xf, yb_t, K, seed, n_iter=n_it)
+            out[kind] = {k: f(v).argmax(1).cpu().numpy() for k, v in evf.items()}
         else:
             raise ValueError(kind)
     return out

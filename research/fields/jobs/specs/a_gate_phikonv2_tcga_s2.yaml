@@ -1,0 +1,4 @@
+name: a_gate_phikonv2_tcga_s2
+priority: 15
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset tcga --seed 2 --grid gate 
+hf_path: runs/a_gate_phikonv2_tcga_s2

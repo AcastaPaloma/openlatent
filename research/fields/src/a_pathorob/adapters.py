@@ -46,14 +46,22 @@ def _eigh_sqrt(S, rho):
     return V, w
 
 
+_EIG = {}
+
+
 def leace_fit(X, z, K, rho):
     """Belrose et al. 2023 closed-form linear concept erasure (least-squares sense); ridge rho * mean eigenvalue on the covariance."""
+    key = (X.shape, float(X[:3].sum()), float(X[-3:].sum()))
     X = X.astype(np.float64)
     mu = X.mean(0)
     Xc = X - mu
     n = len(X)
-    S = Xc.T @ Xc / n
-    V, w = _eigh_sqrt(S, rho)
+    if key not in _EIG:                      # one eigendecomposition per fit set, shared by the rho ladder
+        _EIG.clear()
+        w0, V0 = np.linalg.eigh(Xc.T @ Xc / n)
+        _EIG[key] = (np.clip(w0, 0, None), V0)
+    w0, V = _EIG[key]
+    w = w0 + rho * w0.mean()
     Wh = (V / np.sqrt(w)) @ V.T          # Sigma^{-1/2}
     Wi = (V * np.sqrt(w)) @ V.T          # Sigma^{1/2}
     Z = np.eye(K)[z]
@@ -123,15 +131,16 @@ def train_vib(P, sp, dl, beta, seed, epochs=40, hid=512):
             opt.zero_grad(); loss.backward(); opt.step()
     enc.eval()
     g = torch.Generator(device=DEV).manual_seed(5000 + seed)
-    kls = []
 
     def f(x):   # the released latent is a SAMPLE from the channel
         mu, lv = enc(x).chunk(2, -1)
         lv = lv.clamp(-10, 6)
-        kls.append((0.5 * (mu ** 2 + lv.exp() - 1 - lv).sum(-1)).cpu())
         return mu + torch.exp(0.5 * lv) * torch.randn(mu.shape, device=DEV, generator=g)
     rep = _release(f, P, sp, st)
-    rate_bits = float(torch.cat(kls).mean() / math.log(2))
+    with torch.no_grad():                    # rate = KL(q(z|x) || N(0,I)) in bits per patch, measured on the sealed test units C
+        mu, lv = enc(st(_t(P.X[sp["C"]]))).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        rate_bits = float((0.5 * (mu ** 2 + lv.exp() - 1 - lv).sum(-1)).mean() / math.log(2))
     return rep, dict(rate_bits_per_patch=rate_bits)
 
 
@@ -302,6 +311,43 @@ def run_floor(method, hp, P, sp, seed):
         mu, sd = XA.mean(0), XA.std(0) + 1e-6
         Pm = isp_fit((XA - mu) / sd, P.c[sp["A"]], Kc, hp["n_iter"])
         return {s: (((P.X[sp[s]] - mu) / sd) @ Pm).astype(np.float32) for s in SPLITS}, {}
+    if method in ("centre_zscore", "centre_whiten"):
+        # transductive per-centre standardisation inside each split (needs the centre id of every patch at release time)
+        out = {}
+        for s in SPLITS:
+            X = P.X[sp[s]].astype(np.float32).copy()
+            c = P.c[sp[s]]
+            if method == "centre_whiten":
+                # PCA-64 fitted on A (pooled), then per-centre whitening with ridge 1e-2 * mean eigenvalue
+                if "pca" not in _EIG:
+                    XA = P.X[sp["A"]].astype(np.float64)
+                    mu = XA.mean(0)
+                    _, _, Vt = np.linalg.svd(XA - mu, full_matrices=False)
+                    _EIG["pca"] = (mu, Vt[:64].T)
+                mu_p, Vp = _EIG["pca"]
+                X = ((X - mu_p) @ Vp).astype(np.float32)
+            for k in np.unique(c):
+                m = c == k
+                Xk = X[m] - X[m].mean(0)
+                if method == "centre_zscore":
+                    Xk = Xk / (Xk.std(0) + 1e-6)
+                else:
+                    cov = np.cov(Xk.T) + 1e-2 * np.eye(Xk.shape[1]) * np.trace(np.cov(Xk.T)) / Xk.shape[1]
+                    w, V = np.linalg.eigh(cov)
+                    Xk = Xk @ (V / np.sqrt(w)) @ V.T
+                X[m] = Xk
+            out[s] = X.astype(np.float32)
+        return out, {}
+    if method in ("pca", "randproj"):       # label-free rate controls: d numbers per patch
+        d = hp["d"]
+        XA = P.X[sp["A"]].astype(np.float64)
+        mu = XA.mean(0)
+        if method == "pca":
+            _, _, Vt = np.linalg.svd(XA - mu, full_matrices=False)
+            R = Vt[:d].T
+        else:
+            R = np.random.RandomState(31 + seed).randn(XA.shape[1], d) / np.sqrt(XA.shape[1])
+        return {s: ((P.X[sp[s]] - mu) @ R).astype(np.float32) for s in SPLITS}, {}
     if method == "centre_mean":      # transductive reference: subtract the mean of each centre computed inside each split
         out = {}
         for s in SPLITS:
@@ -325,7 +371,7 @@ def run_control(method, P, sp, seed):
 
 
 def build(method, hp, P, sp, seed):
-    if method in ("raw", "lda", "leace", "isp", "centre_mean"):
+    if method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten", "pca", "randproj"):
         return run_floor(method, hp, P, sp, seed)
     if method in ("ctrl_const", "ctrl_noise", "ctrl_shuffle"):
         if method == "ctrl_shuffle":
@@ -344,16 +390,20 @@ def build(method, hp, P, sp, seed):
     raise ValueError(method)
 
 
-# the first sweep
-GRID = (
-    [("raw", {}), ("lda", {}), ("centre_mean", {})]
+# grids.  GATE = floors + controls (run and read BEFORE any learned result); LEARNED = the adapters; RATE = label-free rate controls
+GATE = (
+    [("raw", {}), ("lda", {}), ("centre_mean", {}), ("centre_zscore", {}), ("centre_whiten", {})]
     + [("leace", dict(rho=r)) for r in (1e-3, 1e-2, 1e-1, 1.0)]
     + [("isp", dict(n_iter=n)) for n in (1, 5, 20)]
-    + [("vib", dict(dl=dl, beta=b)) for dl in (4, 32) for b in (1e-3, 1e-2, 1e-1, 1.0)]
+)
+CONTROLS = [("ctrl_const", {}), ("ctrl_noise", {})] + [("ctrl_shuffle", dict(rep=r)) for r in range(3)]
+LEARNED = (
+    [("vib", dict(dl=dl, beta=b)) for dl in (4, 32) for b in (1e-3, 1e-2, 1e-1, 1.0)]
     + [("vq", dict(m=m, K=K)) for m, K in ((1, 16), (2, 16), (4, 16), (4, 64), (8, 64))]
     + [("dann", dict(dl=64, lam=l)) for l in (0.3, 1.0, 3.0, 10.0)]
     + [("adv_retrain", dict(dl=64, lam=l)) for l in (0.3, 1.0, 3.0, 10.0)]
     + [("adv_retrain", dict(dl=8, lam=l)) for l in (1.0, 10.0)]
     + [("supcon_xc", dict(dl=dl, tau=0.1)) for dl in (16, 64)]
 )
-CONTROLS = [("ctrl_const", {}), ("ctrl_noise", {})] + [("ctrl_shuffle", dict(rep=r)) for r in range(3)]
+RATE = [(m, dict(d=d)) for m in ("pca", "randproj") for d in (2, 4, 8, 16, 32, 64, 256)]
+GRID = GATE + LEARNED + RATE

@@ -1,0 +1,4 @@
+name: a_gate_phikon_camelyon_s1
+priority: 16
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikon_clsmean --dataset camelyon --seed 1 --grid gate 
+hf_path: runs/a_gate_phikon_camelyon_s1

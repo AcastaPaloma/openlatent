@@ -1,0 +1,4 @@
+name: a_gate_midnight_tolkach_esca_s1
+priority: 15
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tolkach_esca --seed 1 --grid gate 
+hf_path: runs/a_gate_midnight_tolkach_esca_s1
