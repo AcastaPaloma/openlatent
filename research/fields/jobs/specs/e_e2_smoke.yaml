@@ -1,0 +1,4 @@
+name: e_e2_smoke
+priority: 4
+cmd: "export E_CACHE=$HOME/work/cache/e_smoke OMP_NUM_THREADS=8 MKL_NUM_THREADS=8; $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate_e2.py --dataset smoke --seed 0 --configs vae_b10,cvaeadv_b10_l4,vaeplc_b10_l4 --folds 0 --out $OUT"
+hf_path: runs/e_e2_smoke
