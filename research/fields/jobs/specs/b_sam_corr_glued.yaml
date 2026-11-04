@@ -1,4 +1,4 @@
 name: b_sam_corr_glued
-priority: 20
+priority: 12
 cmd: cd research/fields/src/b_robotics && ~/venvs/b/bin/python sam_masks.py --kind corr_glued --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_corr_glued.json $OUT/
 hf_path: runs/b_sam_corr_glued
