@@ -34,6 +34,7 @@ def pick_points(valid, n=3):
 @torch.no_grad()
 def run(kind, splits, out, limit=None, device="cuda", bs=32, model_id="facebook/sam-vit-base"):
     from transformers import SamModel
+    torch.set_num_threads(4)   # CPU-side work is tiny; many OpenMP threads just thrash on a shared box
     dtype = torch.float16 if device == "cuda" else torch.float32
     model = SamModel.from_pretrained(model_id, torch_dtype=dtype).to(device).eval()
     mean = torch.tensor([123.675, 116.28, 103.53], device=device).view(1, 3, 1, 1)
@@ -50,9 +51,9 @@ def run(kind, splits, out, limit=None, device="cuda", bs=32, model_id="facebook/
         iou_l, inc_l, cov_l = [], [], []
         t0 = time.time()
         for e in range(N):
-            clean = torch.from_numpy(ep["frames"][e]).permute(0, 3, 1, 2).float() / 255  # (T1,3,128,128)
-            img, alpha = D.composite(clean, torch.from_numpy(st["pos"][e]), torch.from_numpy(st["cls"][e])[None].repeat(T1, 1))
-            alpha = (alpha[:, 0] > 0.5).numpy()
+            clean = torch.from_numpy(ep["frames"][e]).to(device).permute(0, 3, 1, 2).float() / 255  # (T1,3,128,128)
+            img, alpha = D.composite(clean, torch.from_numpy(st["pos"][e]).to(device), torch.from_numpy(st["cls"][e]).to(device)[None].repeat(T1, 1))
+            alpha = (alpha[:, 0] > 0.5).cpu().numpy()
             pts, ok = [], []
             for t in range(T1):
                 p = pick_points(arm[e, t] & ~alpha[t])
@@ -60,7 +61,7 @@ def run(kind, splits, out, limit=None, device="cuda", bs=32, model_id="facebook/
                 pts.append(p if p is not None else np.zeros((3, 2), np.float32) + 64)
             pts = torch.from_numpy(np.stack(pts)).float()  # (T1,3,2) in 128-px coords
             ok = np.array(ok)
-            X = F.interpolate((img * 255).to(device), size=(1024, 1024), mode="bicubic", align_corners=False).clamp(0, 255)
+            X = F.interpolate((img * 255), size=(1024, 1024), mode="bicubic", align_corners=False).clamp(0, 255)
             X = ((X - mean) / std).to(dtype)
             outm = []
             for i in range(0, T1, bs):
