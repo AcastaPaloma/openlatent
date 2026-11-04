@@ -84,3 +84,11 @@ def fit_predict_v3(X_train: np.ndarray, y_train, X_eval: dict, n_classes: int):
                 full[:, cols] = P
                 out[s][name] = full
     return out
+
+
+def declaration(n_classes: int, n_channels: int, name: str = "suite-v3", margin: float = 0.02, seed: int = 0, n_boot: int = 2000):
+    """The frozen v3 declaration for windows with `n_channels` channels: attackers, view groups read, canary groups required for assurance."""
+    from . import certificate as cf
+    groups = active_groups(n_channels)
+    return cf.SuiteDecl(name, suite_v3(n_channels), "accuracy", 0.05, n_boot, seed, margin, n_classes,
+                        views=("raw", "feat") + tuple(groups), canary_groups=tuple(groups))

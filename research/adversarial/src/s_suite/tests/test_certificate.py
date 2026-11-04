@@ -163,7 +163,7 @@ def test_auc_metric_path():
 def test_conservative_interval_contains_the_percentile_interval():
     val, test = build(11, [0.3, 0.2, 0.1])
     c = cf.certify(decl(3), val, test)
-    assert c["ci_inflation"] == cf.CI_KAPPA == 1.10 and c["evaluator"]["version"] == "s_suite/2.1"
+    assert c["ci_inflation"] == cf.CI_KAPPA == 1.10 and c["evaluator"]["version"] == cf.VERSION
     for a in list(c["attackers"].values()) + [c["selected"]]:
         lo, hi = a["ci95"]
         clo, chi = a["ci95_conservative"]

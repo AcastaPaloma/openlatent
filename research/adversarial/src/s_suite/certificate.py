@@ -19,7 +19,8 @@ What it states (and what it does not)
    attacker simultaneously; the max over the suite is an upper bound on the best DECLARED attacker's true score. It says nothing about
    attackers outside the suite (suite-conditional).
 3. `floor`: the smallest suite bound the design can ever return (observed rate equals chance), i.e. the resolution of the sealed test.
-4. `verdict` in {LEAK, BELOW_MARGIN, NOT_RESOLVED}; BELOW_MARGIN uses the Bonferroni bound only (max-t is reported beside it).
+4. `verdict` in {LEAK, BELOW_MARGIN, NOT_RESOLVED}. v3: BELOW_MARGIN needs BOTH suite bounds under the margin and, for every declared canary group, a positive control that read LEAK;
+   `view_scope` prints the declared views, the canaries and the fixed list of what the suite cannot see.
 """
 from __future__ import annotations
 
@@ -33,8 +34,19 @@ import numpy as np
 from . import freeze, ledger
 from . import stats as st
 
-VERSION = "s_suite/2.1"
+VERSION = "s_suite/3.0"
 CI_KAPPA = 1.10   # evaluator v2 (S.md amendment v1.4): the QUOTED interval is the percentile interval widened by this factor about its midpoint
+
+
+NOT_COVERED = (
+    "mechanisms outside the declared views: phase-amplitude coupling and other higher-order within-channel structure (bispectrum, harmonic phase relations), "
+    "cross-channel amplitude-envelope covariance, nonlinear couplings that are not a level x coarse-spectrum interaction",
+    "structure that lives across windows: session-level drift, long-range temporal patterns, window ordering (only per-window attackers are scored; pooling is the evidence-budget module)",
+    "sparse leaks carried by a small fraction of windows or by rare events",
+    "identity cues in metadata, labels, unit ids, file or acquisition order",
+    "leaks that need more training windows than the release offers (sample complexity), and defence-aware, paired-data or foundation-model attackers",
+    "anything for which no canary of the same kind was run: BELOW_MARGIN is suite-conditional and never means 'no leakage'",
+)
 
 
 @dataclass(frozen=True)
@@ -47,10 +59,14 @@ class SuiteDecl:
     seed: int = 0
     margin: float = 0.02          # pre-declared: "below margin" means suite bound <= baseline + margin
     n_classes: Optional[int] = None
+    views: Tuple[str, ...] = ()           # evaluator v3: the view groups this suite reads (printed in the certificate's view_scope)
+    canary_groups: Tuple[str, ...] = ()   # evaluator v3: view groups that need a positive control (canary) before BELOW_MARGIN may be printed
 
     def digest(self) -> str:
         d = asdict(self)
         d["attackers"] = list(self.attackers)
+        d["views"] = list(self.views)
+        d["canary_groups"] = list(self.canary_groups)
         return hashlib.sha256(json.dumps(d, sort_keys=True).encode()).hexdigest()
 
 
@@ -146,7 +162,8 @@ def _chance(decl: SuiteDecl, test: SplitPreds):
 
 def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Optional[np.ndarray] = None,
             reference: Optional[float] = None, split_status: str = "development", sealed_ledger_dir: Optional[str] = None,
-            release_digest: Optional[str] = None, split_id: Optional[str] = None, amendment: Optional[str] = None) -> dict:
+            release_digest: Optional[str] = None, split_id: Optional[str] = None, amendment: Optional[str] = None,
+            canaries: Optional[Dict[str, dict]] = None) -> dict:
     """Build the certificate. `label_only`: predictions (same format as one attacker) of a model that uses only the public/utility
     label (or nothing); evaluated on the test and used as baseline if above chance. `reference`: ceiling attacker value (e.g. the raw
     release) used to normalise leakage; default 1.0."""
@@ -242,9 +259,20 @@ def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Opti
                  mde80_selected=st.mde80(se[ksel]),
                  note="suite-conditional: bounds the best DECLARED attacker's true score, silent on attackers outside the suite")
 
+    withheld, canary_summary = [], {}
+    cur_sha = freeze.evaluator_sha256()
+    for g in decl.canary_groups:
+        c = (canaries or {}).get(g)
+        ok = bool(c is not None and c.get("decl_digest") == decl.digest() and c.get("evaluator", {}).get("sha256") == cur_sha
+                  and c["verdict"]["label"] == "LEAK" and c["data"]["n_test_units"] >= 0.8 * m)
+        canary_summary[g] = None if c is None else dict(digest=c.get("digest"), verdict=c["verdict"]["label"], selected_test=c["selected"]["test"],
+                                                         n_test_units=c["data"]["n_test_units"], accepted=ok)
+        if not ok:
+            withheld.append(g)
+    below_both = bool(ub_bonf <= base + decl.margin and ub_maxt <= base + decl.margin)
     if dlo > 0:
         verdict = "LEAK"
-    elif ub_bonf <= base + decl.margin:
+    elif below_both and not withheld:
         verdict = "BELOW_MARGIN"
     else:
         verdict = "NOT_RESOLVED"
@@ -258,9 +286,12 @@ def certify(decl: SuiteDecl, val: SplitPreds, test: SplitPreds, label_only: Opti
         ci_inflation=CI_KAPPA, chance=ch, label_only=lab, baseline_used=base, reference=ref,
         attackers=per, naive_max=dict(name=names[kn], test=point[kn], note="max over the suite on the sealed test; comparison only, optimistic"),
         selected=sel, suite_bound=suite, floor=floor,
-        verdict=dict(label=verdict, below_margin_maxt=bool(ub_maxt <= base + decl.margin),
-                     rule="LEAK if one-sided lower bound of (selected - baseline) > 0; BELOW_MARGIN if the Bonferroni suite bound "
-                     f"<= baseline + margin ({decl.margin}); else NOT_RESOLVED. The max-t bound is reported, not used for the verdict"),
+        verdict=dict(label=verdict, below_margin_maxt=bool(ub_maxt <= base + decl.margin), below_margin_bonferroni=bool(ub_bonf <= base + decl.margin),
+                     assurance_withheld=withheld,
+                     rule="LEAK if one-sided lower bound of (selected - baseline) > 0; BELOW_MARGIN only if BOTH the Bonferroni and the max-t suite bounds are "
+                     f"<= baseline + margin ({decl.margin}) AND every declared canary group has an accepted positive control (a certificate of the same "
+                     "declaration and evaluator on a canary-injected copy of the release, verdict LEAK, at least 80% of the test units); else NOT_RESOLVED"),
+        view_scope=dict(declared_views=list(decl.views), canary_groups=list(decl.canary_groups), canaries=canary_summary, not_covered=list(NOT_COVERED)),
         controls=None, valid=True)
     return finalize(payload)
 

@@ -15,8 +15,9 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-EVALUATOR_FILES = ("stats.py", "certificate.py", "selection_bias.py", "evidence_budget.py", "harness_io.py", "locked_eval.py", "ledger.py", "freeze.py")
-ANALYSIS_FILES = ("rescore.py", "run_real.py", "run_planted.py", "planted.py", "attackers.py", "oracle.py")
+EVALUATOR_FILES = ("stats.py", "certificate.py", "selection_bias.py", "evidence_budget.py", "harness_io.py", "locked_eval.py", "ledger.py", "freeze.py",
+                   "views.py", "suite_v3.py", "attackers.py", "canary.py")
+ANALYSIS_FILES = ("rescore.py", "run_real.py", "run_planted.py", "planted.py", "oracle.py", "run_v3_acceptance.py")
 FREEZE_PATH = os.path.join(HERE, "FREEZE.json")
 
 
