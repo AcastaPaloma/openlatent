@@ -377,3 +377,139 @@ Scale-aware H1s (n1s = numeric tokens with 3 <= df <= 30, the rare-number tier; 
 
 ### 7.5 Disclosure (before the D2 numbers)
 Seen before this pre-registration: all of sections 5 and 6, the collapsed `adv` train logs, the valid `bott_mlp` and floor tables for seeds 0 and 1, the audit text. Mechanics of the repaired code were smoke-tested on synthetic vectors (CPU) after this section was committed; no real-embedding number for a repaired arm exists at this point.
+
+### 7.6 D2 results (words secret, GTR-base x NFCorpus; seeds 0 and 1; jobs `d_d2_lam{0p001,0p01,0p1,1,3}_gtr_s{0,1}`, priority 4 once)
+Status at writing: 9 of 10 jobs finished (VM clock 19:35Z). `d_d2_lam0p1_gtr_s1` (lambda 0.1, seed 1; a weak-lambda config that matches the no-adversary control) was still queued behind other builders' jobs; the tables below use the 45 of the 50 planned fits that exist (lambda 0.1 has seed 0 only; 5 fits missing). The verdict does not depend on it: K1 already fails by a factor of five in seed 0, and K1-K4 must hold in both seeds.
+
+**verdict_D2: FAIL at tau = 0.90 and at tau = 0.97 (the repaired learned arm does not beat the strongest floor). verdict_original (NO-GO, headroom 0.039 [-0.003, 0.077] at tau 0.70) stands unchanged next to it.**
+* **The repaired arm trains.** 43 of 45 fits are healthy (final retrieval loss 4.6-7.4, not the uniform-softmax 7.915); only the two lambda = 3, d = 512 fits collapsed (7.91) and are excluded from selection by the pre-registered check. The sentence "the adversary adds nothing" is therefore now *testable*, and for this setting it is supported (below), but it was not supported by the original run.
+* **lambda <= 0.1 is indistinguishable from the no-adversary bottleneck**: at every d the adv rows equal `bott_mlp` to the third decimal (d = 256: dev retention 0.929 / 0.922 / 0.929 for lambda 0.001 / 0.01 / 0.1 vs 0.922 for bott; R_C 0.154 / 0.154 / 0.160 vs 0.154). The in-training adversary stays strong (confusion/initial 5-15 at the end): the normalised weight is too small to move the map.
+* **lambda = 1 and 3 reduce the in-training confusion (ratio 10 -> 2.2 -> 0.7) but cost retention and do not reduce retrained-attacker recovery**: d = 256: dev retention 0.830 (lambda 1) and 0.644 (lambda 3) vs 0.922 for bott, while R_C is 0.169 and 0.167 vs 0.154, i.e. the retrained ridge/MLP/kNN suite recovers *more* words. The map hides information from the co-trained MLP adversary, not from freshly trained attackers (the generic "protection holds only against the adversary family it optimised against" failure).
+* **K-test at tau = 0.90** (F\* = sup_lin d = 128, L_rare 0.747 [0.712, 0.783]; margin m = 0.0775; adv selected on V: d = 128, lambda 0.01, both seeds): L(F\*) - L(adv) = 0.015 [-0.003, 0.034] (seed 0) and 0.015 [-0.004, 0.033] (seed 1), needed lower bound >= 0.0775: **K1 fails in both seeds**; K2 fails marginally (adv test retention 0.988 / 0.999 vs F\* 1.011 / 1.013 minus 0.01); K3 passes in seed 0 (0.100 [0.061, 0.140] over the control), but that is a V-selection artefact: in seed 0 the control's d = 128 fit has dev retention 0.894 (just under the 0.90 threshold) so the control is selected at d = 256 (L higher), while the adv d = 128 fit is at 0.90; the matched-d rows in the table below are equal and fails in seed 1 (0.011); K4 passes. PASS needs all four in both seeds: FAIL.
+* **K-test at tau = 0.97**: no adv config reaches 0.97 dev retention in either seed (best 0.940 at d = 512, lambda 0.001-0.1; the same ceiling as `bott_mlp` 0.935 and sup_lin 0.957), F\* = PCA-512 (L 0.993): **not satisfiable, FAIL**. The margin was decidable (MDE80 0.031 at tau 0.90 from floors + control, below m = 0.0775).
+* Reading: with a valid adversary (MLP token-bag, re-initialised every 250 steps, confusion-to-prior loss), lambda in {0.001..3}, d in {32..512}, 1,500 steps and 2 seeds, the learned arm is not better than the floors or than the rate/architecture control at equal retention, and larger lambda is strictly worse. This does **not** test other adversary designs (gradient reversal, population of adversaries, larger steps) or Vec2Text-class attackers.
+
+##### Adversarial arm vs the no-adversary control, by lambda and d (mean of the seeds that exist; retention = nDCG@10 / raw; R = worst-of-3 rare-tier R-precision)
+| arm | lambda | d | fits | collapsed | dev ret | test ret | R_V | R_C | confusion / initial at the end |
+|---|---|---|---|---|---|---|---|---|---|
+| bott | 0 | 128 | 2 | 0 | 0.902 | 0.998 | 0.135 | 0.137 | n/a |
+| adv | 0.001 | 128 | 2 | 0 | 0.900 | 1.001 | 0.135 | 0.138 | 10.59 |
+| adv | 0.01 | 128 | 2 | 0 | 0.903 | 0.994 | 0.134 | 0.135 | 9.88 |
+| adv | 0.1 | 128 | 1 | 0 | 0.898 | 0.982 | 0.137 | 0.135 | 7.04 |
+| adv | 1 | 128 | 2 | 0 | 0.782 | 0.831 | 0.147 | 0.140 | 2.13 |
+| adv | 3 | 128 | 2 | 0 | 0.599 | 0.608 | 0.147 | 0.142 | 0.66 |
+| bott | 0 | 256 | 2 | 0 | 0.922 | 1.019 | 0.154 | 0.154 | n/a |
+| adv | 0.001 | 256 | 2 | 0 | 0.929 | 1.013 | 0.154 | 0.154 | 13.03 |
+| adv | 0.01 | 256 | 2 | 0 | 0.922 | 1.008 | 0.155 | 0.154 | 11.27 |
+| adv | 0.1 | 256 | 1 | 0 | 0.929 | 1.010 | 0.162 | 0.160 | 7.80 |
+| adv | 1 | 256 | 2 | 0 | 0.830 | 0.872 | 0.169 | 0.169 | 2.20 |
+| adv | 3 | 256 | 2 | 0 | 0.644 | 0.630 | 0.167 | 0.167 | 0.71 |
+(All 25 adv (lambda, d) cells and the 6 bott cells were computed; d = 32, 64, 512 show the same pattern. The per-fit collapse table is in the aggregate output of `aggregate.py` run on the D2 directories.)
+
+### Selected on V at retention >= 0.9 (config per family and seed; numbers on sealed C)
+
+| family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |
+|---|---|---|---|---|---|---|---|
+| randproj | 2/2 | s0:d512, s1:d512 | 0.943 [0.920, 0.966] | 0.181 [0.171, 0.190] | 0.987 [0.975, 0.998] | 0.981 [0.974, 0.987] | 0.980 |
+| pca | 2/2 | s0:d256, s1:d256 | 0.966 [0.937, 0.993] | 0.162 [0.153, 0.171] | 0.883 [0.860, 0.905] | 0.902 [0.888, 0.915] | 0.932 |
+| noise | 2/2 | s0:r0.5, s1:r0.5 | 0.955 [0.935, 0.974] | 0.137 [0.129, 0.145] | 0.744 [0.720, 0.766] | 0.785 [0.770, 0.799] | 0.781 |
+| leace | 2/2 | s0:r16, s1:r16 | 0.950 [0.920, 0.982] | 0.179 [0.170, 0.189] | 0.979 [0.962, 0.995] | 0.792 [0.776, 0.807] | 0.962 |
+| sup_lin | 2/2 | s0:lin_d128, s1:lin_d128 | 1.013 [0.934, 1.097] | 0.138 [0.128, 0.148] | 0.747 [0.712, 0.783] | 0.690 [0.673, 0.708] | 0.762 |
+| bott_mlp | 2/2 | s0:mlp_d256, s1:mlp_d128 | 1.010 [0.933, 1.094] | 0.145 [0.137, 0.154] | 0.788 [0.764, 0.811] | 0.742 [0.727, 0.756] | 0.790 |
+| adv | 2/2 | s0:d128_n0.01, s1:d128_n0.01 | 0.995 [0.917, 1.078] | 0.135 [0.125, 0.146] | 0.732 [0.700, 0.768] | 0.660 [0.644, 0.676] | 0.736 |
+
+Strongest floor F*(0.9) (lowest seed-mean V leakage): **sup_lin** (V L_rare 0.762; C L_rare 0.747)
+
+
+##### Kill rule at tau=0.97, margin m=0.1 (pre-registered K1-K4), F*=pca
+
+| seed | adv config | F* config | adv test ret. | F* test ret. | L(F*)-L(adv) [95% CI] | L(bott)-L(adv) [95% CI] | mid: L(adv)-L(F*) |
+|---|---|---|---|---|---|---|---|
+| 0 | n/a | | | | | | |
+| 1 | n/a | | | | | | |
+
+K1+K2 (>= m with equal utility) in 0/2 seeds; K1+K2+K3 in 0/2; K4 in 0/2. PASS requires K1+K2+K3+K4 in >= 2 of 2 seeds (all of them when only 2 seeds exist): **FAIL** (0 seeds pass all four).
+
+##### Selected on V at retention >= 0.9 (config per family and seed; numbers on sealed C)
+
+| family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |
+|---|---|---|---|---|---|---|---|
+| randproj | 2/2 | s0:d512, s1:d512 | 0.943 [0.920, 0.966] | 0.181 [0.171, 0.190] | 0.987 [0.975, 0.998] | 0.981 [0.974, 0.987] | 0.980 |
+| pca | 2/2 | s0:d256, s1:d256 | 0.966 [0.937, 0.993] | 0.162 [0.153, 0.171] | 0.883 [0.860, 0.905] | 0.902 [0.888, 0.915] | 0.932 |
+| noise | 2/2 | s0:r0.5, s1:r0.5 | 0.955 [0.935, 0.974] | 0.137 [0.129, 0.145] | 0.744 [0.720, 0.766] | 0.785 [0.770, 0.799] | 0.781 |
+| leace | 2/2 | s0:r16, s1:r16 | 0.950 [0.920, 0.982] | 0.179 [0.170, 0.189] | 0.979 [0.962, 0.995] | 0.792 [0.776, 0.807] | 0.962 |
+| sup_lin | 2/2 | s0:lin_d128, s1:lin_d128 | 1.013 [0.934, 1.097] | 0.138 [0.128, 0.148] | 0.747 [0.712, 0.783] | 0.690 [0.673, 0.708] | 0.762 |
+| bott_mlp | 2/2 | s0:mlp_d256, s1:mlp_d128 | 1.010 [0.933, 1.094] | 0.145 [0.137, 0.154] | 0.788 [0.764, 0.811] | 0.742 [0.727, 0.756] | 0.790 |
+| adv | 2/2 | s0:d128_n0.01, s1:d128_n0.01 | 0.995 [0.917, 1.078] | 0.135 [0.125, 0.146] | 0.732 [0.700, 0.768] | 0.660 [0.644, 0.676] | 0.736 |
+
+Strongest floor F*(0.9) (lowest seed-mean V leakage): **sup_lin** (V L_rare 0.762; C L_rare 0.747)
+
+##### Kill rule at tau=0.9, margin m=0.0775 (pre-registered K1-K4), F*=sup_lin
+
+| seed | adv config | F* config | adv test ret. | F* test ret. | L(F*)-L(adv) [95% CI] | L(bott)-L(adv) [95% CI] | mid: L(adv)-L(F*) |
+|---|---|---|---|---|---|---|---|
+| 0 | adv_d128_n0.01 | sup_lin_d128 | 0.988 | 1.011 | 0.015 [-0.003, 0.034] (fail; ret fail) | 0.100 [0.061, 0.140] (ok) | -0.031 (ok) |
+| 1 | adv_d128_n0.01 | sup_lin_d128 | 0.999 | 1.013 | 0.015 [-0.004, 0.033] (fail; ret fail) | 0.011 [-0.004, 0.027] (fail) | -0.030 (ok) |
+
+K1+K2 (>= m with equal utility) in 0/2 seeds; K1+K2+K3 in 0/2; K4 in 2/2. PASS requires K1+K2+K3+K4 in >= 2 of 2 seeds (all of them when only 2 seeds exist): **FAIL** (0 seeds pass all four).
+
+
+### Selected on V at retention >= 0.97 (config per family and seed; numbers on sealed C)
+
+| family | seeds with a feasible config | configs (per seed) | test retention [95% CI] | R_C rare worst [95% CI] | L_rare [95% CI] | L_mid [95% CI] | mean V L_rare |
+|---|---|---|---|---|---|---|---|
+| randproj | 0/2 | cannot reach tau | | | | | |
+| pca | 2/2 | s0:d512, s1:d512 | 0.976 [0.949, 1.001] | 0.182 [0.173, 0.191] | 0.993 [0.981, 1.006] | 0.976 [0.968, 0.985] | 0.992 |
+| noise | 0/2 | cannot reach tau | | | | | |
+| leace | 2/2 | s0:r4, s1:r4 | 0.991 [0.969, 1.014] | 0.186 [0.176, 0.196] | 1.014 [0.997, 1.030] | 0.901 [0.887, 0.915] | 0.996 |
+| sup_lin | 0/2 | cannot reach tau | | | | | |
+| bott_mlp | 0/2 | cannot reach tau | | | | | |
+| adv | 0/2 | cannot reach tau | | | | | |
+
+Strongest floor F*(0.97) (lowest seed-mean V leakage): **pca** (V L_rare 0.992; C L_rare 0.993)
+
+
+##### Kill rule at tau=0.97, margin m=0.1 (pre-registered K1-K4), F*=pca
+
+| seed | adv config | F* config | adv test ret. | F* test ret. | L(F*)-L(adv) [95% CI] | L(bott)-L(adv) [95% CI] | mid: L(adv)-L(F*) |
+|---|---|---|---|---|---|---|---|
+| 0 | n/a | | | | | | |
+| 1 | n/a | | | | | | |
+
+K1+K2 (>= m with equal utility) in 0/2 seeds; K1+K2+K3 in 0/2; K4 in 0/2. PASS requires K1+K2+K3+K4 in >= 2 of 2 seeds (all of them when only 2 seeds exist): **FAIL** (0 seeds pass all four).
+
+
+### 7.7 Digits n1s (rare-number tier), scale-aware re-analysis (post hoc thresholds, section 7.4; jobs `d_dig_check_gtr_s{0,1,2}`, 3 seeds, no new compute)
+* **H1s PASSES: R_raw = 0.0408, R_prior = 0.0163, ratio 2.58 [1.53, 4.12]; absolute excess 0.025 [0.011, 0.040].** On the rare-number tier GTR-base vectors leak above the frequency prior, as the audit said. The absolute-0.05 H1 of section 6 was scale-blind; the primary-tier result "H1 fails" (n1: excess 0.010) stays on record but is a measurement failure of that tier (prior 0.204), not a statement that numbers are unrecoverable.
+* **H2s fails / is undecidable.** The oracle that deletes every digit run keeps retention dev 1.005 / test 0.991 (H2(a) passes) but its attacker recovery is 0.036 [0.025, 0.049], i.e. it removes only about 20% of the excess (L = 0.79 [0.31, 1.35], denominator held at its bootstrap mean because the raw excess is tiny): the rest is inferred from context. The strongest floor at tau = 0.97 (noise r = 0.25-0.5, test retention 0.988) has L = 0.85 [0.33, 1.45]; headroom = 0.064 [-0.199, 0.329] < 0.10, lower bound below 0: **the comparison has a resolution of about +-0.26 in L at this attacker strength and cannot show a gap in either direction.**
+* **Attacker suite is weak for this question**: three attackers trained on 3,716 documents (ridge 0.033, mlp 0.024, knn 0.041 on raw for n1s), no Vec2Text or external-decoder attacker; the n1s excess is 0.025 of R-precision with 47% of C docs having no n1s token. A stronger suite would raise R_raw and could change both H1s and H2s. Status: **undecidable at this power, not a resolved null.** No learned digit arm was run (not requested, outside the 2 GPU-h).
+
+### References and controls (sealed C docs; R-precision of the worst of ridge/mlp/knn; mean over seeds; bootstrap over C docs)
+
+| arm | tier | R_worst [95% CI] | per attacker (ridge/mlp/knn) | L = (R-R_prior)/(R_raw-R_prior) [95% CI] | nDCG@10 test | retention (dev / test) |
+|---|---|---|---|---|---|---|
+| const | n1s | 0.017 [0.011, 0.024] | 0.016/0.013/0.016 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
+| const | n1 | 0.204 [0.190, 0.218] | 0.205/0.204/0.205 | 0.00 [0.00, 0.00] | 0.0122 | 0.020 / 0.040 |
+| raw | n1s | 0.041 [0.029, 0.055] | 0.033/0.024/0.041 | 1.00 [0.46, 1.63] | 0.3022 | 1.000 / 1.000 |
+| raw | n1 | 0.214 [0.201, 0.228] | 0.204/0.215/0.187 | 1.00 [0.19, 1.79] | 0.3022 | 1.000 / 1.000 |
+| raw|shuffled pairs | n1s | 0.013 [0.010, 0.017] | 0.009/0.012/0.006 | -0.13 [-0.36, 0.08] | 0.3022 | 1.000 / 1.000 |
+| raw|shuffled pairs | n1 | 0.205 [0.191, 0.218] | 0.181/0.206/0.149 | 0.06 [-0.17, 0.32] | 0.3022 | 1.000 / 1.000 |
+| oracle_mask_digits | n1s | 0.036 [0.025, 0.049] | 0.031/0.023/0.035 | 0.79 [0.31, 1.35] | 0.2994 | 1.005 / 0.991 |
+| oracle_mask_digits | n1 | 0.215 [0.201, 0.228] | 0.202/0.215/0.183 | 0.99 [0.26, 1.68] | 0.2994 | 1.005 / 0.991 |
+| oracle_mask_n2 | n1s | 0.035 [0.025, 0.048] | 0.031/0.026/0.035 | 0.77 [0.30, 1.30] | 0.2956 | 0.987 / 0.978 |
+| oracle_mask_n2 | n1 | 0.214 [0.200, 0.228] | 0.206/0.214/0.185 | 0.94 [0.14, 1.72] | 0.2956 | 0.987 / 0.978 |
+
+
+### Headroom check (pre-registered H1, H2; floors + oracle only)
+
+Scale-aware H1s (post hoc): R_raw = 0.0408, R_prior = 0.0163, ratio = 2.58 [1.53, 4.12] (rule: >= 1.5, lower bound >= 1.25, absolute excess lower bound > 0): PASS
+
+H1 measurability: R_raw - R_prior (n1s tier, worst of 3 attackers) = 0.025 [0.011, 0.040] (rule: >= 0.05 and CI excludes 0): FAIL
+
+oracle_mask_digits: L_n1s = 0.786 [0.309, 1.348], retention dev 1.005 / test 0.991; H2(a) (both >= 0.97): PASS
+
+| tau | strongest floor F* (by V) | F* configs | F* test retention | L_n1s(F*) [95% CI] | L_n1s(oracle) | headroom = L(F*) - L(oracle) [95% CI] | H2(b) (>= 0.10, lower bound > 0) |
+|---|---|---|---|---|---|---|---|
+| 0.970 | noise | s0:noise_r0.25, s1:noise_r0.25, s2:noise_r0.5 | 0.988 | 0.849 [0.332, 1.447] | 0.786 | 0.064 [-0.199, 0.329] | FAIL |
+| 0.900 (fallback if no floor reaches 0.97 in every seed) | noise | s0:noise_r0.5, s1:noise_r0.5, s2:noise_r0.5 | 0.958 | 0.814 [0.310, 1.370] | 0.786 | 0.028 [-0.240, 0.287] | n/a |
+
