@@ -240,6 +240,8 @@ def main():
         for cfg in sorted(cell.by):
             if cfg.startswith("ctrl_"):
                 continue
+            if cell.pooled and cell.seeds(cfg) != cell.fold_order:
+                continue          # incomplete cross-fit (some fold not finished for this config)
             wc = cell.centre(cfg, KC)
             wa = cell.centre(cfg, KC + KX)
             Lb = (wc[1] - floor) / np.maximum(raw_c[1] - floor, 1e-6)
