@@ -1,0 +1,4 @@
+name: b_reg_indep_s0
+priority: 10
+cmd: cd research/fields/src/b_robotics && ~/venvs/b/bin/python lam.py --kind indep --arms clean,raw,rate4,rateb,gtmask,adv --epochs 30 --seed 0 --out $OUT
+hf_path: runs/b_reg_indep_s0

@@ -28,7 +28,7 @@ def global_params(root=ROOT):
         M = D.fit_ee_response(tr["acts"], tr["eepix"])
         maps = D.make_maps(M)
         # std of the total sprite speed in corr_noisy, used to match indep speed
-        st = D.sample("corr_noisy", tr["acts"], tr["eepix"][:, 0], maps, seed=0)
+        st = D.sample("corr_noisy", tr["acts"], tr["eepix"], maps, seed=0)
         _cache[k] = dict(M_ee=M, maps=maps, indep_std=float(st["vtot"].std()))
     return _cache[k]
 
@@ -39,5 +39,5 @@ def dist_states(split, kind, root=ROOT):
         ep = load_split(split, root)
         gp = global_params(root)
         seed = SPLIT_SEED[split] * 100 + D.KINDS.index(kind)
-        _cache[k] = D.sample(kind, ep["acts"], ep["eepix"][:, 0], gp["maps"], seed, indep_std=gp["indep_std"])
+        _cache[k] = D.sample(kind, ep["acts"], ep["eepix"], gp["maps"], seed, indep_std=gp["indep_std"])
     return _cache[k]

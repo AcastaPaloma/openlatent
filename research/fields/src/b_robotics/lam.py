@@ -18,7 +18,7 @@ import data as Dt, distractors as D
 
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 S = 64
-TRAIN_KINDS = ["indep", "corr_det", "corr_noisy"]
+TRAIN_KINDS = ["indep", "corr_det", "corr_noisy", "corr_glued"]
 ARMS = {
     "clean": dict(train_kind="none", mask=None, zdim=16, beta=0.1, adv=0.0),
     "raw": dict(mask=None, zdim=16, beta=0.1, adv=0.0),
@@ -45,6 +45,7 @@ class GData:
         self.vres = torch.from_numpy(st["vres"][L]).to(dev)
         self.vtot = torch.from_numpy(st["vtot"][L]).to(dev)
         self.arm = torch.from_numpy(Dt.unpack(ep["arm"][L])).to(dev)
+        self.eepix = torch.from_numpy(ep["eepix"][L]).to(dev)
         self.sam = None
         if mask_root is not None:
             f = os.path.join(mask_root, f"sam_{kind}_{split}.npz")
@@ -81,7 +82,10 @@ class GData:
         return x.reshape(B, 2, 3, S, S), m
 
     def targets(self, e, t):
-        return dict(a=self.acts[e, t], n1=self.vres[e, t].reshape(len(e), -1), n2=self.pos[e, t + 1].reshape(len(e), -1) / 128.0,
+        rel = (self.pos[e, t + 1] - self.eepix[e, t + 1][:, None, :]).reshape(len(e), -1) / 128.0   # sprite position relative to the end effector
+        if self.kind == "none":
+            rel = torch.zeros_like(rel)
+        return dict(a=self.acts[e, t], n1=self.vres[e, t].reshape(len(e), -1), n2=rel,
                     n3=self.cls[e], n4=self.vtot[e, t].reshape(len(e), -1))
 
 
@@ -372,7 +376,7 @@ def evaluate(m, cfg, kind_id, sets, seed, mask_root, log=print):
             res[f"leak_{label}_{aname}_ci"] = [max(0.0, 1 - c) for c in boot_ci(num, den)][::-1]
 
     reg_leak("n1", "resid_vel")      # independent part of distractor motion
-    reg_leak("n2", "position")       # absolute sprite position at t+1
+    reg_leak("n2", "position")       # sprite position relative to the end effector at t+1
     reg_leak("n4", "total_vel")      # diagnostic: total sprite velocity (contains the action response for corr kinds)
     # appearance (colour class of each sprite), classification
     if kind_id != "none":

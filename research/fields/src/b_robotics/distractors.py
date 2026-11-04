@@ -9,6 +9,9 @@ kinds
   indep       K sprites, AR(1) random-walk velocity independent of the action          (the case SAM masks solve)
   corr_det    sprite velocity = R_k a_xyz exactly (deterministic function of the action)  (action-correlated, no residual)
   corr_noisy  sprite velocity = R_k a_xyz + sigma * eps                                   (action-correlated + own noise)
+  corr_glued  sprite = EE pixel position + jitter offset (AR(1)); hovers over the gripper, drawn over the arm, moves with
+              the arm's own motion (so it is a function of the action history) plus independent jitter.  The overlapping
+              case: the sprite shares pixels with the arm, so no silhouette can separate them.
 Sprite 0 mimics the arm (R_0 = fitted EE-pixel response), sprite 1 mirrors it, sprite 2 uses a random fixed map.
 Sprites start near the end effector, are opaque discs drawn over the arm, and half of the palette is arm-like
 (red / grey / dark), so a segmenter cannot separate them by colour alone.
@@ -16,7 +19,7 @@ Sprites start near the end effector, are opaque discs drawn over the arm, and ha
 import numpy as np
 import torch
 
-KINDS = ["none", "indep", "corr_det", "corr_noisy"]
+KINDS = ["none", "indep", "corr_det", "corr_noisy", "corr_glued"]
 K_SPR = 3
 RADIUS = 7.0
 SIGMA_CORR = 1.5       # px / macro step, independent part of corr_noisy
@@ -40,19 +43,28 @@ def make_maps(M_ee, seed=4242):
     return np.stack([M_ee, -M_ee, R2])  # (K,2,3)
 
 
-def sample(kind, acts, eepix0, maps, seed, indep_std=None, W=128):
-    """acts (N,T,4), eepix0 (N,2).  Returns dict(pos (N,T+1,K,2), cls (N,K), vres (N,T,K,2), vtot (N,T,K,2))."""
+def sample(kind, acts, eepix, maps, seed, indep_std=None, W=128):
+    """acts (N,T,4), eepix (N,T+1,2).  Returns dict(pos (N,T+1,K,2), cls (N,K), vres (N,T,K,2), vtot (N,T,K,2))."""
     N, T = acts.shape[:2]
     K = K_SPR
     if kind == "none":
         return dict(pos=np.zeros((N, T + 1, K, 2), np.float32) - 100.0, cls=np.zeros((N, K), np.int64),
                     vres=np.zeros((N, T, K, 2), np.float32), vtot=np.zeros((N, T, K, 2), np.float32))
     rng = np.random.default_rng(seed)
-    pos0 = eepix0[:, None, :] + rng.normal(0, SPREAD0, (N, K, 2))
+    pos0 = eepix[:, 0][:, None, :] + rng.normal(0, SPREAD0, (N, K, 2))
     cls = np.stack([rng.permutation(6)[:K] for _ in range(N)])
     eps = rng.normal(0, 1, (N, T, K, 2))
     a3 = acts[..., :3]
     drive = np.einsum("kij,ntj->ntki", maps, a3)  # (N,T,K,2) deterministic action response
+    if kind == "corr_glued":
+        rg = np.random.default_rng(seed + 7)
+        off = np.zeros((N, T + 1, K, 2)); off[:, 0] = rg.normal(0, 8.0, (N, K, 2))
+        for t in range(T):
+            off[:, t + 1] = 0.9 * off[:, t] + 2.0 * rg.normal(0, 1, (N, K, 2))
+        pos = np.clip(eepix[:, :, None, :] + off, RADIUS, W - RADIUS)
+        vres = off[:, 1:] - off[:, :-1]
+        return dict(pos=pos.astype(np.float32), cls=cls.astype(np.int64), vres=vres.astype(np.float32),
+                    vtot=(pos[:, 1:] - pos[:, :-1]).astype(np.float32))
     if kind == "corr_det":
         vtot = drive; vres = np.zeros_like(drive)
     elif kind == "corr_noisy":
