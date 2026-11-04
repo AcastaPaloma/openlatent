@@ -451,7 +451,7 @@ Written after reading RANKING_R2.md. Everything in this section is on the SAME s
   Against the lower envelope of **all** inductive floors (adding per-centre whitening, PCA, random projection) the same picks are **+0.021 [+0.002, +0.046]** (midnight/Tolkach, seed 0; the best floor there is `centre_whiten`)
   and **+0.007 [-0.081, +0.097]** (midnight/TCGA, seed 0; `centre_whiten` again). The per-centre-whitening contrast was already in my seed-0 exploratory table (columns "best label-free ref") and I summarised the LDA-family column only. That was a selective read.
 * **Confirmed:** midnight/TCGA seed 1, `ae__beta0.001_dl32_lam10.0` (L 0.32, held 0.778): +0.011 against plain LDA (0.767), -0.014 [-0.116, +0.084] against the full floor envelope. The +0.164 does not reproduce.
-* The two AE configurations were picked after looking at the seed-0 test numbers (post hoc, best of 10); the V-selected AE differs from them in 5 of 12 cell-seeds.
+* The two AE configurations were picked after looking at the seed-0 test numbers (post hoc, best of 10); the V-selected AE differs from both of them in 7 of 12 cell-seeds (the validation-selected configuration coincides with one of them in 5).
 
 ### Power audit (H2-016 step 1; paired bootstrap over the sealed test units, MDE80 = 2.8 x SE of the paired difference)
 
