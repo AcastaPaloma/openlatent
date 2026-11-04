@@ -90,6 +90,8 @@ def evaluate(rep, P, sp, seed, kinds_centre=KINDS_CENTRE + EXTRA, secret_shuffle
     ra, rx = knn_retention(rep["C"], rep["B"], P.X[sp["C"]], P.X[sp["B"]], P.c[sp["C"]], cB)
     preds["ret/knn_all"], preds["ret/knn_xc"] = ra.astype(np.float16), rx.astype(np.float16)
     m["ret/knn_all"], m["ret/knn_xc"] = float(ra.mean()), float(rx.mean())
+    rav, rxv = knn_retention(rep["V"], rep["B"], P.X[sp["V"]], P.X[sp["B"]], P.c[sp["V"]], cB)
+    m["retV/knn_all"], m["retV/knn_xc"] = float(rav.mean()), float(rxv.mean())
     if holdout:      # utility on classes the adapter never saw (and on the seen ones), probes trained on B restricted to those classes
         from .splits import seen_held_classes
         seen, held = seen_held_classes(P)
