@@ -41,6 +41,15 @@ def adapter_check(codes_tr, btr, utr, seed, max_n=15000):
     return float(np.mean(res["linear"])), float(np.mean(res["mlp"])), 1.0 / len(present)
 
 
+def insample_acc(codes_tr, btr, utr, seed, max_n=15000):
+    """memorisation measure: the SAME attacker code trained AND scored on the same cells (in-sample). returns (acc_linear, acc_mlp)"""
+    rng = np.random.RandomState(400 + seed)
+    a = rng.choice(len(codes_tr), size=min(max_n, len(codes_tr)), replace=False)
+    B = int(btr.max()) + 1
+    pr = AT.run_attackers(codes_tr[a], btr[a], utr[a], codes_tr[a], B, kinds=("linear", "mlp"), seed=seed)
+    return AT.bacc(btr[a], pr["linear"]), AT.bacc(btr[a], pr["mlp"])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", default="hlca")
@@ -72,6 +81,18 @@ def main():
         B = len(bcode)
         utr = sc.unit[tr_idx]
         r2_pca16 = float(Z0[T][:, :16].var(0).sum() / Xs[T].var(0).sum())
+        # memorisation floor (E.md 6.10 amendment E2-A2): in-sample and donor-disjoint adversary accuracy on noise latents and on dithered PCA-16 latents of the same size
+        rngf = np.random.RandomState(500 + a.seed)
+        noise_codes = rngf.randn(len(tr_idx), 16).astype(np.float32)
+        sdz = Z0[T][:, :16].std(0)
+        dith_codes = (Z0[tr_idx][:, :16] + 0.5 * sdz * rngf.randn(len(tr_idx), 16)).astype(np.float32)
+        fl = {}
+        for nm, cd in (("noise", noise_codes), ("dith_pca16", dith_codes)):
+            ins = insample_acc(cd, btr, utr, a.seed)
+            out_ = adapter_check(cd, btr, utr, a.seed)
+            fl[nm] = dict(in_linear=ins[0], in_mlp=ins[1], out_linear=out_[0], out_mlp=out_[1], chance_train=out_[2])
+        meta.setdefault("floors", {})[str(f)] = fl
+        print(f"  memorisation floor fold {f}: " + "; ".join(f"{k} in-sample lin {v['in_linear']:.3f} mlp {v['in_mlp']:.3f}, donor-disjoint lin {v['out_linear']:.3f} mlp {v['out_mlp']:.3f}" for k, v in fl.items()), flush=True)
         print(f"fold {f}: train {len(tr_idx)} cells, B_train {B}, PCA-16 R2 {r2_pca16:.3f}, HVG/standardise {time.time() - t0:.0f}s", flush=True)
         # probe set-up (identical to evaluate.py)
         ntr = np.bincount(sc.fine[T & (sc.fine >= 0)], minlength=len(sc.fine_names))
@@ -98,12 +119,14 @@ def main():
             kl, r2 = IN.train_stats(net, Xs[tr_idx], btr, cfg, seed=a.seed)
             codes = IN.release(net, Xs, a.seed)
             acc_l, acc_m, ch = adapter_check(codes[tr_idx], btr, utr, a.seed)
-            chk = dict(kl=kl, r2=r2, r2_pca16=r2_pca16, acc_linear=acc_l, acc_mlp=acc_m, chance_train=ch,
-                       adapter_ok=bool(max(acc_l, acc_m) <= ch + 0.05), collapsed=bool(kl < 1.0 or r2 < 0.5 * r2_pca16),
+            ins_l, ins_m = insample_acc(codes[tr_idx], btr, utr, a.seed)
+            floor_in = max(fl["noise"]["in_linear"], fl["noise"]["in_mlp"])
+            chk = dict(kl=kl, r2=r2, r2_pca16=r2_pca16, acc_linear=acc_l, acc_mlp=acc_m, chance_train=ch, in_linear=ins_l, in_mlp=ins_m, floor_in_noise=floor_in,
+                       adapter_ok=bool(max(acc_l, acc_m) <= ch + 0.05 and max(ins_l, ins_m) <= floor_in + 0.05), collapsed=bool(kl < 1.0 or r2 < 0.5 * r2_pca16),
                        last_adv_ce=(float(np.mean(log["adv_ce"][-10:])) if log["adv_ce"] else None), train_s=round(time.time() - t1, 1))
             meta["checks"][f"{f}|e2_{name}"] = chk
             print(f"  fold {f} {name:16s} KL {kl:7.1f} R2 {r2:.3f} (pca16 {r2_pca16:.3f}) in-sample adv lin {acc_l:.3f} mlp {acc_m:.3f} (chance {ch:.3f}) "
-                  f"adapter_ok={chk['adapter_ok']} collapsed={chk['collapsed']} [{time.time() - t1:.0f}s]", flush=True)
+                  f"in-sample lin {ins_l:.3f} mlp {ins_m:.3f} (noise floor {floor_in:.3f}) adapter_ok={chk['adapter_ok']} collapsed={chk['collapsed']} [{time.time() - t1:.0f}s]", flush=True)
             if a.diag:
                 continue
             arm = f"e2_{name}"

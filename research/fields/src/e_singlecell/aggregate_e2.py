@@ -78,7 +78,12 @@ def eligibility(chk, learned, nf):
                 why.append(f"fold {f}: collapsed (KL {kl:.1f}, R2 {r2:.2f} vs pca16 {r2p:.2f})")
             if cfg["adv"] and excess > 0.05:
                 ok = False
-                why.append(f"fold {f}: adversary not converged (in-sample excess {excess:.3f})")
+                why.append(f"fold {f}: adversary not converged (donor-disjoint excess {excess:.3f})")
+            ins = max(np.mean([v["in_linear"] for v in vs]), np.mean([v["in_mlp"] for v in vs]))
+            fl = np.mean([v["floor_in_noise"] for v in vs])
+            if cfg["adv"] and ins > fl + 0.05:
+                ok = False
+                why.append(f"fold {f}: in-sample adversary {ins:.3f} above memorisation floor {fl:.3f} + 0.05")
         out[arm] = dict(eligible=ok, why=why, adversarial=cfg["adv"])
     return out
 
