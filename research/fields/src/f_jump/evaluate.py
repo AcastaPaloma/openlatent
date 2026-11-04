@@ -128,6 +128,8 @@ def main():
             apq = AP.ap_queries(E, S["plate"], comp, S["src"], S["well"], S["pert"], mode=mode)
             ids, mean_ap = AP.per_compound(apq, comp)
             P[f"apc|{sname}|{name}|{mode}"] = mean_ap.astype(np.float32)
+            if s5 and mode == "xs":
+                P[f"apq|{sname}|{name}"] = apq.astype(np.float32)          # per-query AP (NaN = dropped): plate-cluster sensitivity
             if f"cid|{sname}|{mode}" not in P:
                 P[f"cid|{sname}|{mode}"] = ids.astype(np.int32)
 
