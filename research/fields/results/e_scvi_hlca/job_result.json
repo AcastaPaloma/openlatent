@@ -1,0 +1,16 @@
+{
+ "name": "e_scvi_hlca",
+ "config": {
+  "name": "e_scvi_hlca",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/refs.py --dataset hlca --out $OUT",
+  "hf_path": "runs/e_scvi_hlca"
+ },
+ "commit": "afa1624",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 676.3,
+ "finished_utc": "2026-11-04T13:51:28Z",
+ "uploaded": true
+}

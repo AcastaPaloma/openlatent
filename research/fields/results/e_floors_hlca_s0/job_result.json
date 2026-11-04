@@ -1,0 +1,16 @@
+{
+ "name": "e_floors_hlca_s0",
+ "config": {
+  "name": "e_floors_hlca_s0",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate.py --dataset hlca --seed 0 --no_scvi --out $OUT",
+  "hf_path": "runs/e_floors_hlca_s0"
+ },
+ "commit": "b5a6748",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 948.8,
+ "finished_utc": "2026-11-04T13:56:08Z",
+ "uploaded": true
+}
