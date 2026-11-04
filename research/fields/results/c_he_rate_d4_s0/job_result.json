@@ -1,0 +1,16 @@
+{
+ "name": "c_he_rate_d4_s0",
+ "config": {
+  "cmd": "python3 research/fields/src/c_cremad/run_exp.py --name c_he_rate_d4_s0 --method learned --cfg '{\"dz\": 4, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 0.0, \"train_emotions\": [0, 3, 4, 5]}' --seeds 0",
+  "hf_path": "runs/c_he_rate_d4_s0",
+  "name": "c_he_rate_d4_s0",
+  "priority": 4
+ },
+ "commit": "8919cc1",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 370.3,
+ "finished_utc": "2026-11-04T11:43:55Z",
+ "uploaded": true
+}
