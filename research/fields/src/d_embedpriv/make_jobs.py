@@ -14,7 +14,8 @@ PY = "USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false $HOME/venvs/d/bin/python 
 
 def write(name, grids, seeds, prio, embedder="gtr_base"):
     # one job runs several named grids back to back via --specs assembled by grids.py (grid names joined with '+')
-    cmd = f"{PY} --name {name} --embedder {embedder} --grid {'+'.join(grids)} --seeds {seeds} --out $OUT"
+    guard = "n=0; while [ ! -f $HOME/work/cache/d_embedpriv/%s/meta.json ] && [ $n -lt 120 ]; do sleep 15; n=$((n+1)); done; " % embedder
+    cmd = guard + f"{PY} --name {name} --embedder {embedder} --grid {'+'.join(grids)} --seeds {seeds} --out $OUT"
     (SPEC / f"{name}.yaml").write_text(f"name: {name}\npriority: {prio}\ncmd: {json.dumps(cmd)}\nhf_path: runs/{name}\n")
     return name
 
