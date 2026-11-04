@@ -244,4 +244,6 @@ One query per digest; a release that crashes BEFORE its ledger entry is retried,
 Two defences, 88 test units, pseudo-identities, additive keyed leaks, replicates sharing the base windows, oracles that are lower bounds, n = 20 per primary cell (a 20/20 bounds the rate below by 0.83 only). `pac` and `order` are two examples of uncovered mechanism classes, not a sample of them. The result concerns this declaration of v3 (these views, K = 24, windows of 128 samples and 2 channels), not Builder T's CXR evaluator.
 
 ### 11.9 Record
-(manifest and digest-list hashes will be appended before the corresponding runs)
+- 2026-11-04 23:10Z (VM clock): N2 MANIFEST COMMITMENT. Pre-registration commit `01f47cc` was pushed first; the clean clone `~/n_run2/openlatent` is at that commit (tag `s-suite-eval-v3` ancestor, `freeze --check` passes, evaluator sha256 `b5c75e11...57303`). Final oracle-only calibration (`calib2.json`) and `n2 build` with `os.urandom` keys:
+  `~/sealed_manifest_n2/manifest.json`, canonical JSON, 79,538 bytes, mode 0400, 386 entries (plant 280, shuf 56, null 50), **SHA-256 `ee822df524bb73db25ced05063cdd7d2ab50fc4a90ebb24f42de38efcca74657`**.
+  One calibration caveat known now: on the msda base the `pac` level-4 target (window rate 0.90) is NOT reachable (the oracle saturates at about 0.86 at the grid maximum, amplitude 40); those releases carry amplitude 40 and their realised planted level is about 0.86. No release has been generated and no v3 code has touched any real-base or N2 data at this point.
