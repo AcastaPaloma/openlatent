@@ -42,3 +42,7 @@ the `clean` oracle utility with near-zero leakage on all correlated kinds, B' is
 ## Log
 - 08:16Z start. MetaWorld 3.0.0 + MuJoCo 3.2.7 (3.17 breaks MetaWorld eq_data), OSMesa works; EGL does not (no NVIDIA EGL libs, no /dev/dri access).
 - 08:27Z data generated on CPU (1800/300/300 episodes, ~2 min with 40 procs).
+- 08:36Z first GPU smoke OK (LAM trains at ~40 it/s, eval ~1 min/arm). SAM ViT-B oracle-prompted masks: IoU 0.89 vs exact arm silhouette, 6-8% of decoy pixels end up in the mask, run at ~0.8 episodes/s (GPU shared).
+- 08:50Z REGIME CHECK (weak level: K=3 sprites r=7, `indep`, seed 0, 30 epochs): clean-frame oracle utility NMSE 0.687; raw LAM on distractor frames 0.750 (95% CI 0.741-0.759), leak_worst 0.08.
+  The distractor costs the raw LAM only ~0.06 NMSE, which is about the size of the pre-registered margin (0.05), so no arm can show a clear win: no headroom at this strength. Weak-level SAM jobs killed; added a `strong` level (K=8, r=9, 2x speed).
+- Utility ceiling for this label: a linear probe from the TRUE 3-D EE displacement over the same macro step reaches xyz NMSE 0.63/0.54/0.55 (mean 0.57); adding the previous and next displacement (controller lag) gives 0.29/0.24/0.22. So ~0.57-0.69 is the best a single-pair LAM can do on this label; the clean oracle 0.687 is close to it.
