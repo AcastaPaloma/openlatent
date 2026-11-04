@@ -8,6 +8,8 @@ an attacker given a constant vector (or shuffled pairs) falls back to the freque
   mlp   : 2 x 1024 GELU MLP, BCE, AdamW, early stopping
   knn   : cosine k-nearest-neighbour of the pool, score = softmax-weighted mean of neighbours' bags (kNN-to-corpus)
 """
+import os
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -74,6 +76,8 @@ class MLP:
     name = "mlp"
 
     def __init__(self, hidden=1024, epochs=80, patience=8, lr=1e-3, wd=1e-2, drop=0.2, bs=128):
+        if os.environ.get("D_FAST"):  # mechanics smoke test only (CPU); never used for reported numbers
+            hidden, epochs = 128, 3
         self.h, self.epochs, self.patience, self.lr, self.wd, self.drop, self.bs = hidden, epochs, patience, lr, wd, drop, bs
 
     def _net(self, d, V, prior):
