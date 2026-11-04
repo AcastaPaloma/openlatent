@@ -100,3 +100,15 @@ Per FOCUS.md the next field is egocentric wearer privacy (then embedding privacy
 - **Twin-render ground truth + OOD probe** (`envgen.py`, `distractors.py`, `GData`): clean frame, exact masks and every nuisance label are deterministic functions of (kind, actions, seed); the ID-trained utility probe is applied to every other nuisance kind (`util_by_test_kind`), which exposed that a clean-trained model collapses to 1.1-1.4 NMSE under distractors.
 - **Job pattern**: one YAML per (kind, seed), arm lists as CLI args, `res_<kind>_<arm>_s<seed>.json` + `parts_*.npz`, `analyze.py DIR...` prints the table and the pre-registered rule; fold dependency steps (SAM masks -> sam arm) into one job instead of wait-loops that hold a GPU.
 - Pitfalls worth knowing: MuJoCo >= 3.3 breaks MetaWorld 3.0.0 (pin 3.2.7); no NVIDIA EGL on this VM (use OSMesa, ~0.15 s/render); SAM job was CPU-thread bound until `torch.set_num_threads(4)` and GPU-side compositing; unsupervised soft masks collapse to "mask out everything that moves".
+
+## Late results (as of 11:46Z; separate from the verdict above)
+Landed: SAM arm on `corr_glued` (sprites hover on the gripper and overlap the arm), 3 seeds. SAM masks: IoU with the exact silhouette 0.83, arm recall 0.85, only 0.6% of decoy pixels in the mask (the oracle prompts avoid sprite pixels and SAM does not paint over them).
+| corr_glued (strong) | utility NMSE | leak_worst |
+|---|---|---|
+| clean frames (oracle) | 0.705 +- 0.017 (3 seeds) | 0 |
+| raw LAM | 0.810 (seed 0 only, from the regime run b_str_corr_glued) | 0.03 |
+| zero-shot SAM mask | 0.769 +- 0.011 [0.759, 0.779] (seeds 0.777, 0.756, 0.774) | 0.016 +- 0.003 |
+| exact silhouette | 0.759 (seed 0 only) | 0.02 |
+| adv, rate4 | not run yet (b_m_corr_glued_* still queued) | |
+Reading: on the overlapping case SAM is genuinely useful (0.033 better than raw) and within 0.01-0.02 of the exact mask; the exact-mask headroom over SAM is 0.018 (seed 0), far below the 0.05 margin, so for mask-type candidates the rule is again undecidable-fail. A latent method would have to reach < 0.72, i.e. nearly the clean oracle, and the adv arm never moved more than 0.015 from raw in any completed run. Leakage into z is ~0 for every arm (resid-vel 0.01), the same clutter-not-leakage picture. Verdict unchanged: NO-GO.
+Still queued at hand-over (they will land in ~/work/runs on the VM and in HF `KuanKuanKuan/openlatent-fields/runs/`; fold in with `python research/fields/src/b_robotics/analyze.py ~/work/runs/b_*`): indep SAM arm (b_msam_indep_s0-2), corr_glued and corr_noisy raw / rate4 / exact-mask / adv (b_m_corr_*_s0-2), corr_noisy SAM masks + SAM arm (b_sam_corr_noisy). They cannot flip the rule on corr_det (complete, 3 seeds, FAIL); they only add coverage.
