@@ -1,4 +1,3 @@
-# DRAFT, NOT QUEUED until t_prep has finished and its integrity check passed (the queue has no dependencies). Stage 1 = first wave: no defended release.
 name: t_u1_const
 priority: 6
 cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src $HOME/venvs/t/bin/python -m t_cxr.run_utility --release const --rot 0 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT"
