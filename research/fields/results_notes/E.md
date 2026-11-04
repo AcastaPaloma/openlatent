@@ -500,3 +500,61 @@ HLCA: only fold 1 produced a result (4,000 cells). `e_scib_hlca` and `e_scib_hlc
 scVI: 1,096 s GPU in total (HLCA 676, Immune 282, Pancreas 138) = 0.30 GPU-h; floors: HLCA 949/911/887 s, Immune 321/269/297 s, Pancreas 206/253/208 s per seed (4,300 s); `T_scvi` arm 261 s; dense frontier 841 s; scIB context (Immune, Pancreas) 762 s;
 two failed HLCA scIB attempts (XLA CPU JIT allocation crash, 1,478 s) and a per-fold retry; aggregation on CPU (HLCA B=1000 plus cluster B=300 about 14 min). Total about 2.4 worker-hours; GPU-kernel time is a small fraction of it (scVI 0.30 GPU-h dominates), inside the 0.5 GPU-h budget.
 Priority 4 was used once (first wave), as declared in section 4.
+
+## 6. E2 (REOPENED 2026-11-04 by the coordinator after Auditor-1 F-06): inductive map to the scVI / Harmony point on HLCA. PRE-REGISTRATION E2 v0
+
+**verdict_original (kept, unchanged): SC-0 = NO-GO (SC-K2 3/3 datasets, SC-K1 HLCA + Immune). E2 is a NEW attempt, reported alongside it; it neither continues nor overrides SC-0, and it does not edit FOCUS.md.** Written 2026-11-04 ~19:00Z VM clock,
+BEFORE any E2 learned-arm number exists (no E2 job has been queued or run when this block is committed).
+
+### 6.1 Why a new pre-registration, and what is rewritten
+SC-K2 compared `ldaC_pca16` with raw (retention of above-chance F1) although that arm has L 0.84, i.e. it hides little batch, and label-free `pca16` retains the same share. It is replaced by a **leakage-matched** gate (E2-K2'). SC-K3 found a real transductive gap on HLCA (scVI
+U 0.816 at L 0.80 vs the V-selected inductive floor 0.700, +0.116 [0.099, 0.136]; Harmony U 0.668 at L 0.37 vs the dense-grid floor +0.354 [0.334, 0.371]). Neither reference is inductive (batch covariate / batch ids, all cells). E2 asks the question SC-0 stopped short of:
+**can an INDUCTIVE encoder (expression to latent; no batch covariate at inference; no held-out cell at fit) reach those points, measured against the V-selected inductive floor envelope?**
+
+### 6.2 Disclosure (what is already known when this is written)
+Known from SC-0 and not hidden: the HLCA floor and reference numbers of section 5 (all 3 seeds, B=1000), the dense-grid frontier for seed 0, and therefore the outcome of E2-K2' at the scVI target (the best label-only/PCA arm at L <= 0.85, `ldaC_pca16`, has U 0.607, gap 0.209 to the target).
+NOT known: any number from a learned inductive arm. The grid below was chosen by me after seeing SC-0, from the SC-0 leakage range (floors cover L 0.10-1.0; targets L 0.80 and 0.37). A TRAINING-ONLY diagnostic (6.5) may rescale the beta grid before any held-out metric of a learned arm is read; such a rescale is logged as an amendment.
+
+### 6.3 Data, folds, units, instrument (unchanged from SC-0 unless stated)
+HLCA core subsample only (97,232 cells, 107 donors, 11 studies), the same three study-grouped folds, same encoder-0 HVG list per fold (2,000 HVG on training cells), same attackers (linear, MLP, kNN, LightGBM, donor-disjoint cross-fit halves, seeds 0-2), same probes (U = max(linear, kNN) macro-F1),
+same L (worst-case retrained attacker, normalised to `raw50` and chance, present-class chance), same analytic u0. Immune and Pancreas are NOT run (batch units: MDE80 0.10-0.12, cannot adjudicate 0.05). Intervals: donor bootstrap (107 donors, B=1000) primary; study-cluster bootstrap (11 studies, B=300) reported next to it.
+Folds are fixed, so the three seeds replicate training noise and the cross-fit over the three held-out study groups is the replication of units.
+
+### 6.4 Learned arms (all INDUCTIVE: input = the fold's standardised 2,000-HVG expression of ONE cell, output = a 16-d code; HVG list, scaling, encoder, decoder and adversary are fitted on the fold's TRAINING cells only; the training batch id is used only as a training-time covariate/adversary label)
+Encoder MLP 2000-512-256-(mu, logvar) of dimension d = 16, GELU, decoder 16(+B_train one-hot for cVAE)-256-512-2000, loss = 0.5 * sum_j (x_j - xhat_j)^2 + beta * KL(q(z|x) || N(0,I)); the RELEASED code is a sample z = mu + sigma * eps (fixed seeded eps), so beta sets a rate. Families (13 configs, each x 3 folds x 3 seeds):
+* `vae_b{2,10,50}` — no batch information anywhere: the mandatory NO-ADVERSARY rate/dither control.
+* `cvae_b{2,10,50}` — decoder conditioned on the training batch id (encoder never sees it): the inductive analogue of scVI.
+* `vaeadv_b10_l{1,4,16}` — `vae` plus a batch adversary on the released code: gradient reversal with weight lambda, adversary = MLP 16-128-B_train, class-balanced CE over training batches, RE-INITIALISED every 250 steps (a retrained adversary, not a co-adapted one).
+* `cvaeadv_b10_l{1,4,16}` — both.
+* `vaeplc_b10_l4` — placebo: the adversary is trained on cell-level PERMUTED batch labels (any gain over `vae_b10` that survives here is not adversarial).
+Training: AdamW lr 1e-3, weight decay 1e-4, batch 1024, 30 epochs, KL annealed linearly over the first 5 epochs, seed s in {0,1,2}. No selection on held-out batches inside training.
+**Checks, computed on TRAINING cells only and printed for every arm:** (i) *adapter trained*: split the fold's training donors into two halves; a freshly retrained linear and MLP attacker (class-balanced) on one half's codes must score the other half at balanced accuracy <= chance_train + 0.05 (chance_train = 1/B_train, worst of the two); required for the four adversarial families and the placebo; (ii) *collapse*: mean KL < 1 nat or training reconstruction R^2 < 50% of PCA-16's R^2 on the same cells.
+An arm that fails (i) or (ii) in ANY fold (seed-mean) is INELIGIBLE for the claim (still reported). This answers the audit: an adversary that never reached its own objective cannot be called a null.
+
+### 6.5 Training-only diagnostic and the beta scale
+Before the full run, one job trains `vae_b{2,10,50}` and `vaeadv_b10_l{1,4,16}` on fold 0, seed 0, and prints training KL, reconstruction R^2 and the in-sample adversary accuracy (no held-out cell is scored). If the median-beta `vae` has KL < 1 nat (collapse) or > 150 nats (no compression), the whole beta grid is multiplied by one factor from {0.1, 0.3, 3, 10} chosen to bring the median KL to 5-50 nats; the factor is written as amendment E2-A1 BEFORE the full jobs are queued. lambda is never rescaled.
+
+### 6.6 Floors, targets, matched-leakage selection
+* **Inductive floor pool** = the SC-0 registered grid + the dense frontier, 3 seeds each (the dense arms existed for seed 0 only; seeds 1-2 are run as part of E2 with identical code). `T_*` references and `onehot_oracle` are not floors.
+* **Targets** (fixed from SC-0, HLCA, 3-seed means): T_scvi = (U 0.816, L 0.80), primary; T_harmony = (U 0.668, L 0.37), secondary. A configuration is feasible for target T if its pooled L <= L_T + 0.05 (0.85 and 0.42).
+* **Cross-fold selection** (as SC-0 K3): for each outer fold f, among the feasible configurations of the pool (learned: eligible ones only; floors: pool above) choose the one with the highest U_fine on the OTHER two folds, subject to feasibility on those folds; its predictions on fold f are used. Result: `sel_learned(T)` and `sel_floor(T)`, pooled over folds.
+  If no floor is feasible at T, the floor envelope is U = 0 and this is reported; if no learned config is feasible, the arm fails.
+* **Gain** Delta(T) = U(sel_learned) - U(sel_floor), paired donor bootstrap. Also reported: fraction of the floor-to-target gap closed, Delta / (U_T - U(sel_floor)); and the same table with the test-selected best configuration per family as an optimistic bound.
+* **Attribution** (reported, not part of GO): `vaeadv` vs `vae` and `cvaeadv` vs `cvae` at matched L; `vaeplc` vs `vae`.
+
+### 6.7 Margin and power (decided before the run)
+HLCA floor-vs-floor MDE80 from SC-0 (six pairs): 0.028 / 0.029 / 0.029 / 0.040 / 0.040 / 0.057, median **0.035**. The margin is **m = 0.05** (1.4x the median, within the pair range). After the run the MDE80 of the primary comparison (`sel_learned` vs `sel_floor`, donor-level swap permutation + bootstrap SE, as in 2.6)
+is printed; if it exceeds m the verdict is UNDERPOWERED, not NO-GO. With SE ~ 0.007-0.010 for a single comparison a Delta of 0.05 is 5-7 SE, so the design is decidable; if the printed MDE80 of the primary comparison were > 0.05 I would stop and say so.
+
+### 6.8 Decision rules (any E2-K failing stops the claim; verdict reported next to verdict_original)
+* **E2-K0 (power):** MDE80 (primary comparison) <= m. Else UNDERPOWERED.
+* **E2-K1' (measurability):** raw50 worst attacker >= chance + 0.15 and the SC-0 controls <= chance + 0.03 (the unattainable 3x arm is dropped for HLCA fold chances 0.14-0.50, as stated in SC-0 2.9-1; SC-0 itself stays NO-GO on its capped reading). Satisfied by the SC-0 raw50 predictions (excess 0.389); recomputed in the E2 aggregation.
+* **E2-K2' (leakage-matched under-determination, replaces SC-K2):** the best LABEL-ONLY / PCA family arm (`pca{4,6,8,12,16,24,32}`, `rp{16,32}`, `ldaC`, `ldaC_pca{8,16,24,32}`, `ldaF16`, `leace_pca16`; noise/dither arms excluded) feasible at the PRIMARY target (L <= 0.85, cross-fold selected) has U_T - U_family <= m = 0.05, i.e. it already
+  fills the target at the target's leakage. Printed sensitivity: retained fraction (U_family - u0) / (U_T - u0) against the old 0.70. If K2' fires, E2 stops (NO-GO, label-only floor holds at matched leakage).
+* **E2-K3' (the claim):** at the primary target, (a) sel_learned pooled L <= 0.85; (b) Delta(T_scvi) >= m with donor-bootstrap 95% lower bound > 0; (c) seed-level Delta >= m in >= 2 of 3 seeds; (d) the selected configuration(s) eligible (6.4 checks pass).
+  **E2-GO** = K0, K1', not K2', and K3' (a)-(d). **E2-NO-GO** = K1' or K3' fails with the upper 95% bound of Delta < m (resolved null), or K2' fires. **E2-INCONCLUSIVE** = point Delta < m <= upper bound, or K0 fails (UNDERPOWERED). The Harmony target is reported with the same rule and does not enter GO.
+* An E2-GO would only nominate Focus E for locking; the lock decision stays with the main agent (charter rule 6).
+
+### 6.9 Budget, queue, code
+<= 3 GPU-h. Expected: 13 configs x 3 folds x 3 seeds trainings of ~10-40 s plus attacker evaluation (~12 s per arm-fold on HLCA) = about 0.5 h per seed on one GPU slot, three seed jobs in parallel, plus a 2-minute diagnostic and two CPU-bound dense-floor jobs (seeds 1, 2).
+Priority 4 is used ONCE for the first wave (diagnostic, three seed jobs, two dense-floor jobs). Code: `src/e_singlecell/{inductive,evaluate_e2,aggregate_e2}.py`. Specs `jobs/specs/e_e2_*.yaml`, names prefixed `e_`.
