@@ -1,0 +1,16 @@
+{
+ "name": "c_rate_d16_s2",
+ "config": {
+  "cmd": "python3 research/fields/src/c_cremad/run_exp.py --name c_rate_d16_s2 --method learned --cfg '{\"dz\": 16, \"bott\": \"vib\", \"beta\": 0.0, \"lam\": 0.0}' --seeds 2",
+  "hf_path": "runs/c_rate_d16_s2",
+  "name": "c_rate_d16_s2",
+  "priority": 12
+ },
+ "commit": "4708734",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 452.7,
+ "finished_utc": "2026-11-04T13:32:57Z",
+ "uploaded": true
+}
