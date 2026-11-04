@@ -20,6 +20,14 @@ FINDINGS = ("Atelectasis", "Cardiomegaly", "Effusion", "Infiltration", "Mass", "
             "Consolidation", "Edema", "Emphysema", "Fibrosis", "Pleural_Thickening", "Hernia")
 
 
+PRI = ("image_pairs_training_10000.txt", "image_pairs_validation_2000.txt")
+
+
+def hid(pid, salt) -> str:
+    """hashed patient id used in every uploaded prediction file."""
+    return hashlib.sha256(f"{salt}:{pid}".encode()).hexdigest()[:12]
+
+
 def unit(key, salt: str = SALT) -> float:
     """SHA-256 -> [0,1); independent of PYTHONHASHSEED and platform."""
     return int.from_bytes(hashlib.sha256(f"{salt}:{key}".encode()).digest()[:8], "big") / 2**64

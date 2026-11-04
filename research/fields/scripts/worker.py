@@ -76,7 +76,11 @@ def run(job_path, gpu):
     logdir = WORK / "logs"
     logdir.mkdir(parents=True, exist_ok=True)
     git("pull", "-q", "--ff-only", "origin", "fields-research")
+    # thread cap enforced for every job (charter rule: <= 8 CPU threads); a job spec may override via its own cmd
+    caps = {k: "8" for k in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS")}
     env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(gpu), OUT=str(out), JOB_NAME=name, PYTHONUNBUFFERED="1")
+    for k, v in caps.items():
+        env.setdefault(k, v)
     commit0 = git("rev-parse", "--short", "HEAD")  # commit the job starts on (pull happened above)
     t0 = time.time()
     with open(logdir / f"{name}.log", "a") as lf:

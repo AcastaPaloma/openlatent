@@ -20,11 +20,7 @@ import torch
 
 from . import attackers as A, generator as G, heads as H, ledger, meta, pairs, releases as R, stats as S
 
-PRI = ("image_pairs_training_10000.txt", "image_pairs_validation_2000.txt")
-
-
-def hid(pid, salt):
-    return hashlib.sha256(f"{salt}:{pid}".encode()).hexdigest()[:12]
+from .meta import PRI, hid
 
 
 def planted_bank(d: pd.DataFrame, res: int, alpha: float, seed: int = 0) -> np.ndarray:
@@ -69,9 +65,10 @@ def main():
     ap.add_argument("--synthetic", type=int, default=0, help="N patients; builds a planted-leak bank at --res")
     ap.add_argument("--res", type=int, default=64); ap.add_argument("--alpha", type=float, default=1.0)
     ap.add_argument("--feat", default="dinov2", choices=["dinov2", "random"]); ap.add_argument("--no-ledger", action="store_true")
+    ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
     a = ap.parse_args()
     t0 = time.time()
-    out = Path(a.out) / f"{a.release}_rot{a.rot}"; out.mkdir(parents=True, exist_ok=True)
+    out = Path(a.out) / f"{a.release}_rot{a.rot}{'_shuf' if a.shuffle_labels else ''}"; out.mkdir(parents=True, exist_ok=True)
     d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt")
     seen = meta.seen_patients([f"{a.pri}/{f}" for f in PRI], d)
     if a.synthetic:
@@ -87,6 +84,9 @@ def main():
     pA, rA = pairs.build(d, "A", "N2", 2, "tr0", col="role"); pV, rV = pairs.build(d, "V", "N2", 1, "v0", col="role"); pT, rT = pairs.build(d, "T", "N2", 1, "te0", col="role")
     need = np.unique(np.r_[pA.a, pA.b, pV.a, pV.b, pT.a, pT.b]); pos_of = {r: i for i, r in enumerate(need)}
     parts = dict(tr=split_pairs(pA, pos_of), va=split_pairs(pV, pos_of), te=split_pairs(pT, pos_of))
+    sfx = ""
+    if a.shuffle_labels:
+        parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
     cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic)
     ledger_rec = None if (a.no_ledger or a.synthetic) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device

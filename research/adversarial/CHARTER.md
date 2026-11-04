@@ -58,3 +58,5 @@ CHARTER.md  FOCUS.md  literature/  hypotheses/{H-*.md,INDEX.md,RANKING.md}  jobs
 - Kill criteria may be tightened after data only with the original verdict reported alongside; they are never loosened after data (programme-1 lesson, Focus A and Focus F).
 - Every pre-registration names its seeds-vs-test-units design (cross-fit or rotating test units) so seeds replicate test noise, not only training noise.
 - Literature numbers quoted in FOCUS.md or any write-up must be verified against the primary source (programme-2 scouts read mostly abstracts).
+- CPU etiquette (2026-11-04, load average hit ~200 on 56 cores): the worker now sets OMP/MKL/OPENBLAS/NUMEXPR threads to 8 for every queued job; ad-hoc CPU work run directly over ssh must not exceed 3 concurrent processes x 8 threads per builder
+  (use `taskset`/`--procs` accordingly); never start a job with unbounded BLAS/OpenMP threads.
