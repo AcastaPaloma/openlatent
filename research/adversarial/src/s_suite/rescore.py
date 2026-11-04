@@ -35,6 +35,11 @@ N_SPLITS = 20
 B_BOOT = 1000
 B_BOOT_GENERIC = 300
 REPRO_TOL = 0.1  # points
+HEADLINE_PAIRS = {  # programme 1 / stress-test headline comparisons (a minus b)
+    "kth_ilic": [("pose_canon_down16", "bdq_down64"), ("pose_canon_down16", "pose_canon_down32"), ("pose_canon_down16", "pose_canon_down8"),
+                 ("pose_canon_down16", "pose_canon_down16_s1"), ("pose_canon_down16", "pose_canon_down16_e24"), ("bdq_down64", "bdq_down32")],
+    "kth_scenario": [("pose_canon_down16", "pose_canon_down32"), ("pose_canon_down16", "pose_canon_down16_e24")],
+}
 
 
 def p1_key(k):  # report 'retrained/frame_r50' -> preds 'retrained|frame_r50'
@@ -127,10 +132,12 @@ def rescore_dataset(root, ds, protocol, report, seed=0):
             per = st.ratio_point(S, n_c)
             boot = st.ratio_boot(S, n_c, rs_w)
             se_k = boot.std(0, ddof=1)
+            single = {k: dict(acc=float(per[i]), h_minus_single=_diff_block(h_b - boot[:, i], h - per[i])) for i, k in enumerate(SUITE)}
             ub = max(st.ucb_effective(per[k], se_k[k], len(c.y), 0.05 / len(SUITE), m) for k in range(len(SUITE)))
         if multilabel:
             a1_re = vals["a1_re"]
             ub = float("nan")
+            single = None
         base, raw = sc["base"] / 100.0, report["scored"][r]["secrets"][sec][protocol]["raw"] / 100.0
         a1_p1 = sc["score"] / 100.0
         D_b = a2_b - h_b
@@ -139,7 +146,7 @@ def rescore_dataset(root, ds, protocol, report, seed=0):
         out[r] = dict(
             n_units=m, n_items=len(c.y), base=base, raw=raw, a1_printed=a1_p1, a1_recomputed=a1_re, reproduces=bool(abs(a1_re - a1_p1) * 100 <= REPRO_TOL),
             a2=a2, a2_se=float(a2_b.std(ddof=1)), honest=h, honest_se=float(h_b.std(ddof=1)), honest_mde80=st.mde80(h_b.std(ddof=1)),
-            optimism_a2_minus_h=d, ub_bonferroni_K2=ub, other_family_gain=a1_p1 - a2,
+            optimism_a2_minus_h=d, ub_bonferroni_K2=ub, single_attackers=single, other_family_gain=a1_p1 - a2,
             privacy_printed=sc["privacy"], privacy_honest=(None if gap < 0.02 else 1 - min(1, max(0, (h - base) / gap))),
             privacy_ub=(None if gap < 0.02 or not np.isfinite(ub) else 1 - min(1, max(0, (ub - base) / gap))),
             moves=d["exceeds_mde"], moves_privacy=(None if gap < 0.02 else bool(d["exceeds_mde"])),
@@ -153,7 +160,13 @@ def rescore_dataset(root, ds, protocol, report, seed=0):
         hd = boots[r2][1] - boots[r1][1]
         pairs.append(dict(lower=r1, higher=r2, printed_gap=out[r2]["a1_printed"] - out[r1]["a1_printed"],
                           a2=_diff_block(a2d, out[r2]["a2"] - out[r1]["a2"]), honest=_diff_block(hd, out[r2]["honest"] - out[r1]["honest"])))
-    return dict(releases=out, adjacent_pairs=pairs, n_units=m, order=order, boots=boots)
+    heads = []
+    for r1, r2 in HEADLINE_PAIRS.get(ds, []):
+        if r1 in boots and r2 in boots:
+            heads.append(dict(a=r1, b=r2, a2=_diff_block(boots[r1][0] - boots[r2][0], out[r1]["a2"] - out[r2]["a2"]),
+                              honest=_diff_block(boots[r1][1] - boots[r2][1], out[r1]["honest"] - out[r2]["honest"])))
+    return dict(releases=out, adjacent_pairs=pairs, headline_pairs=heads, n_units=m, order=order, boots=boots,
+                dropped_releases=sorted(set(rels) - set(cells)))
 
 
 def _generic_multilabel(c, keys, M, W, inv, m):
@@ -228,6 +241,14 @@ def to_markdown(res):
             a, h = p["a2"], p["honest"]
             L.append(f"| {p['lower']} | {p['higher']} | {100*p['printed_gap']:.1f} | {100*a['diff']:+.1f} [{100*a['ci95'][0]:+.1f}, {100*a['ci95'][1]:+.1f}] ({100*a['mde80']:.1f}) {'yes' if a['resolved'] else 'no'} "
                      f"| {100*h['diff']:+.1f} [{100*h['ci95'][0]:+.1f}, {100*h['ci95'][1]:+.1f}] ({100*h['mde80']:.1f}) {'yes' if h['resolved'] else 'no'} |")
+        if r.get("headline_pairs"):
+            L.append("\nHeadline pairs (a minus b, same recordings):\n")
+            L.append("| a | b | best-of-2 diff [CI] (MDE80) resolved | honest diff [CI] (MDE80) resolved |")
+            L.append("|---|---|---|---|")
+            for p in r["headline_pairs"]:
+                a, h = p["a2"], p["honest"]
+                L.append(f"| {p['a']} | {p['b']} | {100*a['diff']:+.1f} [{100*a['ci95'][0]:+.1f}, {100*a['ci95'][1]:+.1f}] ({100*a['mde80']:.1f}) {'yes' if a['resolved'] else 'no'} "
+                         f"| {100*h['diff']:+.1f} [{100*h['ci95'][0]:+.1f}, {100*h['ci95'][1]:+.1f}] ({100*h['mde80']:.1f}) {'yes' if h['resolved'] else 'no'} |")
     return "\n".join(L)
 
 

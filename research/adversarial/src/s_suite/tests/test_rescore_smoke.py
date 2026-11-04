@@ -35,7 +35,10 @@ def test_rescore_accuracy_path(tmp_path, monkeypatch):
     assert x["reproduces"] is True
     assert 0 <= x["honest"] <= 1 and x["optimism_a2_minus_h"]["mde80"] > 0
     assert r["releases"]["black"]["a2"] < x["a2"]
-    assert "pose_canon_down16" in rs.to_markdown({"kth_ilic/within": r})
+    assert len(r["headline_pairs"]) == 1 and r["headline_pairs"][0]["b"] == "pose_canon_down16_s1"
+    assert set(x["single_attackers"]) == set(rs.SUITE) and x["single_attackers"]["retrained|r3d"]["h_minus_single"]["mde80"] >= 0
+    md = rs.to_markdown({"kth_ilic/within": r})
+    assert "pose_canon_down16" in md and "Headline pairs" in md
 
 
 def test_rescore_multilabel_path(tmp_path, monkeypatch):

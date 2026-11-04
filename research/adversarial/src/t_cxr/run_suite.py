@@ -1,0 +1,155 @@
+"""One release x one rotation: pairs -> defended images -> attackers -> hashed-id predictions + summary (JSON only in $OUT).
+
+  python -m t_cxr.run_suite --release rw2_mu0.01 --rot 0 --attackers f1,f3,f4,f5 --conds match,mismatch,anon2 --seeds 0,1,2 --out $OUT
+Post-gate it reads the real bank (`--bank cxr256.npy`) and the custodian's salt (`--salt-file`).  `--synthetic N` builds a PLANTED-LEAK bank (res 64) on a
+random patient subset with the real CSV metadata and a provisional salt, to test the whole pipeline on CPU; synthetic output is labelled and never a result.
+Outputs: `$OUT/<release>_rot<r>/{summary.json, preds_<attacker>.json}` (pair_id, sha256-hashed patient id, y, scores for V and T).  No attacker weights,
+defended images or embeddings are written to $OUT (whitelist condition e); numpy caches go to `--work`.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import torch
+
+from . import attackers as A, generator as G, heads as H, ledger, meta, pairs, releases as R, stats as S
+
+PRI = ("image_pairs_training_10000.txt", "image_pairs_validation_2000.txt")
+
+
+def hid(pid, salt):
+    return hashlib.sha256(f"{salt}:{pid}".encode()).hexdigest()[:12]
+
+
+def planted_bank(d: pd.DataFrame, res: int, alpha: float, seed: int = 0) -> np.ndarray:
+    """synthetic images: patient-specific smooth texture (identity, strength alpha) + age/sex-dependent tint + per-image noise; shape (len(d),res,res) uint8."""
+    from scipy.ndimage import gaussian_filter
+    rng = np.random.default_rng(seed)
+    pat = {p: gaussian_filter(rng.normal(0, 1, (res, res)), 3) for p in d.pid.unique()}
+    out = np.empty((len(d), res, res), np.uint8)
+    for i, (p, age, male) in enumerate(zip(d.pid.to_numpy(), d.age.to_numpy(), d.male.to_numpy())):
+        x = alpha * 3 * pat[p] + gaussian_filter(rng.normal(0, 1, (res, res)), 2) + 0.01 * (age - 50) + 0.3 * male
+        out[i] = np.clip(128 + 40 * x, 0, 255).astype(np.uint8)
+    return out
+
+
+def split_pairs(pr: pd.DataFrame, pos_of: dict):
+    return dict(ia=np.array([pos_of[r] for r in pr.a]), ib=np.array([pos_of[r] for r in pr.b]), y=pr.label.to_numpy().astype(np.float32))
+
+
+def cond_sets(cond, Xd, Xr, parts):
+    """xa/xb tensors per phase for a condition (see attackers.py header)."""
+    out = {}
+    for ph in ("tr", "va", "te"):
+        xa = Xd
+        xb = Xr if (cond == "match" or (cond == "mismatch" and ph == "te")) else Xd
+        out[ph] = dict(xa=xa, xb=xb, **parts[ph])
+    return out
+
+
+def auc_ci(y, s, cluster, B, seed):
+    pb = S.PatientBootstrap(cluster, B=B, seed=seed)
+    return S.summarize(S.auc(y, s), S.auc_boot(y, s, pb.codes(cluster), pb))
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--release", required=True); ap.add_argument("--rot", type=int, default=0)
+    ap.add_argument("--attackers", default="f1,f3,f4,f5"); ap.add_argument("--conds", default="match,mismatch,anon2"); ap.add_argument("--seeds", default="0,1,2")
+    ap.add_argument("--data", default=None); ap.add_argument("--pri", default=None); ap.add_argument("--bank", default=None); ap.add_argument("--salt-file", default=None)
+    ap.add_argument("--gen-dir", default=None); ap.add_argument("--flow-stats", default=None); ap.add_argument("--work", default="/tmp/t_work"); ap.add_argument("--out", required=True)
+    ap.add_argument("--arch", default="resnet50"); ap.add_argument("--max-epochs", type=int, default=30); ap.add_argument("--bs", type=int, default=32)
+    ap.add_argument("--device", default="cuda"); ap.add_argument("--no-pretrain", action="store_true"); ap.add_argument("--boot", type=int, default=2000)
+    ap.add_argument("--synthetic", type=int, default=0, help="N patients; builds a planted-leak bank at --res")
+    ap.add_argument("--res", type=int, default=64); ap.add_argument("--alpha", type=float, default=1.0)
+    ap.add_argument("--feat", default="dinov2", choices=["dinov2", "random"]); ap.add_argument("--no-ledger", action="store_true")
+    a = ap.parse_args()
+    t0 = time.time()
+    out = Path(a.out) / f"{a.release}_rot{a.rot}"; out.mkdir(parents=True, exist_ok=True)
+    d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt")
+    seen = meta.seen_patients([f"{a.pri}/{f}" for f in PRI], d)
+    if a.synthetic:
+        salt = "PROVISIONAL-selftest"
+        rng = np.random.default_rng(0)
+        keep = set(rng.choice(d.pid.unique(), size=a.synthetic, replace=False))
+        d = d[d.pid.isin(keep)].reset_index(drop=True); d["row"] = np.arange(len(d))
+        bank = planted_bank(d, a.res, a.alpha)
+    else:
+        salt = Path(a.salt_file).read_text().strip()                  # refuses to run without the custodian's salt
+        bank = np.load(a.bank, mmap_mode="r")
+    d = meta.assign_roles(d, seen, salt, a.rot)
+    pA, rA = pairs.build(d, "A", "N2", 2, "tr0", col="role"); pV, rV = pairs.build(d, "V", "N2", 1, "v0", col="role"); pT, rT = pairs.build(d, "T", "N2", 1, "te0", col="role")
+    need = np.unique(np.r_[pA.a, pA.b, pV.a, pV.b, pT.a, pT.b]); pos_of = {r: i for i, r in enumerate(need)}
+    parts = dict(tr=split_pairs(pA, pos_of), va=split_pairs(pV, pos_of), te=split_pairs(pT, pos_of))
+    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic)
+    ledger_rec = None if (a.no_ledger or a.synthetic) else ledger.sealed_query(a.release, cfg, "T", a.rot)
+    dev = a.device
+    flow = torch.load(a.flow_stats) if a.flow_stats else None
+    pca = R.fit_pca(bank, d.loc[d.role == "A", "row"].to_numpy()[:10000], size=min(64, a.res)) if a.release.startswith("pca_") else None
+    rel = R.Releases(dev, gen_dir=a.gen_dir, flow_stats=flow, pca=pca)
+    ids = d["img"].to_numpy()[need].tolist()
+    Xr = rel.materialize("raw", bank, need, ids)
+    Xd = Xr if a.release == "raw" else rel.materialize(a.release, bank, need, ids)
+    summ = dict(release=a.release, rot=a.rot, synthetic=bool(a.synthetic), salt_provisional=bool(a.synthetic), evaluator_sha=ledger.evaluator_sha()[:16], ledger=ledger_rec,
+                n_triples=dict(A=int(len(pA) // 2), V=int(len(pV) // 2), T=int(len(pT) // 2)), pair_reports=dict(A=rA, V=rV, T=rT), role_counts=meta.role_counts(d), attackers={})
+    cl_te = pT.anchor_pid.map(lambda p: hid(p, salt)).to_numpy(); cl_va = pV.anchor_pid.map(lambda p: hid(p, salt)).to_numpy()
+
+    def record(name, sv, st, extra=None):
+        yv, yt = parts["va"]["y"], parts["te"]["y"]
+        r = dict(val_auc=S.auc(yv, sv), test=auc_ci(yt, st, cl_te, a.boot, 0), **(extra or {}))
+        summ["attackers"][name] = r
+        (out / f"preds_{name}.json").write_text(json.dumps(dict(pair_id=list(range(len(yt))), cluster=cl_te.tolist(), y=yt.tolist(), score_test=np.round(st, 5).tolist(),
+                                                              score_val=np.round(sv, 5).tolist(), cluster_val=cl_va.tolist(), y_val=yv.tolist())))
+        print(f"  {name}: val {r['val_auc']:.3f}  test {r['test']['point']:.3f} [{r['test']['lo']:.3f},{r['test']['hi']:.3f}]", flush=True)
+
+    todo = a.attackers.split(",")
+    if "f1" in todo:
+        for cond in a.conds.split(","):
+            sc = []
+            for sd in [int(s) for s in a.seeds.split(",")]:
+                o = A.train_siamese(**{k: v for k, v in zip(("tr", "va", "te"), (lambda cs: (cs["tr"], cs["va"], cs["te"]))(cond_sets(cond, Xd, Xr, parts)))}, arch=a.arch, pretrained=not a.no_pretrain,
+                                    seed=sd, max_epochs=a.max_epochs, bs=a.bs, device=dev, amp=dev == "cuda", log=lambda *x: None)
+                sc.append((o["val_score"], o["test_score"], o["epochs"]))
+                record(f"f1_{cond}_s{sd}", o["val_score"], o["test_score"], dict(epochs=o["epochs"]))
+            record(f"f1_{cond}_ens", np.mean([z[0] for z in sc], 0), np.mean([z[1] for z in sc], 0))
+    if "f4" in todo:
+        for cond in ("match", "anon2"):
+            xb = Xr if cond == "match" else Xd
+            sv = A.structural_scores(Xd, xb, parts["va"]["ia"], parts["va"]["ib"], size=min(128, Xd.shape[-1]), device=dev if dev != "cuda" else "cuda")
+            st = A.structural_scores(Xd, xb, parts["te"]["ia"], parts["te"]["ib"], size=min(128, Xd.shape[-1]), device=dev if dev != "cuda" else "cuda")
+            record(f"f4_{cond}", sv, st)
+    if "f3" in todo or "f5" in todo:
+        if a.feat == "random":
+            g = torch.Generator().manual_seed(0); W = torch.randn(Xd.shape[-1] ** 2, 128, generator=g)
+            feat = lambda X: (X.float().flatten(1).cpu() @ W).numpy()
+        else:
+            from .features import dino_features as feat
+        Fd, Fr = feat(Xd), feat(Xr)
+        Fm = lambda ia, ib: (np.concatenate([Fd, Fr]), ia, ib + len(Fd))                  # defended A element vs REAL B element: stack both feature tables
+        tr_, va_, te_ = ({**parts[k]} for k in ("tr", "va", "te"))
+        FF = np.concatenate([Fd, Fr])
+        for k, p in (("tr", tr_), ("va", va_), ("te", te_)):
+            p["ib"] = p["ib"] + len(Fd)
+        if "f3" in todo:
+            o = H.fit_f3(FF, tr_, FF, va_, FF, te_)
+            for nm, (sv, st) in o.items():
+                record(nm, sv, st)
+        if "f5" in todo:
+            dtr = d.set_index("row").loc[need]
+            # element A is estimated from the defended image; element B from the real image (F5a) -- both columns of FF are indexed by position
+            dem = dict(pid=np.r_[dtr.pid.to_numpy(), dtr.pid.to_numpy()], age=np.r_[dtr.age.to_numpy(), dtr.age.to_numpy()], male=np.r_[dtr.male.to_numpy(), dtr.male.to_numpy()], pa=np.r_[dtr.pa.to_numpy(), dtr.pa.to_numpy()])
+            sv, st = H.fit_f5(FF, dem, tr_, FF, va_, FF, te_)
+            record("f5a", sv, st)
+    summ["seconds"] = round(time.time() - t0, 1)
+    (out / "summary.json").write_text(json.dumps(summ, indent=1, default=float))
+    print("done", out, summ["seconds"], "s")
+
+
+if __name__ == "__main__":
+    main()

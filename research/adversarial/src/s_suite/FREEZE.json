@@ -1,0 +1,22 @@
+{
+ "analysis_files": {
+  "attackers.py": "d09f879bb4d67e44e75331fa2b9f547154c3b4cde7e589fa8fb0958ecd9bf95f",
+  "oracle.py": "3d27a764b122900ba64d2eba6dc8122d129aeb76c13a6b41c4ea3e16f2e53e87",
+  "planted.py": "db9c21a2c3cfdde89741cabf9d5fc69f0142e7901c151c65e15934c635fe099a",
+  "rescore.py": "0f927438ba3671d426eb9d1cdff97e06a386cd4e9412399a9251729772f463d3",
+  "run_planted.py": "237ae7e5d0dd198e191092c543ff82274806947c875bc5c0a86e71c529967ea9",
+  "run_real.py": "2e8d339874fa4a20ee0ef9bc9376b664fed7c6b35404c30584a46daf683f6c3b"
+ },
+ "evaluator_files": {
+  "certificate.py": "69b194737f6522dfca48400fc73a29a0814d9b7f8760898cc6aefa30cbb8f099",
+  "evidence_budget.py": "db37be939924d1acb073a127192226fc5c2c702138d8ff4fe6d8ee9bc258a469",
+  "freeze.py": "150cbb16d0823c4c17fabad3c109a630b94e1630ef2a20902dd5c190039f475b",
+  "harness_io.py": "b40ee1cf63180edeb38b063c875db6ac66db077f01b1a30cff7784c064350679",
+  "ledger.py": "cfc694cada901506ae5e768aba4b9de68e1c407c6e1221ae6f2737496c705605",
+  "locked_eval.py": "6b9990cc8fbbf426d6e7898e81634fcc9bd64baf15e46a0514911da6d850bd0e",
+  "selection_bias.py": "3a18c2c83d50007b2b095669b4301c7ba1dd695218685820e783e39e4a174b3e",
+  "stats.py": "c3df507c4abe48a539e465b4d22d469ef9044e191eb933c160cf6ee70796732d"
+ },
+ "evaluator_sha256": "eb2d619870c2811430aee56376a306dc71dc930de5bc187e00d9a6cdfb527e0f",
+ "tag": "s-suite-eval-v1"
+}

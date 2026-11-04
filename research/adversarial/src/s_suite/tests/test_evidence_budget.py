@@ -57,3 +57,11 @@ def test_infeasible_scheme_returns_nan_not_error():
     it = eb.toy_items(rho=0.0, n_sessions=2, per_session=3, seed=0)
     r = curve(it, K=(1, 5), schemes=("same_session", "diverse"))
     assert r["schemes"]["same_session"]["n_persons_eligible"][1] == 0
+
+
+def test_gain_vs_k1_is_reported_with_mde():
+    it = eb.toy_items(rho=0.0, n_sessions=8, per_session=12, seed=4)
+    r = curve(it)
+    g = r["schemes"]["diverse"]["gain_vs_k1"]
+    last = [x for x in g if x["K"] == 10][0]
+    assert last["available"] and last["diff"] > 0.1 and last["mde80"] > 0 and last["inside_mde"] is False

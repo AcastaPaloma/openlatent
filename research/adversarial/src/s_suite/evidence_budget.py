@@ -149,6 +149,22 @@ def _budget_curve(items: Items, K_list: List[int], schemes=("random", "same_sess
         res["schemes"][sc]["n_star_ci95"] = {str(t): [float(np.nanquantile(nb[:, j], 0.025)) if np.isfinite(nb[:, j]).any() else None,
                                                       float(np.nanquantile(nb[:, j], 0.975)) if np.isfinite(nb[:, j]).any() else None]
                                              for j, t in enumerate(targets)}
+    # gain over K = 1, paired over persons (the E3 endpoint: gain at K = 10 against its MDE80)
+    for sc, M in per_person.items():
+        gains = []
+        for i, K in enumerate(K_list):
+            if i == 0:
+                continue
+            ok = ~np.isnan(M[i]) & ~np.isnan(M[0])
+            if ok.sum() < 3:
+                gains.append(dict(K=K, available=False))
+                continue
+            d = np.where(ok, M[i] - M[0], np.nan)
+            bm = np.nanmean(d[bidx], axis=1)
+            se = float(np.nanstd(bm, ddof=1))
+            gains.append(dict(K=K, available=True, n_persons=int(ok.sum()), diff=float(np.nanmean(d)), se=se, mde80=st.Z_MDE * se,
+                              ci95=[float(np.nanquantile(bm, 0.025)), float(np.nanquantile(bm, 0.975))], inside_mde=bool(abs(np.nanmean(d)) <= st.Z_MDE * se)))
+        res["schemes"][sc]["gain_vs_k1"] = gains
     # independence test: diverse - same_session, paired over persons
     if "diverse" in per_person and "same_session" in per_person:
         res["independence"] = _independence(K_list, per_person["diverse"], per_person["same_session"], bidx)
