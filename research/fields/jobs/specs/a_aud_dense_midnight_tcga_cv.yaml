@@ -1,0 +1,4 @@
+name: a_aud_dense_midnight_tcga_cv
+priority: 4
+cmd: for s in 0 1 2 3; do USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tcga --seed $s --grid dense --holdout --crossfit 4; done
+hf_path: runs/a_aud_dense_midnight_tcga_cv

@@ -549,6 +549,8 @@ P4 = (
     + RECON + AE
 )
 CONTROLS_MIN = [("ctrl_const", {}), ("ctrl_shuffle_orth", dict(rep=0))]
+DENSE = ([("raw", {})] + [("pca", dict(d=d)) for d in (6, 10, 12, 20, 24)] + [("lda_pca", dict(d=d)) for d in (6, 10, 12, 20, 24)]
+         + [("randproj", dict(d=d)) for d in (8, 12, 24)])
 F02 = [("ae", dict(dl=32, lam=l, beta=1e-3, rounds=36)) for l in (30.0, 100.0, 300.0)]
 P2 = (
     [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0))] + LDA_ARMS
