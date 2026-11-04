@@ -256,6 +256,20 @@ def _lgbm(Xtr, ytr, Xev_list, ncls, seed, val=None, rounds=None, max_rounds=80):
     return rounds, [torch.as_tensor(b.predict(e.cpu().numpy())).to(DEV) for e in Xev_list]
 
 
+def _lda(Xtr, ytr, Xev_list, alpha, ncls):
+    """Shrinkage LDA (equal priors): the classic few-shot speaker-ID attacker on pooled embeddings."""
+    X = Xtr.double(); y = ytr
+    cnt = torch.zeros(ncls, dtype=torch.float64, device=X.device).index_add_(0, y, torch.ones(len(y), dtype=torch.float64, device=X.device))
+    mu = torch.zeros(ncls, X.shape[1], dtype=torch.float64, device=X.device).index_add_(0, y, X) / cnt.clamp(min=1)[:, None]
+    R = X - mu[y]
+    S = R.T @ R / max(len(y) - int((cnt > 0).sum()), 1)
+    S = (1 - alpha) * S + alpha * (torch.trace(S) / S.shape[0]) * torch.eye(S.shape[0], dtype=torch.float64, device=X.device)
+    W = torch.linalg.solve(S, mu.T)  # [d, C]
+    b = -0.5 * (mu * W.T).sum(1)
+    b = torch.where(cnt > 0, b, torch.full_like(b, -1e9))
+    return [(Xe.double() @ W + b).float() for Xe in Xev_list]
+
+
 def _ridge(Xtr, ytr, Xev_list, alpha):
     A = Xtr.T @ Xtr + alpha * torch.eye(Xtr.shape[1], device=Xtr.device)
     ym = ytr.mean()
@@ -265,7 +279,8 @@ def _ridge(Xtr, ytr, Xev_list, alpha):
 
 GRIDS = dict(linear=[dict(l2=1e-5), dict(l2=1e-4), dict(l2=1e-3)], mlp=[dict(l2=0.0), dict(l2=1e-4)],
              knn=[dict(k=1), dict(k=5), dict(k=15)], ridge=[dict(alpha=a) for a in (1e-1, 1, 10, 100, 1000)],
-             transformer=[dict(l2=0.0)], tdnn=[dict(l2=0.0)], lgbm=[dict()])
+             transformer=[dict(l2=0.0)], tdnn=[dict(l2=0.0)], lgbm=[dict()],
+             lda=[dict(alpha=a) for a in (0.02, 0.1, 0.4, 0.8)])
 import os as _os
 EPOCHS = dict(linear=60, mlp=60, transformer=30, tdnn=30) if not _os.environ.get("C_FAST") else dict(linear=6, mlp=6, transformer=3, tdnn=3)
 SEQ_KINDS = ("transformer", "tdnn")
@@ -285,7 +300,7 @@ def attack(rep, y, fit_idx, val_idx, train_idx, eval_sets, kinds, task="cls", nc
     fit_idx, val_idx, train_idx = (np.asarray(i) for i in (fit_idx, val_idx, train_idx))
     for kind in kinds:
         seqk = kind in SEQ_KINDS
-        if (seqk and rep.seq is None) or (kind == "lgbm" and task != "cls"):
+        if (seqk and rep.seq is None) or (kind in ("lgbm", "lda") and task != "cls"):
             continue
         best = None
         P = rep.pooled
@@ -298,6 +313,9 @@ def attack(rep, y, fit_idx, val_idx, train_idx, eval_sets, kinds, task="cls", nc
                 sc, ep = _score(out_v, yt[val_idx], task, ncls), 1
             elif kind == "ridge":
                 out_v = _ridge(X[fit_idx], yt[fit_idx], [X[val_idx]], hp["alpha"])[0]
+                sc, ep = _score(out_v, yt[val_idx], task, ncls), 1
+            elif kind == "lda":
+                out_v = _lda(X[fit_idx], yt[fit_idx], [X[val_idx]], hp["alpha"], ncls)[0]
                 sc, ep = _score(out_v, yt[val_idx], task, ncls), 1
             elif kind == "lgbm":
                 ep, (out_v,) = _lgbm(X[fit_idx], yt[fit_idx], [], ncls, seed, val=(X[val_idx], yt[val_idx]))
@@ -318,6 +336,8 @@ def attack(rep, y, fit_idx, val_idx, train_idx, eval_sets, kinds, task="cls", nc
             outs = _knn(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], hp["k"], ncls)
         elif kind == "ridge":
             outs = _ridge(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], hp["alpha"])
+        elif kind == "lda":
+            outs = _lda(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], hp["alpha"], ncls)
         elif kind == "lgbm":
             _, outs = _lgbm(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], ncls, seed + 1, rounds=ep)
         else:
@@ -365,7 +385,7 @@ class _SeqWrap(nn.Module):
 
 def suite_for(rep, extra=()):
     import os
-    k = ["linear", "mlp", "knn", "lgbm"]
+    k = ["linear", "mlp", "knn", "lda", "lgbm"]
     if rep.seq is not None:
         k += ["transformer", "tdnn"]
     only = os.environ.get("C_KINDS")  # dev/smoke only

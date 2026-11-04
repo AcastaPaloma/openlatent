@@ -18,7 +18,7 @@ B = 1000
 ACTORS = list(range(1001, 1092))
 RS = np.random.RandomState(12345)
 MULT = np.stack([np.bincount(RS.randint(0, 91, 91), minlength=91) for _ in range(B)]).astype(float)  # [B,91]
-EMO_KINDS = ["linear", "mlp", "knn", "lgbm", "transformer", "tdnn"]
+EMO_KINDS = ["linear", "mlp", "knn", "lda", "lgbm", "transformer", "tdnn"]
 
 
 def load(dirpath):
@@ -199,13 +199,15 @@ def fmt(x, d=3):
 def row(S):
     f = lambda e: f"{e['point']:.3f} [{e['ci'][0]:.3f},{e['ci'][1]:.3f}]"
     L = f(S["leakage_T1_unseen"]) if "leakage_T1_unseen" in S else "-"
-    return (f"| {S['name']} | {len(S['seeds'])} | {f(S['emo_uar'])} | {f(S['id']['T1_unseen'])} | {L} | "
-            f"{S['id']['T1_seen']['point']:.3f} | {S['id']['T3_unseen']['point']:.3f} | "
-            f"{S.get('rate', {}).get('kl_nats', float('nan')):.1f} |")
+    r = S.get("rate", {})
+    bits = r.get("bits_vq") if r.get("bits_vq") is not None else (r["kl_nats"] / np.log(2) if "kl_nats" in r else float("nan"))
+    idp = S["id"]["T1_unseen"]["point"]
+    return (f"| {S['name']} | {len(S['seeds'])} | {f(S['emo_uar'])} | {f(S['id']['T1_unseen'])} | {idp * 91:.1f}x | {L} | "
+            f"{S['id']['T1_seen']['point']:.3f} | {S['id']['T3_unseen']['point']:.3f} | {bits:.1f} |")
 
 
-HEAD = ("| run | seeds | emotion UAR [95% CI] | identity top-1, worst attacker, T1 unseen [95% CI] | leakage L [95% CI] | "
-        "id T1 seen | id T3 unseen | rate (nats) |\n|---|---:|---|---|---|---:|---:|---:|")
+HEAD = ("| run | seeds | emotion UAR [95% CI] | identity top-1, worst attacker, T1 unseen [95% CI] | x chance | leakage L [95% CI] | "
+        "id T1 seen | id T3 unseen | rate (bits) |\n|---|---:|---|---|---:|---|---:|---:|---:|")
 
 
 def main():

@@ -182,8 +182,10 @@ def train_encoder(cfg, rag4, emo, actor_idx, train_clips, val_clips, seed, log=p
     c = dict(dz=64, pool="utt", bott="vib", beta=0.0, lam=0.0, vq_groups=1, vq_codes=64, vq_dim=32, epochs=40, bs=64,
              lr=1e-3, adv_reinit=10, adv_warm=100, adv_k=3, ramp=5, dropout=0.1)
     c.update(cfg)
+    release = c_release = cfg.get("release", "z")
     E = Encoder(n_layers=rag4.flat.shape[1], din=rag4.flat.shape[2], dz=c["dz"], pool=c["pool"], bott=c["bott"], beta=c["beta"], vq_groups=c["vq_groups"], vq_codes=c["vq_codes"],
                 vq_dim=c["vq_dim"], dropout=c["dropout"]).to(DEV)
+    E.release = release
     emo_t = torch.as_tensor(emo, device=DEV)
     train_clips = np.asarray(train_clips)
     # contiguous adversary labels over the encoder-train actors only
@@ -267,17 +269,23 @@ def encode_all(E, rag4, bs=128):
         idx = np.arange(s, min(s + bs, n))
         x, m = rag4.batch(idx)
         o = E(x.float(), m)
-        pooled.append(o["zstat"].cpu())
+        rel = getattr(E, "release", "z")
+        if rel == "posterior":
+            pooled.append(torch.softmax(o["emo_logits"], -1).cpu())
+        elif rel == "label":
+            pooled.append(F.one_hot(o["emo_logits"].argmax(-1), 6).float().cpu())
+        else:
+            pooled.append(o["zstat"].cpu())
         kls.append(o["kl"].mean(1).cpu() if o["smask"] is not None else o["kl"].cpu())
-        if o["smask"] is not None:
+        if o["smask"] is not None and getattr(E, "release", "z") == "z":
             for i in range(len(idx)):
                 seqs.append(o["z"][i][o["smask"][i]].cpu())
     pooled = torch.cat(pooled, 0)
     seq = None
-    if seqs:
+    if seqs and getattr(E, "release", "z") == "z":
         lens = np.array([len(q) for q in seqs])
         seq = Ragged(torch.cat(seqs, 0), np.concatenate([[0], np.cumsum(lens)]))
-    rate = dict(kl_nats=float(torch.cat(kls).mean()), bits_vq=E.bits)
+    rate = dict(kl_nats=float(torch.cat(kls).mean()), bits_vq=E.bits if getattr(E, "release", "z") == "z" else (float(np.log2(6)) if E.release == "label" else None))
     if E.bott == "vq":
         rate["vq_perplexity"] = E.vq.perplexity()
     return Rep(pooled, seq, "learned"), rate

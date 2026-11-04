@@ -46,6 +46,8 @@ def learned_configs():
     for g, k in ((1, 8), (1, 64), (2, 64), (4, 64), (4, 256)):
         cf[f"c_vq_g{g}k{k}"] = dict(bott="vq", vq_groups=g, vq_codes=k, vq_dim=16, lam=0.0)
     cf["c_vqadv_g4k64_l1"] = dict(bott="vq", vq_groups=4, vq_codes=64, vq_dim=16, lam=1.0)
+    cf["c_post6"] = dict(dz=64, bott="vib", beta=0.0, lam=0.0, release="posterior")  # minimal-rate reference: 6 class posteriors
+    cf["c_label6"] = dict(dz=64, bott="vib", beta=0.0, lam=0.0, release="label")  # hard emotion label, log2(6)=2.6 bits
     for d, lam in ((8, 0.0), (32, 0.0), (32, 1.0)):
         cf[f"c_seg25_d{d}_l{lam:g}"] = dict(dz=d, bott="vib", beta=0.0, lam=lam, pool=25)
     return cf
