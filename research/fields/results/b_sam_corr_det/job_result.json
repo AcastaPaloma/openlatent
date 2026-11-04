@@ -3,14 +3,14 @@
  "config": {
   "name": "b_sam_corr_det",
   "priority": 12,
-  "cmd": "cd research/fields/src/b_robotics && ~/venvs/b/bin/python sam_masks.py --kind corr_det --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_corr_det.json $OUT/",
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind corr_det --splits train,val,test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_corr_det.json $OUT/",
   "hf_path": "runs/b_sam_corr_det"
  },
- "commit": "3d3ea1d",
+ "commit": "4b09e69",
  "exit_code": -15,
- "gpu": 0,
+ "gpu": 3,
  "host": "192-222-52-237",
- "seconds": 426.8,
- "finished_utc": "2026-11-04T08:51:07Z",
+ "seconds": 835.5,
+ "finished_utc": "2026-11-04T09:18:58Z",
  "uploaded": false
 }

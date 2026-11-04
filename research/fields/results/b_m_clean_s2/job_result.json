@@ -1,0 +1,16 @@
+{
+ "name": "b_m_clean_s2",
+ "config": {
+  "name": "b_m_clean_s2",
+  "priority": 11,
+  "cmd": "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python lam.py --kind none --arms clean --epochs 30 --seed 2 --out $OUT",
+  "hf_path": "runs/b_m_clean_s2"
+ },
+ "commit": "9f67a06",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 222.6,
+ "finished_utc": "2026-11-04T09:22:41Z",
+ "uploaded": true
+}
