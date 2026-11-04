@@ -45,7 +45,9 @@ def _label_only_identity(ctx, tr_idx, test_idx):
     return guess[ctx.emo[test_idx]] == ctx.actor_idx[test_idx]
 
 
-def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=None, log=print):
+def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=None, id_mode="fold", log=print):
+    """id_mode: 'fold' = split identity counts into encoder-unseen (test actors) / seen (train actors);
+    'all' = representation does not depend on the fold: attack once, every actor goes into 'unseen'; 'skip' = no identity."""
     S = ctx.fold_sets(fold)
     rs = np.random.RandomState(1234 + seed)
     out = dict(emo={}, id={}, secrets={}, hp={})
@@ -65,11 +67,16 @@ def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=N
     M = ctx.masks
     idx = {k: np.where(v & ctx.keep)[0] for k, v in M.items()}
     y = ctx.actor_idx.copy()
+    if id_mode == "skip":
+        evs = {}
+    else:
+        evs = {t: idx[t] for t in ("T1", "T2", "T3")}
+    all_actors = list(ctx.actors_sorted)
     if shuffle == "id":
         y[idx["atk_train"]] = rs.permutation(y[idx["atk_train"]])
-    evs = {t: idx[t] for t in ("T1", "T2", "T3")}
-    res = attack(rep, y, idx["atk_fit"], idx["atk_val"], idx["atk_train"], evs, suite_for(rep), "cls", 91, seed)
-    te_set = set(S["te_actors"]); tr_set = set(S["tr_actors"])
+    res = attack(rep, y, idx["atk_fit"], idx["atk_val"], idx["atk_train"], evs, suite_for(rep), "cls", 91, seed) if evs else {}
+    te_set = set(S["te_actors"]) if id_mode == "fold" else set(all_actors)
+    tr_set = set(S["tr_actors"]) if id_mode == "fold" else set()
     for k, r in res.items():
         out["id"][k] = {}
         for t, ii in evs.items():

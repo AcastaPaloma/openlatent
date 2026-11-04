@@ -119,12 +119,14 @@ def main():
                     ev.merge_fold(acc["layers"].setdefault(l, {}), o)
                 print(f"[{a.name} s{seed} f{fold}] layers done {time.time()-tf:.0f}s", flush=True)
                 continue
-            o = ev.evaluate_rep(ctx, rep, fold, seed, shuffle=a.shuffle, secrets=not a.no_secrets, extra_emo=head_pred)
+            indep = a.method in ("raw", "mean", "smooth", "feat", "ctrl_constant", "ctrl_length", "leace_oracle")
+            id_mode = "fold" if not indep else ("all" if fold == a.folds[0] else "skip")
+            o = ev.evaluate_rep(ctx, rep, fold, seed, shuffle=a.shuffle, secrets=not a.no_secrets, extra_emo=head_pred, id_mode=id_mode)
             ev.merge_fold(acc, o)
             extra["folds"].append(dict(fold=fold, seconds=round(time.time() - tf, 1), **info))
             # compact log line (progress only; headline numbers come from aggregate.py with intervals)
             emo = {k: float(np.mean([np.trace(np.array(C)) / max(np.array(C).sum(), 1) for C in v.values()])) for k, v in o["emo"].items()}
-            idt = {k: float(np.mean([c / n for c, n in t["T1"]["unseen"].values()])) for k, t in o["id"].items() if "T1" in t}
+            idt = {k: float(np.mean([c / max(n, 1) for c, n in t["T1"]["unseen"].values()])) for k, t in o["id"].items() if "T1" in t}
             print(f"[{a.name} s{seed} f{fold}] {time.time()-tf:.0f}s  emo_acc(actor-mean) {emo}  id_T1_unseen(actor-mean) {idt}", flush=True)
         res = dict(name=a.name, method=a.method, cfg=cfg, backbone=a.backbone, seed=seed, shuffle=a.shuffle,
                    commit=git_rev(), seconds=round(time.time() - t0, 1), splits=dict(S_TE=sp["S_TE"], S_TR=sp["S_TR"], E_TR=sp["E_TR"], E_TE=sp["E_TE"]),

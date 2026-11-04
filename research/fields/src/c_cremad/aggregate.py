@@ -131,6 +131,9 @@ def summarize(runs, raw_runs):
     S["id"] = {}
     for T in ("T1", "T2", "T3"):
         for grp in ("unseen", "seen"):
+            if top1(runs[0], kinds_present(runs[0], "id")[0], T, grp)[1].sum() == 0:
+                S["id"][f"{T}_{grp}"] = dict(point=float("nan"), ci=[float("nan")] * 2, per_seed=[], worst_kind=[])
+                continue
             b, p, _ = stat_over_seeds(runs, lambda r: worst_id(r, T, grp)[:2])
             S["id"][f"{T}_{grp}"] = dict(point=p, ci=ci(b), per_seed=[worst_id(r, T, grp)[1] for r in runs],
                                          worst_kind=[worst_id(r, T, grp)[2] for r in runs])
