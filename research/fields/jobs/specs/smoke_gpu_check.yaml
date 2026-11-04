@@ -1,0 +1,4 @@
+name: smoke_gpu_check
+priority: 0
+cmd: python3 -c "import torch,json,os;x=torch.randn(4096,4096,device='cuda');print(torch.cuda.get_device_name(),float((x@x).sum().abs()>0));json.dump({'ok':True,'gpu':os.environ['CUDA_VISIBLE_DEVICES']},open(os.environ['OUT']+'/smoke.json','w'))"
+hf_path: runs/smoke_gpu_check
