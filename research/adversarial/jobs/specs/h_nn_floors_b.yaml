@@ -1,0 +1,5 @@
+name: h_nn_floors_b
+priority: 14
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm quant_b1,quant_b2,quant_b3,quant_b4,ds4,ds8,ds16,demean --folds O --family nn --targets id,act --out $OUT"
+hf_path: runs/h_nn_floors_b
+hf_allow: ["*.json", "*.log", "*.md"]

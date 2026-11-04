@@ -1,0 +1,5 @@
+name: h_nn_aae
+priority: 12
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm msda --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/h_imu/out/aae_rel/msda_s0.npz && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm rep --folds O --family nn --targets id,act --out $OUT --pd_file $HOME/work/h_imu/out/aae_rel/rep_s0.npz"
+hf_path: runs/h_nn_aae
+hf_allow: ["*.json", "*.log", "*.md"]

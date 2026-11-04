@@ -1,0 +1,5 @@
+name: h_nn_floors_a
+priority: 14
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm raw --folds O,A,B --family nn --targets id,act --out $OUT && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --arm shuf_raw,noise_s0.5,noise_s1,noise_s2,noise_s4 --folds O --family nn --targets id,act --out $OUT"
+hf_path: runs/h_nn_floors_a
+hf_allow: ["*.json", "*.log", "*.md"]
