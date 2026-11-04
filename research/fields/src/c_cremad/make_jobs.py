@@ -40,6 +40,17 @@ def trim():
             spec("c_fix_mean_trim", "mean", seeds=(0,), prio=13, extra="--trim")]
 
 
+def held_out_emotion():
+    """Encoder fitted with labels of ANG/HAP/NEU/SAD only; utility read as the recall of the never-seen DIS and FEA (probe on z)."""
+    te = [0, 3, 4, 5]
+    cf = {"c_he_rate_d16": dict(dz=16, bott="vib", beta=0.0, lam=0.0, train_emotions=te),
+          "c_he_rate_d4": dict(dz=4, bott="vib", beta=0.0, lam=0.0, train_emotions=te),
+          "c_he_rate_d64": dict(dz=64, bott="vib", beta=0.0, lam=0.0, train_emotions=te),
+          "c_he_adv_d16_l1": dict(dz=16, bott="vib", beta=0.0, lam=1.0, train_emotions=te),
+          "c_he_vq_g2k64": dict(bott="vq", vq_groups=2, vq_codes=64, vq_dim=16, lam=0.0, train_emotions=te)}
+    return [spec(f"{n}_s0", "learned", c, seeds=(0,), prio=20 + i) for i, (n, c) in enumerate(cf.items())]
+
+
 def learned_configs():
     cf = {}
     for d in (2, 4, 8, 16, 32, 64, 128, 256):
@@ -80,5 +91,5 @@ def sweeptrim(seeds=(0,), prio=22):
 
 if __name__ == "__main__":
     what = sys.argv[1]
-    names = sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
+    names = held_out_emotion() if what == "he" else sweeptrim() if what == "sweeptrim" else trim() if what == "trim" else ref() if what == "ref" else sweep((0,), 14) if what == "sweep0" else sweep((1, 2), 30)
     print(len(names), "specs", names[:3], "...")

@@ -1,0 +1,4 @@
+name: c_he_vq_g2k64_s0
+priority: 24
+cmd: "python3 research/fields/src/c_cremad/run_exp.py --name c_he_vq_g2k64_s0 --method learned --cfg '{\"bott\": \"vq\", \"vq_groups\": 2, \"vq_codes\": 64, \"vq_dim\": 16, \"lam\": 0.0, \"train_emotions\": [0, 3, 4, 5]}' --seeds 0"
+hf_path: runs/c_he_vq_g2k64_s0
