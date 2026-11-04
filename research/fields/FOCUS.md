@@ -40,6 +40,11 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   linear erasure, noise) before fixing any margin; (2) a pre-registered kill rule with the comparator named in advance; (3) an oracle arm to bound the room.
 - Two-hour kill test per literature/contrarian_missed_fields.md before spending more.
 
+- STATUS (2026-11-04, Builder D, seeds 0-1 of 3, headroom stage only): NO-GO as pre-registered. H1 passes (worst retrained attacker R-precision on raw vectors 0.183 vs 0.004 prior);
+  H2 fails: the oracle (rare words deleted before embedding) keeps only 0.74 of nDCG@10 and still has normalised leakage 0.59, so headroom 0.041 [0.001, 0.081] < the 0.10 needed.
+  Mechanism: rare words are retrieval-critical, so the secret and the utility overlap ("task implies the secret"). Learned kill test not run. Post-hoc learned arms (2 seeds) are queued
+  and cannot flip the verdict. Reframe candidate (not started): a secret retrieval does not use (entities, numbers) built from public-licence text.
+
 ## Focus B': robotics latent actions   [NO-GO, decided 2026-11-04 11:30Z]
 - Verdict (Builder B, results_notes/B.md): on action-correlated distractors (corr_det, 3 seeds) the best learned arm (adv) beats zero-shot SAM by 0.010 NMSE
   (rule: >= 0.05 in every seed): FAIL. Mechanism: the harm is input clutter, not leakage (raw z carries ~0 sprite information), so an adversary on z has nothing to
