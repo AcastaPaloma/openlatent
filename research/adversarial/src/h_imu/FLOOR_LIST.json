@@ -1,0 +1,108 @@
+{
+ "attackers_held_out": [
+  "svm_rbf",
+  "transformer"
+ ],
+ "attackers_main_code": [
+  "linear",
+  "mlp",
+  "knn",
+  "lgbm",
+  "rf"
+ ],
+ "attackers_main_window": [
+  "linear",
+  "mlp",
+  "knn",
+  "lgbm",
+  "rf",
+  "cnn1d",
+  "mlp_flat"
+ ],
+ "controls": [
+  "ctrl_const",
+  "ctrl_noise16",
+  "shuf_raw"
+ ],
+ "envelope_floors": {
+  "label_supervised_linear_activity_LDA": [
+   "lda1",
+   "lda2",
+   "lda3",
+   "lda3_r0.5",
+   "lda3_r1",
+   "lda3_r2"
+  ],
+  "label_supervised_wide_codes": [
+   "act8",
+   "act60",
+   "act8_r1",
+   "act60_r1",
+   "pdz60"
+  ],
+  "noise_dither": [
+   "noise_s0.5",
+   "noise_s1",
+   "noise_s2",
+   "noise_s4"
+  ],
+  "rate_bottleneck_quantiser_downsample": [
+   "quant_b1",
+   "quant_b2",
+   "quant_b3",
+   "quant_b4",
+   "ds4",
+   "ds8",
+   "ds16",
+   "demean"
+  ],
+  "reference_no_defence": [
+   "raw"
+  ],
+  "unsupervised_codes": [
+   "pcaphi3",
+   "pcaphi8",
+   "pcaphi16",
+   "pcaphi32",
+   "pcaraw3",
+   "pcaraw8",
+   "pcaraw32",
+   "pcaraw64",
+   "rp3",
+   "rp8",
+   "rp16",
+   "rp64"
+  ],
+  "wave2_not_yet_implemented_if_not_run_it_is_listed_as_not_run": [
+   "dae16_r0.5",
+   "dae16_r1",
+   "dae16_r2",
+   "dae60_r0.5",
+   "dae60_r1",
+   "dae60_r2"
+  ]
+ },
+ "frozen_by": "H.md v0 section 2.3-2.4 (commit 0bb091d) + H-A1 (1178374); this file only makes the list machine-readable",
+ "learned_defences_under_audit": {
+  "cross_threat_model_control": [
+   "pd_pub",
+   "pd_plain",
+   "pd_w1_1.8",
+   "pd_w2_0.5"
+  ],
+  "identity_targeted_k2_set": [
+   "msda",
+   "rep"
+  ]
+ },
+ "oracles": [
+  "oracle_act",
+  "oracle_id"
+ ],
+ "replication_only_not_in_envelope": [
+  "rp16_seed1",
+  "rp16_seed2",
+  "rp64_seed1",
+  "rp64_seed2"
+ ]
+}

@@ -143,3 +143,18 @@ def analysis_set(trials=None):
     out["j"] = j[keep]
     out["is_train_window"] = (out["j"] % 4 == 0)
     return out
+
+
+# ---------------------------------------------------------------- sealed salted partition (FOCUS A1/A6): committed salt, rank by sha256
+def sealed_fold_table(salt, n_folds=3, acts=ACTS, trial_codes=TRIAL_CODES):
+    """For each (subject, activity) group the trials are ranked ascending by sha256(f"{subject_code}|{activity}|{trial}|{salt}") (subject_code 1..24);
+    fold = rank mod n_folds.  Returns dict (sub0, act_name, trial) -> fold (0..n_folds-1).  `salt` is the exact stripped content of
+    research/adversarial/sealed/h_imu_salt.txt (committed by the main agent AFTER the floor list is frozen)."""
+    tab = {}
+    for s in range(N_SUB):
+        for a in acts:
+            ts = trial_codes[a]
+            h = sorted(ts, key=lambda t: hashlib.sha256(f"{s + 1}|{a}|{t}|{salt}".encode()).hexdigest())
+            for r, t in enumerate(h):
+                tab[(s, a, t)] = r % n_folds
+    return tab
