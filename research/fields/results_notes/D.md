@@ -13,7 +13,7 @@ interval and a seed count; single-seed numbers are marked "not yet replicated".
 | sentence-transformers/gtr-t5-base | apache-2.0 (not gated) | frozen embedder, revision 9801579c |
 | BAAI/bge-small-en-v1.5, intfloat/e5-small-v2 | mit (not gated) | second embedder (sweep only) |
 | ielabgroup/vec2text_gtr-base-st_{inversion,corrector} | apache-2.0 (not gated) | sweep only (Vec2Text-style attacker on GTR-base) |
-| **ai4privacy/pii-masking-300k** | HF card `license: other`; `LICENSE.md` = **academic research and non-commercial use only, AI4Privacy must be acknowledged, and "redistribution, uploading to databases, sharing through any medium, or the creation and dissemination of derivative works" need a written licence; the data is watermarked.** The contrarian scout wrote "stated Apache 2.0" (copied from the SPARSE paper): that is wrong for the HF release. | **Not used in the kill test.** For the sweep: local use only (English jsonl downloaded to `~/work/data/d_embedpriv/pii` for academic evaluation), no text, no per-record embeddings and no per-record outputs are written to `$OUT`/HF/git; only aggregate metrics. Needs the programme owner's OK that an academic-only licence is acceptable; if not, swap in a permissively licensed synthetic PII set (to be checked) |
+| **ai4privacy/pii-masking-300k** | HF card `license: other`; `LICENSE.md` = **academic research and non-commercial use only, AI4Privacy must be acknowledged, and "redistribution, uploading to databases, sharing through any medium, or the creation and dissemination of derivative works" need a written licence; the data is watermarked.** The contrarian scout wrote "stated Apache 2.0" (copied from the SPARSE paper): that is wrong for the HF release. | **NOT USED, including in the sweep, until the programme owner approves academic-only terms (coordinator decision 12:05Z).** The English jsonl was downloaded to the VM (`~/work/data/d_embedpriv/pii`, 130 MB, never read by any code here, never uploaded); it will be deleted if approval is not given. The secret is defined from public-licence text instead: the rare/mid content-word tier on BEIR documents (section 2.1). Consequence: all results are about recoverable text (words), not PII spans; a PII claim would need a permissively licensed PII set |
 | MIMIC-III, any gated set | gated | not used |
 
 ## 1. Question and the claim being tested
@@ -86,7 +86,7 @@ could hide topical context that deleting words leaves in).
   K4 the mid-tier leakage of adv is not worse than F\*'s by more than 0.05 (no hiding behind the tier).
   Fail -> NO-GO for Focus D as specified. Seeds 0,1,2 for everything stochastic; doc splits are one fixed realisation (CIs cover test-document / test-query
   sampling and, separately, seed spread; not split-to-split variability). Single-seed statements are "not yet replicated".
-* After a GO only (not part of the kill test): bge-small replication, SciFact as second utility set, STS Pearson, PII-Masking token recovery, VQ and contrastive adapters,
+* After a GO only (not part of the kill test): bge-small replication, SciFact as second utility set, STS Pearson, VQ and contrastive adapters,
   Vec2Text/ALGEN attackers, both-sides noise.
 
 ## 3. Disclosure log (things seen before the numbers they could bias)
@@ -103,6 +103,8 @@ could hide topical context that deleting words leaves in).
 * Resume recipe once the extraction job is done: `d_hr*` jobs start by themselves (they wait up to 30 min for `~/work/cache/d_embedpriv/gtr_base/meta.json`); then
   `src/d_embedpriv/pull_runs.sh <dir>` and `python src/d_embedpriv/aggregate.py <dir>/d_hr*` give the controls/oracle/floors tables for the headroom check (section 2.5); the margin is then frozen here,
   and only then `python make_jobs.py learned 0,1,2` writes the learned-arm jobs (bott_mlp control + adv lambda 0.1/0.3/1/3, d 16..512).
+
+* 12:05Z coordinator promoted `d_extract_gtr_base` (priority 3) and the six `d_hr*` jobs (priority 4); extraction started 12:05Z. Coordinator ruling: the 2-hour kill-test clock restarts when extraction starts (12:05Z, so the budget ends 14:05Z).
 
 ## 5. Results
 (none yet)
