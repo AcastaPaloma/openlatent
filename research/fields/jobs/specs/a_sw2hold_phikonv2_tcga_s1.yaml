@@ -1,0 +1,4 @@
+name: a_sw2hold_phikonv2_tcga_s1
+priority: 31
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder phikonv2_clsmean --dataset tcga --seed 1 --grid all --holdout
+hf_path: runs/a_sw2hold_phikonv2_tcga_s1
