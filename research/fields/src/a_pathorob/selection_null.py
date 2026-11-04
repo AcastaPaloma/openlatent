@@ -53,6 +53,7 @@ def main():
     ap.add_argument("--out", default="-")
     ap.add_argument("--B", type=int, default=1000)
     ap.add_argument("--draws", type=int, default=5000)
+    ap.add_argument("--undithered", action="store_true", help="post hoc variant: drop the dithered codes from the floor pool of BOTH the observed statistic and null A (their retention is low by construction)")
     a = ap.parse_args()
     recs = load(a.runs)
     cells = sorted({(r["encoder"], r["dataset"], r.get("variant", "crossed")) for r in recs if r["cfg"] == "raw"})
@@ -64,7 +65,7 @@ def main():
             continue
         tab = build(cell)
         aes = [c for c in tab if family(c) == "ae"]
-        floors = [c for c in tab if family(c) in FLOORS]
+        floors = [c for c in tab if family(c) in FLOORS and not (a.undithered and family(c) == "dither")]
         for key, name in (("ut", "held-class acc" if "holdout" in var else "label acc"), ("ret", "retention xc")):
             obs = stat(tab, aes, floors, key)
             if not obs:

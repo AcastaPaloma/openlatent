@@ -1,0 +1,4 @@
+name: a_aud_dinov2L_tcga_cv_fold1
+priority: 4
+cmd: USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder dinov2L_clsmean --dataset tcga --seed 1 --grid p4 --holdout --crossfit 4
+hf_path: runs/a_aud_dinov2L_tcga_cv_fold1
