@@ -1,0 +1,16 @@
+{
+ "name": "c_ref_raw_trim",
+ "config": {
+  "name": "c_ref_raw_trim",
+  "priority": 7,
+  "cmd": "python3 research/fields/src/c_cremad/run_exp.py --name c_ref_raw_trim --method raw --cfg '{}' --seeds 0 1 2 --trim",
+  "hf_path": "runs/c_ref_raw_trim"
+ },
+ "commit": "6f04341",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 1890.1,
+ "finished_utc": "2026-11-04T10:32:19Z",
+ "uploaded": true
+}

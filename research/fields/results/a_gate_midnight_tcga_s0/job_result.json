@@ -1,0 +1,16 @@
+{
+ "name": "a_gate_midnight_tcga_s0",
+ "config": {
+  "name": "a_gate_midnight_tcga_s0",
+  "priority": 13,
+  "cmd": "USE_TF=0 $HOME/venvs/a/bin/python research/fields/src/a_pathorob/run_sweep.py --encoder midnight_clsmean --dataset tcga --seed 0 --grid gate",
+  "hf_path": "runs/a_gate_midnight_tcga_s0"
+ },
+ "commit": "df0c225",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 246.6,
+ "finished_utc": "2026-11-04T10:40:04Z",
+ "uploaded": true
+}
