@@ -558,3 +558,7 @@ is printed; if it exceeds m the verdict is UNDERPOWERED, not NO-GO. With SE ~ 0.
 ### 6.9 Budget, queue, code
 <= 3 GPU-h. Expected: 13 configs x 3 folds x 3 seeds trainings of ~10-40 s plus attacker evaluation (~12 s per arm-fold on HLCA) = about 0.5 h per seed on one GPU slot, three seed jobs in parallel, plus a 2-minute diagnostic and two CPU-bound dense-floor jobs (seeds 1, 2).
 Priority 4 is used ONCE for the first wave (diagnostic, three seed jobs, two dense-floor jobs). Code: `src/e_singlecell/{inductive,evaluate_e2,aggregate_e2}.py`. Specs `jobs/specs/e_e2_*.yaml`, names prefixed `e_`.
+
+### 6.10 Amendments and status log (E2)
+* **E2-A0 (18:30Z VM clock, no number involved):** the header of section 6 says "~19:00Z"; the pre-registration was committed (ce7611d) at 18:13Z VM clock, before any E2 code or job existed. Code committed afterwards (`inductive.py`, `evaluate_e2.py`, `aggregate_e2.py`).
+* 18:29Z queued at priority 4 (the one allowed use for E2): `e_e2_smoke` (synthetic dataset, wiring check, numbers not reported) and `e_e2_diag` (training-only diagnostic, 6.5). The three seed jobs and the two dense-floor jobs are queued only after the diagnostic has been read.
