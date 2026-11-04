@@ -23,7 +23,20 @@ HF_REPO = os.environ.get("FIELDS_HF_REPO", "KuanKuanKuan/openlatent-fields")
 
 
 def claim(gpu):
-    files = sorted((Q / "pending").glob("*.yaml"), key=lambda p: (yaml.safe_load(p.read_text()).get("priority", 50), p.name))
+    keyed = []
+    (Q / "bad").mkdir(exist_ok=True)
+    for p in (Q / "pending").glob("*.yaml"):
+        try:
+            cfg = yaml.safe_load(p.read_text())
+            assert isinstance(cfg, dict) and "name" in cfg and "cmd" in cfg
+            keyed.append(((cfg.get("priority", 50), p.name), p))
+        except Exception as e:  # one malformed spec must never kill a worker: quarantine it
+            print(f"quarantine {p.name}: {str(e)[:120]}", flush=True)
+            try:
+                os.rename(p, Q / "bad" / p.name)
+            except FileNotFoundError:
+                pass
+    files = [p for _, p in sorted(keyed)]
     for p in files:
         dst = Q / "running" / f"gpu{gpu}__{p.name}"
         try:
