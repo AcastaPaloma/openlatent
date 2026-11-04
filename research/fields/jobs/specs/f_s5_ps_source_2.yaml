@@ -1,4 +1,0 @@
-name: f_s5_ps_source_2
-priority: 30
-cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 5 --salt s0 --hold_source source_2 --arms raw,pca16,pca64,rp64,ldaT2_16,ldaT2_64,ldaT2_max,ldaP_64,ldaP_255,dpca16_r1,dpca64_r1,noise_r1,ldaT2_max_r1,ldaP_255_r1,T_centre,T_swhiten64,T_combat,T_harmony,T_sphering --out $OUT"
-hf_path: runs/f_s5_ps_source_2
