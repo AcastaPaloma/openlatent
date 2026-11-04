@@ -1,0 +1,17 @@
+{
+ "name": "e_e2_dense_hlca_s2",
+ "config": {
+  "name": "e_e2_dense_hlca_s2",
+  "priority": 10,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate.py --dataset hlca --seed 2 --arms dense --no_scvi --no_retention --out $OUT",
+  "hf_path": "runs/e_e2_dense_hlca_s2"
+ },
+ "commit": "f423c9d",
+ "commit_after": "948f80c",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 573.8,
+ "finished_utc": "2026-11-04T21:47:16Z",
+ "uploaded": true
+}
