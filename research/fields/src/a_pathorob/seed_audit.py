@@ -18,7 +18,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from aggregate_p2 import Cell, load, family, ci, fmt, KC, KX   # noqa
 
-FLOORS = ("raw", "centre_whiten", "leace", "lda", "lda_pca", "pca", "randproj", "dither")
+FLOORS = ("raw", "leace", "lda", "lda_pca", "pca", "randproj", "dither")   # inductive only (centre_whiten is transductive)
 PICKS = ("ae__beta0.001_dl32_lam10.0", "ae__beta0.001_dl8_lam0.0")
 
 

@@ -37,7 +37,8 @@ def fmt(pt, b, nd=3):
     return f"{pt:.{nd}f} [{lo:.{nd}f}, {hi:.{nd}f}]"
 
 
-FLOORS = ("raw", "centre_whiten", "leace", "lda", "lda_pca", "pca", "randproj", "dither")
+FLOORS = ("raw", "leace", "lda", "lda_pca", "pca", "randproj", "dither")   # inductive: fitted on adapter-train units only
+TRANS = ("centre_whiten",)   # transductive reference (needs the centre id and the test split's own statistics): reported separately, not in the envelope
 
 
 def fmtm(pt, b, nd=3):
@@ -225,6 +226,7 @@ def main():
     cells = sorted({(r["encoder"], r["dataset"], r.get("variant", "crossed")) for r in recs if "raw" == r["cfg"] and any(x["cfg"].startswith("lda_pca") for x in recs if x["encoder"] == r["encoder"] and x["dataset"] == r["dataset"])})
     L = []
     wins = []
+    wins_ret = []
     for enc, ds, var in cells:
         cell = Cell(enc, ds, var, recs, a.runs, a.B)
         if "raw" not in cell.by:
@@ -301,31 +303,35 @@ def main():
             flag = ("(i) utility " if wu else "") + ("(ii) retention " if wr else "")
             flags[c] = (okL and (wu or wr), flag.strip(), m_, du, dr, dL)
             L.append(f"| {c} | {tab[c]['dim']} | {m_} | {fmtm(*du)} | {fmtm(*dr)} | {fmt(*dL, nd=2)} | {'YES: ' + flag if (okL and (wu or wr)) else ('no (L worse by %.2f)' % dL[0] if not okL else 'no')} |")
-        # --- leakage-matched comparison against the lower envelope of ALL inductive floors (incl. dithered codes)
-        L.append(f"\nLeakage-matched (ranker P2/P3): each learned config minus the BEST inductive floor (by point estimate on C, so optimistic for the baseline) with L_worst <= L(config)+{a.tol:.2f}; "
-                 "floors = raw, centre_whiten, leace, lda, lda_pca, pca, randproj and every dithered code. n_near = number of floor points within +-0.05 of the config's L (< 2: no comparator, no win can be claimed).\n")
-        L.append("| learned config | L | n_near | best floor (utility) | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] (MDE80) | best floor (retention) | Δ retention xc [95% CI] (MDE80) |")
-        L.append("|---|---|---|---|---|---|---|")
+        # --- leakage-matched comparison against the lower envelope of the INDUCTIVE floors (incl. dithered codes); centre_whiten shown as a transductive reference
+        L.append(f"\nLeakage-matched: each learned config minus the BEST inductive floor (by point estimate on C, so optimistic for the baseline) with L_worst <= L(config)+{a.tol:.2f}; "
+                 "inductive floors = raw, leace, lda, lda_pca, pca, randproj and every dithered code (centre_whiten is a transductive reference, last column). n_near = floor points within +-0.05 of the config's L (< 2: no comparator). "
+                 "headroom = raw minus that floor = the most any adapter could gain; a metric with headroom < 0.04 is ceiling-limited and not scored.\n")
         ut = "held" if held_mode else "lab"
+        L.append("| learned config | L | n_near | best floor (utility) | headroom | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] (MDE80) | best floor (retention) | headroom | Δ retention xc [95% CI] (MDE80) | transductive ref centre_whiten (L, utility, retention) |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|")
         env = {}
         for c in order:
             if family(c) not in LEARNED:
                 continue
             refs = [x for x in tab if family(x) in FLOORS and tab[x]["L"][0] <= tab[c]["L"][0] + a.tol]
             near = [x for x in tab if family(x) in FLOORS and abs(tab[x]["L"][0] - tab[c]["L"][0]) <= 0.05]
+            tr = tab.get("centre_whiten")
+            trtxt = f"({tr['L'][0]:.2f}, {tr[ut][0]:.3f}, {tr['ret'][0]:.3f})" if tr else "-"
             if not refs:
-                L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | (no floor at this leakage) | n/a | | |")
+                L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | (no floor at this leakage) | | n/a | | | | {trtxt} |")
                 continue
             bu = max(refs, key=lambda x: tab[x][ut][0]); br = max(refs, key=lambda x: tab[x]["ret"][0])
             du_ = (tab[c][ut][0] - tab[bu][ut][0], tab[c][ut][1] - tab[bu][ut][1])
             dr_ = (tab[c]["ret"][0] - tab[br]["ret"][0], tab[c]["ret"][1] - tab[br]["ret"][1])
-            env[c] = (bu, du_, br, dr_, len(near))
-            L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | {bu} ({tab[bu][ut][0]:.3f}) | {fmtm(*du_)} | {br} ({tab[br]['ret'][0]:.3f}) | {fmtm(*dr_)} |")
+            hu = tab["raw"][ut][0] - tab[bu][ut][0]; hr = 1.0 - tab[br]["ret"][0]
+            env[c] = (bu, du_, br, dr_, len(near), hu, hr)
+            L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | {bu} ({tab[bu][ut][0]:.3f}) | {hu:.3f} | {fmtm(*du_)} | {br} ({tab[br]['ret'][0]:.3f}) | {hr:.3f} | {fmtm(*dr_)} | {trtxt} |")
         # --- V-selected per family (the official line)
         L = Lmain
         L.append(f"\nPer family, configuration selected on V (L_V within +{a.tol:.2f} of the matched LDA arm; then max V {'held-class acc' if held_mode else 'retention xc'}):\n")
-        L.append("| family | config | matched LDA | Δ " + ("held-class acc" if held_mode else "label acc") + " vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), n_near | beats floor envelope (Δ >= +0.04, CI > 0, n_near >= 2)? |")
-        L.append("|---|---|---|---|---|---|---|---|---|")
+        L.append("| family | config | matched LDA | Δ " + ("held-class acc" if held_mode else "label acc") + " vs matched LDA [95% CI] (MDE80) | Δ retention xc [95% CI] (MDE80) | Δ L_worst | wins vs matched LDA? | Δ utility vs best inductive floor at <= equal leakage [95% CI] (MDE80), headroom, n_near | utility win (Δ >= +0.04, CI > 0, n_near >= 2, headroom >= 0.04)? | Δ retention xc vs best inductive floor [95% CI] (MDE80), headroom | retention win (Δ >= +0.05, CI > 0, n_near >= 2, utility Δ >= -0.03)? |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
         sel_cfgs = []
         sel_start = len(L)
         for fam in LEARNED:
@@ -337,18 +343,20 @@ def main():
                 if tab[c]["V_L"] <= tab[m_]["V_L"] + a.tol:
                     cand.append((tab[c]["V_held"] if held_mode else tab[c]["V_ret"], c))
             if not cand:
-                L.append(f"| {fam} | (no config within the leakage tolerance on V) | | | | | no | | no |")
+                L.append(f"| {fam} | (no config within the leakage tolerance on V) | | | | | no | | no | | no |")
                 continue
             _, c = max(cand)
             sel_cfgs.append(c)
             ok, flag, m_, du, dr, dL = flags[c]
             wins.append((enc, ds, var, fam, c, ok, flag))
             if c in env:
-                bu, du_e, br, dr_e, nn_ = env[c]
-                beat = (nn_ >= 2) and ci(du_e[1])[0] > 0 and du_e[0] >= 0.04
-                etxt = f"{fmtm(*du_e)} vs {bu}, n_near={nn_} | {'YES' if beat else 'no'}"
+                bu, du_e, br, dr_e, nn_, hu_, hr_ = env[c]
+                beat = (nn_ >= 2) and ci(du_e[1])[0] > 0 and du_e[0] >= 0.04 and hu_ >= 0.04
+                rbeat = (nn_ >= 2) and ci(dr_e[1])[0] > 0 and dr_e[0] >= 0.05 and du_e[0] >= -0.03
+                etxt = f"{fmtm(*du_e)} vs {bu}, headroom {hu_:.3f}, n_near={nn_} | {'YES' if beat else ('ceiling-limited' if hu_ < 0.04 else 'no')} | {fmtm(*dr_e)} vs {br}, headroom {hr_:.3f} | {'YES' if rbeat else 'no'}"
+                wins_ret.append((enc, ds, var, fam, c, rbeat, beat))
             else:
-                etxt = "(no floor at this leakage) | no"
+                etxt = "(no floor at this leakage) | no | | no"
             L.append(f"| {fam} | {c} | {m_} | {fmtm(*du)} | {fmtm(*dr)} | {dL[0]:+.2f} | {'YES: ' + flag if ok else 'no'} | {etxt} |")
         if a.compact:   # reference rows + the selected configs, inserted before the V-selected comparison table
             hdr_i = main_anchor - 2 if False else None
@@ -368,6 +376,11 @@ def main():
     L.append("|---|---|---|---|---|---|")
     for e, d, v, f, c, ok, fl in wins:
         L.append(f"| {e} | {d} | {v} | {f} | {c} | {'YES: ' + fl if ok else 'no'} |")
+    L.append("\n### Retention / utility tally against the INDUCTIVE floor envelope (V-selected configuration per family)\n")
+    L.append("| encoder | dataset | variant | family | config | utility win | retention win |")
+    L.append("|---|---|---|---|---|---|---|")
+    for e, d, v, f, c, rw, uw in wins_ret:
+        L.append(f"| {e} | {d} | {v} | {f} | {c} | {'YES' if uw else 'no'} | {'YES' if rw else 'no'} |")
     text = "\n".join(L)
     Path(a.out).write_text(text) if a.out != "-" else print(text)
 

@@ -941,3 +941,34 @@ Combined verdict language: "dead on label utility, mixed on retention" is kept u
 for configurations that pass, they are compared with the dithered no-adversary codes and the floor envelope at equal leakage under the same rules as (i)/(ii). Reference rows lam in {0, 1, 3, 10} (12 rounds) come from the existing cross-fit run of that cell.
 
 Budget <= 4 GPU-h (estimate: dinov2-L cross-fit 2.0, phikon-v2 holdout 0.5, F-02 0.4), at most 3 `a_` jobs at once, priority 4 once.
+
+### AUDIT FOLLOW-UP (1): corrected verdict row, retention axis, missing rows (zero compute; aggregated 2026-11-04 ~18:40Z from the saved predictions)
+
+**Verdict on the label-free AE in A: DEAD on held-class LABEL utility; MIXED on kNN retention (criterion (ii) of the revised FOCUS A).** Numbers use the INDUCTIVE floor envelope (centre_whiten removed from it, reported separately), the leakage tolerance 0.05, MDE80 = 2.8 x bootstrap SE, and "headroom" = raw minus the best floor at that leakage = the most any adapter could gain.
+V-selected `ae` configuration per cell; "n_near" = inductive floor points within +-0.05 of the AE's L (< 2 = no comparator, P3).
+
+| cell / design | AE config | L | utility: headroom | utility Δ vs inductive envelope [95% CI] (MDE80) | retention: headroom | retention Δ vs inductive envelope [95% CI] (MDE80) | n_near | utility win | retention win |
+|---|---|---|---|---|---|---|---|---|---|
+| midnight / Tolkach, cross-fit K=4 | dl32 lam10 | 0.37 | 0.029 (ceiling-limited) | +0.003 [-0.007, +0.012] (0.014) | 0.486 | **+0.095 [+0.068, +0.123] (0.041)** vs `lda_pca__d8` | 3 | not scored | **YES** |
+| midnight / Tolkach, fixed C, 3 seeds | dl32 lam10 | 0.27 | 0.109 | +0.089 [+0.033, +0.174] (0.104) vs `pca__d4` | 0.590 | +0.146 [+0.112, +0.177] (0.046) vs `pca__d4` | 1 | no comparator | no comparator (P3) |
+| midnight / TCGA, cross-fit K=4 | dl32 lam1 | 0.46 | 0.052 | -0.028 [-0.063, +0.001] (0.048) | 0.448 | +0.013 [-0.009, +0.034] (0.030) vs `lda_pca__d16` | 5 | no | no |
+| midnight / TCGA, fixed C, 3 seeds | dl32 lam0 | 0.58 | 0.015 (ceiling-limited) | -0.056 [-0.108, -0.010] (0.071) | 0.322 | -0.090 [-0.130, -0.051] (0.058) | 2 | not scored | no |
+| dinov2-L / Tolkach, fixed C, 3 seeds | dl32 lam0 | 0.55 | 0.043 | -0.004 [-0.016, +0.006] (0.017) | 0.191 | -0.038 [-0.051, -0.025] (0.018) | 0 | no comparator | no |
+| dinov2-L / TCGA, fixed C, 3 seeds | dl32 lam0 (beta 0.01) | 0.40 | < 0 (a floor beats raw) | -0.010 [-0.028, +0.010] (0.027) | 0.294 | -0.451 [-0.464, -0.439] (0.018) | 2 | not scored | no |
+| phikon / TCGA, fixed C, seed 0 (not yet replicated) | dl32 lam1 | 0.50 | 0.032 | -0.051 [-0.150, +0.046] (0.143) | 0.814 | +0.292 [+0.253, +0.331] (0.054) vs `randproj__d16` but utility -0.113 [-0.215, -0.015] vs the matched LDA arm | 0 | no comparator | no (n_near 0, utility cost) |
+| dinov2-L / Camelyon, crossed, seed 0 (no held-out classes) | dl32 lam1 | 0.62 | -0.017 | -0.046 [-0.108, -0.011] vs `leace` | 0.034 (ceiling-limited) | -0.296 [-0.327, -0.268] | 1 | not scored | not scored |
+
+Reading: retention is positive in exactly one cell with a valid comparator (midnight/Tolkach cross-fit: +0.095 at equal held-class utility, utility headroom only 0.029), null in the other midnight cell, and negative in the weak-headroom or weak-encoder cells; the fixed-C Tolkach +0.146 has one
+floor point near its L and is not a win under P3. Dropping `centre_whiten` from the envelope moves the fixed-C midnight/Tolkach utility contrast from -0.002 (vs centre_whiten) to +0.089 on one comparator point, which is why cross-fit (3 floor points near L) is the number to quote.
+Caveat that applies to every retention row: the metric is the overlap with raw-space kNN structure, which an MSE-reconstructing AE optimises directly; whether that counts as utility is an owner decision.
+
+**Dither control on retention.** Noise-dithered label-free codes without an adversary reach the AE's leakage only by destroying neighbourhood structure: at L 0.30-0.43 on midnight/Tolkach their retention is 0.17-0.27 (random-projection-32 r1: 0.27; PCA-32 r1: 0.21; LDA+PCA-32 r1: 0.20; the AE-based code r1: 0.17-0.18) versus 0.609 for the AE (L 0.37);
+on midnight/TCGA at L 0.27-0.35 the dithered codes have 0.17-0.25 versus 0.465 for AE lam10 (L 0.34). So the dither control kills the AE on held-class utility (equal) but is **not** a competitive floor on retention; the competitive retention floors are the UNdithered low-dimensional projections (`lda_pca__d8`: 0.514 at L 0.30 on Tolkach), which is what the +0.095 is measured against.
+
+**Rows missing from the earlier write-ups.**
+
+* `a_p2h_phikon_tcga_s0` (phikon: the worst Robustness Index, most centre headroom; seed 0, fixed C): raw held-class acc 0.715 [0.569, 0.832]; V-selected AE -0.113 [-0.215, -0.015] against the matched-dimension LDA arm (MDE80 0.146); no gain; retention row above. Not replicated (one seed).
+* `a_lrn_midnight_camelyon_s0` and `a_lrn_midnight_tcga_s0` (crossed design, label-supervised families vib / vq / dann / adv_retrain / supcon_xc, one seed): all five beat LEACE on worst-case centre accuracy at equal label accuracy (V-selected best learned minus LEACE -0.39 [-0.46, -0.31] Camelyon, -0.38 [-0.45, -0.28] TCGA), but none is better than the plain LDA arm (Camelyon: LDA L 0.01 at label 0.983; vib L 0.08 at 0.972; TCGA: LDA L 0.17 at 0.853; vib L 0.10 at 0.862; adv_retrain L 0.10 at 0.861), and the adversarial families do not beat the best no-adversary bottleneck
+  (adversarial minus bottleneck worst-case accuracy +0.130 [+0.061, +0.189] Camelyon, -0.003 [-0.087, +0.075] TCGA). Crossed design only: it cannot reward a method over LDA (finding of the gate).
+* `a_p2x_dinov2L_camelyon_s0`: row above (control encoder; Camelyon has no held-out classes).
+* `a_gate_phikon_tcga_s0` (finished before the 11:15Z tally): LEACE L_worst **0.72 [0.60, 0.81]**; **G1 is 0 of 8 cells** (was 0 of 7); conclusion unchanged. LEACE linear-attacker L 0.72; raw worst-case centre accuracy is far above the label-only floor in all eight cells.
