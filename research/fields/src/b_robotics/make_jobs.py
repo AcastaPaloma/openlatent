@@ -20,3 +20,8 @@ for kind, pr in PRIO.items():
 w("b_sam_none", 14, "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind none --splits test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_none.json $OUT/")
 for seed in (0, 1, 2):
     w(f"b_m_clean_s{seed}", 11, f"{PRE} lam.py --kind none --arms clean --epochs 30 --seed {seed} --out $OUT")
+
+# weakly supervised arms (2000 action labels also train an action head on z): label-matched control `sup`, `supadv`, and the learned-mask candidate `smask`
+for kind in ("corr_det", "indep"):
+    for seed in (0, 1, 2):
+        w(f"b_w_{kind}_s{seed}", 8 if kind == "corr_det" else 10, f"{PRE} lam.py --kind {kind} --arms sup,supadv,smask --epochs 30 --seed {seed} --out $OUT")

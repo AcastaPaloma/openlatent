@@ -1,4 +1,4 @@
 name: b_sam_none
-priority: 9
+priority: 14
 cmd: cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python sam_masks.py --kind none --splits test --out ~/work/data/b_mw/masks && cp ~/work/data/b_mw/masks/sam_summary_strong_none.json $OUT/
 hf_path: runs/b_sam_none

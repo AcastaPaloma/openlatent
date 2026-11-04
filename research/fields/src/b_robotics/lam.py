@@ -31,6 +31,10 @@ ARMS = {
     # learned soft mask (no SAM, no silhouette): MaskNet(f_t, f_t+1) gates input and target, area reward alpha per pixel stops collapse
     "lmask": dict(mask=None, zdim=16, beta=0.1, adv=0.0, lmask=0.03),
     "advmask": dict(mask=None, zdim=16, beta=0.1, adv=10.0, lmask=0.03),
+    # weakly supervised: the same 2000 labelled (z,a) pairs the utility probe uses also train an action head on z (label-matched control `sup`)
+    "sup": dict(mask=None, zdim=16, beta=0.1, adv=0.0, sup=20.0),
+    "supadv": dict(mask=None, zdim=16, beta=0.1, adv=10.0, sup=20.0),
+    "smask": dict(mask=None, zdim=16, beta=0.1, adv=10.0, sup=20.0, lmask=0.03),
 }
 
 
@@ -179,9 +183,17 @@ class LAM(nn.Module):
 def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
     torch.manual_seed(seed); np.random.seed(seed)
     m = LAM(cfg["zdim"], bool(cfg.get("lmask"))).to(dev).to(memory_format=torch.channels_last)
-    opt = torch.optim.AdamW(m.parameters(), lr=lr, weight_decay=1e-4)
     e_all, t_all = tr.pairs()
     n = len(e_all)
+    sup = cfg.get("sup", 0.0)
+    if sup > 0:
+        g = torch.Generator(device="cpu").manual_seed(1234 + seed)          # same labelled subset as evaluate()'s 2k probe set
+        lab = torch.randperm(n, generator=g)[:2000].to(dev)
+        a_lab = tr.acts[e_all[lab], t_all[lab]][:, :3]
+        a_mu, a_sd = a_lab.mean(0), a_lab.std(0).clamp_min(1e-6)
+        ahead = nn.Linear(cfg["zdim"], 3).to(dev)
+    params = list(m.parameters()) + (list(ahead.parameters()) if sup > 0 else [])
+    opt = torch.optim.AdamW(params, lr=lr, weight_decay=1e-4)
     iters = epochs * (n // bs)
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=lr, total_steps=iters, pct_start=0.05)
     use_adv = cfg["adv"] > 0
@@ -214,6 +226,13 @@ def train_arm(cfg, tr, seed, epochs, bs=128, lr=3e-4, log=print):
         loss = recon + cfg["beta"] * kl
         if M is not None:
             loss = loss - cfg["lmask"] * M.float().flatten(1).sum(1).mean()
+        if sup > 0:
+            j = torch.randint(0, len(lab), (128,), device=dev)
+            xl, _ = tr.batch(e_all[lab[j]], t_all[lab[j]], cfg["mask"])
+            with torch.autocast(dev, dtype=torch.bfloat16, enabled=(dev == "cuda")):
+                xl, _ = m.gate(xl)
+                zl = m.idm(xl)[0]
+            loss = loss + sup * F.mse_loss(ahead(zl.float()), (a_lab[j] - a_mu) / a_sd)
         if use_adv:
             lam = cfg["adv"] * min(1.0, it / (0.2 * iters))
             tg = tr.targets(e, t)
