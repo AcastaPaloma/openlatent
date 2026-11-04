@@ -16,7 +16,7 @@ from . import certificate as cf
 from . import suite_v3
 
 KIND_OF_GROUP = {"hb": "hb_tone", "phase": "phase_lag", "inter": "ampfreq"}
-CANARY_SNR = {"hb": 0.8, "phase": 0.8, "inter": 0.8}   # amplitude of the tone relative to sqrt(median per-bin power at its bin); frozen from the pilot in S.md section 10
+CANARY_SNR = {"hb": 1.0, "phase": 1.0, "inter": 2.5}   # tone amplitude relative to sqrt(median per-bin power at its bin); frozen from pilot round 2 (S.md section 10)
 NLEVEL_CANARY = 6
 
 

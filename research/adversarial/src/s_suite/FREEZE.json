@@ -1,22 +1,26 @@
 {
  "analysis_files": {
-  "attackers.py": "d09f879bb4d67e44e75331fa2b9f547154c3b4cde7e589fa8fb0958ecd9bf95f",
   "oracle.py": "3d27a764b122900ba64d2eba6dc8122d129aeb76c13a6b41c4ea3e16f2e53e87",
   "planted.py": "db9c21a2c3cfdde89741cabf9d5fc69f0142e7901c151c65e15934c635fe099a",
   "rescore.py": "76b5b0fca804cb80a5226b656c24ebdacc49403897ca5bb23a40c964b11414bc",
   "run_planted.py": "237ae7e5d0dd198e191092c543ff82274806947c875bc5c0a86e71c529967ea9",
-  "run_real.py": "a048ae5b022fa4c841e465309faff3ede730304371208510aea9be191ddb388c"
+  "run_real.py": "a048ae5b022fa4c841e465309faff3ede730304371208510aea9be191ddb388c",
+  "run_v3_acceptance.py": "e4bade9f7d4e6dd124802ddc32d27ba1c8bf3a541546056cedbf712478d7f427"
  },
  "evaluator_files": {
-  "certificate.py": "a3c3dd5a8d24c05067e62acd673357d47f32f8af1d861f6c453ab3c6d9931a3f",
+  "attackers.py": "d09f879bb4d67e44e75331fa2b9f547154c3b4cde7e589fa8fb0958ecd9bf95f",
+  "canary.py": "3e2129f7ac4ce910bc0f4c23b66b8b1d28837834ac6f35a4f750a9097038d4e4",
+  "certificate.py": "85f5f99c67edcc2edbd203fd577508907466a72060001e273757b3170192a72a",
   "evidence_budget.py": "db37be939924d1acb073a127192226fc5c2c702138d8ff4fe6d8ee9bc258a469",
-  "freeze.py": "150cbb16d0823c4c17fabad3c109a630b94e1630ef2a20902dd5c190039f475b",
+  "freeze.py": "0e2fbef5ed3d8ede90c7f2be57dda77bf701927df030fec5f433da7419c36d17",
   "harness_io.py": "b40ee1cf63180edeb38b063c875db6ac66db077f01b1a30cff7784c064350679",
   "ledger.py": "cfc694cada901506ae5e768aba4b9de68e1c407c6e1221ae6f2737496c705605",
   "locked_eval.py": "6b9990cc8fbbf426d6e7898e81634fcc9bd64baf15e46a0514911da6d850bd0e",
   "selection_bias.py": "3a18c2c83d50007b2b095669b4301c7ba1dd695218685820e783e39e4a174b3e",
-  "stats.py": "c3df507c4abe48a539e465b4d22d469ef9044e191eb933c160cf6ee70796732d"
+  "stats.py": "c3df507c4abe48a539e465b4d22d469ef9044e191eb933c160cf6ee70796732d",
+  "suite_v3.py": "c5e6a17264b63c6306aecd3d8d81d24418c8db15522d2006a136f6b812a50c58",
+  "views.py": "055ca7aeeea5794b0217eef2764c40e60f0b88ef63f5daaf1092dd0f568d24a1"
  },
- "evaluator_sha256": "b1bc7e7283bbd92c298a4afc71c90dd51a052fe2ed5228962ab9d31ffd8f4e4b",
- "tag": "s-suite-eval-v2"
+ "evaluator_sha256": "b5c75e113792b75202673ebbdf6c437051e765db258a7344cc30942044957303",
+ "tag": "s-suite-eval-v3"
 }
