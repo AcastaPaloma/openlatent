@@ -35,17 +35,27 @@ def _quick_rprec(S, Y, k_cap=None):
     return r.mean().item()
 
 
+def _inner_split(n, seed, grp, dev):
+    """Inner 85/15 split of the attacker pool by DOCUMENT (grp = doc id per row, so noisy copies of one doc never straddle the split)."""
+    g = torch.Generator().manual_seed(seed)
+    if grp is None:
+        grp = np.arange(n)
+    grp = np.asarray(grp)
+    u = np.unique(grp)
+    perm = u[torch.randperm(len(u), generator=g).numpy()]
+    vset = set(perm[: int(0.15 * len(u))].tolist())
+    isv = np.array([x in vset for x in grp.tolist()])
+    return torch.as_tensor(np.where(isv)[0], device=dev), torch.as_tensor(np.where(~isv)[0], device=dev)
+
+
 class Ridge:
     name = "ridge"
 
-    def fit(self, Z, Y, seed=0):
-        g = torch.Generator().manual_seed(seed)
+    def fit(self, Z, Y, seed=0, grp=None):
         Z = Z.to(DEV).float()
         Y = Y.to(DEV).float()
         n = len(Z)
-        perm = torch.randperm(n, generator=g).to(DEV)
-        nv = int(0.15 * n)
-        va, tr = perm[:nv], perm[nv:]
+        va, tr = _inner_split(n, seed, grp, DEV)
         best = (-1, None)
         for lam in [1e-1, 1.0, 10.0, 100.0, 1000.0]:
             mu, sd = _std(Z[tr])
@@ -88,14 +98,12 @@ class MLP:
             net[-1].weight.mul_(0.1)
         return net.to(DEV)
 
-    def fit(self, Z, Y, seed=0):
+    def fit(self, Z, Y, seed=0, grp=None):
         torch.manual_seed(seed)
         Z = Z.to(DEV).float()
         Y = Y.to(DEV).float()
         n = len(Z)
-        perm = torch.randperm(n, device=DEV)
-        nv = int(0.15 * n)
-        va, tr = perm[:nv], perm[nv:]
+        va, tr = _inner_split(n, seed, grp, DEV)
         self.mu, self.sd = _std(Z[tr])
         Zs = (Z - self.mu) / self.sd
         prior = Y[tr].mean(0)
@@ -135,7 +143,7 @@ class MLP:
 class KNN:
     name = "knn"
 
-    def fit(self, Z, Y, seed=0):
+    def fit(self, Z, Y, seed=0, grp=None):
         Z = Z.to(DEV).float()
         self.Y = Y.to(DEV).float()
         self.mu = Z.mean(0, keepdim=True)
@@ -143,10 +151,7 @@ class KNN:
         self.prior = self.Y.mean(0)
         self.const = bool(Z.std(0).max() < 1e-6)  # constant-vector control: no neighbour is informative -> frequency prior
         n = len(Z)
-        g = torch.Generator().manual_seed(seed)
-        perm = torch.randperm(n, generator=g).to(DEV)
-        nv = int(0.15 * n)
-        va, tr = perm[:nv], perm[nv:]
+        va, tr = _inner_split(n, seed, grp, DEV)
         best = (-1, None)
         if self.const:
             self.k, self.T = 5, 0.1
@@ -177,11 +182,11 @@ class KNN:
 SUITE = {"ridge": Ridge, "mlp": MLP, "knn": KNN}
 
 
-def run_suite(Zpool, Ypool, evals, seed=0, names=("ridge", "mlp", "knn")):
+def run_suite(Zpool, Ypool, evals, seed=0, names=("ridge", "mlp", "knn"), grp=None):
     """Train every attacker on (Zpool, Ypool) and score each eval matrix.  Returns {attacker: {eval_name: scores}}."""
     out = {}
     for nm in names:
-        a = SUITE[nm]().fit(Zpool, Ypool, seed=seed)
+        a = SUITE[nm]().fit(Zpool, Ypool, seed=seed, grp=grp)
         out[nm] = {k: a.score(Z) for k, Z in evals.items()}
         del a
     return out

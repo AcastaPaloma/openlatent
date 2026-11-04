@@ -4,6 +4,8 @@ D_FLOOR = [16, 32, 64, 128, 256, 512]
 
 
 def grid(name):
+    if "+" in name:
+        return [x for n in name.split("+") for x in grid(n)]
     g = []
     if name == "ctrl":
         g += [dict(family="raw"), dict(family="const"), dict(family="raw", shuffle=True)]

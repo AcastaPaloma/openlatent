@@ -97,9 +97,10 @@ def evaluate(ctx, spec, seed, boots=None):
         perm = np.random.default_rng(99 + seed).permutation(Ypool.shape[0])
         Ypool = Ypool[perm]
     Yp = torch.as_tensor(Ypool.toarray())
+    grp = np.tile(np.arange(Zs[0].shape[0]), copies)
     evals = {"V": torch.as_tensor(Znf[ctx.idx["V"]]), "C": torch.as_tensor(Znf[ctx.idx["C"]])}
     t1 = time.time()
-    sc = run_suite(Zpool, Yp, evals, seed=seed)
+    sc = run_suite(Zpool, Yp, evals, seed=seed, grp=grp)
     t_att = time.time() - t1
     Yv, Yc = W.nf_bags[ctx.idx["V"]], W.nf_bags[ctx.idx["C"]]
     att = {}
@@ -111,7 +112,8 @@ def evaluate(ctx, spec, seed, boots=None):
                 rp = rprec_per_doc(d[split], Y, W.tier_cols[tier])
                 att[a][split][tier] = float(np.nanmean(rp))
                 units[f"rp_{split}_{tier}_{a}"] = rp.astype(np.float32)
-    rec = dict(arm=arm.name, family=spec["family"], spec=spec, seed=seed, **out, attackers=att,
+    full = arm.name + (f"|mask_{spec['mask']}" if spec.get("mask") else "") + ("|shuffle" if spec.get("shuffle") else "")
+    rec = dict(arm=full, family=spec["family"], spec=spec, seed=seed, **out, attackers=att,
                t_fit=round(t_fit, 1), t_attack=round(t_att, 1), n_pool=int(Zpool.shape[0]), dim=int(Znf.shape[1]))
     if hasattr(arm, "log"):
         rec["train_log"] = arm.log

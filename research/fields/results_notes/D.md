@@ -27,7 +27,7 @@ retrieval-fine-tuned linear projection at matched d.)
 Scope of the kill test: GTR-base (768-d, frozen) x NFCorpus. The secret is a **bag of content words** of the document (not PII: NFCorpus has none;
 PII-Masking-300K is a sweep-stage secret). The result must therefore not be read as "PII is protected".
 
-## 2. PRE-REGISTRATION v0 (written 2026-11-04 ~11:50Z, before any attacker, floor or learned-arm number existed)
+## 2. PRE-REGISTRATION v0 (committed 11:37Z, see git log; written before any attacker, floor or learned-arm number existed)
 
 ### 2.1 Data, splits, secret
 * Corpus: NFCorpus 3,633 docs (text = title + " " + abstract). Queries: all 3,237; qrels train 2,590 / dev 324 / test 323 queries (graded 0-2).
