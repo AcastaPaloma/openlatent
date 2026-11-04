@@ -1,0 +1,50 @@
+{
+ "n_clips": 7442,
+ "n_actors": 91,
+ "emotions": {
+  "ANG": 1271,
+  "DIS": 1271,
+  "FEA": 1271,
+  "HAP": 1271,
+  "NEU": 1087,
+  "SAD": 1271
+ },
+ "sentences": 12,
+ "emotion_prior_max": 0.1707874227358237,
+ "clips_per_actor": [
+  76,
+  82
+ ],
+ "most_frequent_actor_fraction": 0.011018543402311207,
+ "ids_aligned": true,
+ "duplicate_wav_files": 6,
+ "duration_s": {
+  "mean": 2.5269363074442355,
+  "min": 1.26,
+  "max": 5.0
+ },
+ "test_actors_disjoint_across_folds": true,
+ "test_union": 91,
+ "fold_train_val_test_disjoint": true,
+ "attack_sets": {
+  "atk_train": 3448,
+  "atk_fit": 2174,
+  "atk_val": 1274,
+  "T1": 1452,
+  "T2": 1816,
+  "T3": 726
+ },
+ "attack_train_vs_tests_overlap": 0,
+ "max_cos_T1_to_atk_train": {
+  "mean_of_max": 0.5851958394050598,
+  "global_max": 0.9457780122756958,
+  "n_over_0999": 0
+ },
+ "max_cos_T3_to_atk_train": {
+  "mean_of_max": 0.5791365504264832,
+  "global_max": 0.923744797706604,
+  "n_over_0999": 0
+ },
+ "mean_cos_same_actor": 0.1146673634648323,
+ "mean_cos_diff_actor": -0.013240709900856018
+}
