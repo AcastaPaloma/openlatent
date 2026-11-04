@@ -1,0 +1,4 @@
+name: c_fix_pca64
+priority: 14
+cmd: python3 research/fields/src/c_cremad/run_exp.py --name c_fix_pca64 --method pca --cfg '{"k": 64}' --seeds 0 1 2
+hf_path: runs/c_fix_pca64

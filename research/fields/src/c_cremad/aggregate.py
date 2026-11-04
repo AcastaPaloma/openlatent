@@ -18,7 +18,7 @@ B = 1000
 ACTORS = list(range(1001, 1092))
 RS = np.random.RandomState(12345)
 MULT = np.stack([np.bincount(RS.randint(0, 91, 91), minlength=91) for _ in range(B)]).astype(float)  # [B,91]
-EMO_KINDS = ["linear", "mlp", "knn", "transformer"]
+EMO_KINDS = ["linear", "mlp", "knn", "lgbm", "transformer", "tdnn"]
 
 
 def load(dirpath):

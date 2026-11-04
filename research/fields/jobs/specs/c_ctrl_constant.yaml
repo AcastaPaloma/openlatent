@@ -1,0 +1,4 @@
+name: c_ctrl_constant
+priority: 12
+cmd: python3 research/fields/src/c_cremad/run_exp.py --name c_ctrl_constant --method ctrl_constant --cfg '{}' --seeds 0 1 2 --no_secrets
+hf_path: runs/c_ctrl_constant

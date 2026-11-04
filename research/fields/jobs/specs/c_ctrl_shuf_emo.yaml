@@ -1,0 +1,4 @@
+name: c_ctrl_shuf_emo
+priority: 12
+cmd: python3 research/fields/src/c_cremad/run_exp.py --name c_ctrl_shuf_emo --method raw --cfg '{}' --seeds 0 --shuffle emo --no_secrets
+hf_path: runs/c_ctrl_shuf_emo

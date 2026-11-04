@@ -16,7 +16,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from lib import MLP, Ragged, Rep, DEV, uar
+from lib import MLP, Ragged, Rep, DEV, uar, cosine_sched
 
 
 class VQ(nn.Module):
@@ -195,7 +195,7 @@ def train_encoder(cfg, rag4, emo, actor_idx, train_clips, val_clips, seed, log=p
         adv = AdvEnsemble(E.dz * (1 if c["pool"] == "utt" else 2), len(tr_actors), c["adv_k"]).to(DEV)
     opt = torch.optim.AdamW(E.parameters(), lr=c["lr"], weight_decay=1e-2)
     steps = c["epochs"] * math.ceil(len(train_clips) / c["bs"])
-    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=c["lr"], total_steps=steps, pct_start=0.1)
+    sched = cosine_sched(opt, steps)
     hist = []
     t0 = time.time()
 

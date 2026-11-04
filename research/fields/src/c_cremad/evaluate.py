@@ -28,10 +28,11 @@ class Ctx:
         self.sex, self.race, self.age = data.actor_attrs(self.meta)
         self.lengths = feats.lengths()
         self.feats = feats
+        self.keep = np.ones(len(self.actor), dtype=bool)  # clips that have a representation (hand-crafted sets may drop some)
 
     def fold_sets(self, fold):
         f = self.sp["folds"][fold]
-        m = lambda lst: np.isin(self.actor, lst)
+        m = lambda lst: np.isin(self.actor, lst) & self.keep
         return dict(tr=np.where(m(f["train"]))[0], val=np.where(m(f["val"]))[0], te=np.where(m(f["test"]))[0],
                     te_actors=f["test"], tr_actors=f["train"])
 
@@ -62,7 +63,7 @@ def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=N
         out["emo"]["head"] = actor_confusions(ctx.actor[S["te"]], ctx.emo[S["te"]], extra_emo, 6)
     # ------------------------------------------------------------------ identity attackers (91-way closed set)
     M = ctx.masks
-    idx = {k: np.where(v)[0] for k, v in M.items()}
+    idx = {k: np.where(v & ctx.keep)[0] for k, v in M.items()}
     y = ctx.actor_idx.copy()
     if shuffle == "id":
         y[idx["atk_train"]] = rs.permutation(y[idx["atk_train"]])
@@ -87,7 +88,7 @@ def evaluate_rep(ctx, rep, fold, seed, shuffle="none", secrets=True, extra_emo=N
     # ------------------------------------------------------------------ secondary secrets (actor-disjoint)
     if secrets and shuffle == "none":
         for name, lab, ncls in (("sex", ctx.sex, 2), ("race", ctx.race, 3)):
-            ok = lab >= 0
+            ok = (lab >= 0) & ctx.keep
             f_, v_, a_, t_ = (np.intersect1d(S[k], np.where(ok)[0]) for k in ("tr", "val", "tr", "te"))
             a_ = np.concatenate([f_, v_])
             res = attack(rep, lab, f_, v_, a_, dict(test=t_), ["linear", "mlp"], "cls", ncls, seed)

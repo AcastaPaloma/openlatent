@@ -35,6 +35,7 @@ def main():
     ap.add_argument("--backbone", default="wavlm-base-plus")
     ap.add_argument("--shuffle", default="none")
     ap.add_argument("--no_secrets", action="store_true")
+    ap.add_argument("--feat", default=None, help="hand-crafted feature set name under FEAT_ROOT/handcrafted (method feat)")
     a = ap.parse_args()
     cfg = json.loads(a.cfg)
     out = Path(os.environ.get("OUT", f"/tmp/{a.name}")); out.mkdir(parents=True, exist_ok=True)
@@ -50,6 +51,19 @@ def main():
     if need4:
         rag4 = Ragged(torch.from_numpy(np.ascontiguousarray(frames)), feats.offsets)
     stats = feats.stats() if a.method == "layers" else None
+    feat_rep = None
+    if a.method == "feat":
+        hc = data.FEAT_ROOT / "handcrafted"
+        F_ = np.load(hc / f"{a.feat}.npy").astype(np.float32)
+        ctx.keep = np.load(hc / f"{a.feat}.keep.npy")
+        if cfg.get("cols"):
+            F_ = F_[:, cfg["cols"]]
+        if cfg.get("actor_norm"):  # ORACLE per-actor standardisation (uses the actor's own statistics, incl. test actors)
+            for ac in np.unique(ctx.actor):
+                mm = (ctx.actor == ac) & ctx.keep
+                F_[mm] = (F_[mm] - F_[mm].mean(0)) / (F_[mm].std(0) + 1e-6)
+        feat_rep = Rep(torch.from_numpy(F_), None, a.feat)
+        print(f"[{a.name}] feat {a.feat} {F_.shape} kept {ctx.keep.mean():.3f}", flush=True)
     print(f"[{a.name}] loaded in {time.time()-t_load:.0f}s, method={a.method} cfg={cfg}", flush=True)
     sp = ctx.sp
     for seed in a.seeds:
@@ -77,6 +91,8 @@ def main():
                 A, b, r = baselines.fit_leace(x0, clips, lab, 91)
                 info["leace_rank"] = r
                 rep = baselines.rep_from_ragged(baselines.affine(x0, A, b), a.method)
+            elif a.method == "feat":
+                rep = feat_rep
             elif a.method == "ctrl_constant":
                 rep = constant_rep(feats.ids.shape[0])
             elif a.method == "ctrl_length":

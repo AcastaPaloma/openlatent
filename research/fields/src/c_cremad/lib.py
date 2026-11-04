@@ -133,7 +133,39 @@ class SeqTransformer(nn.Module):
         return self.out((h * mf).sum(1) / mf.sum(1).clamp(min=1))
 
 
+class TDNN(nn.Module):
+    """x-vector style attacker: dilated 1-D convs over the z sequence + statistics pooling (mean/std) + 2 FC layers."""
+
+    def __init__(self, din, dout, ch=192, p=0.1):
+        super().__init__()
+        self.c1 = nn.Conv1d(din, ch, 5, padding=2)
+        self.c2 = nn.Conv1d(ch, ch, 3, padding=2, dilation=2)
+        self.c3 = nn.Conv1d(ch, ch, 3, padding=3, dilation=3)
+        self.c4 = nn.Conv1d(ch, 2 * ch, 1)
+        self.n = nn.ModuleList([nn.LayerNorm(ch), nn.LayerNorm(ch), nn.LayerNorm(ch), nn.LayerNorm(2 * ch)])
+        self.fc = nn.Sequential(nn.Dropout(p), nn.Linear(4 * ch, 256), nn.GELU(), nn.Dropout(p), nn.Linear(256, dout))
+
+    def forward(self, x, mask):
+        h = x.transpose(1, 2)
+        for conv, ln in zip((self.c1, self.c2, self.c3, self.c4), self.n):
+            h = torch.relu(conv(h)).transpose(1, 2)
+            h = ln(h).transpose(1, 2)
+        h = h.transpose(1, 2)
+        mf = mask.float()[..., None]
+        n = mf.sum(1).clamp(min=1)
+        mu = (h * mf).sum(1) / n
+        sd = ((((h - mu[:, None]) ** 2) * mf).sum(1) / n).clamp(min=1e-6).sqrt()
+        return self.fc(torch.cat([mu, sd], -1))
+
+
 # --------------------------------------------------------------------------------------------- training helpers
+def cosine_sched(opt, total, warm_frac=0.1):
+    """linear warm-up over the first 10% of steps, then cosine decay to 0 (safe for very short runs)."""
+    warm = max(1, int(warm_frac * total))
+    f = lambda i: min(1.0, (i + 1) / warm) * 0.5 * (1 + math.cos(math.pi * min(i, total) / max(total, 1)))
+    return torch.optim.lr_scheduler.LambdaLR(opt, f)
+
+
 def _loss(out, y, task):
     return F.cross_entropy(out, y) if task == "cls" else F.mse_loss(out.squeeze(-1), y)
 
@@ -154,7 +186,7 @@ def _fit_net(make, X, y, evals, epochs, lr, l2, bs, seed, task, ncls, val=None, 
     opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=1e-2)
     n = len(y)
     steps_per = max(1, math.ceil(n / bs))
-    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=lr, total_steps=epochs * steps_per, pct_start=0.1)
+    sched = cosine_sched(opt, epochs * steps_per)
 
     def fwd(inp, train):
         net.train(train)
@@ -206,6 +238,24 @@ def _knn(Xtr, ytr, Xev_list, k, ncls):
     return outs
 
 
+def _lgbm(Xtr, ytr, Xev_list, ncls, seed, val=None, rounds=None, max_rounds=80):
+    """LightGBM multiclass (held-out attacker family: trees, not a neural net).  Returns (best_rounds, [probs])."""
+    import lightgbm as lgb
+    params = dict(objective="multiclass", num_class=ncls, learning_rate=0.15, num_leaves=7, min_data_in_leaf=8,
+                  feature_fraction=0.3, bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, max_bin=63, verbose=-1,
+                  num_threads=int(_os.environ.get("LGBM_THREADS", 8)), seed=seed)
+    Xt, yt_ = Xtr.cpu().numpy(), ytr.cpu().numpy()
+    if val is not None:
+        dv = lgb.Dataset(val[0].cpu().numpy(), val[1].cpu().numpy())
+        b = lgb.train(params, lgb.Dataset(Xt, yt_), num_boost_round=max_rounds, valid_sets=[dv],
+                      callbacks=[lgb.early_stopping(8, verbose=False)])
+        rounds = max(1, b.best_iteration)
+        pv = torch.as_tensor(b.predict(val[0].cpu().numpy(), num_iteration=rounds))
+        return rounds, [pv.to(DEV)]
+    b = lgb.train(params, lgb.Dataset(Xt, yt_), num_boost_round=rounds)
+    return rounds, [torch.as_tensor(b.predict(e.cpu().numpy())).to(DEV) for e in Xev_list]
+
+
 def _ridge(Xtr, ytr, Xev_list, alpha):
     A = Xtr.T @ Xtr + alpha * torch.eye(Xtr.shape[1], device=Xtr.device)
     ym = ytr.mean()
@@ -215,44 +265,49 @@ def _ridge(Xtr, ytr, Xev_list, alpha):
 
 GRIDS = dict(linear=[dict(l2=1e-5), dict(l2=1e-4), dict(l2=1e-3)], mlp=[dict(l2=0.0), dict(l2=1e-4)],
              knn=[dict(k=1), dict(k=5), dict(k=15)], ridge=[dict(alpha=a) for a in (1e-1, 1, 10, 100, 1000)],
-             transformer=[dict(l2=0.0)])
+             transformer=[dict(l2=0.0)], tdnn=[dict(l2=0.0)], lgbm=[dict()])
 import os as _os
-EPOCHS = dict(linear=60, mlp=60, transformer=30) if not _os.environ.get("C_FAST") else dict(linear=6, mlp=6, transformer=3)
+EPOCHS = dict(linear=60, mlp=60, transformer=30, tdnn=30) if not _os.environ.get("C_FAST") else dict(linear=6, mlp=6, transformer=3, tdnn=3)
+SEQ_KINDS = ("transformer", "tdnn")
 
 
 def attack(rep, y, fit_idx, val_idx, train_idx, eval_sets, kinds, task="cls", ncls=91, seed=0, metric=None):
     """Retrain every attacker in `kinds` on `rep`.
 
     y: np array of labels (int for cls, float for reg).  fit/val/train/eval idx: np int arrays over clips.
-    Hyper-parameters (and epoch count) are chosen by fitting on fit_idx and scoring on val_idx; the final model is refit
-    on train_idx and applied to every set in eval_sets {name: idx}.
+    Hyper-parameters (and epoch / boosting-round count) are chosen by fitting on fit_idx and scoring on val_idx; the final
+    model is refit on train_idx and applied to every set in eval_sets {name: idx}.
     Returns {kind: dict(preds={name: np.array}, hp=..., val=float)}.
-    metric: optional callable(y_np, pred_np) -> float used for model selection (default accuracy / -mse).
+    kinds: linear, mlp, knn, ridge (pooled), lgbm (trees, pooled), transformer / tdnn (need rep.seq).
     """
     res = {}
     yt = torch.as_tensor(y, dtype=torch.long if task == "cls" else torch.float32, device=DEV)
+    fit_idx, val_idx, train_idx = (np.asarray(i) for i in (fit_idx, val_idx, train_idx))
     for kind in kinds:
-        if kind == "transformer" and rep.seq is None:
+        seqk = kind in SEQ_KINDS
+        if (seqk and rep.seq is None) or (kind == "lgbm" and task != "cls"):
             continue
         best = None
         P = rep.pooled
-        if kind in ("linear", "mlp", "knn", "ridge"):
+        if not seqk:
             mu, sd = P[train_idx].mean(0), P[train_idx].std(0) + 1e-5
             X = (P - mu) / sd
         for hp in GRIDS[kind]:
             if kind == "knn":
                 out_v = _knn(X[fit_idx], yt[fit_idx], [X[val_idx]], hp["k"], ncls)[0]
-                curve, ep = [_score(out_v, yt[val_idx], task, ncls)], 1
-                sc = curve[0]
+                sc, ep = _score(out_v, yt[val_idx], task, ncls), 1
             elif kind == "ridge":
                 out_v = _ridge(X[fit_idx], yt[fit_idx], [X[val_idx]], hp["alpha"])[0]
                 sc, ep = _score(out_v, yt[val_idx], task, ncls), 1
+            elif kind == "lgbm":
+                ep, (out_v,) = _lgbm(X[fit_idx], yt[fit_idx], [], ncls, seed, val=(X[val_idx], yt[val_idx]))
+                sc = _score(out_v, yt[val_idx], task, ncls)
             else:
-                make, kw = _make(kind, rep, X if kind != "transformer" else None, ncls, task)
-                inp_fit = X[fit_idx] if kind != "transformer" else torch.as_tensor(fit_idx, device=DEV)
-                inp_val = X[val_idx] if kind != "transformer" else torch.as_tensor(val_idx, device=DEV)
+                make, kw = _make(kind, rep, None if seqk else X, ncls, task)
+                inp_fit = torch.as_tensor(fit_idx, device=DEV) if seqk else X[fit_idx]
+                inp_val = torch.as_tensor(val_idx, device=DEV) if seqk else X[val_idx]
                 curve, _ = _fit_net(make, inp_fit, yt[fit_idx], [], EPOCHS[kind], kw["lr"], hp["l2"], kw["bs"], seed, task,
-                                    ncls, val=(inp_val, yt[val_idx]), seq=rep.seq if kind == "transformer" else None)
+                                    ncls, val=(inp_val, yt[val_idx]), seq=rep.seq if seqk else None)
                 ep = int(np.argmax(curve)) + 1
                 sc = float(np.max(curve))
             if best is None or sc > best[0]:
@@ -263,15 +318,17 @@ def attack(rep, y, fit_idx, val_idx, train_idx, eval_sets, kinds, task="cls", nc
             outs = _knn(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], hp["k"], ncls)
         elif kind == "ridge":
             outs = _ridge(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], hp["alpha"])
+        elif kind == "lgbm":
+            _, outs = _lgbm(X[train_idx], yt[train_idx], [X[eval_sets[n]] for n in evn], ncls, seed + 1, rounds=ep)
         else:
-            make, kw = _make(kind, rep, X if kind != "transformer" else None, ncls, task)
-            if kind == "transformer":
+            make, kw = _make(kind, rep, None if seqk else X, ncls, task)
+            if seqk:
                 inp_tr = torch.as_tensor(train_idx, device=DEV)
                 evs = [torch.as_tensor(eval_sets[n], device=DEV) for n in evn]
             else:
                 inp_tr, evs = X[train_idx], [X[eval_sets[n]] for n in evn]
             _, outs = _fit_net(make, inp_tr, yt[train_idx], evs, ep, kw["lr"], hp["l2"], kw["bs"], seed + 1, task, ncls,
-                               seq=rep.seq if kind == "transformer" else None)
+                               seq=rep.seq if seqk else None)
         preds = {n: (o.argmax(1).cpu().numpy() if task == "cls" else o.squeeze(-1).cpu().numpy()) for n, o in zip(evn, outs)}
         res[kind] = dict(preds=preds, hp=dict(hp, epochs=ep), val=sc)
     return res
@@ -286,6 +343,9 @@ def _make(kind, rep, X, ncls, task):
     if kind == "transformer":
         d = rep.seq.flat.shape[-1]
         return (lambda: _SeqWrap(SeqTransformer(d, dout), rep)), dict(lr=5e-4, bs=64)
+    if kind == "tdnn":
+        d = rep.seq.flat.shape[-1]
+        return (lambda: _SeqWrap(TDNN(d, dout), rep)), dict(lr=1e-3, bs=64)
     raise ValueError(kind)
 
 
@@ -305,9 +365,9 @@ class _SeqWrap(nn.Module):
 
 def suite_for(rep, extra=()):
     import os
-    k = ["linear", "mlp", "knn"]
+    k = ["linear", "mlp", "knn", "lgbm"]
     if rep.seq is not None:
-        k.append("transformer")
+        k += ["transformer", "tdnn"]
     only = os.environ.get("C_KINDS")  # dev/smoke only
     if only:
         k = [x for x in k if x in only.split(",")]
