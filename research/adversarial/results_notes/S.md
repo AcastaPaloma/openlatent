@@ -17,6 +17,7 @@ This file is written and committed BEFORE any number is computed from programme 
   (all persons if fewer than 10) can form the pool, and the control is applied per scheme. Both verdicts are reported side by side in Results. The chance reference stays 1/C (changing it to 1/n_eligible would loosen the control and is not done).
   (3) `summarize.py` (new, turns the result JSONs into the endpoint tables; sha256 `48b5b85282c94d170e988f8dc78818aba7c65a7b7902bb47289fb328e034882d`) is an analysis script that is NOT listed in `FREEZE.json` because adding it to `freeze.ANALYSIS_FILES` would change the evaluator hash; its hash is recorded here instead.
   (4) Compute etiquette (CHARTER, main-agent message): `run_planted` was restarted with 8 processes at nice 19 after 205 of 1,200 jobs had finished under 36 processes; the resume logic skips finished jobs; no effect on results.
+  (5) E4/E5 replicate counts, written BEFORE any leak-cell engine result was read: under VM contention (load average 150-200 on 56 cores) the planted run was cut to 40 replicates per leak cell (9 cells, 360 jobs) and the 220 null replicates that had finished before the restart (pre-registered 100 and 300). Thresholds are unchanged; the intervals are wider. The null cell's false-LEAK rate is judged on 220 replicates.
 
 ## 1. What S is, after the audit
 1. `certificate.py`: a pure, deterministic function. Input: a declared attacker list (`SuiteDecl`, digest printed), saved predictions on a selection split and a scored split with independent-unit ids.
