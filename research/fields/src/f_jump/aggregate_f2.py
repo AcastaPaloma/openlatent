@@ -191,13 +191,25 @@ def main():
     go = bool(sum(gh) >= 2 and all(trained_all) and all(ctrl_ok) and sum(wins) >= 2)
     invalid = bool((not all(trained_all)) or (not all(ctrl_ok)))
     res["verdict_tightened"] = "INVALID" if invalid else ("GO (for a label-free or semi-supervised stage 2; a pre-registered separate attempt, not a claim)" if go else "NO-GO")
+    go_no_gh = bool(all(trained_all) and all(ctrl_ok) and sum(wins) >= 2)
+    reasons = []
+    if sum(gh) < 2:
+        reasons.append(f"G-H: linear in-sample oracle headroom < {3 * DELTA_U:.2f} in {ns - sum(gh)} of {ns} splits")
+    if not all(trained_all):
+        reasons.append("adapter not trained / steps != 8000 in some split")
+    if not all(ctrl_ok):
+        reasons.append("a control failed")
+    if sum(wins) < 2:
+        reasons.append("adapter wins in < 2 of 3 splits")
+    res["verdict_tightened_reasons"] = reasons
+    res["verdict_if_G_H_dropped (post-hoc reading, NOT the pre-registered verdict)"] = "GO-equivalent: adapter trained, controls pass, wins in %d of %d splits" % (sum(wins), ns) if go_no_gh else "NO-GO"
     res["summary"] = dict(oracle_gate_splits=int(sum(gh)), trained_all_splits=bool(all(trained_all)), controls_ok_all=bool(all(ctrl_ok)), wins_splits=int(sum(wins)),
                           wins_splits_v0_envelope=int(sum(wins_v0)), jk2_extended_fires_splits=int(sum(jk2f)), jk2_v0_grid_fires_splits=int(sum(jk2f_v0)),
                           jk3_extended_fires_splits=int(sum(jk3f_ext)), jk3_v0_grid_fires_splits=int(sum(jk3f_v0)))
     res["jk2_extended"] = bool(sum(jk2f) >= 2)
     res["jk3_extended"] = bool(sum(jk3f_ext) >= 2)
     res["oracle_headroom"] = {s: r["oracle_headroom"] for s, r in res["splits"].items()}
-    md.append("## Verdict fields\n\n```\n" + json.dumps(dict(verdict_original=res["verdict_original"], verdict_tightened=res["verdict_tightened"], margin=res["margin"], summary=res["summary"],
+    md.append("## Verdict fields\n\n```\n" + json.dumps(dict(verdict_original=res["verdict_original"], verdict_tightened=res["verdict_tightened"], verdict_tightened_reasons=res["verdict_tightened_reasons"], verdict_if_G_H_dropped=res["verdict_if_G_H_dropped (post-hoc reading, NOT the pre-registered verdict)"], margin=res["margin"], summary=res["summary"],
                                                              jk2_extended=res["jk2_extended"], jk3_extended=res["jk3_extended"], oracle_headroom=res["oracle_headroom"]), indent=1, default=float) + "\n```\n")
     Path(a.out + ".json").write_text(json.dumps(res, indent=1, default=float))
     Path(a.out + ".md").write_text("\n".join(md))
