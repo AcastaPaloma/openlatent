@@ -47,7 +47,7 @@ Protocol, per (encoder, dataset), seeds 0,1,2:
 | phikon-v2 | 0.619 | 0.019 | 0.768 | 0.619 / 0.019 / 0.768 (also the shipped `results_summary.json`) | 0.000 |
 | phikon | 0.623 | 0.011 | 0.795 | 0.623 / 0.011 / 0.795 (README) | 0.000 |
 | midnight (no anchor) | 0.858 | 0.477 | 0.941 | not on the leaderboard | n/a |
-| dinov2-L (no anchor) | see below | 0.511 | see below | not on the leaderboard | n/a |
+| dinov2-L (no anchor) | 0.649 | 0.511 | 0.892 | not on the leaderboard | n/a |
 
 * **RI "saturation" check (coordinator question 2).** The low RI values (0.62 TCGA, 0.01-0.02 Camelyon for the Phikon family) are
   *not* a transcription or mapping bug: they come out of the official `robustness_index.py` run on our own embeddings and match the
