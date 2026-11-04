@@ -3,8 +3,8 @@ Non-SAM arms and SAM arm are separate jobs so the SAM-free arms start while mask
 import os
 SPEC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "jobs", "specs")
 PRE = "cd research/fields/src/b_robotics && B_LEVEL=strong ~/venvs/b/bin/python"
-NOSAM = "raw,rate4,gtmask,adv,advmask"          # lean arms for seeds 1-2 (queue is shared; rateb collapsed to chance at beta=3 and is dropped)
-SEED0 = "raw,rate4,gtmask,adv,advmask,adv30,lmask"  # seed 0 also carries the sensitivity arms
+NOSAM = "raw,rate4,gtmask,adv"          # lean arms for seeds 1-2 (queue is shared; rateb collapsed to chance and lmask/advmask collapsed to the degenerate 'mask out everything that moves' solution on corr_det s0, so they are dropped)
+SEED0 = "raw,rate4,gtmask,adv,adv30"  # seed 0 also carries the sensitivity arms
 PRIO = {"indep": 11, "corr_det": 11, "corr_noisy": 15, "corr_glued": 15}
 
 
