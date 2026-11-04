@@ -65,8 +65,8 @@ def main():
         enc([W.mask_text(t, m, len(ti)) for t, ti in zip(W.sf_texts, W.sf_titles)], f"sf_docs_mask_{m}", spec["dprefix"])
     (cache / ("meta.json" if a.scheme == "words" else f"meta_{a.scheme}.json")).write_text(json.dumps(dict(embedder=a.embedder, hf=spec["hf"], commit=commit, device=dev,
                                                      torch=torch.__version__, limit=a.limit,
-                                                     n_vocab=len(W.vocab), n_rare=len(W.tier_cols["rare"]),
-                                                     n_mid=len(W.tier_cols["mid"])), indent=1))
+                                                     n_vocab=len(W.vocab), scheme=a.scheme,
+                                                     tiers={k: len(v) for k, v in W.tier_cols.items()}), indent=1))
 
 
 if __name__ == "__main__":
