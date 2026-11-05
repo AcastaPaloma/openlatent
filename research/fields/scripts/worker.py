@@ -75,8 +75,20 @@ def upload(out, hf_path, hf_allow=None):
 
 def safe_pull():
     """git pull --ff-only; if untracked files would be overwritten, move them to ~/work/untracked_backup/<ts>/ and retry once.
-    Returns (ok, note). A silent pull failure used to leave jobs on stale code (2026-11-04)."""
+    Returns (ok, note). A silent pull failure used to leave jobs on stale code (2026-11-04).
+    Pulls are serialised with an flock: four workers pulling at once produced 'Cannot fast-forward to multiple branches' (2026-11-05)."""
+    import fcntl
     cmd = ["git", "-C", str(REPO), "pull", "-q", "--ff-only", "origin", "fields-research"]
+    lock = open(Q / ".pull.lock", "w")
+    fcntl.flock(lock, fcntl.LOCK_EX)
+    try:
+        return _safe_pull_locked(cmd)
+    finally:
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        lock.close()
+
+
+def _safe_pull_locked(cmd):
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode == 0:
         return True, ""
