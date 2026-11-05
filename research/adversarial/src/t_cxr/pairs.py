@@ -64,7 +64,7 @@ def positives(d: pd.DataFrame, split: str, per_patient: int = 1, seed: str = "p0
     return out
 
 
-def _candidates(d_arr, pool_idx_by_cell, pool_all, i, j, tier, used_pid):
+def _candidates(d_arr, pool_idx_by_cell, pool_all, i, j, tier, used_pid, lab=None, mode=None):
     """rows k in the pool that satisfy the tier relative to partner j and anchor i (patient(k) != patient(i))."""
     sex, view, age, W, H, sx, pid = d_arr
     cand = []
@@ -83,10 +83,15 @@ def _candidates(d_arr, pool_idx_by_cell, pool_all, i, j, tier, used_pid):
         c = c[(np.abs(np.log(W[c] / W[j])) <= wh) & (np.abs(np.log(H[c] / H[j])) <= wh)]
         # preserve the pair-level equality flags of the positive (exact W/H equality with the anchor is a strong cue)
         c = c[((W[c] == W[i]) == (W[j] == W[i])) & ((H[c] == H[i]) == (H[j] == H[i]))]
+    if mode == "exact":                                                   # N3 (T.md section 11): the negative partner has the SAME 14-finding vector as the positive partner
+        c = c[lab[c] == lab[j]]
+    elif mode == "ham1":                                                  # ... or differs in at most one finding
+        x = lab[c] ^ lab[j]
+        c = c[(x & (x - 1)) == 0]
     return c
 
 
-def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1, seed: str = "p0", positives_df: pd.DataFrame | None = None, col: str = "split") -> tuple[pd.DataFrame, dict]:
+def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1, seed: str = "p0", positives_df: pd.DataFrame | None = None, col: str = "split", labcode: np.ndarray | None = None) -> tuple[pd.DataFrame, dict]:
     """Return (pairs, report).  pairs columns: triple, label, a, b (image rows), pid_a, pid_b, tier, design, long_gap, fu_gap."""
     pos = positives(d, split, per_patient, seed, col=col) if positives_df is None else positives_df
     sub = d[(d[col] == split) & d["ok"]] if "ok" in d else d[d[col] == split]
@@ -99,7 +104,10 @@ def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1,
     for r in pool_all:
         cells.setdefault((sex[r], view[r], age[r]), []).append(r)
     cells = {k: np.asarray(v, dtype=np.int64) for k, v in cells.items()}
-    tiers = {"N2": TIERS_N2, "N1": TIERS_N1, "N0": ()}[design]
+    tiers = {"N2": TIERS_N2, "N3": TIERS_N2, "N3s": TIERS_N2[:2], "N1": TIERS_N1, "N0": ()}[design]      # N3s = N3 restricted to the N2 tiers 0-1 (exact age, same spacing; T.md A12)
+    if design in ("N3", "N3s") and labcode is None:
+        raise ValueError("N3 needs labcode (integer-coded 14-finding vector per metadata row)")
+    modes = ("exact", "ham1") if design in ("N3", "N3s") else (None,)
     out, dropped, tier_hist, used = [], 0, {}, set()
     for t, (p, i, j) in enumerate(pos.itertuples(index=False)):
         r = _rng(f"{seed}:{design}:{p}:{i}:{j}")
@@ -108,12 +116,15 @@ def build(d: pd.DataFrame, split: str, design: str = "N2", per_patient: int = 1,
             c = pool_all[pid[pool_all] != pid[i]]
             k, tier_used = int(c[r.integers(len(c))]), 0
         else:
-            for ti, tier in enumerate(tiers):
-                c = _candidates(arr, cells, pool_all, i, j, tier, used)
-                if len(c):
-                    fresh = c[~np.isin(pid[c], list(used))] if used and len(c) < 5000 else c
-                    c = fresh if len(fresh) else c
-                    k, tier_used = int(c[r.integers(len(c))]), ti
+            for mi, mode in enumerate(modes):
+                for ti, tier in enumerate(tiers):
+                    c = _candidates(arr, cells, pool_all, i, j, tier, used, labcode, mode)
+                    if len(c):
+                        fresh = c[~np.isin(pid[c], list(used))] if used and len(c) < 5000 else c
+                        c = fresh if len(fresh) else c
+                        k, tier_used = int(c[r.integers(len(c))]), ti + 4 * mi             # tiers 4-7 = Hamming-1 label match
+                        break
+                if k is not None:
                     break
         if k is None:
             dropped += 1

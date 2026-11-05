@@ -98,6 +98,14 @@ def role_counts(d: pd.DataFrame) -> dict:
     return out
 
 
+def findings_matrix(d: pd.DataFrame, csv: str | Path) -> np.ndarray:
+    """(n,14) uint8 multi-hot findings aligned with the rows of `d` (torch-free; same function as run_utility.findings_matrix)."""
+    raw = pd.read_csv(csv); raw.columns = [c.strip() for c in raw.columns]
+    lab = dict(zip(raw["Image Index"], raw["Finding Labels"].astype(str)))
+    fl = d["img"].map(lab).str.split("|")
+    return np.array([[f in row for f in FINDINGS] for row in fl], dtype=np.uint8)
+
+
 def counts(d: pd.DataFrame) -> dict:
     """Published-count audit: images, patients, multi-visit patients per split (feeds the power audit)."""
     out = {}

@@ -68,11 +68,13 @@ def main():
     ap.add_argument("--exclude", default=None, help="exclude_dups.json (T.md A2 b); required for real runs")
     ap.add_argument("--screen", action="store_true", help="T2 screen: validation only. T pairs / T images are never built, no ledger entry; output dir suffix _screen")
     ap.add_argument("--pcxr-dir", default=None, help="dir with generator_pcxr_mu*.pth (train_pcx.py)")
+    ap.add_argument("--ladder-s", type=int, default=0, help="T4a: add this many S-role multi-visit patients (2 triples each) to the attacker-training pairs; -1 = all of them")
+    ap.add_argument("--design", default="N2", choices=["N2", "N3", "N3s"], help="T4b: N3 = negatives matched on the 14-finding vector (T.md section 11); N3s = N3 restricted to N2 tiers 0-1 (A12)")
     ap.add_argument("--shuffle-val", action="store_true", help="with --shuffle-labels: ALSO permute the validation labels (removes the epoch-selection leak of the control; T.md D3); suffix _shuf2")
     ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
     a = ap.parse_args()
     t0 = time.time()
-    out = Path(a.out) / f"{a.release}_rot{a.rot}{('_shuf2' if a.shuffle_val else '_shuf') if a.shuffle_labels else ''}{'_screen' if a.screen else ''}"; out.mkdir(parents=True, exist_ok=True)
+    out = Path(a.out) / f"{a.release}_rot{a.rot}{('_shuf2' if a.shuffle_val else '_shuf') if a.shuffle_labels else ''}{'_screen' if a.screen else ''}{('_ladder' + ('all' if a.ladder_s < 0 else str(a.ladder_s))) if a.ladder_s else ''}{'_' + a.design.lower() if a.design != 'N2' else ''}"; out.mkdir(parents=True, exist_ok=True)
     if not a.synthetic and not a.exclude:
         raise SystemExit("--exclude exclude_dups.json is required for real runs (T.md A2)")
     d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
@@ -87,11 +89,23 @@ def main():
         salt = Path(a.salt_file).read_text().strip()                  # refuses to run without the custodian's salt
         bank = np.load(a.bank, mmap_mode="r")
     d = meta.assign_roles(d, seen, salt, a.rot)
-    pA, rA = pairs.build(d, "A", "N2", 2, "tr0", col="role"); pV, rV = pairs.build(d, "V", "N2", 1, "v0", col="role")
+    labcode = None
+    if a.design in ("N3", "N3s"):
+        Lm = meta.findings_matrix(d, f"{a.data}/Data_Entry_2017_v2020.csv").astype(np.int64)
+        labcode = (Lm * (1 << np.arange(14))).sum(1)
+    pA, rA = pairs.build(d, "A", a.design, 2, "tr0", col="role", labcode=labcode); pV, rV = pairs.build(d, "V", a.design, 1, "v0", col="role", labcode=labcode)
+    if a.ladder_s:                                                   # T4a: extra attacker-training pairs from the S role (valid for floors / raw; defender-seen for pcxr)
+        posS = pairs.positives(d, "S", 2, "lad", col="role")
+        order = posS.pid.drop_duplicates().map(lambda p: meta.unit(p, f"{salt}:ladder")).sort_values().index
+        keep_pid = set(posS.pid.drop_duplicates().loc[order][: (None if a.ladder_s < 0 else a.ladder_s)])
+        posS = posS[posS.pid.isin(keep_pid)].reset_index(drop=True)
+        pS, rS = pairs.build(d, "S", "N2", 2, "lad", positives_df=posS, col="role")
+        pS["triple"] = pS["triple"] + 10**6
+        pA = pd.concat([pA, pS], ignore_index=True); rA = dict(rA, ladder_S=rS)
     if a.screen:
         pT, rT = pV.copy(), rV                                      # SCREEN: the 'test' slot is the validation pairs; no T image or T pair is ever built
     else:
-        pT, rT = pairs.build(d, "T", "N2", 1, "te0", col="role")
+        pT, rT = pairs.build(d, "T", a.design, 1, "te0", col="role", labcode=labcode)
     need = np.unique(np.r_[pA.a, pA.b, pV.a, pV.b, pT.a, pT.b]); pos_of = {r: i for i, r in enumerate(need)}
     parts = dict(tr=split_pairs(pA, pos_of), va=split_pairs(pV, pos_of), te=split_pairs(pT, pos_of))
     sfx = ""
@@ -99,7 +113,7 @@ def main():
         parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
         if a.shuffle_val:
             parts["va"]["y"] = np.random.default_rng(778).permutation(parts["va"]["y"]); sfx = "_shuf2"
-    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val)   # salt id: a new partition is new sealed material
+    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val, ladder_s=a.ladder_s, design=a.design)   # salt id: a new partition is new sealed material
     ledger_rec = None if (a.no_ledger or a.synthetic or a.screen) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
     flow = torch.load(a.flow_stats) if a.flow_stats else None
@@ -154,7 +168,7 @@ def main():
         for k, p in (("tr", tr_), ("va", va_), ("te", te_)):
             p["ib"] = p["ib"] + len(Fd)
         if "f3" in todo:
-            roleA = d["role"].to_numpy()[need] == "A"
+            roleA = np.isin(d["role"].to_numpy()[need], ["A", "S"] if a.ladder_s else ["A"])
             maskA = np.r_[roleA, roleA]
             o = H.fit_f3(FF, tr_, FF, va_, FF, te_, stats_from=FF[maskA])
             for nm, (sv, st) in o.items():
@@ -163,7 +177,7 @@ def main():
             dtr = d.set_index("row").loc[need]
             # element A is estimated from the defended image; element B from the real image (F5a) -- both columns of FF are indexed by position
             dem = dict(pid=np.r_[dtr.pid.to_numpy(), dtr.pid.to_numpy()], age=np.r_[dtr.age.to_numpy(), dtr.age.to_numpy()], male=np.r_[dtr.male.to_numpy(), dtr.male.to_numpy()], pa=np.r_[dtr.pa.to_numpy(), dtr.pa.to_numpy()])
-            roleA = d["role"].to_numpy()[need] == "A"
+            roleA = np.isin(d["role"].to_numpy()[need], ["A", "S"] if a.ladder_s else ["A"])
             sv, st = H.fit_f5(FF, dem, np.r_[roleA, roleA], tr_, va_, te_)
             record("f5a", sv, st)
             sv, st = H.fit_f5(FF, dem, np.r_[roleA, roleA], tr_, va_, te_, true_rows=np.r_[np.zeros(len(Fd), bool), np.ones(len(Fr), bool)])
