@@ -1,0 +1,47 @@
+{
+ "engaged_any": false,
+ "detail": {
+  "s0_f10": {
+   "candidates": {
+    "grlr10": {
+     "passes": 0,
+     "folds": 3
+    },
+    "grlr30": {
+     "passes": 0,
+     "folds": 3
+    },
+    "coral3": {
+     "passes": 0,
+     "folds": 3
+    },
+    "coral30": {
+     "passes": 0,
+     "folds": 3
+    }
+   },
+   "engaged": false
+  },
+  "s0_f100": {
+   "candidates": {
+    "grlr10": {
+     "passes": 0,
+     "folds": 3
+    },
+    "grlr30": {
+     "passes": 0,
+     "folds": 3
+    },
+    "coral3": {
+     "passes": 0,
+     "folds": 3
+    },
+    "coral30": {
+     "passes": 0,
+     "folds": 3
+    }
+   },
+   "engaged": false
+  }
+ }
+}
