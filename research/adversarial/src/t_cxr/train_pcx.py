@@ -174,7 +174,8 @@ def stage_adv(a, d, bank, dev, log):
             ov.zero_grad(set_to_none=True); lv.backward(); ov.step(); ver.eval()
             clf.train()
             with torch.autocast(device_type=torch.device(dev).type, dtype=torch.bfloat16, enabled=dev == "cuda"):
-                lc = F.binary_cross_entropy(clf(norm3(fd, a.clf_size)).float().clamp(1e-6, 1 - 1e-6), lab)
+                pc = clf(norm3(fd, a.clf_size))
+            lc = F.binary_cross_entropy(pc.float().clamp(1e-6, 1 - 1e-6), lab)           # BCE outside autocast (unsafe to autocast)
             oc.zero_grad(set_to_none=True); lc.backward(); oc.step(); clf.eval()
             agg += np.array([float(acl), float(lik), float(tot)]) * len(idx); n += len(idx)
             if a.max_iters and n >= a.max_iters * a.bs:
