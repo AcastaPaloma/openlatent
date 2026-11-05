@@ -196,6 +196,21 @@ def main():
     for s in range(0, len(Cidx), 500):
         S = (Xr[Cidx[s: s + 500]] @ XnT).toarray()
         mx[s: s + 500] = S.max(1)
+    # Amendment A1 (D.md 8.4): tighten the evaluation sets - purge V/C documents that the independent detector places within the planted-copy
+    # 5th percentile (30% perturbation) of a document on the training side (C: D/A/V; V: D/A).  D and A are never purged.
+    thr30 = thr[30]
+    keep = np.ones(N, bool)
+    keep[Cidx] = mx < thr30
+    Vidx = np.where(split == 2)[0]
+    DAidx = np.where((split == 0) | (split == 1))[0]
+    mv = np.zeros(len(Vidx), np.float32)
+    XdaT = Xr[DAidx].T.tocsr()
+    for s_ in range(0, len(Vidx), 500):
+        mv[s_: s_ + 500] = (Xr[Vidx[s_: s_ + 500]] @ XdaT).toarray().max(1)
+    keep[Vidx] = mv < thr30
+    summary["purge_A1"] = dict(threshold=thr30, C_kept=int(keep[Cidx].sum()), C_total=int(len(Cidx)), V_kept=int(keep[Vidx].sum()), V_total=int(len(Vidx)),
+                               C_clusters_kept=int(len(set(lab[Cidx][keep[Cidx]]))), V_clusters_kept=int(len(set(lab[Vidx][keep[Vidx]]))))
+    print("purge A1", summary["purge_A1"], flush=True)
     summary["verifier"] = dict(planted_cos_p5=thr, frac_C_nearest_nonC_above_p5_at_30pct=float((mx >= thr[30]).mean()),
                                frac_C_nearest_nonC_above_p5_at_50pct=float((mx >= thr[50]).mean()),
                                C_nearest_nonC_cos_percentiles={str(q): float(np.percentile(mx, q)) for q in (50, 90, 99, 100)})
@@ -281,7 +296,7 @@ def main():
         pickle.dump(dict(src=src, oracle=oracle, ex0=ex0, ex1=ex1), f)
     sp.save_npz(CACHE3 / "bags.npz", B)
     sp.save_npz(CACHE3 / "types.npz", Y)
-    np.savez(CACHE3 / "meta.npz", split=split, dval=dval, cluster=lab, tiers=tiers, vocab=np.array(vocab), labs=np.array(labs),
+    np.savez(CACHE3 / "meta.npz", split=split, keep=keep, dval=dval, cluster=lab, tiers=tiers, vocab=np.array(vocab), labs=np.array(labs),
              b1=feats["b1"], b1g=feats["b1g"])
     summary["tau_dup_certified"] = cert
     summary["seconds"] = round(time.time() - t0)
