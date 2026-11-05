@@ -1,0 +1,24 @@
+{
+ "name": "t_x_pcxr_mu0.01",
+ "config": {
+  "name": "t_x_pcxr_mu0.01",
+  "priority": 5,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; $HOME/venvs/t/bin/python -m t_cxr.train_pcx --stage adv --mu 0.01 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --exclude research/adversarial/results/t_cxr/exclude_dups.json --wdir $HOME/work/t_data/pcxr --out $OUT --max-hours 1.5",
+  "hf_path": "runs/t_x_pcxr_mu0.01",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "cd5c4c3",
+ "commit_after": "cd5c4c3",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 1,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 9.6,
+ "finished_utc": "2026-11-04T23:59:54Z",
+ "uploaded": false
+}
