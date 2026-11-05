@@ -21,27 +21,7 @@ import ap as AP  # noqa: E402
 import common as C  # noqa: E402
 import evaluate as EV  # noqa: E402
 
-_FPS = None
-
-
-def _init(fps):
-    global _FPS
-    _FPS = fps
-
-
-def _chunk(rng):
-    from rdkit import DataStructs
-    a, b = rng
-    out = []
-    n = len(_FPS)
-    for i in range(a, b):
-        if _FPS[i] is None:
-            continue
-        sims = DataStructs.BulkTanimotoSimilarity(_FPS[i], _FPS[i + 1:])
-        for k in np.where(np.asarray(sims) >= 0.8)[0]:
-            if _FPS[i + 1 + k] is not None:
-                out.append((i, i + 1 + int(k)))
-    return out
+import nd_worker as NW  # noqa: E402
 
 
 def a0(meta_u, ids_h):
@@ -136,8 +116,8 @@ def main():
     n = len(ids)
     edges_t = set()
     chunks = [(i, min(i + 500, n)) for i in range(0, n, 500)]
-    with mp.get_context("fork").Pool(a.procs, initializer=_init, initargs=(fps,)) as pool:
-        for part in pool.imap_unordered(_chunk, chunks):
+    with mp.get_context("spawn").Pool(a.procs, initializer=NW.init, initargs=(fps,)) as pool:
+        for part in pool.imap_unordered(NW.chunk, chunks):
             edges_t.update(part)
     print(f"Tanimoto >= 0.8 pairs: {len(edges_t)} ({time.time() - t0:.0f}s)", flush=True)
     kg = pd.Series(keys).dropna()
