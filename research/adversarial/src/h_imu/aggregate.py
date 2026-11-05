@@ -6,11 +6,13 @@ import os, sys, json, glob, argparse, itertools
 import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 import common as C
+import datasets as D
 
 MAIN_TAB = ["linear", "mlp", "knn", "lgbm", "rf"]; MAIN_NN = ["cnn1d", "mlp_flat"]; HELD = ["svm_rbf", "transformer"]
 CONTROLS = {"ctrl_const", "ctrl_noise16", "shuf_raw"}; ORACLES = {"oracle_act", "oracle_id"}
 LDA_ONLY = {"lda1", "lda2", "lda3", "lda3_r0.5", "lda3_r1", "lda3_r2"}
 MDE_SET = ["lda3", "lda3_r1", "pcaphi8", "rp16", "noise_s1", "quant_b3"]
+NSUB = 24
 CHANCE = 1 / 24
 
 
@@ -28,7 +30,7 @@ class Store:
         return self.cache[k]
 
     def arm_arrays(self, arm_files, folds):
-        """arm_files: list of npz paths (tab and/or nn). Returns dict attacker -> dict of per-subject arrays (24,), summed over `folds`."""
+        """arm_files: list of npz paths (tab and/or nn). Returns dict attacker -> dict of per-subject arrays (n_id,), summed over `folds`."""
         out = {}
         for fn in arm_files:
             d = np.load(fn)
@@ -41,25 +43,25 @@ class Store:
                     if not key.startswith(f"f{f}_") or key.endswith("te_idx"): continue
                     att, tg = key[len(f"f{f}_"):].split("__")
                     P = d[key].astype(np.float32)  # (S, n_te, C)
-                    rec = out.setdefault(att, {}).setdefault(tg, dict(corr_t=np.zeros(24), n_t=np.zeros(24), corr_w=np.zeros(24), n_w=np.zeros(24)))
+                    rec = out.setdefault(att, {}).setdefault(tg, dict(corr_t=np.zeros(NSUB), n_t=np.zeros(NSUB), corr_w=np.zeros(NSUB), n_w=np.zeros(NSUB)))
                     if tg == "id":
                         cw = np.mean([(p.argmax(1) == sub_w) for p in P], axis=0)  # seed-averaged window correctness
-                        rec["corr_w"] += np.bincount(sub_w, weights=cw, minlength=24); rec["n_w"] += np.bincount(sub_w, minlength=24)
+                        rec["corr_w"] += np.bincount(sub_w, weights=cw, minlength=NSUB); rec["n_w"] += np.bincount(sub_w, minlength=NSUB)
                         ct = np.zeros(len(starts))
                         for p in P:
                             pm = np.add.reduceat(p[order], starts, axis=0) / cnts[:, None]
                             ct += (pm.argmax(1) == sub_t)
                         ct /= len(P)
-                        rec["corr_t"] += np.bincount(sub_t, weights=ct, minlength=24); rec["n_t"] += np.bincount(sub_t, minlength=24)
+                        rec["corr_t"] += np.bincount(sub_t, weights=ct, minlength=NSUB); rec["n_t"] += np.bincount(sub_t, minlength=NSUB)
                     elif tg == "act":
                         cw = np.mean([(p.argmax(1) == act_w) for p in P], axis=0)
-                        rec["corr_w"] += np.bincount(sub_w, weights=cw, minlength=24); rec["n_w"] += np.bincount(sub_w, minlength=24)
+                        rec["corr_w"] += np.bincount(sub_w, weights=cw, minlength=NSUB); rec["n_w"] += np.bincount(sub_w, minlength=NSUB)
         return out
 
 
 def boot_counts(B, seed=0):
-    rng = np.random.default_rng(seed); idx = rng.integers(0, 24, size=(B, 24))
-    return np.stack([np.bincount(r, minlength=24) for r in idx]).astype(np.float64)  # (B,24) multiplicities
+    rng = np.random.default_rng(seed); idx = rng.integers(0, NSUB, size=(B, NSUB))
+    return np.stack([np.bincount(r, minlength=NSUB) for r in idx]).astype(np.float64)  # (B,24) multiplicities
 
 
 def stat_from(rec_by_att, names, tgt, kind, Wt):
@@ -103,10 +105,12 @@ def main():
     ap.add_argument("--pred_dirs", required=True); ap.add_argument("--out", required=True)
     ap.add_argument("--learned", default="msda,rep"); ap.add_argument("--control", default="pd_pub_s0,pd_pub_s1,pd_pub_s2,pd_plain_s0,pd_w1_1.8_s0,pd_w2_0.5_s0")
     ap.add_argument("--folds", default="O"); ap.add_argument("--B", type=int, default=2000)
+    ap.add_argument("--set", default="astar", choices=["astar", "sealed", "wisdm"])
     ap.add_argument("--exclude", default="", help="comma-separated arms removed from the floor set (used for the frozen-list reading, verdict_original)")
     a = ap.parse_args()
     folds = a.folds.split(",")
-    S = C.analysis_set(); st = Store(S)
+    global NSUB, CHANCE
+    S = D.get_set(a.set); NSUB = int(S["n_id"]); CHANCE = 1.0 / NSUB; st = Store(S)
     files = {}
     for d in a.pred_dirs.split(","):
         for fn in glob.glob(os.path.join(os.path.expanduser(d), "preds__*__*.npz")):

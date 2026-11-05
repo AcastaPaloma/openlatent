@@ -3,14 +3,15 @@ python finalize.py --dirs out/stage0,out/def,~/work/runs/h_nn_aae,~/work/runs/h_
 import os, sys, json, subprocess, argparse, tempfile
 ap = argparse.ArgumentParser(); ap.add_argument("--dirs", required=True); ap.add_argument("--out", required=True)
 ap.add_argument("--control", default="pd_pub_s0"); ap.add_argument("--learned", default="msda,rep"); ap.add_argument("--B", default="2000")
+ap.add_argument("--set", default="astar"); ap.add_argument("--folds", default="O"); ap.add_argument("--orig_exclude", default="predlabel,predlabel_pd")
 a = ap.parse_args()
 here = os.path.dirname(os.path.abspath(__file__)); res = {}
-for tag, excl in [("original", "predlabel,predlabel_pd"), ("tightened", "")]:
+for tag, excl in [("original", a.orig_exclude), ("tightened", "")]:
     f = tempfile.mktemp(suffix=".json")
-    subprocess.run([sys.executable, os.path.join(here, "aggregate.py"), "--pred_dirs", a.dirs, "--out", f, "--folds", "O", "--B", a.B, "--learned", a.learned, "--control", a.control, "--exclude", excl],
+    subprocess.run([sys.executable, os.path.join(here, "aggregate.py"), "--pred_dirs", a.dirs, "--out", f, "--folds", a.folds, "--set", a.set, "--B", a.B, "--learned", a.learned, "--control", a.control, "--exclude", excl],
                    check=True, stdout=subprocess.DEVNULL)
     res[tag] = json.load(open(f))
-out = dict(prereg="research/adversarial/results_notes/H.md", fold="O (96 clean trials; burned-split audit of released checkpoints; NOT sealed)",
+out = dict(prereg="research/adversarial/results_notes/H.md", set=a.set, folds=a.folds,
            n_distinct_learned_defences=3, k2_set=a.learned.split(","), margins=res["tightened"]["margins"], K1_power_fires=res["tightened"]["K1_power_fires"], gates_ok=res["tightened"]["gates_ok"], gates=res["tightened"]["gates"],
            verdict_original=res["original"]["verdict_tightened"], verdict_tightened=res["tightened"]["verdict_tightened"],
            outcomes_original={k: v["full_envelope"] for k, v in res["original"]["outcomes"].items()}, outcomes_tightened={k: v["full_envelope"] for k, v in res["tightened"]["outcomes"].items()},

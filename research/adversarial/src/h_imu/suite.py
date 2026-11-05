@@ -8,6 +8,7 @@ import os, sys, json, time, argparse, re, warnings, zlib
 import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 import common as C
+import datasets as D
 
 warnings.filterwarnings("ignore")
 N_ID, N_ACT, N_GEN = 24, 4, 2
@@ -49,9 +50,12 @@ def build_release(arm, S, PHI, tr_mask, fold, pd_file=None, seed=0):
         return np.eye(N_ACT, dtype=np.float32)[act], "code"
     if arm == "oracle_id":
         return np.eye(N_ID, dtype=np.float32)[S["sub"]], "code"
-    if (arm.startswith("pd_") or arm in ("msda", "rep")) and pd_file is not None:
-        d = np.load(pd_file); R = np.zeros((N, 2, 128), np.float32); R[d["idx"]] = d["release"]
-        assert len(d["idx"]) == N, "PD release must cover all of A*"
+    if (arm.startswith("pd_") or arm in ("msda", "rep", "aae_re")) and pd_file is not None:
+        d = np.load(pd_file)
+        if f"release_{fold}" in d.files:  # per-fold retrained defender (aae_re): one release per fold, aligned with the set
+            R = d[f"release_{fold}"].astype(np.float32); assert len(R) == N, (len(R), N); return R, "win"
+        R = np.zeros((N, 2, 128), np.float32); R[d["idx"]] = d["release"]
+        assert len(d["idx"]) == N, "release must cover the whole set"
         return R, "win"
     if arm.startswith("pdz60"):
         d = np.load(pd_file); Z = np.zeros((N, 60), np.float32); Z[d["idx"]] = d["z"]
@@ -215,14 +219,15 @@ def labels_for(S, target):
     return {"id": S["sub"], "act": S["act"], "gen": C.gender_by_subject()[S["sub"]]}[target], {"id": N_ID, "act": N_ACT, "gen": N_GEN}[target]
 
 
-def run(arm, folds, family, targets, out_dir, pd_file=None, threads=8, held=True, tag=""):
+def run(arm, folds, family, targets, out_dir, pd_file=None, threads=8, held=True, tag="", set_name="astar"):
+    global N_ID, N_ACT
     t0 = time.time(); os.makedirs(out_dir, exist_ok=True)
-    S = C.analysis_set(); N = len(S["X"]); PHI = C.phi(S["X"])
+    S = D.get_set(set_name); N_ID, N_ACT = int(S["n_id"]), int(S["n_act"]); N = len(S["X"]); PHI = C.phi(S["X"])
     pack = {}
     for f in folds:
-        te_trials = np.array([(C.ACTS[a], int(t)) in C.FOLD_TEST[f] for a, t in zip(S["act"], S["trial"])])
+        te_trials = D.test_mask(S, f)
         tr_mask = (~te_trials) & S["is_train_window"]
-        te_mask = te_trials  # all A* windows of the test trials (fold O: stride 20; folds A/B: stride 40)
+        te_mask = te_trials  # all windows of the held-out units of the set
         R, kind = build_release(arm, S, PHI, tr_mask, f, pd_file)
         if family == "nn" and kind != "win":
             continue
@@ -257,9 +262,10 @@ if __name__ == "__main__":
     ap.add_argument("--arm", required=True, help="one arm or a comma-separated list (run sequentially in this process)"); ap.add_argument("--folds", default="O,A,B"); ap.add_argument("--family", default="tab", choices=["tab", "nn"])
     ap.add_argument("--targets", default="id,act"); ap.add_argument("--out", required=True); ap.add_argument("--pd_file", default=None)
     ap.add_argument("--threads", type=int, default=8); ap.add_argument("--no_held", action="store_true"); ap.add_argument("--tag", default="")
+    ap.add_argument("--set", default="astar", choices=["astar", "sealed", "wisdm"])
     a = ap.parse_args()
     import torch; torch.set_num_threads(a.threads)
     for arm in a.arm.split(","):
         if os.path.exists(os.path.join(a.out, f"preds__{arm}{a.tag}__{a.family}.npz")):
             print("skip existing", arm, flush=True); continue
-        run(arm, a.folds.split(","), a.family, a.targets.split(","), a.out, a.pd_file, a.threads, held=not a.no_held, tag=a.tag)
+        run(arm, a.folds.split(","), a.family, a.targets.split(","), a.out, a.pd_file, a.threads, held=not a.no_held, tag=a.tag, set_name=a.set)
