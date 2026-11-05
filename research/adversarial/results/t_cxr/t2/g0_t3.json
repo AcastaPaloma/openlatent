@@ -1,0 +1,327 @@
+{
+ "rot0": {
+  "roles": {
+   "S": {
+    "images": 60838,
+    "patients": 10795,
+    "ge2": 8713
+   },
+   "A": {
+    "images": 27342,
+    "patients": 10792,
+    "ge2": 2435
+   },
+   "V": {
+    "images": 6973,
+    "patients": 2585,
+    "ge2": 605
+   },
+   "T": {
+    "images": 16950,
+    "patients": 6633,
+    "ge2": 1545
+   }
+  },
+  "N2": {
+   "all": {
+    "auc": 0.5373644365470374,
+    "lo": 0.5264668894473289,
+    "hi": 0.548641958222697,
+    "n_pos": 2134,
+    "passes": true
+   },
+   "device": {
+    "auc": 0.5165797605422626,
+    "lo": 0.5063779958567891,
+    "hi": 0.5268492246082307,
+    "n_pos": 2134,
+    "passes": true
+   },
+   "demo": {
+    "auc": 0.5281589238016353,
+    "lo": 0.5219274873318934,
+    "hi": 0.5350909928642262,
+    "n_pos": 2134,
+    "passes": true
+   },
+   "n_triples": {
+    "A": 3963,
+    "V": 595,
+    "T": 1539
+   },
+   "T_report": {
+    "split": "T",
+    "design": "N2",
+    "positives_requested": 1545,
+    "dropped": 6,
+    "kept": 1539,
+    "tier_hist": {
+     "0": 1184,
+     "2": 96,
+     "1": 233,
+     "3": 26
+    },
+    "patients_without_valid_positive": 0
+   }
+  },
+  "N2_strict": {
+   "all": {
+    "auc": 0.5148670669533585,
+    "lo": 0.506295052678495,
+    "hi": 0.5242385840252703,
+    "n_pos": 1884,
+    "passes": true
+   },
+   "device": {
+    "auc": 0.5158601768834435,
+    "lo": 0.5069518012055931,
+    "hi": 0.5251913603098616,
+    "n_pos": 1884,
+    "passes": true
+   },
+   "demo": {
+    "auc": 0.5,
+    "lo": 0.5,
+    "hi": 0.5,
+    "n_pos": 1884,
+    "passes": true
+   },
+   "n_triples": {
+    "A": 3747,
+    "V": 467,
+    "T": 1417
+   },
+   "T_report": {
+    "split": "T",
+    "design": "N2",
+    "positives_requested": 1545,
+    "dropped": 6,
+    "kept": 1539,
+    "tier_hist": {
+     "0": 1184,
+     "2": 96,
+     "1": 233,
+     "3": 26
+    },
+    "patients_without_valid_positive": 0
+   }
+  }
+ },
+ "rot1": {
+  "roles": {
+   "S": {
+    "images": 60838,
+    "patients": 10795,
+    "ge2": 8713
+   },
+   "A": {
+    "images": 28048,
+    "patients": 10723,
+    "ge2": 2519
+   },
+   "V": {
+    "images": 5887,
+    "patients": 2653,
+    "ge2": 587
+   },
+   "T": {
+    "images": 17330,
+    "patients": 6634,
+    "ge2": 1479
+   }
+  },
+  "N2": {
+   "all": {
+    "auc": 0.5381252223727838,
+    "lo": 0.5278110462970673,
+    "hi": 0.5486133548814138,
+    "n_pos": 2056,
+    "passes": true
+   },
+   "device": {
+    "auc": 0.515397304463353,
+    "lo": 0.5060027108188617,
+    "hi": 0.5254909855041333,
+    "n_pos": 2056,
+    "passes": true
+   },
+   "demo": {
+    "auc": 0.5318306531892989,
+    "lo": 0.524151446747869,
+    "hi": 0.5390449526582537,
+    "n_pos": 2056,
+    "passes": true
+   },
+   "n_triples": {
+    "A": 4100,
+    "V": 579,
+    "T": 1477
+   },
+   "T_report": {
+    "split": "T",
+    "design": "N2",
+    "positives_requested": 1479,
+    "dropped": 2,
+    "kept": 1477,
+    "tier_hist": {
+     "0": 1099,
+     "2": 122,
+     "1": 225,
+     "3": 31
+    },
+    "patients_without_valid_positive": 0
+   }
+  },
+  "N2_strict": {
+   "all": {
+    "auc": 0.5052710388926331,
+    "lo": 0.49582358560825013,
+    "hi": 0.515149979098476,
+    "n_pos": 1779,
+    "passes": true
+   },
+   "device": {
+    "auc": 0.5069170931493873,
+    "lo": 0.49683389307709297,
+    "hi": 0.517577356176819,
+    "n_pos": 1779,
+    "passes": true
+   },
+   "demo": {
+    "auc": 0.5,
+    "lo": 0.5,
+    "hi": 0.5,
+    "n_pos": 1779,
+    "passes": true
+   },
+   "n_triples": {
+    "A": 3874,
+    "V": 455,
+    "T": 1324
+   },
+   "T_report": {
+    "split": "T",
+    "design": "N2",
+    "positives_requested": 1479,
+    "dropped": 2,
+    "kept": 1477,
+    "tier_hist": {
+     "0": 1099,
+     "2": 122,
+     "1": 225,
+     "3": 31
+    },
+    "patients_without_valid_positive": 0
+   }
+  }
+ },
+ "rot2": {
+  "roles": {
+   "S": {
+    "images": 60838,
+    "patients": 10795,
+    "ge2": 8713
+   },
+   "A": {
+    "images": 27750,
+    "patients": 10696,
+    "ge2": 2403
+   },
+   "V": {
+    "images": 6530,
+    "patients": 2571,
+    "ge2": 621
+   },
+   "T": {
+    "images": 16985,
+    "patients": 6743,
+    "ge2": 1561
+   }
+  },
+  "N2": {
+   "all": {
+    "auc": 0.5288304867267174,
+    "lo": 0.5185398337924704,
+    "hi": 0.5390658007959614,
+    "n_pos": 2159,
+    "passes": true
+   },
+   "device": {
+    "auc": 0.511098558529297,
+    "lo": 0.5011099014412562,
+    "hi": 0.5211471320866518,
+    "n_pos": 2159,
+    "passes": true
+   },
+   "demo": {
+    "auc": 0.5278282944109141,
+    "lo": 0.5217162782076429,
+    "hi": 0.5337535486489657,
+    "n_pos": 2159,
+    "passes": true
+   },
+   "n_triples": {
+    "A": 3921,
+    "V": 608,
+    "T": 1551
+   },
+   "T_report": {
+    "split": "T",
+    "design": "N2",
+    "positives_requested": 1561,
+    "dropped": 10,
+    "kept": 1551,
+    "tier_hist": {
+     "0": 1186,
+     "1": 241,
+     "2": 92,
+     "3": 32
+    },
+    "patients_without_valid_positive": 0
+   }
+  },
+  "N2_strict": {
+   "all": {
+    "auc": 0.5046397498741073,
+    "lo": 0.49569305442259015,
+    "hi": 0.513638527503744,
+    "n_pos": 1911,
+    "passes": true
+   },
+   "device": {
+    "auc": 0.5059220886760694,
+    "lo": 0.49652476737585505,
+    "hi": 0.5151592990374108,
+    "n_pos": 1911,
+    "passes": true
+   },
+   "demo": {
+    "auc": 0.5,
+    "lo": 0.5,
+    "hi": 0.5,
+    "n_pos": 1911,
+    "passes": true
+   },
+   "n_triples": {
+    "A": 3693,
+    "V": 484,
+    "T": 1427
+   },
+   "T_report": {
+    "split": "T",
+    "design": "N2",
+    "positives_requested": 1561,
+    "dropped": 10,
+    "kept": 1551,
+    "tier_hist": {
+     "0": 1186,
+     "1": 241,
+     "2": 92,
+     "3": 32
+    },
+    "patients_without_valid_positive": 0
+   }
+  }
+ },
+ "passes_all_rotations": true
+}

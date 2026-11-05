@@ -57,9 +57,35 @@ def nominate(root, defenders, k_fam=2):
     return out
 
 
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--defenders", required=True); ap.add_argument("--out", required=True)
+def _main():
+    ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--defenders", required=True); ap.add_argument("--out", required=True); ap.add_argument("--t3", action="store_true")
     a = ap.parse_args()
-    r = nominate(a.root, a.defenders.split(","))
+    r = nominate_t3(a.root, a.defenders.split(",")) if a.t3 else nominate(a.root, a.defenders.split(","))
     Path(a.out).write_text(json.dumps(r, indent=1))
-    print(json.dumps(r["nominated"], indent=1), "\nunion:", r["union"])
+    print(json.dumps(r.get("nominated", r.get("defenders_L_val")), indent=1), "\nunion:", r["union"])
+
+
+def nominate_t3(root, defenders, max_floors=6, per_family=2):
+    """T.md 8.3: rank all screened floors by |L_val(floor) - L_val(nearest defender)|, take the closest `max_floors` with at most `per_family` per family (ties by name)."""
+    rel = sorted({p.name[: -len("_rot0_screen")] for p in Path(root).glob("*_rot0_screen")})
+    L = {r: l_val(root, r) for r in rel}
+    LD = {d: L[d] for d in defenders if L.get(d) is not None}
+    cand = []
+    for r, v in L.items():
+        f = family(r)
+        if f is None or v is None or r in defenders:
+            continue
+        cand.append((min(abs(v - x) for x in LD.values()), r, f))
+    cand.sort()
+    chosen, cnt = [], {}
+    for dist, r, f in cand:
+        if cnt.get(f, 0) >= per_family:
+            continue
+        chosen.append(r); cnt[f] = cnt.get(f, 0) + 1
+        if len(chosen) == max_floors:
+            break
+    return dict(L_val={r: v for r, v in L.items() if v is not None}, defenders_L_val=LD, union=sorted(chosen), ranked=[(round(d, 4), r, f) for d, r, f in cand][:20])
+
+
+if __name__ == "__main__":
+    _main()

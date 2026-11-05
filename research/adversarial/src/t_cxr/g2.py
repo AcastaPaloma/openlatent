@@ -23,7 +23,7 @@ def subset(att, mask):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--rots", default="1,2"); ap.add_argument("--data", required=True); ap.add_argument("--pri", required=True)
-    ap.add_argument("--salt-file", required=True); ap.add_argument("--exclude", required=True); ap.add_argument("--out", required=True); ap.add_argument("--B", type=int, default=2000)
+    ap.add_argument("--salt-file", required=True); ap.add_argument("--exclude", required=True); ap.add_argument("--out", required=True); ap.add_argument("--B", type=int, default=2000); ap.add_argument("--f1-shuf-tol", type=float, default=0.0, help="T3 (D4): tolerance for the shuffled-label family-F1 (Siamese) control, calibrated from the T2 design offset")
     a = ap.parse_args()
     rots = [int(x) for x in a.rots.split(",")]
     d0 = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
@@ -61,7 +61,7 @@ def main():
     res["strata"] = strata
     # controls as written: const (all attackers), shuffled-label F1, F3a, F5
     ctrl = []
-    for nm, suffix, names in (("const", "", None), ("raw", "_shuf", ("f1_match_ens", "f3a_logreg", "f5a", "f5b"))):
+    for nm, suffix, names in (("const", "", None), ("raw", "_shuf", ("f1_match_ens", "f3a_logreg", "f5a", "f5b")), ("raw", "_shuf2", ("f1_match_ens", "f3a_logreg", "f5a", "f5b"))):
         att = AG.load_attackers(a.root, nm, rots, suffix)
         if att is None:
             continue
@@ -69,6 +69,8 @@ def main():
         for k, e in ent.items():
             b = S.auc_boot(e["y"], e["score"], pb.codes(e["cluster"]), pb)
             auc = S.auc(e["y"], e["score"]); se = float(np.nanstd(b, ddof=1)); tol = S.control_tolerance(se, int(len(e["y"]) // 2), int(len(e["y"]) // 2))
+            if a.f1_shuf_tol and suffix in ("_shuf", "_shuf2") and k.startswith("f1"):
+                tol = max(tol, a.f1_shuf_tol)
             ctrl.append(dict(name=f"{nm}{suffix}:{k}", auc=auc, se=se, tol=tol, ok=bool(abs(auc - 0.5) <= tol)))
     res["controls"] = ctrl
     c1 = bool(wc_raw["L"] >= 0.65 and wc_raw["L"] >= meta_auc + 0.03)
