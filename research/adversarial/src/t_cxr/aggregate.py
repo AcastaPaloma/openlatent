@@ -127,7 +127,7 @@ def labels14_release(root, rots, pb, raw):
     return dict(name="labels14", L=wc["L"], L_boot=wc["L_boot"], L_val=wc["val_L"], U=raw["U"], U_boot=raw["U_boot"], U_val=raw["U_val"], code_floor=True)
 
 
-def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
+def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t2=False, g2_path=None):
     root = Path(root)
     u_raw = load_utility(root, "raw", rots)
     if u_raw is None:
@@ -140,6 +140,9 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
         if r is not None:
             R[nm] = r
     learned = learned or [n for n in R if n.startswith(LEARNED_PREFIX)]
+    if t2 and "const" not in R and "raw" in R:                                   # T.md 7.3: const is an ANALYTIC anchor (L = 0.5, U = 0.5, zero variance)
+        R["const"] = dict(name="const", L=0.5, L_boot=np.full(B, 0.5), L_val=0.5, U=0.5, U_boot=np.full(B, 0.5), U_val=0.5, U_fixed=0.5, argmax="analytic", val_selected="analytic",
+                          val_selected_test_auc=0.5, attacker_points={}, f6=None, f5=np.nan)
     floors = {n: r for n, r in R.items() if n not in learned}
     res = dict(evaluator_sha=ledger.evaluator_sha(), prereg_commit=prereg_commit, rots=list(rots), B=B, n_patients_universe=int(len(pb.patients)), releases={}, KT={})
     for n, r in R.items():
@@ -164,9 +167,9 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
     rim = R.get("rim_w24")
     meta_floor = g0["rot0"]["N2"]["all"]["auc"] if g0 else float("nan")
     if "raw" in R:
-        k1 = S.kill_measurability(R["raw"]["L"], meta_floor, [(a_, s_) for _, a_, s_ in ctrl], nT, nT)
+        k1 = S.kill_measurability(R["raw"]["L"], meta_floor, [] if t2 else [(a_, s_) for _, a_, s_ in ctrl], nT, nT)
         k1["rim_w24_worst"] = rim["L"] if rim else None
-        k1["rim_ok"] = bool(rim is None or rim["L"] <= 0.56)
+        k1["rim_ok"] = True if t2 else bool(rim is None or rim["L"] <= 0.56)           # T2 (D2): the border-only clause is replaced by G2; rim is descriptive
         k1["fires"] = bool(k1["fires"] or not k1["rim_ok"])
         k1["controls"] = [dict(name=n, auc=a_, se=s_) for n, a_, s_ in ctrl]
         res["KT"]["KT1"] = k1
@@ -230,6 +233,14 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
       res["verdict_original"] = ("NO-GO (KT1 fires)" if res["KT"].get("KT1", {}).get("fires") else ("NO-GO (KT3 fires)" if (res["KT"].get("KT3") or {}).get("fires") else ("NO-GO (KT2: floors match every learned defence)" if res["KT"]["KT2"]["fires_primary"] else "GO (a learned defence beats the floor envelope)"))) if verdicts or "KT1" in res["KT"] else "incomplete"
       res["verdict_tightened"] = res["verdict_original"] if res["verdict_original"].startswith("NO-GO") else ("NO-GO (KT2 under a sensitivity rule)" if res["KT"]["KT2"]["fires_any_sensitivity"] else res["verdict_original"])
     res["g0"] = dict(passes_all_rotations=g0["passes_all_rotations"]) if g0 else None
+    if t2:
+        g2 = _load_json(g2_path) if g2_path and Path(g2_path).exists() else None
+        res["G2"] = dict(passes=(g2 or {}).get("G2_passes"), checks=(g2 or {}).get("checks"))
+        res["verdict_t1"] = "NO-GO (stage 1: KT1 fires, border-only attacker 0.738 > 0.56; deviation D1 recorded)"
+        res["verdict_original"] = "NO-GO at G2 (literal T2: control clause 4; D3/A8/A9)" if (g2 and not g2["G2_passes"]) else ("G2 passed" if g2 else "G2 missing")
+        res["verdict_tightened"] = res["verdict_original"]
+        res["posthoc_sensitivity_note"] = "everything below G2 (KT1', KT2 envelope for pcxr_mu0.01, labels14) is POST-HOC SENSITIVITY after the literal G2 failure; it cannot revive T2"
+        res["KT2_posthoc"] = dict(pcxr_fires=res["KT"]["KT2"]["fires_primary"], any_sensitivity_fires=res["KT"]["KT2"]["fires_any_sensitivity"])
     if out:
         o = Path(out); o.mkdir(parents=True, exist_ok=True)
         (o / "result.json").write_text(json.dumps(res, indent=1, default=lambda x: float(x) if np.isscalar(x) else None))
@@ -242,9 +253,9 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--g0", default=None); ap.add_argument("--rots", default="0"); ap.add_argument("--out", required=True)
-    ap.add_argument("--B", type=int, default=2000); ap.add_argument("--prereg-commit", default="")
+    ap.add_argument("--B", type=int, default=2000); ap.add_argument("--prereg-commit", default=""); ap.add_argument("--t2", action="store_true"); ap.add_argument("--g2", default=None); ap.add_argument("--learned", default=None)
     a = ap.parse_args()
-    r = run(a.root, a.g0, [int(x) for x in a.rots.split(",")], a.B, a.prereg_commit, a.out)
+    r = run(a.root, a.g0, [int(x) for x in a.rots.split(",")], a.B, a.prereg_commit, a.out, learned=a.learned.split(",") if a.learned else None, t2=a.t2, g2_path=a.g2)
     print(r["verdict_original"], "|", r["verdict_tightened"])
 
 
