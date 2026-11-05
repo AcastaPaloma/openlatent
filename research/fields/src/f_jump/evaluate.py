@@ -69,6 +69,9 @@ def main():
     ap.add_argument("--tta", action="store_true", help="H3-004 pilot (results_notes/F.md section 16): test-time per-source recentring of released vectors")
     ap.add_argument("--s1", action="store_true", help="H3-007 stage 1 (results_notes/F.md section 12): AP of retrained adapters / floors / position codes under protocols P0, Pa, Pb, Pc, Pd, Pabc")
     ap.add_argument("--nd_pairs", default=os.path.expanduser("~/work/f5_ctrl_position_meta/nd_pairs.json"))
+    ap.add_argument("--mnn0", action="store_true", help="H3-005 stage 0 (results_notes/F.md section 22): MNN pseudo-pair precision / retention per budget, controls, oracle-pair ceiling")
+    ap.add_argument("--regimes", default="a,b1,b3", help="--mnn0: regimes (a, b1, b3, b10)")
+    ap.add_argument("--oracle", action="store_true", help="--mnn0: also train the oracle-pair adapters and score U_H (split s0)")
     ap.add_argument("--f4", action="store_true", help="F4 job (results_notes/F.md section 10): budget grid 0/1/3/10/30/100%, leave-source-out via --hold_source, feature view via --view")
     ap.add_argument("--view", default="all", choices=["all", "objects"], help="objects = drop the Image_* features (F4 view B)")
     ap.add_argument("--f3", action="store_true", help="F3 job (results_notes/F.md section 8): label-budget curve, matched LDA, AE control, permuted-label memorisation floor")
@@ -222,6 +225,10 @@ def main():
         return
     if a.s1:
         run_s1(a, fac, Xfit, Xall, nV, sets, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, plate, src, allidx, role_of, out)
+        print("done", flush=True)
+        return
+    if a.mnn0:
+        run_mnn0(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, src, out)
         print("done", flush=True)
         return
     if a.f4:
@@ -596,6 +603,196 @@ def run_f4(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_clas
         del net
         torch.cuda.empty_cache()
     (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
+
+
+def mnn_pairs(E, srcc, chunk=2048):
+    """mutual cross-source nearest neighbours (k = 1, cosine) of the rows of E (n, d, L2-normalised torch), srcc (n,) torch long source codes.
+    Returns i < j index arrays and the pair cosine."""
+    n = E.shape[0]
+    nn_idx = torch.empty(n, dtype=torch.long, device=E.device)
+    nn_sim = torch.empty(n, device=E.device)
+    for i in range(0, n, chunk):
+        sim = E[i:i + chunk] @ E.T
+        sim.masked_fill_(srcc[i:i + chunk, None] == srcc[None, :], -2.0)
+        v, ix = sim.max(1)
+        nn_idx[i:i + chunk], nn_sim[i:i + chunk] = ix, v
+    ar = torch.arange(n, device=E.device)
+    keep = (nn_idx[nn_idx] == ar) & (ar < nn_idx) & (nn_sim > -1.5)
+    ii = torch.where(keep)[0]
+    return ii.cpu().numpy(), nn_idx[ii].cpu().numpy(), nn_sim[ii].cpu().numpy()
+
+
+def tau_prefix(sim, true, target=0.8, min_pairs=100):
+    """longest similarity-ordered prefix with precision >= target; returns (tau, k).  (inf, 0) if fewer than min_pairs pairs or no such prefix."""
+    if len(sim) < min_pairs:
+        return float("inf"), 0
+    o = np.argsort(-sim)
+    cum = np.cumsum(true[o].astype(np.float64)) / np.arange(1, len(sim) + 1)
+    ok = np.where(cum >= target)[0]
+    if len(ok) == 0:
+        return float("inf"), 0
+    k = int(ok.max()) + 1
+    return float(sim[o][k - 1]), k
+
+
+def pair_stats(sim, true, ii, jj, tau, n_pool):
+    r = sim >= tau
+    n = int(r.sum())
+    if n == 0:
+        return dict(n_pairs=0, precision=float("nan"), retention=0.0)
+    return dict(n_pairs=n, precision=float(true[r].mean()), retention=float(len(np.unique(np.concatenate([ii[r], jj[r]]))) / n_pool))
+
+
+def run_mnn0(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, src, out):
+    """H3-005 stage 0 (results_notes/F.md section 22): precision / retention of cross-source MNN pairs of unlabelled production wells for the F4 adapters of regimes a / b1 / b3,
+    calibrated on the labelled part (G1) or with the hidden labels (G2), controls (random pairs, shuffled-source MNN, raw PCA-256), oracle-pair adapters (split s0)."""
+    import hashlib
+    import json as _json
+    steps = int(os.environ.get("F2_STEPS", AD.STEPS))
+    meta_out["mnn0"], meta_out["mnn0_stats"], meta_out["regime"], meta_out["mnn0_train"] = True, {}, {}, {}
+    lp, lc, jf = lab_prod[fit_idx], lab_class[fit_idx], jcp[fit_idx]
+    cnts = np.bincount(lp[lp >= 0]) if (lp >= 0).any() else np.zeros(1, int)
+    lp2 = np.where((lp >= 0) & (cnts[np.maximum(lp, 0)] >= 2), lp, -1)
+    m_prod = lp2 >= 0
+    cls_j = pd.DataFrame({"c": lp2[m_prod], "j": jf[m_prod]}).drop_duplicates("c").set_index("c")["j"]
+    t2m = (lc >= 0) & (lp < 0) & (jf != "DMSO")
+    prodm = lp >= 0                                                   # hidden-label pool: all Fit production wells
+    srcf = pd.Categorical(src[fit_idx], categories=C.SOURCES5).codes.astype(np.int64)
+    cid = np.where(lp >= 0, lp, np.where(lc >= 0, -10 - lc, -1)).astype(np.int64)    # compound identity across production and Target2 wells
+    bud = dict(a=0.0, b1=0.01, b3=0.03, b10=0.10)
+
+    def frac_mask(f):
+        if f <= 0:
+            return np.zeros(len(fit_idx), bool)
+        sel = np.zeros(int(cls_j.index.max()) + 1, bool)
+        for c, j in cls_j.items():
+            sel[c] = int(hashlib.md5((str(j) + a.salt + "lab").encode()).hexdigest(), 16) % 10000 < int(round(f * 10000))
+        return m_prod & sel[np.maximum(lp2, 0)]
+
+    regs = [r for r in a.regimes.split(",") if r]
+    labels = {}
+    for R in regs:
+        lab = -np.ones(len(fit_idx), np.int64)
+        m = frac_mask(bud[R])
+        n_prod = 0
+        if m.any():
+            lab[m] = pd.factorize(lp2[m])[0]
+            n_prod = int(lab[m].max()) + 1
+        lab[t2m] = n_prod + pd.factorize(lc[t2m])[0]
+        labels[R] = (lab, n_prod, m)
+    meta_out["mnn0_labels"] = {R: dict(n_prod_classes=int(v[1]), n_labelled_prod_wells=int(v[2].sum())) for R, v in labels.items()}
+    idxP = np.where(prodm)[0]
+    n_pool = len(idxP)
+    meta_out["mnn0_pool"] = dict(n_production_wells=int(n_pool), n_target2_wells=int(t2m.sum()), n_fit=int(len(fit_idx)))
+    print("  pool:", meta_out["mnn0_pool"], "labels:", meta_out["mnn0_labels"], flush=True)
+    srcP = torch.as_tensor(srcf[idxP], device=AR.DEV)
+    rng = np.random.RandomState(AR.seed_of(a.salt, "mnn0") % (2 ** 31))
+
+    def measure(En, R, tag):
+        """En (n_fit, d) torch, L2-normalised.  Fills meta_out['mnn0_stats'][R|tag]."""
+        key = f"{R}|{tag}"
+        EP = En[torch.as_tensor(idxP, device=AR.DEV)]
+        iP, jP, sP = mnn_pairs(EP, srcP)
+        trueP = (cid[idxP][iP] == cid[idxP][jP])
+        rec = dict(n_mutual=int(len(iP)), n_pool=int(n_pool), mutual_frac_wells=float(2 * len(iP) / n_pool), sim_q=[float(x) for x in np.percentile(sP, [5, 25, 50, 75, 95])] if len(sP) else [],
+                   true_frac_all=float(trueP.mean()) if len(trueP) else float("nan"))
+        # labelled-part calibration (labelled production wells + Target2 wells; regime a: Target2 only)
+        lab, npd, m = labels[R] if R in labels else (None, 0, np.zeros(len(fit_idx), bool))
+        idxQ = np.where(m | t2m)[0]
+        EQ = En[torch.as_tensor(idxQ, device=AR.DEV)]
+        iQ, jQ, sQ = mnn_pairs(EQ, torch.as_tensor(srcf[idxQ], device=AR.DEV))
+        trueQ = (cid[idxQ][iQ] == cid[idxQ][jQ])
+        tau_cal, kQ = tau_prefix(sQ, trueQ, 0.8, 100)
+        rec.update(n_lab_pool=int(len(idxQ)), n_lab_pairs=int(len(iQ)), lab_pair_precision_all=float(trueQ.mean()) if len(trueQ) else float("nan"), tau_cal=tau_cal, k_cal=int(kQ))
+        rec["G1"] = pair_stats(sP, trueP, iP, jP, tau_cal, n_pool)
+        tau_or, kO = tau_prefix(sP, trueP, 0.8, 20)
+        rec["tau_oracle"] = tau_or
+        rec["G2"] = pair_stats(sP, trueP, iP, jP, tau_or, n_pool)
+        rec["G2_p85"] = pair_stats(sP, trueP, iP, jP, tau_prefix(sP, trueP, 0.85, 20)[0], n_pool)
+        # P1: random cross-source pairs of the same count as the G2 (oracle-threshold) retained set, at least 1000
+        nr = max(1000, rec["G2"]["n_pairs"])
+        ri = rng.randint(n_pool, size=nr * 2)
+        rj = rng.randint(n_pool, size=nr * 2)
+        ok = srcf[idxP][ri] != srcf[idxP][rj]
+        ri, rj = ri[ok][:nr], rj[ok][:nr]
+        rec["P1_random"] = dict(n_pairs=int(len(ri)), precision=float((cid[idxP][ri] == cid[idxP][rj]).mean()))
+        # P2: shuffled-source MNN, the calibrated threshold applied
+        sh = torch.as_tensor(np.random.RandomState(AR.seed_of(a.salt, "shufsrc", key) % (2 ** 31)).permutation(srcf[idxP]), device=AR.DEV)
+        iS, jS, sS = mnn_pairs(EP, sh)
+        trueS = (cid[idxP][iS] == cid[idxP][jS])
+        st = pair_stats(sS, trueS, iS, jS, tau_cal, n_pool)
+        rs = sS >= tau_cal
+        st["true_cross_source_share"] = float((srcf[idxP][iS][rs] != srcf[idxP][jS][rs]).mean()) if rs.any() else float("nan")
+        rec["P2_shuffled_source_at_tau_cal"] = st
+        st2 = pair_stats(sS, trueS, iS, jS, tau_or, n_pool)
+        rec["P2_shuffled_source_at_tau_oracle"] = st2
+        meta_out["mnn0_stats"][key] = rec
+        print(f"  {key:12s} mutual {rec['n_mutual']:7d} tau_cal {tau_cal:.3f} ({kQ} lab pairs, lab precision all {rec['lab_pair_precision_all']:.2f}) "
+              f"G1: ret {rec['G1']['retention']:.4f} prec {rec['G1']['precision']:.3f} | G2: ret {rec['G2']['retention']:.4f} (tau {tau_or:.3f}) | P1 prec {rec['P1_random']['precision']:.4f} "
+              f"| P2 ret {st['retention']:.4f} prec {st['precision']:.3f}", flush=True)
+
+    # ---- raw floor (PCA-256, no labels)
+    Zfit = fac.pca(Xfit, 256)
+    for R in regs:
+        pass
+    En = torch.nn.functional.normalize(Zfit, dim=1)
+    for R in regs[:1]:
+        measure(En, R, "raw256")                                       # calibration uses the first regime's labelled part; the raw embedding is regime-independent in G2 / P1 / P2
+    # ---- adapters
+    tag = "pc|all"
+    sub = None
+    for R in regs:
+        lab, npd, m = labels[R]
+        kw = dict(n_prod_batch=192 if npd > 0 else 0, n_t2_batch=32 if npd > 0 else 192, k_t2=4)
+        t1 = time.time()
+        net, info = AD.train_supcon(Xfit, lab, npd, 8, AR.seed_of(a.salt, "f4", tag, R) % (2 ** 31), steps=steps, **kw)
+        Ef = AD.embed(net, Xfit)
+        info["train_seconds"] = round(time.time() - t1, 1)
+        meta_out["mnn0_train"][R] = info
+        print(f"  {R} d=8: loss {info['loss_first20']:.3f} -> {info['loss_last200']:.3f} ({info['train_seconds']}s)", flush=True)
+        measure(torch.nn.functional.normalize(Ef, dim=1), R, "adapter")
+        if a.oracle:
+            Eall = AD.embed(net, Xall)
+            run_arm(f"mlp_{R}_d8", "adapter", Eall, att=False)
+            meta_out["regime"][f"mlp_{R}_d8"] = R
+            del Eall
+        if a.oracle and R == "b1":
+            unl = prodm & ~m
+            comp_w = pd.DataFrame({"w": np.where(unl & (lp2 >= 0))[0], "c": lp2[unl & (lp2 >= 0)], "s": srcf[unl & (lp2 >= 0)]})
+            by = comp_w.groupby("c")
+            multi = [g for _, g in by if g["s"].nunique() >= 2]
+            for q in (0.01, 0.03):
+                r2 = np.random.RandomState(AR.seed_of(a.salt, "orc", q) % (2 ** 31))
+                npairs = int(q * unl.sum() / 2)
+                pick = r2.permutation(len(multi))[:npairs]
+                lab2 = -np.ones(len(fit_idx), np.int64)
+                lab2[lab >= 0] = lab[lab >= 0]
+                new_prod = npd
+                for t, pi in enumerate(pick):
+                    g = multi[pi]
+                    i1 = r2.randint(len(g))
+                    s1 = g["s"].to_numpy()[i1]
+                    other = np.where(g["s"].to_numpy() != s1)[0]
+                    i2 = other[r2.randint(len(other))]
+                    wi = g["w"].to_numpy()
+                    lab2[wi[i1]] = new_prod + t
+                    lab2[wi[i2]] = new_prod + t
+                npd2 = npd + len(pick)
+                # Target2 classes after the production block
+                t2c = pd.factorize(lc[t2m])[0]
+                lab2[t2m] = npd2 + t2c
+                net2, info2 = AD.train_supcon(Xfit, lab2, npd2, 8, AR.seed_of(a.salt, "orc_train", q) % (2 ** 31), steps=steps, **kw)
+                info2["n_pairs"], info2["q"] = int(len(pick)), q
+                meta_out["mnn0_train"][f"orc_q{int(q * 100)}"] = info2
+                Eall2 = AD.embed(net2, Xall)
+                run_arm(f"orc_q{int(q * 100)}", "adapter", Eall2, att=False)
+                meta_out["regime"][f"orc_q{int(q * 100)}"] = R
+                print(f"  oracle q={q}: {len(pick)} pairs, loss {info2['loss_first20']:.3f} -> {info2['loss_last200']:.3f}", flush=True)
+                del net2, Eall2
+                torch.cuda.empty_cache()
+        del net, Ef
+        torch.cuda.empty_cache()
+    (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1, default=float))
 
 
 def make_pabc(a, sets, jcp, role_of, nV):
