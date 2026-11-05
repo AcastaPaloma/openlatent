@@ -1,0 +1,25 @@
+{
+ "name": "h_b2_c1s1",
+ "config": {
+  "name": "h_b2_c1s1",
+  "priority": 11,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/aae_train.py fit --set sealed --config C1 --folds S0,S1,S2 --seed 1 --tag _c1s1 --save_weights --out $OUT && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --set sealed --arm aae_re --tag _c1s1 --folds S0,S1,S2 --family nn --targets id,act --out $OUT --pd_file $OUT/aae_re_sealed_c1s1.npz",
+  "hf_path": "runs/h_b2_c1s1",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md",
+   "*.pt"
+  ]
+ },
+ "commit": "eceb4c2",
+ "commit_after": "fb0185c",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 518.5,
+ "finished_utc": "2026-11-05T07:17:21Z",
+ "uploaded": true
+}
