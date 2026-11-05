@@ -1,0 +1,5 @@
+name: h_h4_code_b
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm act60_r1 --rungs 0.25,0.5,1.0 --out $OUT && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm lda3 --rungs 1.0 --out $OUT && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm lda3_r2 --rungs 1.0 --out $OUT"
+hf_path: runs/h_h4_code_b
+hf_allow: ["*.json", "*.log", "*.md"]

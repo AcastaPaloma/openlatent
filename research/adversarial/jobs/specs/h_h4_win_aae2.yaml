@@ -1,0 +1,5 @@
+name: h_h4_win_aae2
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm aae_re_c2s0 --rel_file $HOME/work/runs/h_b2_c2s0/aae_re_sealed_c2s0.npz --rungs 1.0 --out $OUT"
+hf_path: runs/h_h4_win_aae2
+hf_allow: ["*.json", "*.log", "*.md"]
