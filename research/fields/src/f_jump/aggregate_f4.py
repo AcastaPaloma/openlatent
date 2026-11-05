@@ -15,6 +15,7 @@ import aggregate_f2 as F2
 
 DELTA_U = 0.010
 POWER_MAX = DELTA_U / 2
+POWER_KEY = "b30"        # budget whose comparison must have MDE80 <= POWER_MAX (the 5-source F4 rule); the seen-source reference of H3-001 uses b10
 ATT_MAX = 0.23           # repaired-control attacker bound: chance + 0.03 for the five-source table (H3-001 sets 0.13 for ten sources)
 LF = re.compile(r"^(raw|pca\d+|rp\d+|dpca\d+_r[\d.]+|noise_r[\d.]+)$")
 BUD = [("b1", 0.01), ("b3", 0.03), ("b10", 0.10), ("b30", 0.30), ("b100", 1.0)]
@@ -114,12 +115,12 @@ def analyse(dirp, salt, B, seed, extra_floors=None, extra_label=""):
                              boot_share_at_or_below_1=float((vals <= 1.0).mean()))
     # power for the rule's budget (30%) and the ceiling
     pw = {}
-    for R in ("b30", "b100"):
-        if reg[R].get("sel_full", {}).get("F_star"):
+    for R in ("b10", "b30", "b100"):
+        if R in reg and reg[R].get("sel_full", {}).get("F_star"):
             dv = sp.apc("H", reg[R]["a_full"]) - sp.apc("H", reg[R]["sel_full"]["F_star"])
             pw[R] = AG.mde80(dv)
     out["power"] = pw
-    powered = bool(pw.get("b30", {}).get("mde80", 1.0) <= POWER_MAX)
+    powered = bool(pw.get(POWER_KEY, {}).get("mde80", 1.0) <= POWER_MAX)
     out["powered"] = powered
     valid = bool(ctrl_ok and b100)
     out["valid"] = valid

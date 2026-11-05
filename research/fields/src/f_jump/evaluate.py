@@ -73,6 +73,7 @@ def main():
     ap.add_argument("--mnn0", action="store_true", help="H3-005 stage 0 (results_notes/F.md section 22): MNN pseudo-pair precision / retention per budget, controls, oracle-pair ceiling")
     ap.add_argument("--regimes", default="a,b1,b3", help="--mnn0: regimes (a, b1, b3, b10)")
     ap.add_argument("--oracle", action="store_true", help="--mnn0: also train the oracle-pair adapters and score U_H (split s0)")
+    ap.add_argument("--pabc_null", action="store_true", help="H3-001 closing check (F.md section 24): only the Pabc AP of ctrl_noise16 with true and shuffled compound labels")
     ap.add_argument("--budgets", default="a,b1,b3,b10,b30,b100", help="--f4: regimes (a, b1, b3, b10, b30, b100)")
     ap.add_argument("--pabc", action="store_true", help="--f4: also score the position-clean protocol Pabc (positives at a different well, position-matched negatives, near-duplicate-pruned H)")
     ap.add_argument("--f4", action="store_true", help="F4 job (results_notes/F.md section 10): budget grid 0/1/3/10/30/100%, leave-source-out via --hold_source, feature view via --view")
@@ -220,6 +221,15 @@ def main():
         print(f"  arm {name:22s} d={Eall_n.shape[1]:5d} {time.time() - t1:6.1f}s  (elapsed {time.time() - t0:.0f}s)", flush=True)
 
     a.role_of = role_of
+    if a.pabc_null:
+        pabc = make_pabc(a, sets, jcp, role_of, nV)
+        E = torch.randn(Xall.shape[0], 16, generator=torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ctrl")), device=AR.DEV).cpu().numpy()
+        pabc(P, "ctrl_noise16", E)
+        pabc.null(P, "ctrl_noise16", E)
+        np.savez_compressed(out / f"preds_{a.salt}.npz", **P)
+        (out / f"meta_{a.salt}.json").write_text(json.dumps(dict(pabc_null=True, hold_source=a.hold_source, scenario=a.scenario, salt=a.salt), indent=1))
+        print("pabc null done:", {k: float(np.mean(v)) for k, v in P.items() if k.startswith(("apc|", "apcnull|"))}, flush=True)
+        return
     want = a.arms.split(",") if a.arms else None
     if a.f2:
         run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, src, out)
@@ -562,7 +572,10 @@ def run_f4(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_clas
     def run_arm(name, family, Eall, **kw):                 # P0 (and the attackers) through the shared closure, then Pabc when requested
         run_arm_raw(name, family, Eall, **kw)
         if pabc is not None:
-            pabc(P, name, Eall.detach().cpu().numpy() if torch.is_tensor(Eall) else Eall)
+            En_ = Eall.detach().cpu().numpy() if torch.is_tensor(Eall) else Eall
+            pabc(P, name, En_)
+            if name == "ctrl_noise16":
+                pabc.null(P, name, En_)
 
     # controls and floors
     E = torch.randn(Xall.shape[0], 16, generator=torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ctrl")), device=AR.DEV)
@@ -854,6 +867,20 @@ def make_pabc(a, sets, jcp, role_of, nV):
                 full = np.full(len(S["idx"]), np.nan, np.float32)
                 full[sel] = apq
                 P[f"apq|H|{name}|Pabc"] = full
+    def score_null(P, name, En):
+        """Pabc AP of the same embedding with the compound labels permuted among the wells of the pruned set (shuffled-label null)."""
+        for sname, S in sets.items():
+            E = En[sl[sname]]
+            sel = np.where(S["keep"])[0]
+            comp_s, src_s, well_s = S["comp"][sel], S["src"][sel], S["well"][sel]
+            perm = np.random.RandomState(AR.seed_of(a.salt, "pnull", sname) % (2 ** 31)).permutation(len(sel))
+            comp_n = comp_s[perm]
+            pos_n = AP.build_pos(comp_n, S["src_pos"][sel], well_s, "xsdp")
+            apq = AP.ap_queries(E[sel], S["plate"][sel], comp_n, src_s, well_s, S["pert"][sel], mode="xsdp", pos=pos_n, group=S["srcwell"][sel], excl_plate=True,
+                                qmask=None if not held_codes else np.isin(S["src"][sel], held_codes))
+            P[f"apcnull|{sname}|{name}|Pabc"] = AP.per_compound(apq, comp_n)[1].astype(np.float32)
+
+    score.null = score_null
     return score
 
 

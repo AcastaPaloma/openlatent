@@ -26,7 +26,7 @@ LE30 = ("b3", "b10", "b30")
 BLOCK_B100_MIN = 0.05
 
 
-def alias(src_dir, salt, dst):
+def alias(src_dir, salt, dst, null_dir=None):
     """scratch copy whose P0 keys hold the Pabc arrays."""
     z = np.load(Path(src_dir) / f"preds_{salt}.npz")
     P = {k: z[k] for k in z.files}
@@ -39,6 +39,13 @@ def alias(src_dir, salt, dst):
             out[f"cid|{parts[1]}|xs"] = P[k]
         elif len(parts) == 4 and parts[0] == "apq" and parts[3] == "Pabc":
             out[f"apq|{parts[1]}|{parts[2]}"] = P[k]
+    for sname in ("V", "H"):                                    # in-job Pabc null (the seen-source reference computes it itself)
+        if f"apcnull|{sname}|ctrl_noise16|Pabc" in P:
+            out[f"apcnull|{sname}|ctrl_noise16|xs"] = P[f"apcnull|{sname}|ctrl_noise16|Pabc"]
+    if null_dir is not None:                                   # the Pabc shuffled null of ctrl_noise16 (F.md section 24) replaces the P0 null in the repaired control
+        zn = np.load(Path(null_dir) / f"preds_{salt}.npz")
+        for sname in ("V", "H"):
+            out[f"apcnull|{sname}|ctrl_noise16|xs"] = zn[f"apcnull|{sname}|ctrl_noise16|Pabc"]
     dst = Path(dst)
     dst.mkdir(parents=True, exist_ok=True)
     np.savez(dst / f"preds_{salt}.npz", **out)

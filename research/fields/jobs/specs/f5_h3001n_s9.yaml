@@ -1,0 +1,4 @@
+name: f5_h3001n_s9
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 10 --salt s0 --nd_pairs $HOME/work/f5_ctrl_position_meta/nd_pairs_s10.json --pabc_null --hold_source source_9 --out $OUT"
+hf_path: runs/f5_h3001n_s9
