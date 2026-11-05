@@ -252,3 +252,81 @@ Two defences, 88 test units, pseudo-identities, additive keyed leaks, replicates
   Run: 8 worker processes (single thread each, `nice -n 10`) from 23:11Z, about 120 s per release without canaries, 6,105 s wall for 386; the parallelism is a process pool over releases, so more workers would have shortened it (the cap of 8 was the etiquette rule at the start; the main agent later allowed up to ~24, but the run was already half done and a second runner would have raced the ledger and the stored predictions).
   No N2 certificate has been opened by me. Next: `analyse2.py` once (unseal), v1-on-N2 re-score, reference attackers, section 12.
 
+## 12. N2 results: evaluator v3 (tag `s-suite-eval-v3`), unsealed 2026-11-05 ~00:55Z VM clock, one pass of `analyse2.py`; files in `results/N2/`
+Provenance: manifest sha256 equals the committed `ee822df5...4657`; digest list equals `4e283dc5...aa47`; ledger `e78bcaec...1ef15` clean with 386 entries; every certificate prints evaluator `b5c75e11...57303`, K = 24, `split_status = "sealed"`; 386/386, 0 errors. Canaries were computed for 9 of 386 releases (the only ones whose bounds were both under the margin without a LEAK); all three groups were accepted on all 9 (9/9 each), none withheld.
+
+### 12.1 Gates (both pass)
+- **G1: 0 LEAK in 106 nulls** (null 0/50, shuffled twins 0/56; CP [0, 3.4%], one-sided upper 2.8%). Selected-attacker accuracy on nulls 0.041 against the certificate's baseline 0.056 (majority share; uniform chance 0.0417). Twins: released-label oracle 0.040 (chance) vs planted-label oracle 0.52.
+- **G2: bias 20/20 and specin 20/20 DETECTED** at the primary level (levels 3 and 4); bias is already 10/10 at level 1 (Omega_w 0.15), specin 4/10 at level 1 and 10/10 from level 2 (0.29).
+
+### 12.2 Detection by family and level (n = 10 per cell; Omega = key-aware matched-filter rate on the test split, chance 0.0417; `order`: Omega_w is 1/24 by construction, read Omega_s)
+| family | level | n | Omega_w | Omega_s | S selected acc | baseline | detect (CP95) | BELOW_MARGIN | NOT_RESOLVED | printed MDE80 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| bias | 1 | 10 | 0.150 | 0.175 | 0.405 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.072 |
+| bias | 2 | 10 | 0.290 | 0.348 | 0.621 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.055 |
+| bias | 3 | 10 | 0.631 | 0.709 | 0.808 | 0.055 | 10/10 (0.69-1.00) | 0 | 0 | 0.050 |
+| bias | 4 | 10 | 0.909 | 0.939 | 0.979 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.016 |
+| specin | 1 | 10 | 0.154 | 0.323 | 0.076 | 0.055 | 4/10 (0.12-0.74) | 0 | 6 | 0.035 |
+| specin | 2 | 10 | 0.287 | 0.570 | 0.219 | 0.055 | 10/10 (0.69-1.00) | 0 | 0 | 0.065 |
+| specin | 3 | 10 | 0.594 | 0.845 | 0.587 | 0.057 | 10/10 (0.69-1.00) | 0 | 0 | 0.091 |
+| specin | 4 | 10 | 0.914 | 0.985 | 0.924 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.041 |
+| hb2 | 1 | 10 | 0.143 | 0.326 | 0.066 | 0.056 | 2/10 (0.03-0.56) | 1 | 7 | 0.035 |
+| hb2 | 2 | 10 | 0.292 | 0.556 | 0.184 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.071 |
+| hb2 | 3 | 10 | 0.587 | 0.836 | 0.525 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.105 |
+| hb2 | 4 | 10 | 0.896 | 0.978 | 0.920 | 0.057 | 10/10 (0.69-1.00) | 0 | 0 | 0.046 |
+| phase2 | 1 | 10 | 0.137 | 0.494 | 0.073 | 0.057 | 4/10 (0.12-0.74) | 0 | 6 | 0.033 |
+| phase2 | 2 | 10 | 0.263 | 0.733 | 0.153 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.056 |
+| phase2 | 3 | 10 | 0.568 | 0.907 | 0.423 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.080 |
+| phase2 | 4 | 10 | 0.903 | 0.997 | 0.863 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.053 |
+| af2 | 1 | 10 | 0.142 | 0.525 | 0.044 | 0.056 | 0/10 (0.00-0.31) | 1 | 9 | 0.023 |
+| af2 | 2 | 10 | 0.309 | 0.792 | 0.068 | 0.056 | 3/10 (0.07-0.65) | 0 | 7 | 0.034 |
+| af2 | 3 | 10 | 0.606 | 0.920 | 0.212 | 0.056 | 10/10 (0.69-1.00) | 0 | 0 | 0.074 |
+| af2 | 4 | 10 | 0.884 | 0.986 | 0.468 | 0.055 | 10/10 (0.69-1.00) | 0 | 0 | 0.100 |
+| pac | 1 | 10 | 0.147 | 0.699 | 0.045 | 0.056 | 0/10 (0.00-0.31) | 2 | 8 | 0.027 |
+| pac | 2 | 10 | 0.279 | 0.933 | 0.043 | 0.056 | 0/10 (0.00-0.31) | 0 | 10 | 0.025 |
+| pac | 3 | 10 | 0.648 | 0.986 | 0.054 | 0.056 | 1/10 (0.00-0.45) | 0 | 9 | 0.025 |
+| pac | 4 | 10 | 0.701 | 0.999 | 0.134 | 0.056 | 6/10 (0.26-0.88) | 0 | 4 | 0.029 |
+| order | 1 | 10 | 0.042 | 0.257 | 0.045 | 0.056 | 0/10 (0.00-0.31) | 0 | 10 | 0.030 |
+| order | 2 | 10 | 0.042 | 0.449 | 0.041 | 0.056 | 0/10 (0.00-0.31) | 1 | 9 | 0.025 |
+| order | 3 | 10 | 0.042 | 0.669 | 0.042 | 0.056 | 0/10 (0.00-0.31) | 1 | 9 | 0.024 |
+| order | 4 | 10 | 0.042 | 0.911 | 0.039 | 0.055 | 0/10 (0.00-0.31) | 0 | 10 | 0.020 |
+
+Primary level (levels 3 + 4, n = 20): **bias, specin, hb2, phase2, af2 DETECTED 20/20 [0.83, 1.00]; pac MISSED 7/20 [0.15, 0.59]; order MISSED 0/20 [0.00, 0.17].**
+**V_A (re-parameterised v3 targets hb2, phase2, af2): YES** (3 of 3 DETECTED; BELOW_MARGIN 0/20 for each). **V_B (new unseen pac, order): NO** (both MISSED).
+**Tightened false-assurance requirement (BELOW_MARGIN on planted releases at the primary level <= 0.10): PASS for all seven families** (bias 0/20, specin 0/20, hb2 0/20, phase2 0/20, af2 0/20, pac 0/20, order 1/20 = 0.05; CP upper bounds 0.17-0.25, so n = 20 cannot certify a rate below 0.10, it only fails to show a violation). Over all levels BELOW_MARGIN appears on 6 of 280 planted releases (hb2 1, af2 1, pac 2, order 2; none for bias, specin, phase2), against 3 of 106 nulls.
+**The requirement is nearly vacuous: v3 prints BELOW_MARGIN on only 3 of 106 true nulls (2.8%)** and on 9 of 386 releases in all (2.3%). The same predictions scored with the v1 rule give 22/106 (21%) on nulls.
+
+### 12.3 What the numbers say
+- **Minimum detectable dose** (lowest level from which every higher level has detection >= 0.80; mean Omega_w / Omega_s of that level): bias level 1 (0.15 / 0.18), specin level 2 (0.29 / 0.57), hb2 level 2 (0.29 / 0.56), phase2 level 2 (0.26 / 0.73), af2 level 3 (0.61 / 0.92), **pac not reached** (best level 4: 6/10, Omega_w 0.70), **order not reached** (0/40 over all levels, Omega_s up to 0.91).
+  hb2 and phase2 are therefore read from about the same planted window rate as the mechanisms S plants itself (0.26-0.29 against 0.15-0.29); the amplitude-frequency interaction needs about twice that (0.61), as S.md 10.4 predicted.
+- **Miss rate of the new unseen families** (primary level): pac 0.65 [0.41, 0.85], order 1.00 [0.83, 1.00]. At session-pooled oracle >= 0.75: pac 7 detected of 34 releases, order 0 of 14.
+- **Reported versus planted** (primary, ratio of means (selected - baseline) / (Omega_w - baseline)): hb2 0.97, phase2 0.86, af2 0.41, pac 0.06 (selected 0.094 vs Omega_w 0.67); `order` selected 0.041 (= chance) while the session-level oracle identifies 79% of sessions.
+- **Which views carry the signal** (mean best accuracy of the group at the primary level): hb2 hb group 0.72 (old 12 attackers 0.38); phase2 phase group 0.65 (old 0.11); af2 inter group 0.34 (hb group 0.20, old 0.09). pac: hb 0.048, phase 0.046, inter 0.049, old 0.097: **none of the new views reads pac**; its 7 detections are `knn1_raw` / `rf_raw_100`: 6 on the msda base (5 of them at level 4, amplitude 40, a window dominated by the planted tones, Omega_w 0.73; 1 at level 3) and 1 on rep (level 4). This is the raw-window memorisation route already seen for N1's phase lag, not a bispectral view.
+- **Printed-MDE honesty** (secondary): among releases with Omega_w - baseline >= the printed MDE80: bias, specin, hb2, phase2, af2 20/20 at the primary level; pac 7/20, order none resolvable (Omega_w = chance).
+- **Shuffled twins:** 0/56, every family and level.
+
+### 12.4 v1 versus v3, on the same releases (the fair comparison; secondary)
+The 12 v1 attackers' stored predictions re-scored with the v1 declaration and rule (no extra sealed query), primary level, detect / BELOW_MARGIN out of 20:
+| family | v1 detect | v3 detect | v1 BELOW_MARGIN | v3 BELOW_MARGIN | selected acc v1 / v3 |
+|---|---|---|---|---|---|
+| bias | 20 | 20 | 0 | 0 | 0.894 / 0.894 |
+| specin | 20 | 20 | 0 | 0 | 0.472 / 0.756 |
+| hb2 | 15 | 20 | 1 | 0 | 0.378 / 0.722 |
+| phase2 | 9 | 20 | 3 | 0 | 0.103 / 0.643 |
+| af2 | 10 | 20 | 1 | 0 | 0.086 / 0.340 |
+| pac | 7 | 7 | 2 | 0 | 0.094 / 0.094 |
+| order | 0 | 0 | 6 | 1 | 0.041 / 0.041 |
+| nulls (106) | 0 | 0 | 22 | 3 | |
+So on identical data the new views are what move detection (phase2 9 -> 20, af2 10 -> 20, hb2 15 -> 20; pac and order do not move), and the tightened rule is what moves assurance: v1 would have assured 6/20 `order` releases (limit 0.10: fail), 3/20 `phase2` (fail), 2/20 `pac`; v3 assures 0-1/20 of each (pac at the limit under v1) at the price of assuring a true null only 2.8% of the time. Across experiments: N1 (v1, other families, 5 levels, n = 32 at the primary level) read the unseen phase lag and interaction only from Omega_w 0.62-0.65 and missed the stealth tone (8/32); N2 (v3) reads their re-parameterised versions from 0.26 (phase2, hb2) and 0.61 (af2). That comparison is confounded by families and parameters (section 11.3) and is context only.
+
+### 12.5 Reference attackers (exploratory, key-free, same split; window top-1 / session-pooled; levels 3 and 4)
+hb2 by the log-spectrum 0.39 / 0.78 (session 0.62 / 0.92); phase2 by the phase-lag view 0.34 / 0.71 (session 0.63 / 0.93); af2 by the level x spectrum view 0.35 / 0.64 (session 0.66 / 0.86), marginal log-spectrum 0.07 / 0.11; **pac by the bispectral-phase view 0.28 / 0.40 (session 0.65 / 0.70)**, every other view at chance; **order by the session periodogram view, session level 0.12 / 0.16 against chance 0.042** (weak: 5.5 training sessions per identity), every window view at chance; bias is not read by these reference views (its carrier, the channel means, is S's own `feat` view), nulls 0.04.
+pac and order are learnable from data without the key by an attacker with the matching view, so the misses belong to S's views and to its per-window design, not to the data. As in N1 these views were written with knowledge of the families.
+
+### 12.6 Prediction scorecard (section 11.6)
+Right: bias, specin, hb2, phase2, af2 DETECTED; pac MISSED (P 0.75; the 7/20 detections are the raw-memorisation route I had flagged as the PARTIAL risk); order MISSED; G1 pass; V_A YES (0.40), V_B NO (0.80); the false-assurance requirement passes and is nearly vacuous (as I said: "the more informative number is the null assurance rate"). No prediction failed in N2; N1's failures (xphase, ampfreq) were the lesson that raw-view memorisation can read a low-dimensional random-phase family.
+
+### 12.7 Is the comparison fair, and what does v3 earn?
+Fair only within N2 (12.4): same releases, same predictions, K = 12 vs 24 (zero-leak floor +9.7 vs +10.7 points at 88 units, S.md 10.3), v3's extra views are the only source of the extra detections, v3's extra rule is the only source of the lost assurances. Not fair across N and N2 (different families, parameters, replicates and levels), and v3 was built after reading N.md, so V_A tests generalisation of views to other parameters of the same mechanism types, not discovery.
+**Verdict.** v3 earns its place as a leak detector for mechanisms its views were built for: 0/106 false alarms, hb2 / phase2 / af2 / bias / specin detected 20/20 at planted window rates 0.6-0.9 and from 0.26-0.29 for hb2, phase2, specin. It repairs the N1 failure on the families it targets: BELOW_MARGIN on planted leaks fell to 6 of 280 (2.1%), about the rate on true nulls (2.8%), and never occurs for a mechanism whose view reads it. It does NOT detect what its views and per-window design do not cover (phase-amplitude coupling 7/20, only by raw-window memorisation at extreme amplitude; window-order dependence 0/20); those releases read NOT_RESOLVED (pac 13/20, order 19/20) or, rarely, BELOW_MARGIN (4 of 80 uncovered-family releases, with every canary accepted: the canaries do not cover those classes), and the certificate's own `not_covered` list names both classes. The residual risk is no longer false assurance; it is that at 88 units almost nothing is assured (2.8% of true nulls), so v3 at this scale is a LEAK detector, not an assurance instrument.
+Limits as in 11.8: two defences, 88 units, pseudo-identities, additive keyed leaks, replicates sharing base windows, n = 10 per cell and 20 at the primary level (a 20/20 bounds the rate below by 0.83), `pac` level 4 on msda only reaches Omega_w 0.70. This manifest is now burned for any suite that adds a bispectral or ordering view; a further version needs N3.
