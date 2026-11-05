@@ -450,5 +450,5 @@ Measured cost: a code-release fit takes about 48 s per fold and a window-release
 | G-S1 `ctrl_const` | L = 0.0417 [0.000, 0.110], segment-level 0.041 | <= 1/24 + max(0.06, 1.96 x 0.029) = 0.099 | PASS |
 | G-S2 `shuf_raw` (trial-level label permutation) | L = 0.0417 [0.000, 0.125], segment-level 0.040 | <= 1/24 + max(0.06, 1.96 x 0.040) = 0.120 | PASS |
 | G-S3 strong attacker not weaker than the frozen suite on `raw` | L = **0.9962 [0.989, 1.000]**, segment-level 0.982 (frozen suite: trial-level 0.973, window-level 0.900) | >= 0.943 | PASS |
-K0 does not fire; the attacker is valid and, on the undefended windows, measurably stronger than the frozen suite (+0.023 trial level, +0.08 segment vs window level). Both controls predict the training-majority behaviour (0.0417 = 10 of 240-odd trials of one subject... i.e. the same constant guess in every fold), which is the correct chance behaviour. The five arm jobs are launched now.
+K0 does not fire; the attacker is valid and, on the undefended windows, measurably stronger than the frozen suite (+0.023 trial level, +0.08 segment vs window level). Both controls give exactly 0.0417 = 11 / 264 (each subject has 11 trials): the attacker collapses to a constant-subject guess, the correct chance behaviour. The five arm jobs are launched now.
 
