@@ -94,12 +94,15 @@ def f(x, nd=3):
 
 
 def main():
+    global P
     ap = argparse.ArgumentParser()
     ap.add_argument("dirs", nargs="+")
     ap.add_argument("--taus", default="0.97,0.90")
     ap.add_argument("--margins", default="")
     ap.add_argument("--mde", action="store_true")
+    ap.add_argument("--primary", default="val", help="primary tier: val (registered) or name / place (post hoc D3b)")
     a = ap.parse_args()
+    P = a.primary
     A = Agg(a.dirs)
     seeds, taus = A.seeds, [float(t) for t in a.taus.split(",")]
     margins = {float(x.split(":")[0]): float(x.split(":")[1]) for x in a.margins.split(",") if x}

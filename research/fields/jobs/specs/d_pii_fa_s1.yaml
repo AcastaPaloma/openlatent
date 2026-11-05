@@ -1,0 +1,5 @@
+name: d_pii_fa_s1
+priority: 5
+cmd: "n=0; while [ ! -f $HOME/work/cache/d3_pii/gtr_base/done.txt ] && [ $n -lt 240 ]; do sleep 15; n=$((n+1)); done; USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/pii_run.py --name d_pii_fa_s1 --grid p_fa --seeds 1 --out $OUT"
+hf_path: runs/d_pii_fa_s1
+hf_allow: ["*.json", "*.log", "*.md"]
