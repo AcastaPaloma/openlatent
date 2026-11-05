@@ -114,11 +114,30 @@ def main():
     print(f"fingerprints done, unscored {unscored} of {len(ids)} ({time.time() - t0:.0f}s)", flush=True)
     res["B0_inputs"] = dict(n_compounds=len(ids), not_in_table=int((~in_tab).sum()), unscored=int(unscored))
     n = len(ids)
+    import scipy.sparse as sps
+    import torch
+    torch.set_num_threads(a.procs)
+    rows_, cols_ = [], []
+    for i, fp in enumerate(fps):
+        if fp is not None:
+            on = list(fp.GetOnBits())
+            rows_ += [i] * len(on)
+            cols_ += on
+    A = sps.csr_matrix((np.ones(len(rows_), np.float32), (rows_, cols_)), shape=(n, 2048))
+    cnt = torch.as_tensor(np.asarray(A.sum(1)).ravel(), dtype=torch.float32)
+    AT = torch.as_tensor(A.T.toarray())                                    # (2048, n)
     edges_t = set()
-    chunks = [(i, min(i + 500, n)) for i in range(0, n, 500)]
-    with mp.get_context("spawn").Pool(a.procs, initializer=NW.init, initargs=(fps,)) as pool:
-        for part in pool.imap_unordered(NW.chunk, chunks):
-            edges_t.update(part)
+    for a0_ in range(0, n, 400):
+        blk = torch.as_tensor(A[a0_:a0_ + 400].toarray())
+        inter = blk @ AT
+        sim = inter / (cnt[a0_:a0_ + 400, None] + cnt[None, :] - inter).clamp(min=1)
+        sim[:, : a0_ + 1] = 0                                              # strictly upper triangle only (global index j > i)
+        for r in range(sim.shape[0]):
+            sim[r, : a0_ + r + 1] = 0
+        ii, jj = torch.where(sim >= 0.8)
+        for x, y in zip(ii.tolist(), jj.tolist()):
+            if cnt[a0_ + x] > 0 and cnt[y] > 0:
+                edges_t.add((a0_ + x, y))
     print(f"Tanimoto >= 0.8 pairs: {len(edges_t)} ({time.time() - t0:.0f}s)", flush=True)
     kg = pd.Series(keys).dropna()
     edges_k = set()
