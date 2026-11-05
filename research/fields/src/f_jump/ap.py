@@ -28,6 +28,8 @@ def build_pos(comp, source, well, mode):
             continue
         if mode == "xs":
             M = source[idx][:, None] != source[idx][None, :]
+        elif mode == "xsdp":                                  # cross-source positives that do NOT share the well position (H3-007 stage 1, Pa)
+            M = (source[idx][:, None] != source[idx][None, :]) & (well[idx][:, None] != well[idx][None, :])
         elif mode == "nonrep":
             M = ~np.eye(len(idx), dtype=bool)
         elif mode == "negcon":
@@ -39,7 +41,7 @@ def build_pos(comp, source, well, mode):
     return pos
 
 
-def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=None, qmask=None):
+def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=None, qmask=None, group=None, excl_plate=False, neg_sample=0, seed=0):
     """E: (n, d) array of the eval universe; comp/source: int arrays; plate/well: any hashable arrays; pert in {'trt','negcon','poscon'}.
     Queries = 'trt' wells with >= 1 positive and >= 1 negative.  Returns per-query AP (NaN for dropped queries)."""
     n = len(comp)
@@ -49,8 +51,9 @@ def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=Non
         pos = build_pos(comp, source, well, mode)
     ap = np.full(n, np.nan, np.float64)
     plate = np.asarray(plate)
-    order = np.argsort(plate, kind="stable")
-    ps = plate[order]
+    grp = plate if group is None else np.asarray(group)        # candidate pools: wells sharing the group key (default: the plate)
+    order = np.argsort(grp, kind="stable")
+    ps = grp[order]
     bounds = np.flatnonzero(np.r_[True, ps[1:] != ps[:-1], True])
     trt = pert == "trt"
     for a, b in zip(bounds[:-1], bounds[1:]):
@@ -58,7 +61,7 @@ def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=Non
         q = np.array([i for i in wp[trt[wp]] if pos[i] is not None and len(pos[i]) > 0 and (qmask is None or qmask[i])], dtype=np.int64)
         if len(q) == 0:
             continue
-        cand = wp[trt[wp]] if mode in ("xs", "nonrep") else wp[pert[wp] == "negcon"]
+        cand = wp[trt[wp]] if mode in ("xs", "nonrep", "xsdp") else wp[pert[wp] == "negcon"]
         if len(cand) == 0:
             continue
         for s in range(0, len(q), chunk):
@@ -68,11 +71,17 @@ def ap_queries(E, plate, comp, source, well, pert, mode="xs", chunk=512, pos=Non
             for r, i in enumerate(qs):
                 P[r, :len(pos[i])] = pos[i]
             qt = torch.as_tensor(qs, device=DEV)
-            ct = torch.as_tensor(cand, device=DEV)
+            cc = cand
+            if neg_sample and len(cand) > neg_sample:                       # size-matched random negatives (one draw per chunk)
+                cc = cand[np.random.RandomState((seed * 1000003 + int(qs[0])) % (2 ** 31)).choice(len(cand), neg_sample, replace=False)]
+            ct = torch.as_tensor(cc, device=DEV)
             Pt = torch.as_tensor(P, device=DEV)
             valid = Pt >= 0
             Sn = Et[qt] @ Et[ct].T                                          # (nq, nc)
-            negok = torch.as_tensor(comp[qs][:, None] != comp[cand][None, :], device=DEV)
+            nk = comp[qs][:, None] != comp[cc][None, :]
+            if excl_plate:
+                nk = nk & (plate[qs][:, None] != plate[cc][None, :])
+            negok = torch.as_tensor(nk, device=DEV)
             Sn = torch.where(negok, Sn, torch.full_like(Sn, -float("inf")))
             Sp = torch.einsum("qd,qpd->qp", Et[qt], Et[Pt.clamp(min=0)])
             Sp = torch.where(valid, Sp, torch.full_like(Sp, -float("inf")))
