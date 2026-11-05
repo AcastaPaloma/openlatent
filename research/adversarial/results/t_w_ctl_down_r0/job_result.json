@@ -1,0 +1,24 @@
+{
+ "name": "t_w_ctl_down_r0",
+ "config": {
+  "name": "t_w_ctl_down_r0",
+  "priority": 5,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; $HOME/venvs/t/bin/python -m t_cxr.run_suite --release down_f4 --rot 0 --ladder-s -1 --r5 --shuffle-labels --attackers f1 --conds match --seeds 0 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t3_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT",
+  "hf_path": "runs/t_w_ctl_down_r0",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "fc82cf6",
+ "commit_after": "cfbba50",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 1791.9,
+ "finished_utc": "2026-11-05T13:57:52Z",
+ "uploaded": true
+}
