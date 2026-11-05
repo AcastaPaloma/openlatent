@@ -9,14 +9,14 @@ from pathlib import Path
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--runs", required=True); ap.add_argument("--out", required=True)
+    ap = argparse.ArgumentParser(); ap.add_argument("--runs", required=True); ap.add_argument("--out", required=True); ap.add_argument("--prefix", default="t_", help="only job directories with this prefix (T3: t_y_, so T2 outputs of the same release name are never mixed in)")
     a = ap.parse_args()
     out = Path(a.out)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
     n = 0
-    for job in sorted(Path(a.runs).glob("t_*")):
+    for job in sorted(Path(a.runs).glob(a.prefix + "*")):
         if job.name.startswith("t_u1_"):                       # stage-1 utility used a different definition (A+S fine-tune, rotation-specific): never mixed into T2
             continue
         for d in job.iterdir():
