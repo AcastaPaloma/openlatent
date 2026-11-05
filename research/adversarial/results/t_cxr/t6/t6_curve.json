@@ -1,0 +1,315 @@
+{
+ "rule": {
+  "link_max": 0.8,
+  "drop_max": 0.02,
+  "nominate_drop": 0.05,
+  "gate_link": 0.85,
+  "gate_drop": 0.1,
+  "shuffled_tol": 0.06,
+  "const_tol": 0.01
+ },
+ "rows": {
+  "down_f8": {
+   "link_val": 0.9627399194972106,
+   "link_ci": [
+    0.9521993150201256,
+    0.9711333592260434
+   ],
+   "link_ci_v2": [
+    0.9512526128098298,
+    0.9720800614363392
+   ],
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 9,
+    "best_val_auc": 0.9627399194972106,
+    "still_rising": true
+   },
+   "util_val": 0.7854892998460858,
+   "util_ci": [
+    0.7725848982651697,
+    0.7971563005807762
+   ],
+   "drop_vs_raw": -0.011873373631668294,
+   "drop_ci": [
+    -0.0253940394719856,
+    -0.0017472673675577202
+   ],
+   "protective_original": false,
+   "protective_tightened": false
+  },
+  "down_f16": {
+   "link_val": 0.9263018148435845,
+   "link_ci": [
+    0.9109402231480828,
+    0.9406589577007274
+   ],
+   "link_ci_v2": [
+    0.9094542864204506,
+    0.9421448944283596
+   ],
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 9,
+    "best_val_auc": 0.9263018148435845,
+    "still_rising": true
+   },
+   "util_val": 0.7719582461372327,
+   "util_ci": [
+    0.7588378001990591,
+    0.7887962073150472
+   ],
+   "drop_vs_raw": 0.0016576800771848088,
+   "drop_ci": [
+    -0.01636638911052656,
+    0.014166366861279324
+   ],
+   "protective_original": false,
+   "protective_tightened": false
+  },
+  "down_f32": {
+   "link_val": 0.8790495021538027,
+   "link_ci": [
+    0.8600497493114894,
+    0.8973824235576584
+   ],
+   "link_ci_v2": [
+    0.8581831155991809,
+    0.8992490572699668
+   ],
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 10,
+    "best_val_auc": 0.8790495021538027,
+    "still_rising": true
+   },
+   "util_val": 0.7462320470883091,
+   "util_ci": [
+    0.731940901469023,
+    0.7640254707672367
+   ],
+   "drop_vs_raw": 0.0273838791261084,
+   "drop_ci": [
+    0.008570231884445622,
+    0.04073475084229018
+   ],
+   "protective_original": false,
+   "protective_tightened": false
+  },
+  "jpeg_q10": {
+   "link_val": 0.9692634700939199,
+   "link_ci": [
+    0.9605435703693241,
+    0.9771982910811383
+   ],
+   "link_ci_v2": [
+    0.9597108343337335,
+    0.978031027116729
+   ],
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 8,
+    "best_val_auc": 0.9692634700939199,
+    "still_rising": true
+   },
+   "util_val": 0.7813263964041149,
+   "util_ci": [
+    0.7696706952842591,
+    0.7920591774255413
+   ],
+   "drop_vs_raw": -0.007710470189697394,
+   "drop_ci": [
+    -0.019200637021030434,
+    0.0017345263510251054
+   ],
+   "protective_original": false,
+   "protective_tightened": false
+  },
+  "hp_s2": {
+   "link_val": 0.9698990184309018,
+   "link_ci": [
+    0.9613076407033401,
+    0.978137243132547
+   ],
+   "link_ci_v2": [
+    0.9604661605818796,
+    0.9789787232540075
+   ],
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 7,
+    "best_val_auc": 0.9698990184309018,
+    "still_rising": false
+   },
+   "util_val": 0.7841297613697787,
+   "util_ci": [
+    0.7711298488811742,
+    0.7946589949208535
+   ],
+   "drop_vs_raw": -0.010513835155361195,
+   "drop_ci": [
+    -0.019433130369663577,
+    -0.001589507663328718
+   ],
+   "protective_original": false,
+   "protective_tightened": false
+  },
+  "hist": {
+   "link_val": 0.5664811807075771,
+   "link_ci": [
+    0.5396532377656945,
+    0.5937550667325754
+   ],
+   "link_ci_v2": [
+    0.5369481463173504,
+    0.5964601581809195
+   ],
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 10,
+    "best_val_auc": 0.5664811807075771,
+    "still_rising": true
+   },
+   "util_val": 0.5794772925998991,
+   "util_ci": [
+    0.5633376580059115,
+    0.5972182016379126
+   ],
+   "drop_vs_raw": 0.19413863361451844,
+   "drop_ci": [
+    0.17182949369901046,
+    0.21167709745753194
+   ],
+   "protective_original": false,
+   "protective_tightened": false
+  },
+  "raw": {
+   "link_val": 0.9902309158957701,
+   "link_ci": [
+    0.9859047736741755,
+    0.9936842737094838
+   ],
+   "link_ci_v2": [
+    0.9855157986724101,
+    0.9940732487112491
+   ],
+   "train": {
+    "epochs": 20,
+    "truncated": true,
+    "best_epoch": 13,
+    "best_val_auc": 0.9902309158957701,
+    "still_rising": false
+   },
+   "util_val": 0.7736159262144175,
+   "util_ci": [
+    0.7607207786642692,
+    0.7837090170662446
+   ],
+   "drop_vs_raw": 0.0,
+   "drop_ci": [
+    0.0,
+    0.0
+   ]
+  },
+  "down_f4": {
+   "link_val": 0.9819730245039192,
+   "link_ci": [
+    0.9754787797471931,
+    0.9874077395664147
+   ],
+   "link_ci_v2": [
+    0.974882331756232,
+    0.9880041875573758
+   ],
+   "train": {
+    "epochs": 20,
+    "truncated": true,
+    "best_epoch": 18,
+    "best_val_auc": 0.9819730245039192,
+    "still_rising": true
+   },
+   "util_val": 0.784415202369713,
+   "util_ci": [
+    0.7695040692818512,
+    0.7959233731949488
+   ],
+   "drop_vs_raw": -0.010799276155295412,
+   "drop_ci": [
+    -0.020103080114921602,
+    -0.0015301939333512444
+   ]
+  },
+  "pcxr_mu0.01_s1_C2": {
+   "link_val": 0.978397005861168,
+   "link_ci": [
+    0.9703959113056988,
+    0.9851682084598545
+   ],
+   "link_ci_v2": [
+    0.9696572964479909,
+    0.9859068233175624
+   ],
+   "train": {
+    "epochs": 20,
+    "truncated": true,
+    "best_epoch": 17,
+    "best_val_auc": 0.978397005861168,
+    "still_rising": true
+   },
+   "util_val": 0.7860930998491718,
+   "util_ci": [
+    0.7736317706959928,
+    0.7964549321093206
+   ],
+   "drop_vs_raw": -0.012477173634754202,
+   "drop_ci": [
+    -0.02109031420211622,
+    -0.0020213473960808016
+   ]
+  }
+ },
+ "controls": {
+  "shuffled_label_down_f32": {
+   "auc": 0.5219546642186287,
+   "ci": [
+    0.5067207824306194,
+    0.5381545794788504
+   ],
+   "passes": true,
+   "train": {
+    "epochs": 11,
+    "truncated": true,
+    "best_epoch": 6,
+    "best_val_auc": 0.5219546642186287,
+    "still_rising": false
+   },
+   "rule": "|AUC - 0.5| <= 0.06 on V (screen: epoch selected on the same pairs, so an upward selection bias is possible and is stated)"
+  },
+  "const": {
+   "auc": 0.5008473977826424,
+   "passes": true,
+   "rule": "|AUC - 0.5| <= 0.01"
+  }
+ },
+ "any_protective_original": false,
+ "any_protective_tightened": false,
+ "nominated_for_sealed": [
+  "down_f32",
+  "down_f16",
+  "down_f8"
+ ],
+ "flat_at_ceiling": false,
+ "stage_B_gate": {
+  "no_protective_release": true,
+  "removable_cue_candidates": [],
+  "fires": false,
+  "rule": "fires iff NO release is protective (original rule) AND a cue-isolating release (hp_s2 / hist) links at >= 0.85 on V while its utility is >= 0.10 below raw"
+ },
+ "controls_pass": true
+}

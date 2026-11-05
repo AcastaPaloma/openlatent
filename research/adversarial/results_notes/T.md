@@ -447,3 +447,30 @@ The worst case at R5 is the F1+ attacker in both image releases (point values: `
 
 **14.9 Jobs, ledger, budget.** Names `t_v_*`, priority 5, threads <= 8, JSON / log / md uploads only, saved weights under `$HOME/work/t_work/t6_ckpt` (local). Jobs: `t_v_scr_{down_f8,down_f16,down_f32,jpeg_q10,hp_s2,hist}`, `t_v_ctl_down_f32`, `t_v_const`, `t_v_util_{...}` (rotation 0). Screens write no ledger entry; the sealed scoring (if any) writes one per nominated release. **Estimate (worker-seconds):** 6 screens x 1,400 + control 1,400 + const 450 + 6 utility fits x 430 + up to 3 sealed scorings x 250 = about 13,600 s = **3.8 worker-hours** (cap 4.0). Cut order if the measured total threatens the cap: the sealed scorings first, then `const` (replaced by the arithmetic argument), never the screens or the shuffled-label control.
 **Not tested:** other attacker families, seeds, rotation 1, necessity of a cue, releases that mix operations, any learned defender (stage B only if the gate fires), utility metrics other than the 14-finding macro AUC.
+
+### 14.10 T6 stage A results on the VALIDATION partition (VM clock 20:30Z, 5 Nov; all 14 jobs exit 0; `results/t_cxr/t6/t6_curve.{json,md}`; no ledger entry so far)
+
+**Controls first (read before the curve): both PASS.** Shuffled-label F1+ on `down_f32`: V AUC **0.522 [0.507, 0.538]** (tolerance 0.06). `const`: **0.5008** (tolerance 0.01). The curve was read after that.
+
+| release | F1+ linkage on V [95%] | epochs (truncated; still rising) | utility U_val [95%] | drop vs raw [95%] | protective (original / tightened) |
+|---|---|---|---|---|---|
+| `raw` (R5 anchor, 35-min budget) | 0.990 [0.986, 0.994] | 20 (T; F) | 0.774 [0.761, 0.784] | 0 | - |
+| `down_f4` (anchor) | 0.982 [0.975, 0.987] | 20 (T; T) | 0.784 [0.770, 0.796] | -0.011 | - |
+| `pcxr_mu0.01_s1_C2` (anchor, defender-seen) | 0.978 [0.970, 0.985] | 20 (T; T) | 0.786 [0.774, 0.796] | -0.012 | - |
+| `down_f8` | 0.963 [0.952, 0.971] | 11 (T; T) | 0.785 [0.773, 0.797] | -0.012 [-0.025, -0.002] | no / no |
+| `jpeg_q10` | 0.969 [0.961, 0.977] | 11 (T; T) | 0.781 [0.770, 0.792] | -0.008 [-0.019, +0.002] | no / no |
+| `down_f16` | 0.926 [0.911, 0.941] | 11 (T; T) | 0.772 [0.759, 0.789] | +0.002 [-0.016, +0.014] | no / no |
+| `down_f32` | 0.879 [0.860, 0.897] | 11 (T; T) | 0.746 [0.732, 0.764] | +0.027 [+0.009, +0.041] | no / no |
+| `hp_s2` (high-pass only) | 0.970 [0.961, 0.978] | 11 (T; F) | 0.784 [0.771, 0.795] | -0.011 [-0.019, -0.002] | no / no |
+| `hist` (histogram only) | 0.566 [0.540, 0.594] | 11 (T; T) | 0.579 [0.563, 0.597] | +0.194 [+0.172, +0.212] | no / no |
+
+(`labels14` code floor, test, pooled: linkage 0.709, utility = raw.) v2 intervals widen each interval by 10% and change nothing.
+
+**Verdicts (pre-registered rules, applied mechanically).**
+1. **No release is protective, original or tightened.** The lowest F1+ linkage with utility within 0.02 of raw is `down_f16` at **0.926 [0.911, 0.941]**; the first release that goes below 0.90 (`down_f32`, 0.879 [0.860, 0.897]) has already lost utility (-0.027, point > 0.02, lower bound of the drop +0.009), and it is still 0.08 above the 0.80 bar. Every attacker that was still rising at its stop (all but `hp_s2`; 11 epochs at the 1,200 s budget, deviation D6) UNDER-states linkage, so this verdict can only get firmer with a longer budget.
+2. **The curve is not flat at the ceiling (`flat_at_ceiling` = false) but utility drops before linkage does:** linkage falls gradually with compression (raw 0.990, f4 0.982, f8 0.963, f16 0.926, f32 0.879) while utility stays within noise up to f16 and drops only at f32. The mild floors (f4 to f16) cost no utility at all (even +0.01 for f4 and f8, a 2-epoch fine-tune effect) and still leak 0.93-0.98.
+3. **Cue ladder (sufficiency).** `hp_s2` - the high-pass residual alone, with coarse anatomy and exposure removed - links at **0.970** and keeps full utility (0.784, a drop of -0.011): the fine texture / edge band carries the identity signal by itself AND it is the diagnostically useful band. `hist` - the intensity histogram alone - links at 0.566 [0.540, 0.594], near chance and still rising at its stop (a CNN is a weak histogram reader, so this is a lower bound); its utility 0.579 shows the histogram alone is a poor diagnostic carrier. Spatial scale: linkage is still 0.926 at 16 x 16 and 0.879 at 8 x 8 effective pixels.
+4. **Stage-B gate: DOES NOT FIRE.** No release is protective (condition i holds), but no cue-isolating release links at >= 0.85 while losing >= 0.10 of utility (condition ii): `hp_s2` links but keeps utility, `hist` loses utility but does not link. **Stage B (learned defender against an F1+-like adversary) is therefore SKIPPED, as pre-registered.** What this does not show: that no learned defender could help; only that the ladder identifies no linking cue that is removable at no diagnostic cost.
+5. **Nomination (14.5, mechanical):** utility drop <= 0.05, lowest upper linkage bounds first -> `down_f32`, `down_f16`, `down_f8`. Each is scored once on the sealed rotation-0 T pairs by its saved screen model (jobs `t_v_seal_*`, queued after this commit; protective is confirmed iff T linkage <= 0.80 and T utility drop <= 0.02, which the validation numbers make unlikely).
+
+**Budget so far:** 11,804.5 worker-seconds = **3.28 worker-hours** of the 4.0 (screens 6 x 1,241-1,289 s, shuffled-label control 1,245 s, const 259 s, utility fits 417-517 s); up to three sealed scorings at about 250 s each are still to come.
