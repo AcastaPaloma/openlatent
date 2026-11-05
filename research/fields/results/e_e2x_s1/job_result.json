@@ -1,0 +1,17 @@
+{
+ "name": "e_e2x_s1",
+ "config": {
+  "name": "e_e2x_s1",
+  "priority": 5,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/e_singlecell/evaluate_e2.py --posthoc --prefix e2x --seed 1 --out $OUT",
+  "hf_path": "runs/e_e2x_s1"
+ },
+ "commit": "749664e",
+ "commit_after": "e41eb5e",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 869.9,
+ "finished_utc": "2026-11-04T22:32:13Z",
+ "uploaded": true
+}
