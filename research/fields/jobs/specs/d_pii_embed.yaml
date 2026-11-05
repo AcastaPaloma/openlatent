@@ -1,0 +1,5 @@
+name: d_pii_embed
+priority: 5
+cmd: "USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/pii_embed.py"
+hf_path: runs/d_pii_embed
+hf_allow: ["*.json", "*.log", "*.md"]

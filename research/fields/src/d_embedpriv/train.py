@@ -115,6 +115,7 @@ class Learned(Arm):
             if step % 250 == 0 or step == self.steps - 1:
                 self.log.append(dict(step=step, ret=float(loss_ret), conf=float(conf), conf_rel=(float(conf) / conf0 if adv and self.conf_norm else None)))
         self.f = f.eval()
+        self.g = g if adv else None  # final in-loop adversary head (D3 engagement check)
         # collapse check: a map whose retrieval loss is still at the uniform-softmax value ln N never trained
         self.final_ret = float(np.mean([x["ret"] for x in self.log[-2:]]))
         self.collapsed = bool(self.final_ret > math.log(len(nc)) - 0.5)

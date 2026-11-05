@@ -37,6 +37,22 @@ def grid(name):
     elif name.startswith("adv_l"):  # adv_l<lam>: adversarial candidate, all d
         lam = float(name[5:])
         g += [dict(family="adv", d=d, lam=lam) for d in D_FLOOR]
+    elif name == "p_ctrl":  # D3 stage 1: controls, reference attackers, oracle, record-split demonstration
+        g += [dict(family="raw"), dict(family="const"), dict(family="raw", shuffle=True), dict(family="feat", feat="b1"), dict(family="feat", feat="b1g"),
+              dict(family="raw", mask="oracle"), dict(family="recsplit")]
+    elif name == "p_fa":
+        g += [dict(family="randproj", d=d) for d in (32, 64, 128, 256, 512)]
+        g += [dict(family="pca", d=d) for d in D_FLOOR]
+        g += [dict(family="noise", r=r) for r in (0.25, 0.5, 1, 2, 3, 4)]
+    elif name == "p_fb":
+        g += [dict(family="leace", r=r) for r in (4, 16, 64, 128, 256)]
+        g += [dict(family="sup_lin", d=d) for d in D_FLOOR[1:]]
+        g += [dict(family="bott_mlp", d=d) for d in D_FLOOR[1:]]
+    elif name == "p_eng":  # engagement check: normalised-confusion adversary, d = 256
+        g += [dict(family="adv", d=256, lam=lam, conf_norm=True) for lam in (1.0, 3.0, 10.0, 30.0)]
+    elif name.startswith("p_adv_"):  # p_adv_<lam>: full adversarial grid at one lambda (only if engagement is achieved)
+        lam = float(name[6:])
+        g += [dict(family="adv", d=d, lam=lam, conf_norm=True) for d in (64, 128, 256, 512)]
     elif name == "smoke":
         g += [dict(family="raw"), dict(family="pca", d=64), dict(family="noise", r=2), dict(family="leace", r=16),
               dict(family="sup_lin", d=64, steps=60), dict(family="adv", d=64, lam=0.3, steps=60, reinit=30, warm=10)]
