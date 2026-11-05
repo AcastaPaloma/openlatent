@@ -70,6 +70,9 @@ def main():
     ap.add_argument("--pcxr-dir", default=None, help="dir with generator_pcxr_mu*.pth (train_pcx.py)")
     ap.add_argument("--ladder-s", type=int, default=0, help="T4a: add this many S-role multi-visit patients (2 triples each) to the attacker-training pairs; -1 = all of them")
     ap.add_argument("--r5", action="store_true", help="T5 (T.md section 12): attacker F1+ (xl head, augmentation, cosine lr, validation-AUC selection, time budget)")
+    ap.add_argument("--r5-budget", type=int, default=2100, help="T6 (T.md section 14): F1+ time budget in seconds (R5 used 2100)")
+    ap.add_argument("--save-model", default=None, help="T6: save the selected F1+ weights to this LOCAL path (never inside --out, never uploaded)")
+    ap.add_argument("--load-model", default=None, help="T6 sealed phase: do not train; score the saved F1+ model on this run's pairs (T built unless --screen)")
     ap.add_argument("--design", default="N2", choices=["N2", "N3", "N3s"], help="T4b: N3 = negatives matched on the 14-finding vector (T.md section 11); N3s = N3 restricted to N2 tiers 0-1 (A12)")
     ap.add_argument("--shuffle-val", action="store_true", help="with --shuffle-labels: ALSO permute the validation labels (removes the epoch-selection leak of the control; T.md D3); suffix _shuf2")
     ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
@@ -114,7 +117,8 @@ def main():
         parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
         if a.shuffle_val:
             parts["va"]["y"] = np.random.default_rng(778).permutation(parts["va"]["y"]); sfx = "_shuf2"
-    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val, ladder_s=a.ladder_s, design=a.design, r5=a.r5, **(dict(shuffle_labels=True) if a.shuffle_labels else {}))   # salt id: a new partition is new sealed material
+    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val, ladder_s=a.ladder_s, design=a.design, r5=a.r5,
+               **(dict(shuffle_labels=True) if a.shuffle_labels else {}), **(dict(r5_budget=a.r5_budget) if a.r5_budget != 2100 else {}), **(dict(load_model=Path(a.load_model).name) if a.load_model else {}))   # salt id: a new partition is new sealed material
     ledger_rec = None if (a.no_ledger or a.synthetic or a.screen) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
     flow = torch.load(a.flow_stats) if a.flow_stats else None
@@ -140,9 +144,19 @@ def main():
         for cond in a.conds.split(","):
             sc = []
             for sd in [int(s) for s in a.seeds.split(",")]:
+                if a.load_model:                                    # T6 sealed phase: score a saved model, no training
+                    cs = cond_sets(cond, Xd, Xr, parts)
+                    net = A.Siamese(a.arch, False, "xl").to(dev).to(memory_format=torch.channels_last)
+                    net.load_state_dict(torch.load(a.load_model, map_location=dev))
+                    sv_ = A.predict(net, cs["va"]["xa"], cs["va"]["xb"], cs["va"]["ia"], cs["va"]["ib"], amp=dev == "cuda"); st_ = A.predict(net, cs["te"]["xa"], cs["te"]["xb"], cs["te"]["ia"], cs["te"]["ib"], amp=dev == "cuda")
+                    sc.append((sv_, st_, 0))
+                    record(f"f1_{cond}_s{sd}", sv_, st_, dict(epochs=0, loaded=Path(a.load_model).name))
+                    continue
                 o = A.train_siamese(**{k: v for k, v in zip(("tr", "va", "te"), (lambda cs: (cs["tr"], cs["va"], cs["te"]))(cond_sets(cond, Xd, Xr, parts)))}, arch=a.arch, pretrained=not a.no_pretrain,
                                     seed=sd, max_epochs=a.max_epochs, bs=a.bs, device=dev, amp=dev == "cuda", log=(print if a.r5 else (lambda *x: None)),
-                                    **(dict(head="xl", select="auc", aug=True, cosine=True, patience=10, time_budget_s=2100) if a.r5 else {}))
+                                    **(dict(head="xl", select="auc", aug=True, cosine=True, patience=10, time_budget_s=a.r5_budget, return_model=bool(a.save_model)) if a.r5 else {}))
+                if a.save_model:
+                    Path(a.save_model).parent.mkdir(parents=True, exist_ok=True); torch.save(o["model"].state_dict(), a.save_model)
                 sc.append((o["val_score"], o["test_score"], o["epochs"]))
                 record(f"f1_{cond}_s{sd}", o["val_score"], o["test_score"], dict(epochs=o["epochs"], truncated=bool(o.get("truncated")), best_val_auc=float(o.get("best_val_auc", -1)), best_val_loss=float(o["best_val_loss"]), curve=[[round(float(v), 5) for v in c] for c in o["curve"]]))
             record(f"f1_{cond}_ens", np.mean([z[0] for z in sc], 0), np.mean([z[1] for z in sc], 0))

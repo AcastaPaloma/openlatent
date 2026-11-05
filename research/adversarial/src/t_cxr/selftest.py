@@ -380,6 +380,32 @@ def t_ladder_r5():
         check("ladder_r5: ordering test reports floor_ahead_by with the right sign and no spurious reversal", "R5" in j["ordering"] and not j["ordering"]["R5"]["defender_beats_floor"], str(j["ordering"]["R5"]))
 
 
+def t_t6():
+    """T6 cue-isolation releases and the save / load round trip of the F1+ model."""
+    rel = R.Releases("cpu")
+    rng = np.random.default_rng(5)
+    x = torch.from_numpy(rng.integers(0, 256, (3, 64, 64), dtype=np.uint8))
+    ids = ["a", "b", "c"]
+    h = rel.apply("hist", x, ids).float(); h2 = rel.apply("hist", x, ids).float()
+    xs = (x.float() / 255.0)
+    check("hist release: the intensity histogram is EXACT (sorted pixels equal), the spatial layout is destroyed, the draw is deterministic",
+          all(torch.equal(h[k].flatten().sort().values, xs[k].half().float().flatten().sort().values) for k in range(3)) and not torch.equal(h[0], xs[0].half().float()) and torch.equal(h, h2))
+    g = torch.linspace(0, 1, 64).view(1, 64).expand(64, 64)
+    yh = rel.apply("hp_s2", (g * 255).round().to(torch.uint8).unsqueeze(0), ["g"]).float()
+    yc = rel.apply("hp_s2", torch.full((1, 64, 64), 128, dtype=torch.uint8), ["c"]).float()
+    check("hp_s2 release: a constant image maps to exactly 0.5, a smooth ramp is mostly removed (interior within 0.05 of 0.5), output in [0,1]", bool((yc == 0.5).all()) and float((yh[0, 16:-16, 16:-16] - 0.5).abs().max()) < 0.05 and float(yh.min()) >= 0 and float(yh.max()) <= 1)
+    N = 40
+    xx = torch.rand(N, 32, 32).half()
+    ia = np.arange(20); ib = np.r_[np.arange(10), (np.arange(10) + 5) % 20 + 20]; yy = np.r_[np.ones(10), np.zeros(10)].astype(np.float32)
+    ph = dict(xa=xx, xb=xx, ia=ia, ib=ib, y=yy)
+    o = A.train_siamese(ph, ph, ph, arch="resnet18", pretrained=False, max_epochs=2, bs=10, device="cpu", amp=False, log=lambda *a: None, head="xl", select="auc", aug=True, cosine=True, return_model=True)
+    import tempfile, os
+    fn = os.path.join(tempfile.mkdtemp(), "m.pt"); torch.save(o["model"].state_dict(), fn)
+    net = A.Siamese("resnet18", False, "xl"); net.load_state_dict(torch.load(fn, map_location="cpu"))
+    again = A.predict(net, xx, xx, ia, ib, amp=False)
+    check("saved F1+ weights reload and reproduce the scores of the trained model", np.allclose(again, o["test_score"], atol=1e-5), f"max diff {np.abs(again - o['test_score']).max():.2e}")
+
+
 def t_dups(data, pri, exclude):
     import json
     d = meta.load(f"{data}/Data_Entry_2017_v2020.csv", f"{data}/test_list.txt", f"{data}/train_val_list.txt", exclude_json=exclude)
@@ -425,7 +451,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt"); ap.add_argument("--exclude", default=None)
     a = ap.parse_args()
     torch.set_num_threads(4)
-    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("ladder_r5", t_ladder_r5), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []) + ([("dups", lambda: t_dups(a.data, a.pri, a.exclude))] if a.exclude and a.pri else []):
+    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("ladder_r5", t_ladder_r5), ("t6", t_t6), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []) + ([("dups", lambda: t_dups(a.data, a.pri, a.exclude))] if a.exclude and a.pri else []):
         if nm in a.skip:
             continue
         print(f"== {nm}", flush=True)

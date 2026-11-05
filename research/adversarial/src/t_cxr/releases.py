@@ -12,6 +12,8 @@ Name grammar (parameters after the underscore):
   blur_s2 | down_f4 | noise_s0.1 | quant_l8 | quantd_l8 (dithered) | jpeg_q10 | pca_k32 | dppix_b8
   rim_w24 | core_w24   keep ONLY the 24-px frame / ZERO the frame (acquisition-fingerprint controls; T.md stage 1)
   pcx_mu0.01   PriCheXy-Net released generator (learned)
+  hp_s2        HIGH-PASS RESIDUAL ONLY (T6 cue isolation): clamp(0.5 + 4 * (x - gaussian_blur(x, sigma)), 0, 1); keeps fine texture / edges, drops coarse anatomy and exposure
+  hist         HISTOGRAM ONLY (T6 cue isolation): every pixel of the image randomly permuted (seeded by the image id), so the intensity histogram is exact and ALL spatial structure is gone
 """
 from __future__ import annotations
 
@@ -91,6 +93,12 @@ class Releases:
             y = G.warp(x, raw, mu)
         elif kind == "blur":
             y = _gblur(x, float(par.removeprefix("s")))
+        elif kind == "hp":
+            sg = float(par.removeprefix("s"))
+            y = (0.5 + 4.0 * (x - _gblur(x, sg))).clamp(0, 1)
+        elif kind == "hist":
+            n_ = x.shape[-1] * x.shape[-2]
+            y = torch.stack([x[k].flatten()[torch.randperm(n_, generator=_tg(i, name)).to(self.dev)].view(1, *x.shape[-2:]) for k, i in enumerate(ids)])
         elif kind == "down":
             f = int(par.removeprefix("f"))
             y = F.interpolate(F.interpolate(x, scale_factor=1 / f, mode="area"), size=x.shape[-2:], mode="bilinear", align_corners=False)
