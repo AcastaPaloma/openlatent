@@ -5,7 +5,7 @@
 
 ## Statement
 T2/T3 compare one retrained PriCheXy-style defender with floors on 4,588 generator-unseen multi-visit patients that have already been sealed test units twice. Floors need no defender training, so the 8,714 multi-visit patients of the generator-SEEN role S are untouched test material for floors: no attacker has scored them, no floor was tuned on them. Carve a sealed bucket F (one hash bucket, about 2,900 multi-visit patients) out of S with a new salt. On F:
-(a) at least one NEW floor (composite or fine-grid, list below) lowers worst-case linkage L below the T2 best floor `down_f4` (0.805 at utility 0.786 on T2 units) by >= 0.02 at equal utility (>= raw - 0.005): L_best <= 0.785 on F-adjusted terms (compare on F, not against the T2 number);
+(a) at least one NEW floor (composite or fine-grid, list below) lowers worst-case linkage L below the T2 best floor `down_f4` (0.805 at utility 0.786 on T2 units) by >= 0.02 at equal utility (>= raw - 0.005), the comparison being made ON F against `down_f4` re-scored on F (not against the T2 number): L_new(F) <= L_down_f4(F) - 0.02;
 (b) no image floor reaches L <= 0.75 at utility >= raw - 0.01 (the labels14 code floor at 0.69 stays more than 0.05 below every image floor);
 (c) the rank order of the families by L at equal utility on F (down < jpeg < blur < quant) equals the rank order on T3's rotations (Spearman >= 0.9);
 (d) T2's retrained defender `pcxr_mu0.01` (defender-SEEN on F, which can only flatter it) is above the new envelope by >= 0.03 in L.

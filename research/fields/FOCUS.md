@@ -15,6 +15,11 @@ journal entry that says why, and only when a result or a newer scout falsifies a
   * Not run: H2-015 selection-null, phikon-v2 holdout, dinov2-L cross-fit. Parked on the VM: ~27 gate seed replications.
 - Original text kept below for the record.
 
+- A3 RESULT (Builder A, A.md "A3 RESULTS", ~04:05Z VM clock; pre-registered before any A3 number; 0.53 worker-hours; midnight/Tolkach and midnight/TCGA, 4-fold cross-fit, dense floor ladder, lam 10/30/100, 2160 encoder steps; the adversary is fit on one half of the adapter-train slides and the confusion loss is applied to the other half):
+  * 'Trained' criterion (calibrated): the noise-latent floor on held-out slides is chance (0.50 Tolkach, 0.25 TCGA), unlike the same-unit 0.67; a held-out-slide adversary reads centre from raw PCA latents (0.75 Tolkach, 0.46 TCGA), so the criterion is not vacuous. Trained: all three lam on TCGA and lam 30 on Tolkach (lam 10 and 100 on Tolkach narrowly miss). Trained does NOT mean removed: evaluation attackers still reach worst-case leakage L 0.34-0.50.
+  * Endpoints vs the full inductive envelope: NO WIN (A3-DEAD under the pre-registered rules): Tolkach utility is ceiling-limited (headroom 0.011), delta -0.03 to -0.05; TCGA utility is underpowered (MDE 0.056-0.083 vs the 0.04 margin), delta -0.02 to +0.01; retention -0.08 to -0.24 everywhere; selection nulls have no positive gain to calibrate. Original verdicts stand beside it (held-class label utility DEAD, retention alive-weak).
+  * ATTRIBUTION (corrects my earlier wording both ways): against the NO-ADVERSARY AE at matched leakage, a TRAINED adversary adds held-class utility of +0.05 to +0.064 (MDE 0.05-0.06) in 3 of 4 trained configs, at a retention cost of 0.02-0.13. So within the AE family a converged adversary changes something, i.e. 'the adversary adds nothing' is false once the adversary actually trains; but it still does not beat the cheap floors.
+
 ## Focus A (original text): source-invariant embeddings, PathoROB first   [GO-WITH-CHANGES]
 - Keep: tissue/diagnostic label.  Hide: medical centre (and stain) signature.
 - Benchmark: PathoROB (arXiv 2507.17845; 3 ungated HF datasets, ~1.9 GB, fixed seeds). Drop BatchBench (sealed, server-side, 30-257 GB).

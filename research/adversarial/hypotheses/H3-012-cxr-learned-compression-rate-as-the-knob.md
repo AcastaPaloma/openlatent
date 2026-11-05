@@ -1,0 +1,34 @@
+# H3-012: Learned compression as the defence, with RATE (bits per image) as the only knob: linkage is a function of bits for classical and generic learned codecs, and a task-aware learned code beats the log-bits interpolation between the 4x downsample and the labels14 code by at least 0.03 (NEW idea)
+
+- Focus: R-CXR | Kind: new defence family (entropy-coded learned codec, in-domain, with and without a 14-finding utility head) against classical codecs at matched bits | GPU-h: 10 | Prior: 0.25 that the task-aware code beats the interpolation by >= 0.03; 0.85 that classical and generic learned codecs collapse onto one L(bits) curve
+- Depends on: H3-008 (fresh bucket F, list v2; the codec floors enter the same envelope); T2/T3 attacker suite and utility; the CompressAI library and pretrained weights (code BSD-3-Clause-Clear [licence and the training-data terms of the pretrained weights to be verified by the steward before use; if unusable the generic-codec arm is dropped and the in-domain codec remains]). Literature: the programme's scouts identified JPEG / quantisation / PCA as floors and never a rate-distortion-utility family; the labels14 result (14 numbers hold the whole utility at L 0.69) is the low-rate anchor that makes the question sharp.
+
+## Statement
+Let a release be anything a party could transmit, measured by its actual bitstream length B (bytes per image; for decoded-image releases the length of the encoded file; for downsampled images the lossless-WebP bytes of the low-resolution image; for codes B = bits/8). Plot worst-case linkage L(B) and 14-finding utility U(B) on fresh units (F of H3-008).
+(a) Classical codecs (JPEG q in {3, 5, 10, 20, 30, 50}; downsampling by f in {2, 3, 4, 6, 8} plus lossless coding) and the generic pretrained learned codec (hyperprior q in {1..6}) lie on one L(B) curve within +-0.03 at B >= 2 KB (Spearman >= 0.9, residuals <= 0.03 in log2 B).
+(b) The log-linear interpolation between the `down_f4` point (about 3-4 KB, L 0.805 on T2 units) and the labels14 code at 8 bits per logit (14 bytes, L 0.69) predicts L(B) = 0.69 + 0.115 x ln(B/14)/ln(3500/14), about 0.76 at 500 bytes. An IN-DOMAIN task-aware learned code (hyperprior trained on S2 images with MSE + lambda_rate and a 14-finding utility head on the latent, utility weight 1) at some B in [100 B, 2 KB] with U >= raw - 0.01 has L at least 0.03 below that interpolation.
+(c) The same in-domain codec WITHOUT the utility head is no better than the classical curve (within +-0.02) at equal B, and its U falls below raw - 0.02 at B <= 2 KB.
+
+## Mechanism
+Linkage uses structure that survives anywhere on the rate-distortion curve down to the rate where diagnostic information itself is gone; classical codecs are not told which bits matter, so they pay both. A utility-aware code can drop identity-bearing bits that the 14 labels do not need, but the 14 labels themselves leak (L 0.69 from persistent findings, see H3-013); the open interval between 0.69 and 0.805 is the region where a task-aware learned code could live. Rate is the one knob that is directly comparable across mechanisms and is the information-theoretic ceiling on any attacker, which also makes it the right axis for a floor.
+
+## Experiment (exact)
+- Data: ChestX-ray14 bank (256 px grey), fresh bucket F as H3-008 (sealed), S2 = S \ F for codec and utility training (defender-style training; the codec never sees F), attackers retrained on the A role (T3 rotation 0), N2 matched negatives within F.
+- Releases. Image: JPEG q grid (actual bytes); `down_fX` + lossless WebP; hyperprior (bmshj2018-style) generic pretrained q 1-6 with grey replicated to 3 channels; in-domain hyperprior (N = 64, M = 96) trained on S2 for 30 epochs at lambda_rate in {0.0018, 0.0067, 0.025} with utility weight w_u in {0, 1} (6 models; the w_u = 1 models add a linear 14-logit head on the quantised latent, BCE); decoded back to 256 px for the image attackers. Code: labels14 logits uniformly quantised to b in {1, 2, 4, 8} bits per logit; PCA-k (k in {16, 64, 256}) of frozen DINOv2-B features quantised to 6 bits; the quantised latent of the task-aware codec itself (code release, attacked by F3-type heads on the dequantised latent).
+- Attackers and metric: image releases: T's F1 (match), F2, F3 best, F4, F5a / F5b, F6 reported; code releases: F3b-type MLP pair head, kNN with learned metric, LightGBM on |z_a - z_b| and z_a * z_b (F3-like), F5. Worst case inside each patient-cluster bootstrap resample (B = 2000, shared). U = DenseNet-121 AUC on the 14 findings fine-tuned on S2 releases (for code releases a linear / MLP head on the code). B measured per image on F (mean and 90th percentile).
+- Nomination: codec points chosen on validation only, mapped to bytes grid {100, 200, 500, 1k, 2k, 4k, 8k, 16k} (nearest point per grid cell, committed before any F-look).
+- Margins and rule: dL(B) = L(release) - envelope_L(B) where the envelope is the lower convex hull of classical, downsample and code points over log2 B; margin 0.03 (L), 0.02 (U); 99% bounds (the task-aware codec is tested at up to 4 rates).
+- Seeds vs test units: units F (about 2,900 patients), one sealed bucket (stated); codec training: 1 seed per model, 2 seeds for the best task-aware model after nomination; attackers 3 seeds for F1 on 3 releases; the independence limit is the one bucket.
+
+## Prediction and falsifier
+- Predicted: (a) holds (residuals 0.01-0.02); the task-aware code at B about 300-600 B has U about raw - 0.005 and L about 0.74-0.77, i.e. 0.00-0.03 below the interpolation (point -0.015); at 100-200 B U falls below raw - 0.02; (c) holds.
+- FALSIFIED (b) if the task-aware code is within 0.02 of the interpolation or above it at every rate with U >= raw - 0.01 (no task-aware gain beyond the straight line between the two anchors). FALSIFIED (a) if the generic learned codec is below the classical envelope by >= 0.03 at matched B (the learned prior matters for this task). (b) holding with 99% lower bound > 0.03 is a new positive.
+
+## Cost / dependencies
+10 GPU-h: 6 in-domain codec trainings x ~0.7 h = 4.2 h; ~14 releases x 0.4 h attackers = 5.6 h; utility 0.5 h. Gate: if H3-008's list-v2 hash or the salt is not committed, run on validation only and label it a screen.
+
+## Prior
+0.25 for (b), 0.85 for (a). Reasons for (b): the labels14 anchor shows 0.11 of L is removable by releasing only task-relevant information, and a learned bottleneck is the natural way to interpolate; against: the bottleneck must carry the diagnostic information in a way a pair-attacker cannot reuse for identity, and every learned arm so far reproduced a rate-matched floor.
+
+## Cheapest floor that could kill it
+`down_f4` + JPEG composites (H3-008) at the same bytes, and the labels14 quantised code with added noise; (b) is killed if the straight line in log bytes between those anchors passes through the task-aware points.
