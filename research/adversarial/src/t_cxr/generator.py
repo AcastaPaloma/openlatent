@@ -118,7 +118,10 @@ def flow_statistics(gen: UNet, x: torch.Tensor, mu: float, bs: int = 64) -> dict
     seen = 0
     for i in range(0, x.shape[0], bs):
         xb = x[i:i + bs].float().to(next(gen.parameters()).device)
-        disp = displacement_px(gen(xb), mu)                                          # (B,2,n,n)
+        raw = gen(xb)
+        # LEARNED part only: smoothing is linear, so (displacement of the learned flow) - (displacement of a ZERO flow) = -mu * 127.5 * smooth(flow);
+        # the zero-flow part is the border artefact of the zero-padded smoothing (up to ~80 px at the corners) and is present in every warp-pipeline release.
+        disp = displacement_px(raw, mu) - displacement_px(torch.zeros_like(raw), mu)             # (B,2,n,n)
         rms.append(disp.flatten(1).pow(2).mean(1).sqrt().cpu()); sup.append(disp.flatten(1).abs().max(1).values.cpu())
         P = (torch.fft.fft2(disp.cpu()).abs() ** 2).sum(1)                           # (B,n,n)  sum over x/y channels
         for p in P:

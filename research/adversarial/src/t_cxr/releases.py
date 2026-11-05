@@ -86,7 +86,7 @@ class Releases:
                 disp = torch.stack(disp).to(self.dev)
                 # the field IS the applied displacement (already smoothed spectrum): resample directly, no extra smoothing
                 idg = G.identity_grid(x.shape[-1], self.dev)
-                grid = (idg - disp / G.PX_PER_UNIT).permute(0, 2, 3, 1)
+                grid = (G.smooth(idg) - disp / G.PX_PER_UNIT).permute(0, 2, 3, 1)             # same zero-padded smoothing (border artefact) as every warp-pipeline release; disp = LEARNED-part statistics
                 return F.grid_sample(x, grid, padding_mode="border", align_corners=True).squeeze(1).half()
             y = G.warp(x, raw, mu)
         elif kind == "blur":
