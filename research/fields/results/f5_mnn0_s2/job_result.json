@@ -1,0 +1,19 @@
+{
+ "name": "f5_mnn0_s2",
+ "config": {
+  "name": "f5_mnn0_s2",
+  "priority": 5,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 5 --salt s2 --mnn0 --regimes a,b1 --no_attackers --out $OUT",
+  "hf_path": "runs/f5_mnn0_s2"
+ },
+ "commit": "fbd6937",
+ "commit_after": "fbd6937",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 137.7,
+ "finished_utc": "2026-11-05T10:57:40Z",
+ "uploaded": true
+}
