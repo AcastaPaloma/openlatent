@@ -1059,3 +1059,28 @@ Readings.
   it is null or negative in the TCGA cells of two encoders, the phikon-v2 cell is one seed, and only dinov2-L/Tolkach exceeds the frontier-permutation selection null. It is a statement about a nonlinear reconstruction bottleneck keeping raw-space neighbourhoods at equal leakage and equal label utility, and the metric is what an MSE-trained AE optimises (owner decision whether that is utility).
 * **Adversary: untested.** F-02: not trained at lam <= 300 with 2160 steps (in-sample adversary accuracy 0.78-0.83, memorisation floor 0.67); the sentence "the adversary adds nothing" stays retracted; no claim either way.
 * Gate G1: 0 of 8 cells; unchanged.
+
+
+## A3: CONVERGED-ADVERSARY ATTEMPT (new pre-registered attempt; written 2026-11-04 ~21:00Z VM clock, committed BEFORE any A3 number)
+
+Original verdicts stay beside it and are not touched by A3: held-class LABEL utility of the label-free AE = DEAD (calibrated); kNN retention = ALIVE-weak (adversary-independent: the winning configurations are the no-adversary AEs); adversary = UNTESTED (F-02: not trained at lam <= 300 / 2160 steps; same-unit in-sample accuracy
+is dominated by memorisation: 0.67 on pure-noise latents at 1,600 samples). Question A3 answers: **does a CONVERGED adversary, one that memorisation cannot satisfy, change the pathology AE on either endpoint?**
+
+**Method (new, `ae` with `advh=1`).** The adapter-train units A are split by unit, stratified by centre, into A1 (adversary-fit half) and A2 (confusion half; RandomState(seed*7+3), at least one unit per centre in each half).
+Each round: fresh adversaries (linear + MLP, re-initialised) are trained on the released latents of A1 only; the adapter then takes 60 steps with reconstruction loss on batches from all of A plus lam x KL(adversary output || uniform) computed on batches from **A2**, which the adversaries never fitted
+(latents standardised with A1 statistics). 36 rounds (2160 encoder steps, 3x the F-02 reference budget), dl 32, beta 1e-3, lam in {10, 30, 100}. Released sample, rate, attackers, splits, folds: unchanged from the cross-fit runs (`holdout_cv4`, same A/B/V/C per fold), so the existing p3cv / dense / F-02 rows are paired comparators.
+
+**'Adapter trained' criterion (calibrated on held-out slides, replaces the same-unit criterion).** Per fold and round the code logs balanced accuracy of the adversaries on A1 (in-sample) and on A2 (held-out), and, once per fold, the noise-latent floor: a fresh adversary trained on Gaussian-noise latents (same n, d, split) and scored on A2, mean of 20 draws
+(expected ~ chance, since no memorisation can transfer to slides it did not fit). A configuration is **trained** iff the mean over folds of the mean held-out balanced accuracy over the last 6 rounds is <= the mean noise floor + 0.05. If no lam passes, the outcome is **A3-UNTRAINED**: "the adversary did not converge even against held-out slides", and no attribution statement is allowed.
+
+**Cells.** midnight/Tolkach and midnight/TCGA, held-out-class protocol, 4-fold cross-fit (K=4, rotating test units, pooled out-of-fold, as `a_p3cv_*`). The TCGA dense floor ladder (`pca`, `lda_pca` d 6-24, `randproj` d 8-24) is added (it exists for Tolkach); both cells thus have the dense inductive envelope.
+
+**Comparators and endpoints (fixed beforehand).** Leakage-matched (L <= L_c + 0.05) against (a) the full inductive envelope including the dithered no-adversary codes and the dense ladder, (b) the no-adversary AE family (lam 0 AEs and the dithered AE-base codes) as the attribution comparator.
+Endpoints: held-class utility and kNN-retention-xc, each with bootstrap CI over the pooled test units and **MDE80 printed next to every difference**; headroom to raw printed.
+Margins (unchanged from the earlier registration, tightening only): **utility win** = Delta >= +0.04, CI > 0, headroom >= 0.04, >= 2 floor points within +-0.05 of L; **retention win** = Delta >= +0.05, CI > 0, >= 2 floor points near L, utility not worse than -0.03.
+**Adversary attribution** (only for trained configurations): the adversary "adds" if the A3 configuration beats the matched no-adversary AE points by >= +0.04 utility or >= +0.05 retention with CI > 0.
+Selection null: best-of-3 (the three lam values) with the same null A (frontier permutation, N=3 pseudo-points) and null B (max-T bootstrap); a gain counts only if it exceeds both 95th percentiles.
+
+**Verdict rules.** A3-ALIVE = at least one trained configuration AND (a utility win in one cell, or a retention win against both (a) and (b) in both cells) AND above both selection nulls. A3-DEAD = trained configurations exist and none wins an endpoint against (a). A3-UNTRAINED = no lam passes the criterion. A3-UNDERPOWERED = a cell's MDE80 exceeds the margin on an endpoint (that endpoint is not scored in that cell). Midnight/Tolkach utility is ceiling-limited (headroom ~0.03) and is not scored.
+
+**Constraints.** Priority 5, <= 3 `a_` jobs at once, <= 3 GPU-h (estimate ~2: A3 2 x 0.4, TCGA dense ~0.6), thread caps `OMP/MKL/OPENBLAS_NUM_THREADS=8` and LightGBM `n_jobs=8`; job outputs only under `$OUT` (`~/work/runs`), nothing written into tracked paths on the VM (specs go to `~/queue/pending`, code arrives by `git pull` of commits pushed from the laptop).
