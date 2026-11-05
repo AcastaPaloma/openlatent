@@ -28,13 +28,16 @@ def main():
     ap.add_argument("--runs", nargs="+", required=True)
     ap.add_argument("--dataset", default="hlca")
     ap.add_argument("--budgets", default="10,100")
+    ap.add_argument("--tags", default="ce")
     ap.add_argument("--B", type=int, default=1000)
     ap.add_argument("--json", default="")
     a = ap.parse_args()
     budgets = [int(x) for x in a.budgets.split(",")]
     D = AG.Data(a.dataset, a.runs)
     folds = list(D.fall)
-    arms = ["raw50"] + [x for b in budgets for x in AR.AD_of(b) + AR.CE_of(b) + [AR.X_of(b)]]
+    tags = a.tags.split(",")
+    ce_of = lambda b, t: [f"{t}_f{b}_r0", f"{t}_f{b}_r0.5"]  # noqa: E731
+    arms = ["raw50"] + [x for b in budgets for x in AR.AD_of(b) + [AR.X_of(b)] + [y for t in tags for y in ce_of(b, t)]]
     F = AR.Fast(D, arms, folds)
     ones = np.ones(D.n)
     out = {}
@@ -47,24 +50,25 @@ def main():
     boots = [stats(w) for w in Ws]
     for b in budgets:
         ad0, ad5 = AR.AD_of(b)
-        ce0, ce5 = AR.CE_of(b)
-
-        def interp(U, L):                                     # CE utility at the adapter's r = 0 leakage, linear in (L, U) between CE r0.5 and CE r0
-            l0, l5 = L[ce0], L[ce5]
-            if not (np.isfinite(l0) and np.isfinite(l5)) or abs(l0 - l5) < 1e-6:
-                return np.nan
-            t = (L[ad0] - l5) / (l0 - l5)
-            return U[ce5] + t * (U[ce0] - U[ce5])
         row = {}
-        for tag, ad, ce in (("r0", ad0, ce0), ("r0.5", ad5, ce5)):
-            dU = [u[ad] - u[ce] for u, l in boots]
-            dL = [l[ad] - l[ce] for u, l in boots]
-            row[f"dU_{tag}"] = dict(pt=U0[ad] - U0[ce], ci=AG.ci(dU))
-            row[f"dL_{tag}"] = dict(pt=L0[ad] - L0[ce], ci=AG.ci(dL))
-            row[f"U_{tag}"] = dict(adapter=U0[ad], ce=U0[ce])
-            row[f"L_{tag}"] = dict(adapter=L0[ad], ce=L0[ce])
-        di = [u[ad0] - interp(u, l) for u, l in boots]
-        row["dU_interp_matched_L"] = dict(pt=U0[ad0] - interp(U0, L0), ci=AG.ci(di), ce_interp_U=interp(U0, L0))
+        for t in tags:
+            ce0, ce5 = ce_of(b, t)
+
+            def interp(U, L):                                 # CE utility at the adapter's r = 0 leakage, linear in (L, U) between the r0.5 and r0 CE points
+                l0, l5 = L[ce0], L[ce5]
+                if not (np.isfinite(l0) and np.isfinite(l5)) or abs(l0 - l5) < 1e-6:
+                    return np.nan
+                tt = (L[ad0] - l5) / (l0 - l5)
+                return U[ce5] + tt * (U[ce0] - U[ce5])
+            for tag, ad, ce in (("r0", ad0, ce0), ("r0.5", ad5, ce5)):
+                dU = [u[ad] - u[ce] for u, l in boots]
+                dL = [l[ad] - l[ce] for u, l in boots]
+                row[f"{t}_dU_{tag}"] = dict(pt=U0[ad] - U0[ce], ci=AG.ci(dU))
+                row[f"{t}_dL_{tag}"] = dict(pt=L0[ad] - L0[ce], ci=AG.ci(dL))
+                row[f"{t}_U_{tag}"] = dict(adapter=U0[ad], ce=U0[ce])
+                row[f"{t}_L_{tag}"] = dict(adapter=L0[ad], ce=L0[ce])
+            di = [u[ad0] - interp(u, l) for u, l in boots]
+            row[f"{t}_dU_interp_matched_L"] = dict(pt=U0[ad0] - interp(U0, L0), ci=AG.ci(di), ce_interp_U=interp(U0, L0))
         row["ldaX"] = dict(U=U0[AR.X_of(b)], L=L0[AR.X_of(b)])
         out[b] = row
         print(b, json.dumps(row, default=float), flush=True)

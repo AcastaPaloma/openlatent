@@ -26,6 +26,7 @@ TOL_L = 0.05
 M_ORIG, M_TIGHT = 0.02, 0.035
 GATE_LOSS, GATE_RANK, GATE_PERM = 0.8, 4.0, 0.02
 PRIMARY = (10, 100)
+EXTRA = []                     # extra label-floor tags (section 20A: ["cenn", "cenp"]); arms {tag}_f{b}_r{0,0.5}
 
 
 def S_of(b):
@@ -42,6 +43,10 @@ def CE_of(b):
 
 def X_of(b):
     return f"ldaX_f{b}"
+
+
+def EX_of(b):
+    return [f"{t}_f{b}_r{r}" for t in EXTRA for r in ("0", "0.5")]
 
 
 class Fast:
@@ -173,14 +178,14 @@ def choose(U, L, b, arms_present):
     else:
         ad = min(ad_c, key=lambda c: L[c])
         flag.append("adapter_no_arm_within_tol")
-    lab = [x for x in [S, X_of(b)] + CE_of(b) if x in arms_present]
+    lab = [x for x in [S, X_of(b)] + CE_of(b) + EX_of(b) if x in arms_present]
     okb = [c for c in lab if np.isfinite(L.get(c, np.nan)) and L[c] <= L[ad] + TOL_L]
     if okb:
         bs = max(okb, key=lambda c: U[c])
     else:
         bs = min([c for c in lab if np.isfinite(L.get(c, np.nan))], key=lambda c: L[c])
         flag.append("bstar_no_arm_within_tol")
-    pool = IND + [x for bb in BUDGETS for x in [S_of(bb), X_of(bb)] + CE_of(bb)]
+    pool = IND + [x for bb in BUDGETS for x in [S_of(bb), X_of(bb)] + CE_of(bb) + EX_of(bb)]
     pool = [x for x in pool if x in arms_present]
     okf = [c for c in pool if np.isfinite(L.get(c, np.nan)) and L[c] <= L[ad] + TOL_L]
     fs = max(okf, key=lambda c: U[c]) if okf else None
@@ -240,7 +245,9 @@ def main():
     ap.add_argument("--json", default="")
     ap.add_argument("--md", default="")
     ap.add_argument("--no_power", action="store_true")
+    ap.add_argument("--extra_label", default="")
     a = ap.parse_args()
+    EXTRA[:] = [x for x in a.extra_label.split(",") if x]
     BUDGETS = [int(x) for x in a.budgets.split(",")]
     D = AG.Data(a.dataset, a.runs)
     folds = list(D.fall)
@@ -258,7 +265,7 @@ def main():
         raw_present |= {x for x, _ in D.S[s]["pr"]}
     universe = [x for x in IND + ["ctrl_noise16"] if x in raw_present]
     for b in BUDGETS:
-        universe += [x for x in [S_of(b), X_of(b)] + AD_of(b) + CE_of(b) + [f"perm_f{b}_r0"] if x in raw_present]
+        universe += [x for x in [S_of(b), X_of(b)] + AD_of(b) + CE_of(b) + EX_of(b) + [f"perm_f{b}_r0"] if x in raw_present]
     universe = list(dict.fromkeys(universe))
     ones = np.ones(D.n)
 
@@ -317,7 +324,7 @@ def main():
     nm = lambda role, b: virt[(role, b)][0] if (role, b) in virt else None  # noqa: E731
 
     # ---- bootstrap (donor, study cluster) with the selection fixed
-    tab_arms = {b: [x for x in AD_of(b) + CE_of(b) + [X_of(b), S_of(b)] if x in present2] for b in bud_present}
+    tab_arms = {b: [x for x in AD_of(b) + CE_of(b) + EX_of(b) + [X_of(b), S_of(b)] if x in present2] for b in bud_present}
     res_boot = {}
     for label, cluster in (("donor", False), ("study", True)):
         Ws = AG.resamples(D, a.B, cluster=cluster)
@@ -446,6 +453,11 @@ def main():
         trained[b] = dict(rows=rows, supcon_ok=bool(sup_ok), ce_ok=bool(ce_ok), dU_vs_perm=dperm, perm_ok=(dperm is None or dperm >= GATE_PERM))
     sup_valid = all(t["supcon_ok"] and t["perm_ok"] for t in trained.values())
     ce_ad = bool(all(t["ce_ok"] for t in trained.values()) and (100 in bud_present) and Upt.get("ce_f100_r0") is not None and Upt["ce_f100_r0"] >= Upt["ldaF16"] - 0.02)
+    if "cenn" in EXTRA:                                         # 20A adequacy of the normalised CE control
+        cen_rows = [gates.get((s, f"{k}|cenn_f{b}")) for b in PRIMARY for s in seeds for k in folds]
+        cen_ok = bool(all(g is not None and g["loss_last200"] / g["loss_first20"] <= GATE_LOSS and g["eff_rank_held"] >= GATE_RANK for g in cen_rows)
+                      and Upt.get("cenn_f100_r0") is not None and Upt["cenn_f100_r0"] >= Upt["ldaF16"] - 0.02)
+        ce_ad = bool(ce_ad and cen_ok)
     valid = bool(ctrl_ok and sup_valid)
     V = {"original_0.02": verdicts(res, M_ORIG, ce_ad), "tightened_0.035": verdicts(res, M_TIGHT, ce_ad)}
     if not valid:
