@@ -54,19 +54,26 @@ def hash_u(i, seed):
 
 
 class NetCE(nn.Module):
-    def __init__(self, D, d, nK, mu, sd):
+    def __init__(self, D, d, nK, mu, sd, norm=False):
         super().__init__()
+        self.norm = norm
         self.register_buffer("mu", mu)
         self.register_buffer("sd", sd)
         self.f = nn.Sequential(nn.Linear(D, 512), nn.LayerNorm(512), nn.GELU(), nn.Dropout(0.1),
                                nn.Linear(512, 256), nn.LayerNorm(256), nn.GELU(), nn.Dropout(0.1), nn.Linear(256, d))
         self.head = nn.Linear(d, nK)
+        self.logscale = nn.Parameter(torch.tensor(float(np.log(10.0))))      # used only when norm=True
 
-    def forward(self, x):                                    # released vector: unnormalised 16-d bottleneck
-        return self.f((x - self.mu) / self.sd)
+    def forward(self, x):                                    # released vector: 16-d bottleneck (L2-normalised when norm=True)
+        z = self.f((x - self.mu) / self.sd)
+        return F.normalize(z, dim=1) if self.norm else z
+
+    def logits(self, x):
+        h = self.head(self(x))
+        return h * torch.exp(self.logscale) if self.norm else h
 
 
-def train_ce(Xl, yl, seed, steps, nK):
+def train_ce(Xl, yl, seed, steps, nK, norm=False):
     """Same sampler (64 classes x <= 8 distinct cells), steps, optimiser and schedule as K.train_adapter; plain cross-entropy through a linear head."""
     torch.manual_seed(seed)
     g = torch.Generator(device=DEV).manual_seed(seed)
@@ -76,7 +83,7 @@ def train_ce(Xl, yl, seed, steps, nK):
     elig = np.where(cnt >= 2)[0]
     mu, sd = Xl.mean(0, keepdim=True), Xl.std(0, keepdim=True)
     sd = torch.where(sd < 1e-6, torch.ones_like(sd), sd)
-    net = NetCE(Xl.shape[1], D_OUT, nK, mu, sd).to(DEV)
+    net = NetCE(Xl.shape[1], D_OUT, nK, mu, sd, norm=norm).to(DEV)
     opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=steps)
     order_t = torch.as_tensor(order, device=DEV)
@@ -95,7 +102,7 @@ def train_ce(Xl, yl, seed, steps, nK):
         keep[:, 1:] = gi[:, 1:] != gi[:, :-1]
         cells = order_t[gi[keep]]
         y = cl_t[pick][:, None].expand_as(gi)[keep]
-        loss = F.cross_entropy(net.head(net(Xl[cells])), y)
+        loss = F.cross_entropy(net.logits(Xl[cells]), y)
         opt.zero_grad()
         loss.backward()
         opt.step()
@@ -107,6 +114,69 @@ def train_ce(Xl, yl, seed, steps, nK):
     return net, dict(loss_first20=float(losses[:20].mean()), loss_last200=float(losses[-200:].mean()), nan=bool(np.isnan(losses).any()), steps=steps,
                      n_classes_sampled=int(len(elig)), n_classes_labelled=int(len(cl)), batch_mean=float(np.mean(bsz)),
                      loss_curve=[float(losses[i:i + 500].mean()) for i in range(0, steps, 500)])
+
+
+class _GRL(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x, lam):
+        ctx.lam = lam
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, g):
+        return -ctx.lam * g, None
+
+
+def train_grl(Xl, yl, bl, seed, steps, lam):
+    """Section-18 SupCon adapter (same Net, sampler, optimiser) + a dataset-id adversary head on the released unit vector through a gradient-reversal layer
+    of constant weight lam.  bl = local dataset ids (0..nb-1) of the labelled cells."""
+    torch.manual_seed(seed)
+    g = torch.Generator(device=DEV).manual_seed(seed)
+    yl = np.asarray(yl)
+    order = np.argsort(yl, kind="stable")
+    cl, start, cnt = np.unique(yl[order], return_index=True, return_counts=True)
+    elig = np.where(cnt >= 2)[0]
+    mu, sd = Xl.mean(0, keepdim=True), Xl.std(0, keepdim=True)
+    sd = torch.where(sd < 1e-6, torch.ones_like(sd), sd)
+    net = K.Net(Xl.shape[1], D_OUT, mu, sd).to(DEV)
+    nb_ds = int(np.max(bl)) + 1
+    adv = nn.Sequential(nn.Linear(D_OUT, 64), nn.GELU(), nn.Linear(64, nb_ds)).to(DEV)
+    opt = torch.optim.AdamW(list(net.parameters()) + list(adv.parameters()), lr=1e-3, weight_decay=1e-4)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=steps)
+    order_t = torch.as_tensor(order, device=DEV)
+    start_t, cnt_t = torch.as_tensor(start, device=DEV), torch.as_tensor(cnt, device=DEV)
+    elig_t = torch.as_tensor(elig, device=DEV)
+    bl_t = torch.as_tensor(np.asarray(bl), device=DEV)
+    nb = min(K.N_CLS, len(elig))
+    ls, la, aacc = [], [], []
+    net.train()
+    for _ in range(steps):
+        pick = elig_t[torch.randperm(len(elig), device=DEV, generator=g)[:nb]]
+        n = cnt_t[pick]
+        r = torch.minimum((torch.rand(nb, K.PER, device=DEV, generator=g) * n[:, None]).long(), (n - 1)[:, None])
+        gi, _ = (start_t[pick][:, None] + r).sort(dim=1)
+        keep = torch.ones_like(gi, dtype=torch.bool)
+        keep[:, 1:] = gi[:, 1:] != gi[:, :-1]
+        cells = order_t[gi[keep]]
+        y = pick[:, None].expand_as(gi)[keep]
+        z = net(Xl[cells])
+        l_sup = FJ.supcon(z, y)
+        lg = adv(_GRL.apply(z, lam))
+        l_adv = F.cross_entropy(lg, bl_t[cells])
+        loss = l_sup + l_adv
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+        sched.step()
+        ls.append(l_sup.detach())
+        la.append(l_adv.detach())
+        aacc.append((lg.argmax(1) == bl_t[cells]).float().mean().detach())
+    ls, la, aacc = (torch.stack(x).cpu().numpy() for x in (ls, la, aacc))
+    net.eval()
+    return net, dict(loss_first20=float(ls[:20].mean()), loss_last200=float(ls[-200:].mean()), nan=bool(np.isnan(ls).any()), steps=steps, lam=lam,
+                     adv_loss_first20=float(la[:20].mean()), adv_loss_last200=float(la[-200:].mean()), adv_acc_last200=float(aacc[-200:].mean()),
+                     n_datasets=nb_ds, n_classes_sampled=int(len(elig)),
+                     loss_curve=[float(ls[i:i + 500].mean()) for i in range(0, steps, 500)])
 
 
 def get_zB(sc, f, T):
@@ -130,7 +200,8 @@ def main():
     ap.add_argument("--folds", default="")
     ap.add_argument("--steps", type=int, default=6000)
     ap.add_argument("--budgets", default="1,10,100")
-    ap.add_argument("--stage", choices=["full", "new"], default="full")
+    ap.add_argument("--stage", choices=["full", "new", "cen", "grl"], default="full")
+    ap.add_argument("--lams", default="0.3,1,3")
     ap.add_argument("--encoder", choices=["A", "B"], default="A")
     ap.add_argument("--perm", type=int, default=0)
     a = ap.parse_args()
@@ -220,12 +291,13 @@ def main():
             Tm[idx] = True
             return Tm, np.where(Tm, sc.fine, -1)
 
-        for b in budgets:
-            Tm, yl = mask_labels(sets[b])
-            if a.stage == "full" and b < 100:
-                run_arm(f"ldaM_f{b}", A.lda_pad(Z, Tm, yl, None, max_dims=16))
-            run_arm(f"ldaX_f{b}", A.lda_pad(Z, Tm, yl, None), mlp=True)
-            save()
+        if a.stage in ("full", "new"):
+            for b in budgets:
+                Tm, yl = mask_labels(sets[b])
+                if a.stage == "full" and b < 100:
+                    run_arm(f"ldaM_f{b}", A.lda_pad(Z, Tm, yl, None, max_dims=16))
+                run_arm(f"ldaX_f{b}", A.lda_pad(Z, Tm, yl, None), mlp=True)
+                save()
         Zt = torch.as_tensor(Z, dtype=torch.float32, device=DEV)
         held_t = torch.as_tensor(held, device=DEV)
         for b in budgets:
@@ -249,21 +321,57 @@ def main():
                     infop["eff_rank_held"] = FJ.effective_rank(Ep[held_t])
                     meta["adapters"][f"{f}|perm_f{b}"] = infop
                     run_arm(f"perm_f{b}_r0", Ep.cpu().numpy(), attackers=False)
-            # CE-MLP floor, same labelled cells, same trunk / sampler / steps
-            t1 = time.time()
-            netc, infoc = train_ce(Zt[idx_t], ylab, sd_ + 77000, a.steps, len(sc.fine_names))
-            with torch.no_grad():
-                C0 = torch.cat([netc(Zt[i:i + 65536]) for i in range(0, Zt.shape[0], 65536)])
-            infoc["eff_rank_held"] = FJ.effective_rank(C0[held_t])
-            infoc["n_labelled"] = int(len(idx))
-            sdc = C0[idx_t].std(0, keepdim=True)
-            noisec = torch.randn(C0.shape, generator=torch.Generator(device=DEV).manual_seed(sd_ + 2), device=DEV)
-            for r in (0.0, 0.5):
-                run_arm(f"ce_f{b}_r{r:g}", (C0 + r * sdc * noisec).cpu().numpy())
-            infoc["train_s"] = round(time.time() - t1, 1)
-            meta["adapters"][f"{f}|ce_f{b}"] = infoc
-            print(f"  s{a.seed} fold {f} budget {b}%: n_lab {len(idx)} CE loss {infoc['loss_first20']:.3f}->{infoc['loss_last200']:.3f} rank {infoc['eff_rank_held']:.1f}"
-                  + (f" | SupCon loss {info['loss_first20']:.3f}->{info['loss_last200']:.3f} rank {info['eff_rank_held']:.1f}" if a.stage == "full" else ""), flush=True)
+            if a.stage in ("full", "new"):
+                # CE-MLP floor, same labelled cells, same trunk / sampler / steps
+                t1 = time.time()
+                netc, infoc = train_ce(Zt[idx_t], ylab, sd_ + 77000, a.steps, len(sc.fine_names))
+                with torch.no_grad():
+                    C0 = torch.cat([netc(Zt[i:i + 65536]) for i in range(0, Zt.shape[0], 65536)])
+                infoc["eff_rank_held"] = FJ.effective_rank(C0[held_t])
+                infoc["n_labelled"] = int(len(idx))
+                sdc = C0[idx_t].std(0, keepdim=True)
+                noisec = torch.randn(C0.shape, generator=torch.Generator(device=DEV).manual_seed(sd_ + 2), device=DEV)
+                for r in (0.0, 0.5):
+                    run_arm(f"ce_f{b}_r{r:g}", (C0 + r * sdc * noisec).cpu().numpy())
+                infoc["train_s"] = round(time.time() - t1, 1)
+                meta["adapters"][f"{f}|ce_f{b}"] = infoc
+                print(f"  s{a.seed} fold {f} budget {b}%: n_lab {len(idx)} CE loss {infoc['loss_first20']:.3f}->{infoc['loss_last200']:.3f} rank {infoc['eff_rank_held']:.1f}"
+                      + (f" | SupCon loss {info['loss_first20']:.3f}->{info['loss_last200']:.3f} rank {info['eff_rank_held']:.1f}" if a.stage == "full" else ""), flush=True)
+            if a.stage == "cen":
+                # 20A: normalised CE.  cenp = section-19 CE (same seed) normalised only at release; cenn = trained with the normalised bottleneck.
+                for tag, norm, sdoff in (("cenp", False, 77000), ("cenn", True, 78000)):
+                    t1 = time.time()
+                    netn, infon = train_ce(Zt[idx_t], ylab, sd_ + sdoff, a.steps, len(sc.fine_names), norm=norm)
+                    with torch.no_grad():
+                        C0 = torch.cat([netn(Zt[i:i + 65536]) for i in range(0, Zt.shape[0], 65536)])
+                    C0 = F.normalize(C0, dim=1)                        # exactly the adapter's release (a no-op for cenn)
+                    infon["eff_rank_held"] = FJ.effective_rank(C0[held_t])
+                    infon["n_labelled"] = int(len(idx))
+                    sdc = C0[idx_t].std(0, keepdim=True)
+                    noisec = torch.randn(C0.shape, generator=torch.Generator(device=DEV).manual_seed(sd_ + 3), device=DEV)
+                    for r in (0.0, 0.5):
+                        run_arm(f"{tag}_f{b}_r{r:g}", (C0 + r * sdc * noisec).cpu().numpy())
+                    infon["train_s"] = round(time.time() - t1, 1)
+                    meta["adapters"][f"{f}|{tag}_f{b}"] = infon
+                    print(f"  s{a.seed} fold {f} budget {b}% {tag}: loss {infon['loss_first20']:.3f}->{infon['loss_last200']:.3f} rank {infon['eff_rank_held']:.1f}", flush=True)
+            if a.stage == "grl":
+                dsl = np.unique(sc.b[T], return_inverse=False)
+                loc_ds = {int(x): i for i, x in enumerate(dsl)}
+                bl = np.array([loc_ds[int(x)] for x in sc.b[idx]])
+                for lam in [float(x) for x in a.lams.split(",")]:
+                    t1 = time.time()
+                    netm, infom = train_grl(Zt[idx_t], ylab, bl, sd_ + 90000 + int(round(lam * 100)), a.steps, lam)
+                    E0 = K.embed_all(netm, Zt)
+                    infom["eff_rank_held"] = FJ.effective_rank(E0[held_t])
+                    infom["n_labelled"] = int(len(idx))
+                    sdv = E0[idx_t].std(0, keepdim=True)
+                    noise = torch.randn(E0.shape, generator=torch.Generator(device=DEV).manual_seed(sd_ + 4), device=DEV)
+                    for r in (0.0, 0.5):
+                        run_arm(f"lm_f{b}_l{lam:g}_r{r:g}", (E0 + r * sdv * noise).cpu().numpy())
+                    infom["train_s"] = round(time.time() - t1, 1)
+                    meta["adapters"][f"{f}|lm_f{b}_l{lam:g}"] = infom
+                    print(f"  s{a.seed} fold {f} budget {b}% lam {lam:g}: SupCon {infom['loss_first20']:.3f}->{infom['loss_last200']:.3f} adv {infom['adv_loss_first20']:.3f}->{infom['adv_loss_last200']:.3f} "
+                          f"adv_acc {infom['adv_acc_last200']:.2f} rank {infom['eff_rank_held']:.1f}", flush=True)
             save()
         print(f"fold {f} done: {time.time() - t0:.0f}s, probe types {Kc}, held {len(held)}", flush=True)
     print("done", flush=True)
