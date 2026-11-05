@@ -358,13 +358,15 @@ def t_ladder_r5():
         sm = d / "summary.json"
         j = json.loads(sm.read_text()) if sm.exists() else dict(attackers={})
         j["attackers"][name] = dict(val_auc=0.7, epochs=12, truncated=False, best_val_auc=0.8); sm.write_text(json.dumps(j))
-    gain = lambda g: y * g + rng.normal(0, 1, n)
     for rot in (0, 1):
         for rel, g1, g4, g5 in (("down_f4", 1.0, 1.3, 1.31), ("pcxr_mu0.01_s1_C2", 1.0, 1.28, 1.29)):
-            put(rel, rot, "", "f1_match_ens", gain(g1)); put(rel, rot, "", "f3b_mlp", gain(g1)); put(rel, rot, "", "f4_match", gain(0.2)); put(rel, rot, "", "f5a", gain(0.1))
+            base = rng.normal(0, 1, n)                                    # one noise draw per (release, rotation): the rungs differ only by the planted gain, so D5 is small and deterministic
+            gain = lambda g: y * g + base
+            put(rel, rot, "", "f1_match_ens", gain(g1)); put(rel, rot, "", "f3b_mlp", gain(g1)); put(rel, rot, "", "f4_match", y * 0.2 + rng.normal(0, 1, n)); put(rel, rot, "", "f5a", y * 0.1 + rng.normal(0, 1, n))
             put(rel, rot, "_ladderall", "f1_match_ens", gain(g4)); put(rel, rot, "_ladderall", "f3b_mlp", gain(g1))
             put(rel, rot, "_ladderall_r5", "f1_match_ens", gain(g5))
-        put("labels14", rot, "", "f3b_mlp", gain(0.6)); put("labels14", rot, "_ladderall", "f3b_mlp", gain(0.65)); put("labels14", rot, "_ladderall_r5", "f3x_mlp", gain(0.66))
+        base = rng.normal(0, 1, n)
+        put("labels14", rot, "", "f3b_mlp", y * 0.6 + base); put("labels14", rot, "_ladderall", "f3b_mlp", y * 0.65 + base); put("labels14", rot, "_ladderall_r5", "f3x_mlp", y * 0.66 + base)
     import subprocess
     out = tempfile.mkdtemp()
     r = subprocess.run([sys.executable, "-m", "t_cxr.ladder_r5", "--root", root, "--rots", "0,1", "--out", out, "--B", "300"], capture_output=True, text=True, cwd=str(__import__("pathlib").Path(__file__).resolve().parents[1]))
