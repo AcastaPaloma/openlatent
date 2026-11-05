@@ -61,13 +61,17 @@ def main():
             if g(aae):
                 d = g(aae)[1] - Lpb; r1[aae] = dict(L=g(aae)[0], diff=float(g(aae)[0] - Lp), diff_lo95=float(np.percentile(d, 2.5)))
                 orig_ok &= (g(aae)[0] - Lp >= 0.15); tight_ok &= (r1[aae]["diff_lo95"] >= 0.15)
-        res["rules"]["R1_ordering"] = dict(values=r1, original="ROBUST" if orig_ok else "NOT ROBUST", tightened="ROBUST" if tight_ok else "NOT ROBUST")
+        miss = [x for x in ["predlabel"] + AAE if not g(x)]
+        lab = lambda ok: ("NOT ROBUST" if not ok else (f"UNDECIDED (missing arms: {', '.join(miss)})" if miss else "ROBUST"))
+        res["rules"]["R1_ordering"] = dict(values=r1, missing=miss, original=lab(orig_ok), tightened=lab(tight_ok))
     r2 = {}
     for arm in ("lda3_r1", "act60_r1", "lda3_r2"):
         if g(arm): r2[arm] = dict(L=g(arm)[0], hi95=float(np.percentile(g(arm)[1], 97.5)))
-    if "lda3_r1" in r2 and "act60_r1" in r2:
-        res["rules"]["R2_dither"] = dict(values=r2, original="ROBUST" if (r2["lda3_r1"]["L"] <= 0.20 and r2["act60_r1"]["L"] <= 0.20) else "NOT ROBUST",
-                                         tightened="ROBUST" if (r2["lda3_r1"]["hi95"] <= 0.20 and r2["act60_r1"]["hi95"] <= 0.20) else "NOT ROBUST")
+    if r2:
+        miss2 = [x for x in ("lda3_r1", "act60_r1") if x not in r2]
+        okp = all(r2[x]["L"] <= 0.20 for x in ("lda3_r1", "act60_r1") if x in r2); okt = all(r2[x]["hi95"] <= 0.20 for x in ("lda3_r1", "act60_r1") if x in r2)
+        lab2 = lambda ok: ("NOT ROBUST" if not ok else (f"UNDECIDED (missing arms: {', '.join(miss2)})" if miss2 else "ROBUST"))
+        res["rules"]["R2_dither"] = dict(values=r2, missing=miss2, original=lab2(okp), tightened=lab2(okt))
     # R3: re-derive arm-B outcomes with L_worst
     S = D.get_set("sealed"); st = A.Store(S); files = {}
     for d in a.frozen.split(","):
