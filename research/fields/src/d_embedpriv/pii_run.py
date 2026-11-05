@@ -84,36 +84,42 @@ def mean_rp(scores, Y, cols):
 
 
 def ref_levels(ctx, seed):
-    """Engagement yardsticks on Dval: frequency prior and a fresh MLP trained on RAW defender vectors."""
+    """Engagement yardsticks on Dval: frequency prior and a fresh MLP trained on RAW defender vectors, for the pooled and the name tier."""
     if seed not in ctx._ref_cache:
-        cols = ctx.tier_cols["val"]
         Bd, Bv = ctx.B[ctx.dfit], ctx.B[ctx.dvalx]
         prior = np.tile(np.asarray(Bd.mean(0)).ravel()[None, :], (len(ctx.dvalx), 1))
         m = MLP().fit(torch.as_tensor(ctx.X_nf[ctx.dfit]), torch.as_tensor(Bd.toarray()), seed=seed)
-        ctx._ref_cache[seed] = dict(prior=mean_rp(prior, Bv, cols), mlp_raw=mean_rp(m.score(torch.as_tensor(ctx.X_nf[ctx.dvalx])), Bv, cols))
+        sc = m.score(torch.as_tensor(ctx.X_nf[ctx.dvalx]))
+        ctx._ref_cache[seed] = {t: dict(prior=mean_rp(prior, Bv, ctx.tier_cols[t]), mlp_raw=mean_rp(sc, Bv, ctx.tier_cols[t])) for t in ("val", "name")}
     return ctx._ref_cache[seed]
 
 
 def engagement(ctx, arm, seed):
-    """E1: in-loop head scored on held-out Dval; E3: memorisation floor on Gaussian latents of the same shape (in-sample vs held-out)."""
-    cols = ctx.tier_cols["val"]
+    """E1: in-loop head scored on held-out Dval (pooled and name tier); E3: memorisation floor on Gaussian latents of the same shape (in-sample vs held-out)."""
     ref = ref_levels(ctx, seed)
     Bd, Bv = ctx.B[ctx.dfit], ctx.B[ctx.dvalx]
+    sub = np.random.default_rng(seed).choice(len(ctx.dfit), 1500, replace=False)
     with torch.no_grad():
-        zv = torch.as_tensor(arm.docs(ctx.X_nf[ctx.dvalx], None)).to(DEV)
-        head_v = arm.g(zv).cpu().numpy()
-        sub = np.random.default_rng(seed).choice(len(ctx.dfit), 1500, replace=False)
-        zd = torch.as_tensor(arm.docs(ctx.X_nf[ctx.dfit][sub], None)).to(DEV)
-        head_d = arm.g(zd).cpu().numpy()
-    r_head, r_in = mean_rp(head_v, Bv, cols), mean_rp(head_d, Bd[sub], cols)
+        head_v = arm.g(torch.as_tensor(arm.docs(ctx.X_nf[ctx.dvalx], None)).to(DEV)).cpu().numpy()
+        head_d = arm.g(torch.as_tensor(arm.docs(ctx.X_nf[ctx.dfit][sub], None)).to(DEV)).cpu().numpy()
+    out = dict(n_dval=int(len(ctx.dvalx)), adv_tier=getattr(arm, "adv_tier", None))
+    for t in ("val", "name"):
+        cols = ctx.tier_cols[t]
+        if arm.adv_tier:  # head outputs only the adversary tier's columns; map tier t into that block (only meaningful for t == adv_tier)
+            if t != arm.adv_tier:
+                continue
+            hv, hd, Bvt, Bdt, cc = head_v, head_d, Bv[:, ctx.tier_cols[t]], Bd[sub][:, ctx.tier_cols[t]], np.arange(len(cols))
+        else:
+            hv, hd, Bvt, Bdt, cc = head_v, head_d, Bv, Bd[sub], cols
+        r_head, r_in = mean_rp(hv, Bvt, cc), mean_rp(hd, Bdt, cc)
+        L = (r_head - ref[t]["prior"]) / max(ref[t]["mlp_raw"] - ref[t]["prior"], 1e-6)
+        out[t] = dict(R_head_heldout=r_head, R_head_insample=r_in, R_prior_dval=ref[t]["prior"], R_mlp_raw_dval=ref[t]["mlp_raw"], L_head=L)
     g = torch.Generator().manual_seed(seed)
     Zn = torch.randn(len(ctx.dfit), arm.d, generator=g)
     mem = MLP().fit(Zn, torch.as_tensor(Bd.toarray()), seed=seed)
-    mem_in = mean_rp(mem.score(Zn[sub]), Bd[sub], cols)
-    mem_out = mean_rp(mem.score(torch.randn(len(ctx.dvalx), arm.d, generator=g)), Bv, cols)
-    L = (r_head - ref["prior"]) / max(ref["mlp_raw"] - ref["prior"], 1e-6)
-    return dict(R_head_heldout=r_head, R_head_insample=r_in, R_prior_dval=ref["prior"], R_mlp_raw_dval=ref["mlp_raw"], L_head=L,
-                memfloor_insample=mem_in, memfloor_heldout=mem_out, n_dval=int(len(ctx.dvalx)))
+    out["memfloor"] = {t: dict(insample=mean_rp(mem.score(Zn[sub]), Bd[sub], ctx.tier_cols[t]),
+                               heldout=mean_rp(mem.score(torch.randn(len(ctx.dvalx), arm.d, generator=g)), Bv, ctx.tier_cols[t])) for t in ("val", "name")}
+    return out
 
 
 def attack(ctx, Zpool, Ypool_val, Ypool_typ, evals, seed, grp):
@@ -237,7 +243,7 @@ def main():
                 aw = max(rec["attackers"][x]["C"]["val"] for x in rec["attackers"]) if "C" in next(iter(rec["attackers"].values())) else float("nan")
                 print(f"[{rid}] dim={rec.get('dim')} ndcg V {rec.get('ndcg_V', float('nan')):.4f} C {rec.get('ndcg_C', float('nan')):.4f} "
                       f"(raw {raw['V']:.4f}/{raw['C']:.4f}) val-worst C {aw:.4f}" + (f" collapsed={rec.get('collapsed')}" if "collapsed" in rec else "")
-                      + (f" L_head={rec['engagement']['L_head']:.2f}" if "engagement" in rec else ""), flush=True)
+                      + (" L_head(" + rec['engagement']['adv_tier'] + ")=" + format(rec['engagement'][rec['engagement']['adv_tier']]['L_head'], '.2f') if "engagement" in rec and rec['engagement']['adv_tier'] else (f" L_head(val)={rec['engagement']['val']['L_head']:.2f} L_head(name)={rec['engagement']['name']['L_head']:.2f}" if "engagement" in rec else "")), flush=True)
 
 
 if __name__ == "__main__":

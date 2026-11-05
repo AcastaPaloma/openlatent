@@ -210,25 +210,27 @@ def main():
         print()
 
     # ---------------- engagement table
-    adv = sorted((r for r in A.recs.values() if r["family"] == "adv"), key=lambda r: (r["spec"].get("lam", 0), r["dim"], r["seed"]))
+    adv = sorted((r for r in A.recs.values() if r["family"] == "adv"), key=lambda r: (r["spec"].get("adv_tier") or "", r["spec"].get("lam", 0), r["dim"], r["seed"]))
     if adv:
-        print("### Engagement check of the adversarial arm (D.md 8.2: engaged iff E1 AND E2)\n")
-        print("| arm | seed | collapsed | final retrieval loss | retention V | E1 L_head (held-out Dval) | head in-sample R | memorisation floor in / held-out R | E2 L_fresh on V (worst attacker) | L_fresh per attacker (ridge/mlp/knn) | engaged |")
+        print(f"### Engagement check of the adversarial arm (primary tier {P}; engaged iff E1 AND E2, not collapsed)\n")
+        print("| arm | seed | collapsed | final retrieval loss | retention V | E1 L_head (held-out Dval) | head in-sample R | memorisation floor in / held-out R | E2 L_fresh on V | L_fresh ridge/mlp/knn | engaged |")
         print("|---|---|---|---|---|---|---|---|---|---|---|")
         for r in adv:
             e = r.get("engagement", {})
             raw, con = A.ref(r["seed"])
+            et = e.get(P, {})
             den = max(A.pt(raw, "V", P) - A.pt(con, "V", P), 1e-6)
-            lf = {a_: (r["attackers"][a_]["V"][P] - A.pt(con, "V", P)) / max(max(A.recs[raw]["attackers"][a_]["V"][P], 1e-6) - A.pt(con, "V", P), 1e-6) for a_ in ATT}
+            lf = {a_: (r["attackers"][a_]["V"][P] - A.pt(con, "V", P)) / den for a_ in ATT}
             L2 = (A.pt(r["rid"], "V", P) - A.pt(con, "V", P)) / den
-            E1 = e.get("L_head", np.nan) <= 0.5
+            E1 = et.get("L_head", np.nan) <= 0.5
             E2 = L2 <= 0.5
-            print(f"| {r['arm']} | {r['seed']} | {'YES' if r.get('collapsed') else 'no'} | {r['final_ret']:.2f} | {A.ret_pt(r, 'V'):.3f} | {e.get('L_head', float('nan')):.2f} | "
-                  f"{e.get('R_head_insample', float('nan')):.3f} | {e.get('memfloor_insample', float('nan')):.3f} / {e.get('memfloor_heldout', float('nan')):.3f} | {L2:.2f} | "
+            mf = e.get("memfloor", {}).get(P, {})
+            print(f"| {r['arm']} | {r['seed']} | {'YES' if r.get('collapsed') else 'no'} | {r['final_ret']:.2f} | {A.ret_pt(r, 'V'):.3f} | {et.get('L_head', float('nan')):.2f} | "
+                  f"{et.get('R_head_insample', float('nan')):.3f} | {mf.get('insample', float('nan')):.3f} / {mf.get('heldout', float('nan')):.3f} | {L2:.2f} | "
                   f"{lf['ridge']:.2f}/{lf['mlp']:.2f}/{lf['knn']:.2f} | {'YES' if (E1 and E2 and not r.get('collapsed')) else 'no'} |")
-        if adv and "engagement" in adv[0]:
-            e0 = adv[0]["engagement"]
-            print(f"\nYardsticks on Dval (n={e0['n_dval']}): frequency prior R = {e0['R_prior_dval']:.3f}, fresh MLP on RAW defender vectors R = {e0['R_mlp_raw_dval']:.3f}.\n")
+        e0 = next((r["engagement"] for r in adv if "engagement" in r and P in r["engagement"]), None)
+        if e0:
+            print(f"\nYardsticks on Dval (n={e0['n_dval']}, tier {P}): frequency prior R = {e0[P]['R_prior_dval']:.3f}, fresh MLP on RAW defender vectors R = {e0[P]['R_mlp_raw_dval']:.3f}.\n")
 
 
 def kill(A, fstar, tau, m, seeds):

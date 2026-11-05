@@ -50,6 +50,7 @@ def grid(name):
         g += [dict(family="bott_mlp", d=d) for d in D_FLOOR[1:]]
     elif name == "p_eng":  # engagement check: normalised-confusion adversary, d = 256
         g += [dict(family="adv", d=256, lam=lam, conf_norm=True) for lam in (1.0, 3.0, 10.0, 30.0)]
+        g += [dict(family="adv", d=256, lam=lam, conf_norm=True, adv_tier="name") for lam in (1.0, 3.0, 10.0, 30.0)]  # D3b: name-only adversary
     elif name.startswith("p_adv_"):  # p_adv_<lam>: full adversarial grid at one lambda (only if engagement is achieved)
         lam = float(name[6:])
         g += [dict(family="adv", d=d, lam=lam, conf_norm=True) for d in (64, 128, 256, 512)]

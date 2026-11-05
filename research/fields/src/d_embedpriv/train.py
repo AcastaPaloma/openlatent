@@ -54,10 +54,10 @@ def _adv_net(d, V, prior, hidden=1024):
 
 
 class Learned(Arm):
-    def __init__(self, kind, d, lam=0.0, steps=1500, bs=256, lr=1e-3, tau=0.05, reinit=250, warm=150, k_adv=2, conf_norm=False):
-        self.kind, self.d, self.lam, self.conf_norm = kind, d, lam, conf_norm
+    def __init__(self, kind, d, lam=0.0, steps=1500, bs=256, lr=1e-3, tau=0.05, reinit=250, warm=150, k_adv=2, conf_norm=False, adv_tier=None):
+        self.kind, self.d, self.lam, self.conf_norm, self.adv_tier = kind, d, lam, conf_norm, adv_tier
         self.steps, self.bs, self.lr, self.tau, self.reinit, self.warm, self.k_adv = steps, bs, lr, tau, reinit, warm, k_adv
-        self.name = f"{kind}_d{d}" + ((f"_n{lam:g}" if conf_norm else f"_l{lam:g}") if kind == "adv" else "")
+        self.name = f"{kind}_d{d}" + ((f"_n{lam:g}" if conf_norm else f"_l{lam:g}") + (f"_t{adv_tier}" if adv_tier else "") if kind == "adv" else "")
         self.collapsed, self.final_ret = False, None
         self.log = []
 
@@ -79,6 +79,8 @@ class Learned(Arm):
         if adv:
             Xa = torch.as_tensor(Xdef, device=DEV)
             Ya = torch.as_tensor(ctx.defender_bags().toarray(), device=DEV).float()
+            if self.adv_tier:  # D3b: adversary restricted to one token tier (columns of the bag matrix)
+                Ya = Ya[:, torch.as_tensor(ctx.tier_cols[self.adv_tier], device=DEV)]
             pi = Ya.mean(0).clamp(1e-5, 1 - 1e-5)
             Hpi = (-(pi * pi.log() + (1 - pi) * (1 - pi).log())).sum()
             g = None
@@ -145,5 +147,5 @@ class Learned(Arm):
 
 
 def make_learned(spec):
-    kw = {k: spec[k] for k in ("steps", "bs", "lr", "tau", "reinit", "warm", "k_adv", "conf_norm") if k in spec}
+    kw = {k: spec[k] for k in ("steps", "bs", "lr", "tau", "reinit", "warm", "k_adv", "conf_norm", "adv_tier") if k in spec}
     return Learned(spec["family"], spec["d"], spec.get("lam", 0.0), **kw)
