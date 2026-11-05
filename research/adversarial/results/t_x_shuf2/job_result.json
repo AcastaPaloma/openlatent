@@ -1,0 +1,24 @@
+{
+ "name": "t_x_shuf2",
+ "config": {
+  "name": "t_x_shuf2",
+  "priority": 5,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; $HOME/venvs/t/bin/python -m t_cxr.run_suite --release raw --rot 1 --shuffle-labels --shuffle-val --attackers f1,f3,f5 --conds match --seeds 0 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT && $HOME/venvs/t/bin/python -m t_cxr.run_suite --release raw --rot 2 --shuffle-labels --shuffle-val --attackers f1,f3,f5 --conds match --seeds 0 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT",
+  "hf_path": "runs/t_x_shuf2",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "aadad37",
+ "commit_after": "aadad37",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 1,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 6.3,
+ "finished_utc": "2026-11-05T00:02:13Z",
+ "uploaded": false
+}
