@@ -444,3 +444,11 @@ Gap found while smoke-testing the code on 20 and 2 training steps (CPU, chance-l
 ### H-H4c (2026-11-05T22:21:27Z VM clock; before the arm jobs are launched; only the `ctrl_const` result (chance, 0.042) and fold timings had been seen). Budget-driven ladder reduction, declared
 Measured cost: a code-release fit takes about 48 s per fold and a window-release fit about 125 s per fold (3,000 steps), i.e. about 2.4 / 6 minutes per rung for 3 folds. To stay inside 2.0 worker-hours the ladder (9.1) is run for the arms that carry the claims, `aae_re` (C1), `predlabel`, `act60_r1`, `lda3_r1` and `raw` (raw: rungs 0.25 and 0.5 added to the control's 1.0), at p = 0.25 / 0.5 / 1.0; `aae_re_c2s0`, `lda3` and `lda3_r2` run at p = 1.0 only. The decision rules R1-R3 use p = 1.0 values only, so this changes no rule. Jobs: `h_h4_win_aae1`, `h_h4_win_aae2`, `h_h4_win_rawladder`, `h_h4_code_a`, `h_h4_code_b` (priority 5, `jobs/specs/`), launched only after the control gate result is recorded.
 
+### H-H4d (2026-11-05T22:31:31Z VM clock). CONTROL GATES read FIRST (job `h_h4_controls`, exit 0 at 369 s; strong attacker, sealed folds pooled, 264 trials, p = 1.0, trial-level; B = 2000 subject bootstrap) — recorded BEFORE any arm job was launched
+| gate | observed | tolerance / threshold | result |
+|---|---|---|---|
+| G-S1 `ctrl_const` | L = 0.0417 [0.000, 0.110], segment-level 0.041 | <= 1/24 + max(0.06, 1.96 x 0.029) = 0.099 | PASS |
+| G-S2 `shuf_raw` (trial-level label permutation) | L = 0.0417 [0.000, 0.125], segment-level 0.040 | <= 1/24 + max(0.06, 1.96 x 0.040) = 0.120 | PASS |
+| G-S3 strong attacker not weaker than the frozen suite on `raw` | L = **0.9962 [0.989, 1.000]**, segment-level 0.982 (frozen suite: trial-level 0.973, window-level 0.900) | >= 0.943 | PASS |
+K0 does not fire; the attacker is valid and, on the undefended windows, measurably stronger than the frozen suite (+0.023 trial level, +0.08 segment vs window level). Both controls predict the training-majority behaviour (0.0417 = 10 of 240-odd trials of one subject... i.e. the same constant guess in every fold), which is the correct chance behaviour. The five arm jobs are launched now.
+
