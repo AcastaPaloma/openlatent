@@ -1,0 +1,24 @@
+{
+ "name": "h_b_r0b",
+ "config": {
+  "name": "h_b_r0b",
+  "priority": 5,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/aae_train.py r0b --out $OUT",
+  "hf_path": "runs/h_b_r0b",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "69e3d9f",
+ "commit_after": "1de5993",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 373.0,
+ "finished_utc": "2026-11-05T04:00:03Z",
+ "uploaded": true
+}
