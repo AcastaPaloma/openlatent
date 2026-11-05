@@ -1,0 +1,24 @@
+{
+ "name": "t_y_screen_d",
+ "config": {
+  "name": "t_y_screen_d",
+  "priority": 12,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; for r in quantd_l8 quantd_l4 jpeg_q30 jpeg_q10 jpeg_q3 pca_k8 pca_k32 pca_k128 dppix_b8; do $HOME/venvs/t/bin/python -m t_cxr.run_suite --release $r --rot 0 --screen --attackers f3 --conds match  --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t3_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT; done",
+  "hf_path": "runs/t_y_screen_d",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "9a74573",
+ "commit_after": "9a74573",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 585.4,
+ "finished_utc": "2026-11-05T05:32:35Z",
+ "uploaded": true
+}
