@@ -1,0 +1,31 @@
+{
+ "configs": {
+  "C1": {
+   "beta": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "frozen_id_acc_runs": [
+    0.06504796163069544,
+    0.06160071942446043,
+    0.06991906474820143
+   ],
+   "frozen_id_acc_mean": 0.06552258193445243,
+   "retrained_act_acc": 0.9849370503597122,
+   "mse_release_vs_input": 0.8852022886276245,
+   "passes": true,
+   "history_last": {
+    "round": 8,
+    "val_mse": 0.8922401666641235,
+    "val_encreg_id": 0.07227113842964172,
+    "val_decreg_id": 0.10815750062465668,
+    "val_actreg_act": 0.4808107614517212
+   },
+   "seconds": 368.8
+  }
+ },
+ "chosen": "C1",
+ "R0B_pass": true,
+ "seconds": 368.8
+}
