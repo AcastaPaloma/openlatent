@@ -1,0 +1,5 @@
+name: h_b_r0b
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/aae_train.py r0b --out $OUT"
+hf_path: runs/h_b_r0b
+hf_allow: ["*.json", "*.log", "*.md"]
