@@ -105,3 +105,8 @@ G stays CLOSED: its gate cannot be tested at the available power (MDE 7-8 points
 
 ## Programme-2 reading (provisional, scoped)
 In both settings where a published privacy figure could be re-measured (wearable IMU, chest X-ray), the figure depended on how the attacker was trained, and cheap floors (a label-supervised 3-d code; a 4x downsample) matched or beat the defences at equal utility. This is evidence about the tested defences and the floors, on development splits plus the T2 sealed rotations, not a statement about all defences. G stays closed.
+
+## UPDATE 2026-11-05 ~05:50Z VM clock: R-IMU sealed arm B and H3-016 (Builder H; H.md 6.6 and 7.4; supersedes "Not done: sealed arm B" above)
+- Sealed arm B (re-implemented AAE, config C1, retrained per salted fold, 3 folds, 264 trials, 24 subjects): `verdict_original` = `verdict_tightened` = NO-GO-MATCHED. aae_re L 0.948 [0.923, 0.970] at U 0.926 vs `predlabel` L 0.042 at U 0.937 (raw 0.973/0.957). One configuration, one seed per fold, S2 under-trained (monitor 0.27); 21 of the frozen sealed floors had run (the rest can only lower the envelope). Not shown: that no AAE configuration can hide identity.
+- H3-016: dither composes = UNRESOLVED (original = tightened); `predlabel` flat at every evidence budget (account 0.042); undithered label codes saturate at account level (0.92-0.96); quote dithered floors at their evidence budget.
+- Still not done: WISDM (stopped by its own device-confound gate, 0.667 >= 0.50), wave-2 `dae*` floors, a second sealed defender configuration.
