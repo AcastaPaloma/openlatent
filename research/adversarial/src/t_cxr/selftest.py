@@ -177,10 +177,12 @@ def t_attackers_synthetic():
     net = A.Siamese("resnet18", False, head="xl")
     lg = net(_pr(xs[:4]), _pr(xs[4:8]))
     check("R5 head 'xl': 512-d embedding, pair feature 1536 -> 256 -> 1, one logit per pair; default head unchanged (128 -> 1)", lg.shape == (4,) and net.pair[0].in_features == 1536 and A.Siamese("resnet18", False).fc_end.in_features == 128)
+    mix = np.r_[0:15, len(y) - 15:len(y)]
+    va = dict(xa=xs, xb=xs, ia=ia2[mix], ib=ib2[mix], y=y[mix]); te = va                 # both classes present in validation (the AUC selection needs them)
     o5 = A.train_siamese(tr, va, te, arch="resnet18", pretrained=False, max_epochs=3, bs=16, device="cpu", amp=False, log=lambda *a: None, head="xl", select="auc", aug=True, cosine=True, patience=10, time_budget_s=1e-3)
     check("R5 trainer: AUC selection records val AUC per epoch, the time budget truncates and is flagged, scores finite", o5["truncated"] and o5["epochs"] == 1 and len(o5["curve"][0]) == 4 and np.isfinite(o5["test_score"]).all(), str(o5["curve"][:1]))
     o5b = A.train_siamese(tr, va, te, arch="resnet18", pretrained=False, max_epochs=3, bs=16, device="cpu", amp=False, log=lambda *a: None, head="xl", select="auc", aug=True, cosine=True, patience=10)
-    check("R5 trainer without a budget runs the full cap (3 epochs), not truncated, best_val_auc is the max of the curve", (not o5b["truncated"]) and o5b["epochs"] == 3 and abs(o5b["best_val_auc"] - max(c[3] for c in o5b["curve"])) < 1e-9)
+    check("R5 trainer without a budget runs the full cap (3 epochs), not truncated, best_val_auc is the max of the curve", (not o5b["truncated"]) and o5b["epochs"] == 3 and abs(o5b["best_val_auc"] - max(c[3] for c in o5b["curve"])) < 1e-9, str([round(c[3], 3) for c in o5b["curve"]]))
 
 
 def t_heads_planted():

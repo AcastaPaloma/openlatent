@@ -127,7 +127,7 @@ def train_siamese(tr: dict, va: dict, te: dict, *, arch="resnet50", pretrained=T
         va_auc = _auc(va["y"], sv) if select == "auc" else None
         curve.append((ep, tl / len(ytr), vl) if va_auc is None else (ep, tl / len(ytr), vl, va_auc))
         log(f"  ep {ep} train {tl / len(ytr):.4f} val {vl:.4f}" + ("" if va_auc is None else f" val_auc {va_auc:.4f}"))
-        improved = (va_auc > best_auc + 1e-6) if select == "auc" else (vl < best)
+        improved = best_state is None or ((va_auc > best_auc + 1e-6) if select == "auc" else (vl < best))     # first epoch always accepted (also guards a one-class validation fold)
         if improved:
             best, bad, best_state = vl, 0, copy.deepcopy(net.state_dict())          # best_val_loss = validation BCE at the selected epoch (whichever criterion selected it)
             if va_auc is not None:
