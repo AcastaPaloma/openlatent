@@ -135,6 +135,12 @@ def main():
                 m = r["regimes"][R][p]["match"]
                 rows.append(f"| {p} | {R} | {e['adapter']} | {AG.fmt(e['U_H_adapter'])} [{AG.fmt(e['L_H_adapter'], 2)}] | {e['floor']} | {AG.fmt(e['U_H_floor'])} [{AG.fmt(e['L_H_floor'], 2)}] | {AG.fci(m['dU_H'], m['ci'], 4)} ({m['floor']}) | |")
         md.append("\n".join(rows) + "\n")
+        rows = ["| arm | " + " | ".join(PROTOS) + " |", "|---|" + "---|" * len(PROTOS)]
+        for x in POS + ["ctrl_noise16"] + FLOORS + list(LDAM.values()) + sum(ADAPT.values(), []):
+            if x in arms:
+                rows.append(f"| {x} | " + " | ".join(AG.fmt(U("H", x, p)) for p in PROTOS) + " |")
+        md.append("U_H by arm and protocol (split " + salt + "):\n\n" + "\n".join(rows) + "\n")
+        res["splits"][salt]["U_H_table"] = {x: {p: U("H", x, p) for p in PROTOS} for x in arms}
     # ---- verdict
     ns = len(res["splits"])
     ge2 = (lambda xs: sum(xs) >= 2) if ns >= 2 else (lambda xs: sum(xs) >= 1)
