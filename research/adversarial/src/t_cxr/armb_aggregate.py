@@ -60,7 +60,7 @@ def main():
         if rel != "labels14":                                          # N2 worst case over the same attacker set as the arm-B runs (no F4)
             e2 = {k: v for k, v in e2.items() if k != "f4"}
         if pb is None:
-            pb = S.PatientBootstrap(np.unique(next(iter(e3.values()))["cluster"]), B=a.B, seed=0)
+            pb = S.PatientBootstrap(np.unique(np.concatenate([next(iter(e3.values()))["cluster"], next(iter(e2.values()))["cluster"]])), B=a.B, seed=0)     # universe = all N2 anchors (N3s drops some)
         def wc(ent):
             names = list(ent); pts = {n: S.auc(ent[n]["y"], ent[n]["score"]) for n in names}
             bs = np.stack([S.auc_boot(ent[n]["y"], ent[n]["score"], pb.codes(ent[n]["cluster"]), pb) for n in names])
