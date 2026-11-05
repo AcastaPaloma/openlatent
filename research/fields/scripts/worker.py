@@ -40,7 +40,10 @@ def claim(gpu, max_priority=None):
             except FileNotFoundError:
                 pass
     files = [p for _, p in sorted(keyed)]
+    running_names = {r.name.split("__", 1)[1] for r in (Q / "running").glob("gpu*__*.yaml")}
     for p in files:
+        if p.name in running_names:  # a second copy of a spec already running shares its $OUT and log (06:02Z 2026-11-05): leave it pending
+            continue
         dst = Q / "running" / f"gpu{gpu}__{p.name}"
         try:
             os.rename(p, dst)  # atomic; losing the race raises FileNotFoundError
