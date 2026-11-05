@@ -369,7 +369,7 @@ Sizes: 3,016 N2 positives, 2,398 N3s positives (20.5% dropped, inside the expect
 **Ledger and jobs.** Each (release, R5) is a distinct digest (the config carries `r5`); logged. Jobs `t_w_*`, priority 5, threads <= 8, JSON / log / md uploads only, outputs in `$OUT`. **Budget (cap 3.0).** 2 image releases x 2 rotations x (<= 35 min F1+ + about 4 min feature work) = about 2.6, `labels14` 0.2: about 2.8; cut order if over: `pcxr` rotation 1, then the `labels14` R5.
 **Not tested.** More S data (exhausted), a longer chain of rungs, other attacker families, visit pooling, seeds of F1+, `raw`.
 
-### 12.1 Implementation record (written and committed BEFORE any T5 number; 5 Nov, VM clock ~13:25Z)
+### 12.1 Implementation record (written and committed BEFORE any T5 number; 5 Nov, VM clock 12:34Z; jobs queued 12:35Z)
 
 Code: `attackers.py` (`Siamese(head="xl")`, `augment`, `train_siamese(select="auc", aug, cosine, time_budget_s)`), `run_suite.py --r5`, `heads.fit_f3_xl`, `run_utility_t2.py --r5`, `ladder_r5.py`, `make_t5_specs.py`, five new self-test checks (all pass on the VM CPU; a synthetic end-to-end run of `run_suite --r5` and of the `labels14` R5 branch also ran). Choices left open by section 12, fixed here without any T5 number:
 1. **Augmentation arithmetic:** translation uniform in +-8 px of the 256-px image (border replicate), contrast factor 1 +- 0.10, brightness offset +-0.05 (half of the jitter, on the [0,1] scale), clamped to [0,1]; none at validation / test.
