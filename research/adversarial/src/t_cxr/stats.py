@@ -132,15 +132,15 @@ def envelope_boot(floors_L: np.ndarray, floors_U: np.ndarray, L_D: np.ndarray, U
     return dict(dU=dU, dL=dL)
 
 
-def envelope_verdict(point_floors_L, point_floors_U, L_D, U_D, boot: dict, margin_u: float, margin_l: float) -> dict:
+def envelope_verdict(point_floors_L, point_floors_U, L_D, U_D, boot: dict, margin_u: float, margin_l: float, q: float = 2.5) -> dict:
     """Machine-checkable verdict.  D beats the floor envelope iff the LOWER 95% bound of dU >= margin_u (utility axis) OR the lower 95% bound of dL >= margin_l (leakage axis).
     dL is nan (floors never reach D's utility) -> that axis counts as passed with a note.  margin_* are fixed from the printed MDE80 (T.md 3.8)."""
     pu = U_D - envelope_at(np.asarray(point_floors_L), np.asarray(point_floors_U), L_D)
     pl = envelope_leak_at(np.asarray(point_floors_L), np.asarray(point_floors_U), U_D) - L_D
     dU, dL = boot["dU"], boot["dL"]
-    loU, hiU = float(np.nanpercentile(dU, 2.5)), float(np.nanpercentile(dU, 97.5))
+    loU, hiU = float(np.nanpercentile(dU, q)), float(np.nanpercentile(dU, 100 - q))
     ok_l = ~np.isnan(dL)
-    loL = float(np.nanpercentile(dL, 2.5)) if ok_l.mean() > 0.5 else float("nan")
+    loL = float(np.nanpercentile(dL, q)) if ok_l.mean() > 0.5 else float("nan")
     util = bool(loU >= margin_u)
     leak = True if np.isnan(pl) else bool(loL >= margin_l)
     return dict(point_dU=float(pu), dU_lo=loU, dU_hi=hiU, point_dL=float(pl), dL_lo=loL, utility_axis_beats=util, leak_axis_beats=leak,

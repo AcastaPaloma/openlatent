@@ -99,7 +99,7 @@ def main():
         parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
         if a.shuffle_val:
             parts["va"]["y"] = np.random.default_rng(778).permutation(parts["va"]["y"]); sfx = "_shuf2"
-    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic)
+    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val)   # salt id: a new partition is new sealed material
     ledger_rec = None if (a.no_ledger or a.synthetic or a.screen) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
     flow = torch.load(a.flow_stats) if a.flow_stats else None

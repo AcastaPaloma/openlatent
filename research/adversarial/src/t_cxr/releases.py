@@ -132,10 +132,12 @@ class Releases:
             m = torch.zeros_like(x); m[..., w:-w, w:-w] = 1
             y = x * (1 - m) if kind == "rim" else x * m
         elif kind == "pcxr":                                                                       # in-programme retrain (train_pcx.py), S-role patients only
-            mu = float(par.removeprefix("mu"))
-            key = ("r", mu)
+            parts_ = par.split("_")                                                                     # mu0.01  |  mu0.01_s1_C2
+            mu = float(parts_[0].removeprefix("mu"))
+            key = ("r", par)
             if key not in self._gens:
-                self._gens[key] = G.load_generator(f"{self.pcxr_dir}/generator_pcxr_mu{mu:g}.pth", self.dev)
+                fn = f"generator_pcxr_mu{mu:g}.pth" if len(parts_) == 1 else f"generator_pcxr_mu{mu:g}_{parts_[1]}_{parts_[2]}.pth"
+                self._gens[key] = G.load_generator(f"{self.pcxr_dir}/{fn}", self.dev)
             with torch.no_grad():
                 y = G.warp(x, self._gens[key](x), mu)
         elif kind == "pcx":

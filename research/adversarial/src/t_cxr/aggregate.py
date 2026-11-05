@@ -127,7 +127,7 @@ def labels14_release(root, rots, pb, raw):
     return dict(name="labels14", L=wc["L"], L_boot=wc["L_boot"], L_val=wc["val_L"], U=raw["U"], U_boot=raw["U_boot"], U_val=raw["U_val"], code_floor=True)
 
 
-def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t2=False, g2_path=None):
+def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t2=False, g2_path=None, q=2.5):
     root = Path(root)
     u_raw = load_utility(root, "raw", rots)
     if u_raw is None:
@@ -193,7 +193,7 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t
         bt = S.envelope_boot(fL, fU, D["L_boot"], D["U_boot"])
         mu = max(0.02, S.Z_MDE * float(np.nanstd(bt["dU"], ddof=1)))
         ml = max(0.03, S.Z_MDE * float(np.nanstd(bt["dL"], ddof=1))) if np.isfinite(bt["dL"]).mean() > 0.5 else 0.03
-        v = S.envelope_verdict(np.array([f["L"] for f in FL]), np.array([f["U"] for f in FL]), D["L"], D["U"], bt, mu, ml)
+        v = S.envelope_verdict(np.array([f["L"] for f in FL]), np.array([f["U"] for f in FL]), D["L"], D["U"], bt, mu, ml, q)
         v.update(margin_u=mu, margin_l=ml, n_floors=len(FL))
         return v, D, FL
     def nearest(Dn, floor_names):
@@ -253,9 +253,9 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--g0", default=None); ap.add_argument("--rots", default="0"); ap.add_argument("--out", required=True)
-    ap.add_argument("--B", type=int, default=2000); ap.add_argument("--prereg-commit", default=""); ap.add_argument("--t2", action="store_true"); ap.add_argument("--g2", default=None); ap.add_argument("--learned", default=None)
+    ap.add_argument("--B", type=int, default=2000); ap.add_argument("--prereg-commit", default=""); ap.add_argument("--t2", action="store_true"); ap.add_argument("--q", type=float, default=2.5, help="lower percentile of the envelope intervals (T3 Bonferroni over 5 defenders: 0.5)"); ap.add_argument("--g2", default=None); ap.add_argument("--learned", default=None)
     a = ap.parse_args()
-    r = run(a.root, a.g0, [int(x) for x in a.rots.split(",")], a.B, a.prereg_commit, a.out, learned=a.learned.split(",") if a.learned else None, t2=a.t2, g2_path=a.g2)
+    r = run(a.root, a.g0, [int(x) for x in a.rots.split(",")], a.B, a.prereg_commit, a.out, learned=a.learned.split(",") if a.learned else None, t2=a.t2, g2_path=a.g2, q=a.q)
     print(r["verdict_original"], "|", r["verdict_tightened"])
 
 

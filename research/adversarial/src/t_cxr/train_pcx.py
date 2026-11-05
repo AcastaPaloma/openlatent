@@ -138,6 +138,9 @@ def stage_base(a, d, bank, dev, log):
 
 def stage_adv(a, d, bank, dev, log):
     wd = Path(a.wdir); mu = a.mu
+    torch.manual_seed(a.seed); np.random.seed(a.seed)
+    c1_name = f"generator_pcxr_mu{mu:g}_{a.tag}_C1.pth" if a.tag else f"generator_pcxr_mu{mu:g}.pth"
+    c2_name = f"generator_pcxr_mu{mu:g}_{a.tag}_C2.pth" if a.tag else f"generator_pcxr_mu{mu:g}_C2.pth"
     tr, va = pair_lists(a, d)
     rows_all = np.unique(np.r_[tr.a, tr.b, va.a, va.b]); pos = {r: i for i, r in enumerate(rows_all)}
     X = to_gpu(bank, d["row"].to_numpy()[rows_all], dev)
@@ -196,11 +199,12 @@ def stage_adv(a, d, bank, dev, log):
         hist.append(dict(epoch=ep, train=(agg / max(n, 1)).tolist(), val_ac=float(vs[0]), val_lik=float(vs[1]), val_total=float(vs[2]), val_adversary_auc=float(auc_adv), seconds=round(time.time() - t0, 1)))
         log(f"  adv mu={mu} ep {ep}: train total {agg[2] / max(n, 1):.3f} | val ac {vs[0]:.3f} lik {vs[1]:.3f} total {vs[2]:.3f} | co-trained adversary AUC {auc_adv:.3f} | {hist[-1]['seconds']}s")
         if vs[2] < best:
-            best = vs[2]; torch.save(gen.state_dict(), wd / f"generator_pcxr_mu{mu:g}.pth"); hist[-1]["saved"] = True
+            best = vs[2]; torch.save(gen.state_dict(), wd / c1_name); hist[-1]["saved"] = True
         if (time.time() - t_start) / 3600 > a.max_hours:
             log(f"  STOP: --max-hours {a.max_hours} reached after epoch {ep}"); hist[-1]["truncated_by_max_hours"] = True
             break
-    return dict(mu=mu, history=hist, best_val_total=float(best))
+    torch.save(gen.state_dict(), wd / c2_name)                                         # C2 = the LAST epoch's generator (T.md 8.4)
+    return dict(mu=mu, seed=a.seed, tag=a.tag, history=hist, best_val_total=float(best), c1=c1_name, c2=c2_name, epochs_completed=len(hist))
 
 
 def main():
@@ -211,7 +215,7 @@ def main():
     ap.add_argument("--device", default="cuda"); ap.add_argument("--bs", type=int, default=64); ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--ver-epochs", type=int, default=20); ap.add_argument("--clf-epochs", type=int, default=5); ap.add_argument("--pre-epochs", type=int, default=20)
     ap.add_argument("--adv-epochs", type=int, default=40); ap.add_argument("--max-hours", type=float, default=1.8); ap.add_argument("--max-iters", type=int, default=0)
-    ap.add_argument("--clf-size", type=int, default=224); ap.add_argument("--no-pretrain", action="store_true")
+    ap.add_argument("--clf-size", type=int, default=224); ap.add_argument("--no-pretrain", action="store_true"); ap.add_argument("--tag", default="", help="checkpoint tag, e.g. s1 (T3)")
     ap.add_argument("--synthetic", type=int, default=0); ap.add_argument("--res", type=int, default=64)
     a = ap.parse_args()
     if not a.synthetic and not a.exclude:
@@ -225,7 +229,7 @@ def main():
     t0 = time.time()
     res = stage_base(a, d, bank, dev, log) if a.stage == "base" else stage_adv(a, d, bank, dev, log)
     res.update(stage=a.stage, seconds=round(time.time() - t0, 1), synthetic=bool(a.synthetic), n_S_images_ok=int(d["ok"].sum()), epochs=dict(ver=a.ver_epochs, clf=a.clf_epochs, pre=a.pre_epochs, adv=a.adv_epochs))
-    (out / f"train_{a.stage}{'_mu' + format(a.mu, 'g') if a.stage == 'adv' else ''}.json").write_text(json.dumps(res, indent=1, default=float))
+    (out / f"train_{a.stage}{'_mu' + format(a.mu, 'g') + ('_' + a.tag if a.tag else '') if a.stage == 'adv' else ''}.json").write_text(json.dumps(res, indent=1, default=float))
     print("done", res["seconds"], "s")
 
 
