@@ -1,6 +1,6 @@
 # Shutdown manifest, 2026-11-05 (owner order: prepare the training shutdown, push to GitHub and Hugging Face, clear the VM)
 
-VM: ubuntu@192.222.52.237 (4x RTX A6000). Final state before clearing: 0 running, 0 pending, 365+ jobs done (every job_result.json in git), 11 early failures.
+VM: ubuntu@192.222.52.237 (4x RTX A6000). Final state before clearing: 0 running, 0 pending, 395 successful jobs (every job_result.json in git), 11 early failures, T7 and H4 interrupted by this shutdown.
 
 ## Where everything went
 | Artefact | Disposition |
@@ -26,4 +26,5 @@ VM: ubuntu@192.222.52.237 (4x RTX A6000). Final state before clearing: 0 running
 Not lost, but not preserved either: the intermediate per-image attacker models of the chest X-ray ladder (R1-R5), regenerable by the T3/T4/T5 specs (about 30 worker-hours).
 
 ## What stays on the VM
-The operating system, the ssh login and the empty `~/openlatent` git clone only. The watchdog cron and all workers were removed. To resume: `git clone` branch `fields-research`, restore datasets, create venvs, start `research/fields/scripts/worker.py --gpu N`, and install the cron from `research/fields/scripts/watchdog.sh`.
+The operating system, the ssh login, the `~/openlatent` git clone (code only, behind the final commit) and the setup scripts. The watchdog cron and all workers were removed; the queue, work directory, virtual environments and caches were deleted (disk 210 GB used before, 28 GB after). **Credentials remain on the VM**: a Hugging Face token (`~/.cache/huggingface/token`) and git access for the clone. Revoke or rotate them before the machine is released or reused.
+To resume: restore datasets, create the virtual environments, `git pull` branch `fields-research`, start `research/fields/scripts/worker.py --gpu N` per GPU, and reinstall the cron from `research/fields/scripts/watchdog.sh`.
