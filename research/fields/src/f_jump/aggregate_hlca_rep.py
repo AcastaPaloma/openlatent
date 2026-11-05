@@ -310,6 +310,10 @@ def main():
     FA = Fast(D, allarms, folds)
     present2 = {x for x in allarms if FA.has(x)}
     Upt, Lpt, ch_pt = FA.UL([x for x in allarms if FA.has(x)], ones)
+    for b in BUDGETS:                                           # permuted-label floors have probes only: U for the trained gate
+        pa = f"perm_f{b}_r0"
+        if (pa, "lin") in FA.pidx:
+            Upt[pa] = FA.U(pa, ones)
     nm = lambda role, b: virt[(role, b)][0] if (role, b) in virt else None  # noqa: E731
 
     # ---- bootstrap (donor, study cluster) with the selection fixed
