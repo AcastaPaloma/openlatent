@@ -12,6 +12,7 @@ Name grammar (parameters after the underscore):
   blur_s2 | down_f4 | noise_s0.1 | quant_l8 | quantd_l8 (dithered) | jpeg_q10 | pca_k32 | dppix_b8
   rim_w24 | core_w24   keep ONLY the 24-px frame / ZERO the frame (acquisition-fingerprint controls; T.md stage 1)
   pcx_mu0.01   PriCheXy-Net released generator (learned)
+  defl_c1      T7 LEARNED image defender (ResUNet residual, trained adversarially against an F1+-like adversary on S-role patients only; configs c1..c3)
   hp_s2        HIGH-PASS RESIDUAL ONLY (T6 cue isolation): clamp(0.5 + 4 * (x - gaussian_blur(x, sigma)), 0, 1); keeps fine texture / edges, drops coarse anatomy and exposure
   hist         HISTOGRAM ONLY (T6 cue isolation): every pixel of the image randomly permuted (seeded by the image id), so the intensity histogram is exact and ALL spatial structure is gone
 """
@@ -148,6 +149,12 @@ class Releases:
                 self._gens[key] = G.load_generator(f"{self.pcxr_dir}/{fn}", self.dev)
             with torch.no_grad():
                 y = G.warp(x, self._gens[key](x), mu)
+        elif kind == "defl":                                                                       # T7 learned image defender (train_def.py), S-role patients only; weights stay on the VM
+            key = ("d", par)
+            if key not in self._gens:
+                g_ = G.ResUNet(32).to(self.dev); g_.load_state_dict(torch.load(f"{self.pcxr_dir}/generator_defl_{par}.pth", map_location=self.dev)); self._gens[key] = g_.eval()
+            with torch.no_grad():
+                y = self._gens[key](x)
         elif kind == "pcx":
             mu = float(par.removeprefix("mu"))
             if mu not in self._gens:

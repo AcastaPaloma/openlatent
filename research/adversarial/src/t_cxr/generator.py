@@ -50,6 +50,18 @@ class UNet(nn.Module):
             (name + "conv2", nn.Conv2d(f, f, 3, padding=1, bias=False)), (name + "norm2", nn.BatchNorm2d(f)), (name + "relu2", nn.ReLU(inplace=True))]))
 
 
+class ResUNet(nn.Module):
+    """T7 learned image defender: released image = clamp(x + U(x), 0, 1) with U the PriCheXy U-Net trunk (tanh output, residual in [-1, 1]); the last 1x1 conv is zero-initialised, so training starts from the identity."""
+
+    def __init__(self, base: int = 32):
+        super().__init__()
+        self.u = UNet(1, 1, base)
+        nn.init.zeros_(self.u.conv.weight); nn.init.zeros_(self.u.conv.bias)
+
+    def forward(self, x):
+        return (x + self.u(x)).clamp(0, 1)
+
+
 def gaussian_kernel(size: int = 9, sigma: float = 2.0) -> torch.Tensor:
     ax = torch.arange(size, dtype=torch.float32) - (size - 1) / 2
     g = torch.exp(-(ax[:, None] ** 2 + ax[None, :] ** 2) / (2 * sigma ** 2))
