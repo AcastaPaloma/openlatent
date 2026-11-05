@@ -1,0 +1,170 @@
+{
+ "rule": {
+  "hold_auc_max": 0.65,
+  "gap_max": 0.05,
+  "cdrop_max": 0.02,
+  "noise_tol": 0.05,
+  "fresh_max": 0.85,
+  "link_max": 0.8,
+  "drop_max": 0.02,
+  "beat": 0.05,
+  "match": 0.01,
+  "ctl_tol": 0.06
+ },
+ "configs": {
+  "c1": {
+   "inloop": {
+    "lam": 1.0,
+    "steps": 6561,
+    "seconds": 3024,
+    "heldout_auc": 0.5530694323118504,
+    "heldin_auc": 0.5479181448751854,
+    "memorisation_gap": 0.005151287436664931,
+    "C_drop": 0.3701990358063353,
+    "noise_null_auc": 0.48246114516049926,
+    "history": [
+     {
+      "t": "t600",
+      "heldout_auc": 0.7210557017980993,
+      "C_drop": 0.35320380720090583
+     },
+     {
+      "t": "t1200",
+      "heldout_auc": 0.5956130656801646,
+      "C_drop": 0.4138657825357783
+     },
+     {
+      "t": "t1800",
+      "heldout_auc": 0.5769446675538932,
+      "C_drop": 0.3797294768541353
+     },
+     {
+      "t": "t2400",
+      "heldout_auc": 0.5855599493460124,
+      "C_drop": 0.4025706728327395
+     },
+     {
+      "t": "t3000",
+      "heldout_auc": 0.5530694323118504,
+      "C_drop": 0.3701990358063353
+     },
+     {
+      "t": "final",
+      "heldout_auc": 0.5530694323118504,
+      "C_drop": 0.3701990358063353
+     }
+    ],
+    "checks": {
+     "heldout_auc": true,
+     "memorisation": true,
+     "collapse": false,
+     "noise_null": true
+    },
+    "inloop_pass": false
+   }
+  },
+  "c2": {
+   "inloop": {
+    "lam": 3.0,
+    "steps": 6637,
+    "seconds": 3025,
+    "heldout_auc": 0.5523373238982464,
+    "heldin_auc": 0.5261525628470736,
+    "memorisation_gap": 0.026184761051172845,
+    "C_drop": 0.3937139777719588,
+    "noise_null_auc": 0.4770524474019533,
+    "history": [
+     {
+      "t": "t600",
+      "heldout_auc": 0.6932575673187976,
+      "C_drop": 0.4017426652320518
+     },
+     {
+      "t": "t1200",
+      "heldout_auc": 0.6595607935791381,
+      "C_drop": 0.419895777681487
+     },
+     {
+      "t": "t1800",
+      "heldout_auc": 0.5668622375695467,
+      "C_drop": 0.3815604800341861
+     },
+     {
+      "t": "t2400",
+      "heldout_auc": 0.5275064636598679,
+      "C_drop": 0.41055378885185057
+     },
+     {
+      "t": "t3000",
+      "heldout_auc": 0.5523373238982464,
+      "C_drop": 0.3937139777719588
+     },
+     {
+      "t": "final",
+      "heldout_auc": 0.5523373238982464,
+      "C_drop": 0.3937139777719588
+     }
+    ],
+    "checks": {
+     "heldout_auc": true,
+     "memorisation": true,
+     "collapse": false,
+     "noise_null": true
+    },
+    "inloop_pass": false
+   }
+  },
+  "c3": {
+   "inloop": {
+    "lam": 10.0,
+    "steps": 6644,
+    "seconds": 3024,
+    "heldout_auc": 0.5291758760384361,
+    "heldin_auc": 0.5131851313235561,
+    "memorisation_gap": 0.015990744714879934,
+    "C_drop": 0.38638328001424516,
+    "noise_null_auc": 0.5167280756807292,
+    "history": [
+     {
+      "t": "t600",
+      "heldout_auc": 0.6253312442471961,
+      "C_drop": 0.42448413778781835
+     },
+     {
+      "t": "t1200",
+      "heldout_auc": 0.5993344335723373,
+      "C_drop": 0.48620373770308534
+     },
+     {
+      "t": "t1800",
+      "heldout_auc": 0.5459337570132908,
+      "C_drop": 0.4362518216931093
+     },
+     {
+      "t": "t2400",
+      "heldout_auc": 0.5082188146732407,
+      "C_drop": 0.40108473849756177
+     },
+     {
+      "t": "t3000",
+      "heldout_auc": 0.5291758760384361,
+      "C_drop": 0.38638328001424516
+     },
+     {
+      "t": "final",
+      "heldout_auc": 0.5291758760384361,
+      "C_drop": 0.38638328001424516
+     }
+    ],
+    "checks": {
+     "heldout_auc": true,
+     "memorisation": true,
+     "collapse": false,
+     "noise_null": true
+    },
+    "inloop_pass": false
+   }
+  }
+ },
+ "inloop_candidates": []
+}

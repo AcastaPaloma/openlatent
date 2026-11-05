@@ -1,0 +1,119 @@
+{
+ "tag": "c1",
+ "lam": 1.0,
+ "steps": 6561,
+ "seconds": 3024,
+ "budget_s": 3000,
+ "final": {
+  "tag": "final",
+  "step": 6561,
+  "seconds": 3019,
+  "heldout_auc": 0.5530694323118504,
+  "heldin_auc": 0.5479181448751854,
+  "memorisation_gap": 0.005151287436664931,
+  "C_defended": 0.5869344954332905,
+  "C0_raw": 0.9571335312396257,
+  "C_drop": 0.3701990358063353
+ },
+ "noise_null_auc": 0.48246114516049926,
+ "history": [
+  {
+   "tag": "t600",
+   "step": 1385,
+   "seconds": 610,
+   "heldout_auc": 0.7210557017980993,
+   "heldin_auc": 0.7302252349985047,
+   "memorisation_gap": -0.009169533200405366,
+   "C_defended": 0.6039297240387199,
+   "C0_raw": 0.9571335312396257,
+   "C_drop": 0.35320380720090583
+  },
+  {
+   "tag": "t1200",
+   "step": 2647,
+   "seconds": 1209,
+   "heldout_auc": 0.5956130656801646,
+   "heldin_auc": 0.5988936158983892,
+   "memorisation_gap": -0.0032805502182245982,
+   "C_defended": 0.5432677487038474,
+   "C0_raw": 0.9571335312396257,
+   "C_drop": 0.4138657825357783
+  },
+  {
+   "tag": "t1800",
+   "step": 3954,
+   "seconds": 1810,
+   "heldout_auc": 0.5769446675538932,
+   "heldin_auc": 0.5589834518832132,
+   "memorisation_gap": 0.017961215670679986,
+   "C_defended": 0.5774040543854905,
+   "C0_raw": 0.9571335312396257,
+   "C_drop": 0.3797294768541353
+  },
+  {
+   "tag": "t2400",
+   "step": 5256,
+   "seconds": 2410,
+   "heldout_auc": 0.5855599493460124,
+   "heldin_auc": 0.590180492925123,
+   "memorisation_gap": -0.00462054357911057,
+   "C_defended": 0.5545628584068862,
+   "C0_raw": 0.9571335312396257,
+   "C_drop": 0.4025706728327395
+  },
+  {
+   "tag": "t3000",
+   "step": 6561,
+   "seconds": 3009,
+   "heldout_auc": 0.5530694323118504,
+   "heldin_auc": 0.5479181448751854,
+   "memorisation_gap": 0.005151287436664931,
+   "C_defended": 0.5869344954332905,
+   "C0_raw": 0.9571335312396257,
+   "C_drop": 0.3701990358063353
+  },
+  {
+   "tag": "final",
+   "step": 6561,
+   "seconds": 3019,
+   "heldout_auc": 0.5530694323118504,
+   "heldin_auc": 0.5479181448751854,
+   "memorisation_gap": 0.005151287436664931,
+   "C_defended": 0.5869344954332905,
+   "C0_raw": 0.9571335312396257,
+   "C_drop": 0.3701990358063353
+  }
+ ],
+ "synthetic": false,
+ "n_heldout_patients": 846,
+ "n_train_pairs": 27086,
+ "n_heldout_pairs": 1652,
+ "pair_report_train": {
+  "split": "S",
+  "design": "N2",
+  "positives_requested": 13558,
+  "dropped": 15,
+  "kept": 13543,
+  "tier_hist": {
+   "0": 10850,
+   "1": 2231,
+   "3": 102,
+   "2": 360
+  },
+  "patients_without_valid_positive": 0
+ },
+ "pair_report_heldout": {
+  "split": "S",
+  "design": "N2",
+  "positives_requested": 846,
+  "dropped": 20,
+  "kept": 826,
+  "tier_hist": {
+   "0": 529,
+   "2": 150,
+   "1": 101,
+   "3": 46
+  },
+  "patients_without_valid_positive": 0
+ }
+}
