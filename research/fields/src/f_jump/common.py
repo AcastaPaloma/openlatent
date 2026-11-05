@@ -24,6 +24,7 @@ MAPPER = {
 DROP_IDS = {"UNTREATED", "UNKNOWN", "BAD CONSTRUCT"}
 EXCLUDE_FROM_MAP = {"JCP2022_033954"}      # Arevalo: "has many more replicates than any other"
 SOURCES5 = ["source_2", "source_3", "source_6", "source_8", "source_10"]
+SOURCES10 = ["source_1", "source_2", "source_3", "source_5", "source_6", "source_7", "source_8", "source_9", "source_10", "source_11"]
 SALTS = ["s0", "s1", "s2"]
 
 

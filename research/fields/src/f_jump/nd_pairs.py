@@ -18,6 +18,7 @@ import evaluate as EV  # noqa: E402
 ap = argparse.ArgumentParser()
 ap.add_argument("--out", required=True)
 ap.add_argument("--threads", type=int, default=8)
+ap.add_argument("--tag", default="s5", help="cache tag of the scenario (s5: the 5-source table, s10: the assembled 10-source table)")
 a = ap.parse_args()
 from rdkit import Chem, RDLogger
 from rdkit.Chem import rdFingerprintGenerator
@@ -25,7 +26,7 @@ import scipy.sparse as sps
 import torch
 RDLogger.DisableLog("rdApp.*")
 torch.set_num_threads(a.threads)
-meta = pd.read_parquet(C.CACHE / "s5/meta.parquet")
+meta = pd.read_parquet(C.CACHE / f"{a.tag}/meta.parquet")
 U = EV.universe(meta, True)
 ids = np.unique(U["jcp"][U["inu"]])
 comp = pd.read_csv(C.META / "compound.csv.gz").drop_duplicates("Metadata_JCP2022").set_index("Metadata_JCP2022")
