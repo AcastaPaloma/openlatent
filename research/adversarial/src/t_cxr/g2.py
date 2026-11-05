@@ -40,11 +40,12 @@ def main():
         pos = (pT.label.to_numpy() == 1) & (X["eqsx"].to_numpy() == 0)                     # positive with DIFFERENT sx
         diff_mask.append(np.isin(pT.triple.to_numpy(), pT.triple.to_numpy()[pos]))
     diff = np.concatenate(diff_mask); meta_s = np.concatenate(meta_scores)
-    A_raw = AG.load_attackers(a.root, "raw", rots); A_core = AG.load_attackers(a.root, "core_w24", rots); A_rim = AG.load_attackers(a.root, "rim_w24", rots)
+    A_raw = AG.load_attackers(a.root, "raw", rots); A_core = AG.load_attackers(a.root, "core_w24", rots); A_rim = AG.load_attackers(a.root, "rim_w24", rots)   # rim is optional (descriptive; not run in T3)
     ycat = A_raw[next(iter(A_raw))]["y"]; assert len(ycat) == len(diff) and (ycat == np.concatenate(ys)).all(), "pair order / label mismatch between saved predictions and rebuilt pairs"
     cl = A_raw[next(iter(A_raw))]["cluster"]
     pb = S.PatientBootstrap(np.unique(cl), B=a.B, seed=0)
-    wc_raw, wc_core, wc_rim = (AG.worst_case(AG.suite_entries(x), pb) for x in (A_raw, A_core, A_rim))
+    wc_raw, wc_core = (AG.worst_case(AG.suite_entries(x), pb) for x in (A_raw, A_core))
+    wc_rim = AG.worst_case(AG.suite_entries(A_rim), pb) if A_rim else dict(L=float("nan"), L_boot=np.full(pb.B, np.nan))
     meta_auc = S.auc(ycat, meta_s); meta_ci = S.summarize(meta_auc, S.auc_boot(ycat, meta_s, pb.codes(cl), pb))
     dd = S.paired(wc_raw["L_boot"], wc_core["L_boot"], wc_raw["L"], wc_core["L"])
     # stratified
@@ -63,6 +64,8 @@ def main():
     ctrl = []
     for nm, suffix, names in (("const", "", None), ("raw", "_shuf", ("f1_match_ens", "f3a_logreg", "f5a", "f5b")), ("raw", "_shuf2", ("f1_match_ens", "f3a_logreg", "f5a", "f5b"))):
         att = AG.load_attackers(a.root, nm, rots, suffix)
+        if att is None and nm == "const":                       # T3 lite plan: const on rotation 0 only -> its pairs are a subset; evaluated on their own
+            att = AG.load_attackers(a.root, nm, rots[:1], suffix)
         if att is None:
             continue
         ent = AG.suite_entries(att) if names is None else {k: att[k] for k in names if k in att}

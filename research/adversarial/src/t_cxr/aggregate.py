@@ -127,7 +127,7 @@ def labels14_release(root, rots, pb, raw):
     return dict(name="labels14", L=wc["L"], L_boot=wc["L_boot"], L_val=wc["val_L"], U=raw["U"], U_boot=raw["U_boot"], U_val=raw["U_val"], code_floor=True)
 
 
-def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t2=False, g2_path=None, q=2.5):
+def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t2=False, g2_path=None, q=2.5, tag="T2"):
     root = Path(root)
     u_raw = load_utility(root, "raw", rots)
     if u_raw is None:
@@ -237,9 +237,18 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t
         g2 = _load_json(g2_path) if g2_path and Path(g2_path).exists() else None
         res["G2"] = dict(passes=(g2 or {}).get("G2_passes"), checks=(g2 or {}).get("checks"))
         res["verdict_t1"] = "NO-GO (stage 1: KT1 fires, border-only attacker 0.738 > 0.56; deviation D1 recorded)"
-        res["verdict_original"] = "NO-GO at G2 (literal T2: control clause 4; D3/A8/A9)" if (g2 and not g2["G2_passes"]) else ("G2 passed" if g2 else "G2 missing")
-        res["verdict_tightened"] = res["verdict_original"]
-        res["posthoc_sensitivity_note"] = "everything below G2 (KT1', KT2 envelope for pcxr_mu0.01, labels14) is POST-HOC SENSITIVITY after the literal G2 failure; it cannot revive T2"
+        if tag == "T3":
+            res["verdict_t2"] = "NO-GO at G2 (literal T2: control clause 4; D3/A8/A9); post-hoc KT2 also fired"
+        if g2 and not g2["G2_passes"]:
+            res["verdict_original"] = f"NO-GO at G2' (literal {tag}: failed clause(s) {[k for k, v in g2['checks'].items() if not v]})"
+            res["verdict_tightened"] = res["verdict_original"]
+            res["posthoc_sensitivity_note"] = f"everything below G2 is POST-HOC SENSITIVITY after the literal {tag} G2 failure; it cannot revive {tag}"
+        elif g2:
+            res["verdict_original"] = f"{tag}: G2' passed; " + res["verdict_original"]
+            res["verdict_tightened"] = f"{tag}: G2' passed; " + res["verdict_tightened"]
+            res["posthoc_sensitivity_note"] = f"G2' passed: the {tag} verdict is the KT-based one above (literal, not post-hoc)"
+        else:
+            res["verdict_original"] = "G2 missing"; res["verdict_tightened"] = "G2 missing"
         res["KT2_posthoc"] = dict(pcxr_fires=res["KT"]["KT2"]["fires_primary"], any_sensitivity_fires=res["KT"]["KT2"]["fires_any_sensitivity"])
     if out:
         o = Path(out); o.mkdir(parents=True, exist_ok=True)
@@ -253,9 +262,9 @@ def run(root, g0_path, rots, B=2000, prereg_commit="", out=None, learned=None, t
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--g0", default=None); ap.add_argument("--rots", default="0"); ap.add_argument("--out", required=True)
-    ap.add_argument("--B", type=int, default=2000); ap.add_argument("--prereg-commit", default=""); ap.add_argument("--t2", action="store_true"); ap.add_argument("--q", type=float, default=2.5, help="lower percentile of the envelope intervals (T3 Bonferroni over 5 defenders: 0.5)"); ap.add_argument("--g2", default=None); ap.add_argument("--learned", default=None)
+    ap.add_argument("--B", type=int, default=2000); ap.add_argument("--prereg-commit", default=""); ap.add_argument("--t2", action="store_true"); ap.add_argument("--tag", default="T2"); ap.add_argument("--q", type=float, default=2.5, help="lower percentile of the envelope intervals (T3 Bonferroni over 5 defenders: 0.5)"); ap.add_argument("--g2", default=None); ap.add_argument("--learned", default=None)
     a = ap.parse_args()
-    r = run(a.root, a.g0, [int(x) for x in a.rots.split(",")], a.B, a.prereg_commit, a.out, learned=a.learned.split(",") if a.learned else None, t2=a.t2, g2_path=a.g2, q=a.q)
+    r = run(a.root, a.g0, [int(x) for x in a.rots.split(",")], a.B, a.prereg_commit, a.out, learned=a.learned.split(",") if a.learned else None, t2=a.t2, g2_path=a.g2, q=a.q, tag=a.tag)
     print(r["verdict_original"], "|", r["verdict_tightened"])
 
 
