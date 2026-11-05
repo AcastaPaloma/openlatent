@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Pull every finished job's result JSON (not weights; those live on HF) from the VM.
+# Pull every finished job's small result JSONs (not weights; those live on HF) from the VM.
 # Programme-1 prefixes (a_ b_ c_ d_ e_ f_ smoke) -> research/fields/results/
 # Programme-2 prefixes (h_ t_ c3_ r_)           -> research/adversarial/results/
+# The remote side LISTS candidate files at depth <= 2 (rsync filter rules would traverse whole run trees: slow with large outputs);
+# rsync then copies exactly that list.
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)" || exit 1
 cd "$ROOT" || exit 1
 mkdir -p research/fields/results research/adversarial/results
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=15"
-KEEP=(--include='*/' --include='job_result.json' --include='metrics.json' --include='result.json' --include='result_s*.json' --exclude='*')
 while read -r H; do
   [ -z "$H" ] && continue
-  # programme 2 first (explicit prefixes), then everything else is programme 1
-  rsync -aq -e "$SSH" --include='h_*/' --include='t_*/' --include='c3_*/' --include='r_*/' \
-    --include='job_result.json' --include='metrics.json' --include='result.json' --include='result_s*.json' --exclude='*' \
-    "$H:work/runs/" research/adversarial/results/ 2>&1 | head -3
-  rsync -aq -e "$SSH" --exclude='h_*' --exclude='t_*' --exclude='c3_*' --exclude='r_*' "${KEEP[@]}" \
-    "$H:work/runs/" research/fields/results/ 2>&1 | head -3
+  LIST=$($SSH "$H" "cd ~/work/runs && find . -maxdepth 2 -type f \( -name job_result.json -o -name metrics.json -o -name result.json -o -name 'result_s*.json' \) -size -2000k | sed 's|^\./||'") || { echo "collect: ssh failed for $H"; continue; }
+  echo "$LIST" | grep -E '^(h_|t_|c3_|r_)' > /tmp/collect_adv.$$ ; echo "$LIST" | grep -vE '^(h_|t_|c3_|r_)' | grep -v '^$' > /tmp/collect_fld.$$
+  [ -s /tmp/collect_adv.$$ ] && rsync -aq -e "$SSH" --files-from=/tmp/collect_adv.$$ "$H:work/runs/" research/adversarial/results/ 2>&1 | head -3
+  [ -s /tmp/collect_fld.$$ ] && rsync -aq -e "$SSH" --files-from=/tmp/collect_fld.$$ "$H:work/runs/" research/fields/results/ 2>&1 | head -3
+  rm -f /tmp/collect_adv.$$ /tmp/collect_fld.$$
 done < research/fields/scripts/hosts.txt
 echo "result dirs: fields $(ls research/fields/results | wc -l | tr -d ' '), adversarial $(ls research/adversarial/results | wc -l | tr -d ' ')"
