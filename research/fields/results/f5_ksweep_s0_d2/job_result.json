@@ -1,0 +1,19 @@
+{
+ "name": "f5_ksweep_s0_d2",
+ "config": {
+  "name": "f5_ksweep_s0_d2",
+  "priority": 13,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 5 --salt s0 --ksweep --draw 2 --out $OUT",
+  "hf_path": "runs/f5_ksweep_s0_d2"
+ },
+ "commit": "eceb4c2",
+ "commit_after": "b80a960",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 1729.1,
+ "finished_utc": "2026-11-05T07:37:36Z",
+ "uploaded": true
+}
