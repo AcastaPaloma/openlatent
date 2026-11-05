@@ -1,0 +1,24 @@
+{
+ "name": "h_h4_controls",
+ "config": {
+  "name": "h_h4_controls",
+  "priority": 10,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm ctrl_const --rungs 1.0 --out $OUT && $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm shuf_raw --rungs 1.0 --out $OUT && $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm raw --rungs 1.0 --out $OUT",
+  "hf_path": "runs/h_h4_controls",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "eb02168",
+ "commit_after": "5657573",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 889.8,
+ "finished_utc": "2026-11-05T22:31:08Z",
+ "uploaded": true
+}
