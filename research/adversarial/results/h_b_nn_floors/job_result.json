@@ -1,0 +1,22 @@
+{
+ "name": "h_b_nn_floors",
+ "config": {
+  "name": "h_b_nn_floors",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --set sealed --arm raw,noise_s1,quant_b3,ds4,noise_s0.5,noise_s2,demean --folds S0,S1,S2 --family nn --targets id,act --out $OUT",
+  "hf_path": "runs/h_b_nn_floors",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "f117e9d",
+ "commit_after": "dce614c",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 1867.8,
+ "finished_utc": "2026-11-05T04:51:02Z",
+ "uploaded": true
+}
