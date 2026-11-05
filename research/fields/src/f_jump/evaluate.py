@@ -64,6 +64,9 @@ def main():
     ap.add_argument("--no_refs", action="store_true")
     ap.add_argument("--kinds", default=",".join(KINDS))
     ap.add_argument("--no_attackers", action="store_true", help="AP only (debug)")
+    ap.add_argument("--ksweep", action="store_true", help="H3-002 Part A (results_notes/F.md section 15): K-sweep, dU vs the same-label LDA")
+    ap.add_argument("--draw", type=int, default=0, help="label draw for --ksweep (md5 salt kd<draw>)")
+    ap.add_argument("--tta", action="store_true", help="H3-004 pilot (results_notes/F.md section 16): test-time per-source recentring of released vectors")
     ap.add_argument("--s1", action="store_true", help="H3-007 stage 1 (results_notes/F.md section 12): AP of retrained adapters / floors / position codes under protocols P0, Pa, Pb, Pc, Pd, Pabc")
     ap.add_argument("--nd_pairs", default=os.path.expanduser("~/work/f5_ctrl_position_meta/nd_pairs.json"))
     ap.add_argument("--f4", action="store_true", help="F4 job (results_notes/F.md section 10): budget grid 0/1/3/10/30/100%, leave-source-out via --hold_source, feature view via --view")
@@ -185,7 +188,7 @@ def main():
         for sname, sl in (("V", slice(0, nV)), ("H", slice(nV, None))):
             E = Eall_n[sl]
             if ap_ok:
-                do_ap(name, E, sname, modes=("xs",) if (a.f2 or a.f3 or a.f4) else ("xs", "nonrep"))
+                do_ap(name, E, sname, modes=("xs",) if (a.f2 or a.f3 or a.f4 or a.ksweep or a.tta) else ("xs", "nonrep"))
                 if null:
                     if ("null", sname) not in pos_cache:
                         perm = np.random.RandomState(AR.seed_of(a.salt, "null", sname) % (2 ** 31)).permutation(len(E))
@@ -207,6 +210,14 @@ def main():
     want = a.arms.split(",") if a.arms else None
     if a.f2:
         run_f2(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, src, out)
+        print("done", flush=True)
+        return
+    if a.ksweep:
+        run_k(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, plate, src, allidx, role_of, out)
+        print("done", flush=True)
+        return
+    if a.tta:
+        run_tta(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, plate, src, allidx, role_of, out)
         print("done", flush=True)
         return
     if a.s1:
@@ -587,6 +598,56 @@ def run_f4(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_clas
     (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
 
 
+def make_pabc(a, sets, jcp, role_of, nV):
+    """scorer for the position-clean protocol Pabc (section 12.1): positives in another source at a different well, negatives = other compounds of the query's source at the query's
+    well position on other plates, near-duplicate-pruned H.  Returns score(P, name, Eall_np) writing apc|V/H|name|Pabc and apq|H|name|Pabc."""
+    import json as _json
+    nd = _json.loads(Path(a.nd_pairs).read_text())
+    ids_nd = np.array(nd["ids"])
+    exposed = set()
+    for i, j in nd["pairs"]:
+        ri, rj = role_of.get(ids_nd[i]), role_of.get(ids_nd[j])
+        if ri == "H" and rj == "T":
+            exposed.add(ids_nd[i])
+        if rj == "H" and ri == "T":
+            exposed.add(ids_nd[j])
+    for nm, S in sets.items():
+        S["keep"] = ~np.isin(jcp[S["idx"]], list(exposed))
+        wid = pd.factorize(S["well"])[0]
+        S["srcwell"] = pd.factorize(S["src"] * 100000 + wid)[0]
+    cache = {}
+    sl = {"V": slice(0, nV), "H": slice(nV, None)}
+
+    def score(P, name, En):
+        for sname, S in sets.items():
+            E = En[sl[sname]]
+            sel = np.where(S["keep"])[0]
+            comp_s, src_s, well_s = S["comp"][sel], S["src"][sel], S["well"][sel]
+            if sname not in cache:
+                cache[sname] = AP.build_pos(comp_s, src_s, well_s, "xsdp")
+            apq = AP.ap_queries(E[sel], S["plate"][sel], comp_s, src_s, well_s, S["pert"][sel], mode="xsdp", pos=cache[sname], group=S["srcwell"][sel], excl_plate=True)
+            ids, mean_ap = AP.per_compound(apq, comp_s)
+            P[f"apc|{sname}|{name}|Pabc"] = mean_ap.astype(np.float32)
+            if f"cid|{sname}|Pabc" not in P:
+                P[f"cid|{sname}|Pabc"] = ids.astype(np.int32)
+            if sname == "H":
+                full = np.full(len(S["idx"]), np.nan, np.float32)
+                full[sel] = apq
+                P[f"apq|H|{name}|Pabc"] = full
+    return score
+
+
+def prod_labels(a, fit_idx, lab_prod, lab_class, jcp):
+    """production-compound structures of the Fit set (classes with >= 2 Fit wells), as in F2 / F3."""
+    lp, lc, jf = lab_prod[fit_idx], lab_class[fit_idx], jcp[fit_idx]
+    cnts = np.bincount(lp[lp >= 0])
+    lp2 = np.where((lp >= 0) & (cnts[np.maximum(lp, 0)] >= 2), lp, -1)
+    m_prod = lp2 >= 0
+    cls_j = pd.DataFrame({"c": lp2[m_prod], "j": jf[m_prod]}).drop_duplicates("c").set_index("c")["j"]
+    t2m = (lc >= 0) & (lp < 0) & (jf != "DMSO")
+    return lp, lc, jf, lp2, m_prod, cls_j, t2m
+
+
 PROTOS = {
     "P0": dict(mode="xs", grp="plate", excl=False, ns=0, prune=False),
     "Pa": dict(mode="xsdp", grp="plate", excl=False, ns=0, prune=False),
@@ -757,6 +818,194 @@ def run_s1(a, fac, Xfit, Xall, nV, sets, meta_out, P, fit_idx, lab_class, lab_pr
         run(names[1], "adapter", Eall + 0.5 * sdv * torch.randn(Eall.shape, generator=gen, device=AR.DEV), regime=R)
         del net, Ef, Eall
         torch.cuda.empty_cache()
+    (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
+
+
+def run_k(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, plate, src, allidx, role_of, out):
+    """H3-002 Part A (results_notes/F.md section 15): dU of the d = 8 SupCon adapter against the SAME-label LDA as a function of the number of label classes K
+    (production compounds only), wells-per-class controls at K = 3000, label-permuted floor per K.  Scored under P0 (run_arm) and Pabc."""
+    import hashlib
+    import json as _json
+    steps = int(os.environ.get("F2_STEPS", AD.STEPS))
+    draw, lsalt = a.draw, f"kd{a.draw}"
+    meta_out["ksweep"], meta_out["draw"], meta_out["regime"], meta_out["k_info"], meta_out["k_train"] = True, draw, {}, {}, {}
+    pabc = make_pabc(a, sets, jcp, role_of, nV)
+    lp, lc, jf, lp2, m_prod, cls_j, t2m = prod_labels(a, fit_idx, lab_prod, lab_class, jcp)
+    classes = np.array(cls_j.index)
+    keys = np.array([int(hashlib.md5((str(cls_j[c]) + lsalt + "K").encode()).hexdigest(), 16) for c in classes], dtype=object)
+    order = classes[np.argsort(keys)]
+    Ks = [30, 100, 300, 1000, 3000, 10000, 32000]
+    Ks = [k for k in Ks if k <= len(order)]
+    if len(order) < 32000:
+        Ks.append(len(order))
+    rs = np.random.RandomState(AR.seed_of(a.salt, "kwells", draw) % (2 ** 31))
+    rank_wells = rs.rand(len(fit_idx))
+    regimes = {}
+    for K in Ks:
+        sel = np.zeros(int(classes.max()) + 1, bool)
+        sel[order[:K]] = True
+        m = m_prod & sel[np.maximum(lp2, 0)]
+        regimes[f"K{K}"] = (m, K)
+        if K == 3000:
+            df = pd.DataFrame({"c": lp2[m], "r": rank_wells[m]})
+            rk = df.groupby("c")["r"].rank(method="first").to_numpy()
+            for w, nm in ((2, "K3000_w1"), (4, "K3000_w2")):
+                mm = m.copy()
+                idx = np.where(m)[0]
+                mm[idx[rk > w]] = False
+                regimes[nm] = (mm, K)
+    labels = {}
+    for nm, (m, K) in regimes.items():
+        lab = -np.ones(len(fit_idx), np.int64)
+        lab[m] = pd.factorize(lp2[m])[0]
+        labels[nm] = (lab, int(lab.max()) + 1)
+        meta_out["k_info"][nm] = dict(K=int(labels[nm][1]), n_wells=int(m.sum()), wells_per_class=float(m.sum() / labels[nm][1]))
+    print("  regimes:", {k: (v["K"], round(v["wells_per_class"], 2)) for k, v in meta_out["k_info"].items()}, flush=True)
+    E = torch.randn(Xall.shape[0], 16, generator=torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ctrl")), device=AR.DEV)
+    run_arm("ctrl_noise16", "ctrl", E, null=True)
+    En = fac.build("ldaP_8", Xall)
+    run_arm("ldaP_8", "labelonly", En)
+    pabc(P, "ldaP_8", En.detach().cpu().numpy())
+    srcf = pd.Categorical(src[fit_idx], categories=C.SOURCES5).codes.astype(np.int64)
+    Zfit, Zall = fac.pca(Xfit, 256), fac.pca(Xall, 256)
+    rng_perm = np.random.RandomState(AR.seed_of(a.salt, "kperm", draw) % (2 ** 31))
+    for nm, (lab, nc) in labels.items():
+        t1 = time.time()
+        idx = torch.as_tensor(np.where(lab >= 0)[0], device=AR.DEV)
+        mu, W = AR.lda_fit(Zfit[idx], lab[lab >= 0], AR.SHRINK)
+        El = AR.lda_apply(Zall, mu, W, 8)
+        run_arm(f"ldaM_{nm}_8", "matched", El)
+        pabc(P, f"ldaM_{nm}_8", El.detach().cpu().numpy())
+        kw = dict(n_prod_batch=192, n_t2_batch=0, k_t2=4)
+        net, info = AD.train_supcon(Xfit, lab, nc, 8, AR.seed_of(a.salt, "ks", draw, nm) % (2 ** 31), steps=steps, **kw)
+        Ef = AD.embed(net, Xfit)
+        sub = torch.as_tensor(np.random.RandomState(0).choice(len(fit_idx), 20000, replace=False), device=AR.DEV)
+        info["eff_rank"] = AD.effective_rank(Ef[sub])
+        meta_out["k_train"][nm] = info
+        Eall = AD.embed(net, Xall)
+        sdv = Ef.std(0, keepdim=True)
+        run_arm(f"mlp_{nm}_d8", "adapter", Eall)
+        pabc(P, f"mlp_{nm}_d8", Eall.detach().cpu().numpy())
+        gen = torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ksnoise", draw, nm))
+        Er = Eall + 0.5 * sdv * torch.randn(Eall.shape, generator=gen, device=AR.DEV)
+        run_arm(f"mlp_{nm}_d8_r0.5", "adapter", Er)
+        pabc(P, f"mlp_{nm}_d8_r0.5", Er.detach().cpu().numpy())
+        meta_out["regime"].update({f"ldaM_{nm}_8": nm, f"mlp_{nm}_d8": nm, f"mlp_{nm}_d8_r0.5": nm})
+        del net, Ef, Eall, Er
+        torch.cuda.empty_cache()
+        if "_w" not in nm:                               # label-permuted memorisation floor per K (d = 64, AP only)
+            labp = lab.copy()
+            ii = np.where(lab >= 0)[0]
+            labp[ii] = lab[ii][rng_perm.permutation(len(ii))]
+            net, info = AD.train_supcon(Xfit, labp, nc, 64, AR.seed_of(a.salt, "kperm64", draw, nm) % (2 ** 31), steps=steps, **kw)
+            meta_out["k_train"][f"perm_{nm}"] = info
+            run_arm(f"perm_{nm}_d64", "permctrl", AD.embed(net, Xall), att=False)
+            meta_out["regime"][f"perm_{nm}_d64"] = nm
+            del net
+            torch.cuda.empty_cache()
+        print(f"  regime {nm}: K={nc} loss {info['loss_first20']:.2f}->{info['loss_last200']:.2f} ({time.time() - t1:.0f}s)", flush=True)
+    (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
+
+
+def tta_apply(E, src_codes, op, ref=None, ref_src=None, lam=1e-2, seed=0):
+    """E (n, d) tensor; src_codes (n,) long numpy.  T1 per-source mean-centre, T2 + per-dim SD, T3 per-source ridge whitening, T5 inductive (statistics from ref = Fit wells of the same source),
+    Pglobal (placebo: subtract the global mean), Pshuf (placebo: T1 with the source assignment permuted)."""
+    if op == "Pglobal":
+        return E - E.mean(0, keepdim=True)
+    sc = np.asarray(src_codes)
+    if op == "Pshuf":
+        sc = np.random.RandomState(seed).permutation(sc)
+        op = "T1"
+    out = torch.empty_like(E)
+    for s in np.unique(sc):
+        m = torch.as_tensor(sc == s, device=E.device)
+        X = E[m]
+        R = ref[torch.as_tensor(ref_src == s, device=E.device)] if op == "T5" else X
+        mu = R.mean(0, keepdim=True)
+        if op == "T1":
+            out[m] = X - mu
+        elif op in ("T2", "T5"):
+            out[m] = (X - mu) / R.std(0, keepdim=True).clamp(min=1e-6)
+        elif op == "T3":
+            C = torch.cov((R - mu).T.double())
+            C = C + lam * torch.trace(C) / C.shape[0] * torch.eye(C.shape[0], dtype=torch.float64, device=E.device)
+            w, V = torch.linalg.eigh(C)
+            out[m] = ((X - mu).double() @ ((V / torch.sqrt(w)) @ V.T)).float()
+        else:
+            raise ValueError(op)
+    return out
+
+
+def run_tta(a, fac, Xfit, Xall, nV, sets, run_arm, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, plate, src, allidx, role_of, out):
+    """H3-004 pilot (results_notes/F.md section 16): per-source test-time recentring of the released vector on retrained adapters (b10 / b100, d 8 / 64) and floors."""
+    import hashlib
+    import json as _json
+    steps = int(os.environ.get("F2_STEPS", AD.STEPS))
+    meta_out["tta"], meta_out["regime"], meta_out["base_arms"] = True, {}, {}
+    pabc = make_pabc(a, sets, jcp, role_of, nV)
+    src_all = np.concatenate([sets["V"]["src"], sets["H"]["src"]])
+    srcf = pd.Categorical(src[fit_idx], categories=C.SOURCES5).codes.astype(np.int64)
+    lp, lc, jf, lp2, m_prod, cls_j, t2m = prod_labels(a, fit_idx, lab_prod, lab_class, jcp)
+
+    def frac_mask(f):
+        if f >= 1.0:
+            return m_prod
+        sel = np.zeros(int(cls_j.index.max()) + 1, bool)
+        for c, j in cls_j.items():
+            sel[c] = int(hashlib.md5((str(j) + a.salt + "lab").encode()).hexdigest(), 16) % 10000 < int(round(f * 10000))
+        return m_prod & sel[np.maximum(lp2, 0)]
+    labels = {}
+    for R, f in (("b10", 0.10), ("b100", 1.0)):
+        lab = -np.ones(len(fit_idx), np.int64)
+        m = frac_mask(f)
+        lab[m] = pd.factorize(lp2[m])[0]
+        npd = int(lab[m].max()) + 1
+        lab[t2m] = npd + pd.factorize(lc[t2m])[0]
+        labels[R] = (lab, npd)
+    base = {}                                            # name -> (E_all, E_fit) tensors
+    # adapters (same seeds as the stored runs: b10 = F3 code path, b100 = F2 code path)
+    for R in ("b10", "b100"):
+        lab, npd = labels[R]
+        for dd in (8, 64):
+            if R == "b100":
+                net, info = AD.train_supcon(Xfit, lab, npd, dd, AR.seed_of(a.salt, "mlp", dd) % (2 ** 31), steps=steps)
+                nm = f"mlp_d{dd}"
+            else:
+                kw = dict(n_prod_batch=192, n_t2_batch=32, k_t2=4)
+                net, info = AD.train_supcon(Xfit, lab, npd, dd, AR.seed_of(a.salt, "f3", R, dd) % (2 ** 31), steps=steps, **kw)
+                nm = f"mlp_{R}_d{dd}"
+            base[nm] = (AD.embed(net, Xall), AD.embed(net, Xfit))
+            meta_out["base_arms"][nm] = dict(regime=R, d=dd, loss_first=info["loss_first20"], loss_last=info["loss_last200"])
+            print(f"  {nm}: loss {info['loss_first20']:.2f}->{info['loss_last200']:.2f}", flush=True)
+            del net
+            torch.cuda.empty_cache()
+    # floors
+    Zfit, Zall = fac.pca(Xfit, 256), fac.pca(Xall, 256)
+    for R in ("b10", "b100"):
+        lab, _ = labels[R]
+        idx = torch.as_tensor(np.where(lab >= 0)[0], device=AR.DEV)
+        mu, W = AR.lda_fit(Zfit[idx], lab[lab >= 0], AR.SHRINK)
+        base[f"ldaM_{R}_8"] = (AR.lda_apply(Zall, mu, W, 8), AR.lda_apply(Zfit, mu, W, 8))
+    for nm in ("ldaP_8", "ldaP_16", "dpca16_r1"):
+        base[nm] = (fac.build(nm, Xall), fac.build(nm, Xfit))
+    del Zfit, Zall
+    g = torch.Generator(device=AR.DEV).manual_seed(AR.seed_of(a.salt, "ttanoise"))
+    base["ctrl_noise16"] = (torch.randn(Xall.shape[0], 16, generator=g, device=AR.DEV), torch.randn(Xfit.shape[0], 16, generator=g, device=AR.DEV))
+    run_arm("raw", "floor", Xall)
+    ops = ["none", "T1", "T2", "T3", "T5", "Pglobal", "Pshuf"]
+    t0 = time.time()
+    for nm, (Ea, Ef) in base.items():
+        for op in ops:
+            if op == "none":
+                E = Ea
+            else:
+                E = tta_apply(Ea, src_all, op, ref=Ef, ref_src=srcf, seed=AR.seed_of(a.salt, "ttashuf", nm) % (2 ** 31))
+            vn = f"{nm}|{op}"
+            run_arm(vn, "tta", E)
+            meta_out["regime"][vn] = nm
+            if op in ("none", "T1", "T2", "T3", "T5") and nm != "ctrl_noise16":
+                pabc(P, vn, E.detach().cpu().numpy())
+        print(f"  base {nm} done ({time.time() - t0:.0f}s)", flush=True)
     (out / f"meta_{a.salt}.json").write_text(_json.dumps(meta_out, indent=1))
 
 

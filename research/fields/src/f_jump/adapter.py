@@ -61,13 +61,15 @@ def train_supcon(Xfit, lab, n_prod, d, seed, steps=STEPS, n_prod_batch=N_PROD, n
     t2_c = torch.where(cl_t >= n_prod)[0]
     if len(prod_c) == 0:
         n_prod_batch = 0
+    if len(t2_c) == 0:
+        n_t2_batch = 0
     losses = []
     net.train()
     for step in range(steps):
         parts_i, parts_y = [], []
         # draw order identical to the F2 code (pc, tc, a, off, r) so that the F2 (100%-label) arms are reproduced by this function
         pc = prod_c[torch.randint(len(prod_c), (n_prod_batch,), device=DEV, generator=g)] if n_prod_batch > 0 else None
-        tc = t2_c[torch.randint(len(t2_c), (n_t2_batch,), device=DEV, generator=g)]
+        tc = t2_c[torch.randint(len(t2_c), (n_t2_batch,), device=DEV, generator=g)] if n_t2_batch > 0 else None
         if n_prod_batch > 0:
             n = cnt_t[pc]                                            # >= 2 wells
             a = torch.minimum((torch.rand(n_prod_batch, device=DEV, generator=g) * n).long(), n - 1)
@@ -75,10 +77,11 @@ def train_supcon(Xfit, lab, n_prod, d, seed, steps=STEPS, n_prod_batch=N_PROD, n
             b = (a + off) % n                                         # a distinct second well
             parts_i.append(torch.stack([start_t[pc] + a, start_t[pc] + b], 1).reshape(-1))
             parts_y.append(cl_t[pc].repeat_interleave(2))
-        n2 = cnt_t[tc]
-        r = torch.minimum((torch.rand(n_t2_batch, k_t2, device=DEV, generator=g) * n2[:, None]).long(), (n2 - 1)[:, None])
-        parts_i.append((start_t[tc][:, None] + r).reshape(-1))
-        parts_y.append(cl_t[tc].repeat_interleave(k_t2))
+        if n_t2_batch > 0:
+            n2 = cnt_t[tc]
+            r = torch.minimum((torch.rand(n_t2_batch, k_t2, device=DEV, generator=g) * n2[:, None]).long(), (n2 - 1)[:, None])
+            parts_i.append((start_t[tc][:, None] + r).reshape(-1))
+            parts_y.append(cl_t[tc].repeat_interleave(k_t2))
         wells = order_t[torch.cat(parts_i)]
         y = torch.cat(parts_y)
         loss = supcon(net(Xfit[wells]), y)
