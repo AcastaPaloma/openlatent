@@ -69,3 +69,67 @@ Learned methods and attackers: PrivDiffuser identity-guided retrain (IMU-001 B),
 - PrivDiffuser's released MotionSense checkpoint was trained with a window-level split over all 24 users: its generated "test" windows are contaminated by training; IMU-001 arm B retrains with trial-disjoint folds.
 - ChestX-ray14 has no acquisition dates: visit gap is an index gap. RAD-DINO pretraining includes NIH-CXR. MotionSense trial numbering for static activities and the absence of cross-session data are from the dataset description, to be checked against the files.
 - All hypotheses were written before any programme-2 number exists; any threshold may only be tightened after data, with both verdicts reported.
+
+---
+
+# Round 3 (generator round 3, 2026-11-05; 18 hypotheses, not ranked)
+
+Written after both programmes' builders reported (SUMMARY.md, FOCUS outcome blocks, both AUDIT_findings.md, the 4-5 Nov journals, results_notes A / E / F / H / N / S / T). Round 3 is built on six constraints from the evidence: (i) the only learned-over-floor result that survived a same-supervision comparison is the supervised nonlinear adapter on JUMP once about 10% of production labels exist (F3: dU_H +0.027 to +0.032 against the full envelope at 10%, +0.135 at 100%, margin 0.010); (ii) every published privacy figure that was re-measured depended on how the attacker was trained (AAE 4% frozen vs 83% retrained; PriCheXy 57.7 published vs 67.0 replicated, and a linkage worst case of 0.887); (iii) cheap floors (label-supervised linear codes, 4x downsample, dither, a 2-bit predicted label) matched or beat the learned defences tested; (iv) adversaries mostly did not converge (memorisation floor about 0.67 at n = 1,600, d = 32; the T.md attacker-scaling ladder was never run); (v) the sealed-suite instrument v3 detects leak types it was built or retrained to see and misses unseen ones; (vi) power limited many comparisons, so every file prints its MDE. Each file has: statement, mechanism, exact experiment (dataset, models, floors, attacker suite, metric, splits by independent unit, seeds AND test-unit design, cross-fit), numeric prediction and falsifier, GPU-h, dependencies, prior with reasoning, cheapest floor that could kill it. No hypothesis has been run. No git command was used. Numbers quoted from earlier results are copied from the notes named in each file; anything marked UNVERIFIED or ESTIMATED must be checked before pre-registration.
+
+## Relation to work already ordered on 5 Nov (do not duplicate)
+
+- F4 (F.md section 10: leave-source-out on the 5-source universe, "objects" view, 1/3/10/30/100% grid, <= 3 GPU-h) is the base for H3-001 (which uses the 10-source table F4 explicitly did not run), H3-002, H3-004, H3-005, H3-006, H3-007.
+- A3 (adversary on half the PathoROB slides, confusion on the other half, floor calibrated on held-out slides) is the small-n counterpart of H3-006, which restates the design where n is large enough to control the memorisation floor.
+- T3 (T.md section 8: full 37-floor pool, second seed at mu 0.01, mu 0.005, checkpoints C1 / C2, rotations 0-1 of the t3 salt = "roles re-drawn over the same patients", D4 control tolerance) is the base for H3-008 to H3-013. The CXR files below start where T3 stops: floors outside the frozen list, fresh patients (S-role bucket F), larger mu, attacker scaling, the G clause, learned compression, the label-persistence confound.
+- H (WISDM replication and the sealed retrained wearable defender, ordered <= 4 GPU-h) is pre-registered in H3-014 / H3-015 (5.0 GPU-h together; trim by dropping OBF-A seeds if the cap is binding).
+
+## Table (alphabetical by file; dependencies are listed, no priority is implied)
+
+| File | Short claim | Kind | GPU-h | Prior | Depends on |
+|---|---|---|---:|---:|---|
+| H3-001-label-budget-unseen-sources-ten-source-table | F3 break-even <= 30% in >= 7 of 9 held-out sources and across a microscope-model block on the 10-source JUMP table | generalisation | 6 / 11 | 0.55 | F4 code; 10-source table download |
+| H3-002-label-space-size-sets-the-break-even-and-privacy-label-budgets | dU over same-label LDA rises with log10(classes) at 0.025-0.07 per decade; wearable activity labels (K = 4-6) never break even | mechanism / new idea (label budgets for privacy defenders) | 2.5 | 0.60 | F3 arms; H development folds |
+| H3-003-hlca-second-dataset-label-budget | on HLCA (E's dataset-grouped folds, K about 60) the adapter shows no break-even, testing the K-rule outside imaging | second-dataset replication, predicted negative | 3 | 0.25 (win) | E harness and cache |
+| H3-004-test-time-source-recentring-stacked-on-adapter-and-floors | per-source test-time recentring of the low-d output lowers leakage >= 0.10 at |dU| <= 0.01 for adapter and floors alike | NEW idea (transductive calibration) | 2 | 0.45 | F3 adapters |
+| H3-005-cross-source-mutual-nn-pseudo-positives-from-few-labels | MNN pseudo-positives from the b1 or Target2-only adapter recover >= half the gap to b10 | NEW idea (semi-supervised) | 3 | 0.20 | F3 b1 / a adapters |
+| H3-006-held-out-unit-adversary-that-converges-jump | a convergent held-out-unit adversary adds < 0.010 over output dither at matched leakage; criterion C is attainable at n = 130k | instrument gate + learned test | 4.5 | 0.20 (win) / 0.60 (C attainable) | F3 code; A's memorisation calibration |
+| H3-007-boring-control-jump-well-position-near-duplicate-shortcuts | the F3 gain survives position-matched negatives, near-duplicate pruning and source-level negatives | boring control | 1.5 | 0.75 (survives) | compound metadata |
+| H3-008-cxr-composite-floors-on-fresh-units | composite and fine-grid floors on a fresh S-role bucket move the envelope >= 0.02; no image floor <= 0.75 at raw utility | floors vs learned, fresh units | 6 | 0.40 | T3; custodian salt after list v2 |
+| H3-009-cxr-high-mu-and-same-spectrum-random-warp | pcxr at mu 0.02 / 0.04, last epoch, stays on the floor frontier and no better than a same-spectrum random warp | learned defender dose-response | 5 / 9 | 0.12 | T3 frontier and base |
+| H3-010-cxr-attacker-scaling-ladder-convergence | tripling the attacker training set raises down_f4 linkage >= 0.03; the defender-versus-floor ordering survives | attacker convergence | 4.5 | 0.50 | T ladder never run |
+| H3-011-cxr-population-defender-learned-residual-on-floor-held-out-view | a population-trained learned residual on down_f4 does not generalise to a held-out attacker view better than a single attacker, and not beyond down_f4 + matched noise | G clause, floors as the bar | 12 / 18 | 0.08 | H3-008, H3-010 |
+| H3-012-cxr-learned-compression-rate-as-the-knob | linkage is one function of bits for classical and generic learned codecs; a task-aware learned code beats the log-bits interpolation to labels14 by >= 0.03 | NEW idea (learned compression) | 10 | 0.25 | H3-008 |
+| H3-013-boring-control-cxr-label-persistence-no-finding-stratum | raw linkage survives in No-Finding pairs and with label-matched negatives; labels14 floor falls to ~0.55 there | boring control | 1.5 | 0.80 (survives) | T2 / T3 score files |
+| H3-014-imu-sealed-retrained-defender | retrained AAE-R and an in-loop-adversary obfuscator are dominated by the activity-label floors on the salted sealed folds | sealed learned defender | 3.5 | 0.08 (learned win) | H salt and floors |
+| H3-015-wisdm-replication | the floors-beat-defenders direction and the frozen-vs-retrained gap replicate on WISDM (51 subjects) | replication | 1.5 | 0.70 | H3-014 code; phone-model check |
+| H3-016-boring-control-dithered-floors-and-evidence-budget | account-level pooling at least doubles the leakage of dithered floors (act60_r1, lda3_r1); predlabel stays flat | boring control | 0.5 (+1.5 CPU) | 0.50 | H generators, S evidence module |
+| H3-017-boring-control-imu-adjacency-and-leave-activity-out | raw identity falls from >= 0.95 (interleaved) to <= 0.60 under leave-activity-out; floors barely move | boring control | 1 | 0.70 | H suite |
+| H3-018-stop-for-real | four-leg decision table; stop only if the positive does not generalise, floors dominate defenders, new ideas are exhausted, power is adequate, and the four boring controls have run | stop hypothesis | 0 | 0.25 (full stop) | all |
+
+## Requirement coverage
+
+- Generalisation of the label-budget result: second dataset / encoder family H3-003 (and the "objects" view in F4); other sources / leave-source-out H3-001 (with F4); mechanism for where it should and should not hold H3-002.
+- Adversary scored on held-out units that converges, memorisation floor controlled: H3-006 (criterion gate with noise-latent and planted-signal calibration, JUMP), H3-010 (CXR attacker convergence), H3-011 (convergence check in the loop).
+- Chest X-ray: further floors H3-008 (blur, quantisation, JPEG, PCA, noise, composites, ideal low-pass; T3 covers the frozen 37), second operating point and seed H3-009 (T3 covers mu 0.005 / 0.01 and two seeds; this adds 0.02 / 0.04, C2 and a same-spectrum random control), population-trained defender with a held-out attacker family and dither / downsample as the bar H3-011.
+- Wearable: sealed retrained defender H3-014, WISDM replication H3-015.
+- NEW ideas (>= 3): transductive per-source calibration as a defence H3-004; learned compression with rate as the knob H3-012; label-budget curves for privacy defenders H3-002 (part B); cross-source MNN pseudo-positives H3-005; a learned residual on top of the strongest floor H3-011.
+- Boring controls that could kill an exciting result (4+): H3-007 (JUMP shortcuts), H3-013 (CXR label persistence), H3-016 (dither does not compose with evidence), H3-017 (same-session adjacency / leave-activity-out).
+- Stop: H3-018.
+
+## Dependency structure (for scheduling, not a ranking)
+
+- Start immediately, independent of in-flight work: H3-007, H3-013 (arm A, zero GPU), H3-016, H3-017, H3-002, H3-004, H3-006 (stage 0 then stage 1), H3-005, H3-003, H3-010 (T ladder rungs on T3 units).
+- After F4 has produced one real aggregate: H3-001. After T3 has produced its nomination and frontier: H3-009; H3-008 needs the list-v2 hash and a custodian salt (floors first, salt second); then H3-011 and H3-012 (both use the fresh bucket F). H3-015 after H3-014's code runs on MotionSense. H3-018 last.
+- Cheap-gate subset (H3-007, H3-013, H3-016, H3-017, H3-002, H3-004, H3-010): about 14 GPU-h; the four boring controls alone are about 4.5 GPU-h and are a precondition of H3-018.
+
+## GPU totals (stated, not additive with certainty because fits are shared)
+
+About 68 GPU-h in the reduced tiers, 83 in the full tiers (6 / 11, 5 / 9, 12 / 18 for H3-001, -009, -011). On the 4 idle A6000s that is roughly 17-21 hours of wall-clock if packed; CPU-bound pieces (attackers, metadata, tabular IMU suites) are extra and capped at 8 threads per job.
+
+## Things to verify before any pre-registration (carried into the files)
+
+- JUMP: whether the same compound occupies the same well position across sources on production plates (H3-007 stage 0); whether the 10-source assembled table carries Target2 plates and what its preprocessing already fitted on (H3-001); `compound.csv.gz` InChIKey / SMILES availability; the realised per-fold MDE80.
+- WISDM biometrics: subject count, activities, duration, sampling rate, phone models, licence terms (H3-015 cites the dataset card from memory); CompressAI code and pretrained-weight licences, and single-cell foundation model weight licences (H3-012, H3-003); both are optional arms that are dropped if not cleared.
+- ChestX-ray14: the S-role bucket F is fresh only with respect to the evaluation attackers and floors (the PriCheXy verifier, T2 base weights and R0 retrains saw S pairs); the utility classifier for any F-based claim must be refit on S \ F.
+- The AAE training loss is not public (weights and evaluation notebooks only); AAE-R is a re-implementation in spirit.
+- All thresholds above are written before any Round-3 number exists; they may be tightened after data with both verdicts reported, never loosened.
