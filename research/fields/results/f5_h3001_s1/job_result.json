@@ -1,0 +1,19 @@
+{
+ "name": "f5_h3001_s1",
+ "config": {
+  "name": "f5_h3001_s1",
+  "priority": 5,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 10 --salt s0 --f4 --budgets b3,b10,b30,b100 --pabc --nd_pairs $HOME/work/f5_ctrl_position_meta/nd_pairs_s10.json --hold_source source_1 --out $OUT",
+  "hf_path": "runs/f5_h3001_s1"
+ },
+ "commit": "5009644",
+ "commit_after": "3573aff",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 1628.9,
+ "finished_utc": "2026-11-05T11:45:22Z",
+ "uploaded": true
+}
