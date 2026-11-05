@@ -137,7 +137,7 @@ def main():
     m_L = max(a.mL_floor, mde["L"]["mde80"] or 0); m_U = max(a.mU_floor, mde["U"]["mde80"] or 0)
     # ---------- floors set and gates
     excl = set(a.exclude.split(",")) - {""}
-    floors = [x for x in R if x not in CONTROLS | ORACLES | excl and not x.startswith(("pd_", "msda", "rep")) and R[x]["U"] is not None]
+    floors = [x for x in R if x not in CONTROLS | ORACLES | excl and not x.startswith(("pd_", "msda", "rep", "aae_re")) and R[x]["U"] is not None]
     gates = {}
     if "raw" in R:
         gates["H1_raw_L>=0.40"] = bool(R["raw"]["L"] >= 0.40); gates["raw_L"] = R["raw"]["L"]; gates["raw_U"] = R["raw"]["U"]; gates["H3_raw_U>=0.90"] = bool((R["raw"]["U"] or 0) >= 0.90)

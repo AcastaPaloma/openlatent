@@ -1,0 +1,1284 @@
+{
+ "control": "H3-017",
+ "protocols": "P-int (3 rotating folds by trial rank), P-block (1-9 vs 11-16), P-LAO (6 activities), P-S2D, P-D2S; LAOdyn = shipped / first-pass releases",
+ "table": {
+  "ds8": {
+   "P-int": {
+    "all": {
+     "L": 0.6444,
+     "ci": [
+      0.6083,
+      0.6861
+     ],
+     "L_win": 0.3897,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.2083,
+     "ci": [
+      0.1354,
+      0.3125
+     ],
+     "L_win": 0.1361,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.8409,
+     "ci": [
+      0.7841,
+      0.8902
+     ],
+     "L_win": 0.6201,
+     "best": "mlp"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.6111,
+     "ci": [
+      0.5694,
+      0.6597
+     ],
+     "L_win": 0.3564,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.25,
+     "ci": [
+      0.1458,
+      0.375
+     ],
+     "L_win": 0.1691,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.8542,
+     "ci": [
+      0.7917,
+      0.9167
+     ],
+     "L_win": 0.6471,
+     "best": "mlp"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.1806,
+     "ci": [
+      0.1222,
+      0.25
+     ],
+     "L_win": 0.1224,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0729,
+     "ci": [
+      0.0312,
+      0.1562
+     ],
+     "L_win": 0.0749,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.2311,
+     "ci": [
+      0.1515,
+      0.3182
+     ],
+     "L_win": 0.177,
+     "best": "mlp"
+    }
+   },
+   "P-S2D": {
+    "all": {
+     "L": 0.0682,
+     "ci": [
+      0.0379,
+      0.1667
+     ],
+     "L_win": 0.0547,
+     "best": "knn"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0682,
+     "ci": [
+      0.0379,
+      0.1667
+     ],
+     "L_win": 0.0547,
+     "best": "knn"
+    }
+   },
+   "P-D2S": {
+    "all": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0437,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0437,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    }
+   }
+  },
+  "gravity": {
+   "P-int": {
+    "all": {
+     "L": 0.3639,
+     "ci": [
+      0.2944,
+      0.4444
+     ],
+     "L_win": 0.2675,
+     "best": "rf"
+    },
+    "static": {
+     "L": 0.1979,
+     "ci": [
+      0.1146,
+      0.2917
+     ],
+     "L_win": 0.2179,
+     "best": "mlp"
+    },
+    "dynamic": {
+     "L": 0.4356,
+     "ci": [
+      0.3333,
+      0.5379
+     ],
+     "L_win": 0.31,
+     "best": "rf"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.3333,
+     "ci": [
+      0.2708,
+      0.4236
+     ],
+     "L_win": 0.2448,
+     "best": "rf"
+    },
+    "static": {
+     "L": 0.2083,
+     "ci": [
+      0.125,
+      0.3125
+     ],
+     "L_win": 0.1992,
+     "best": "mlp"
+    },
+    "dynamic": {
+     "L": 0.4271,
+     "ci": [
+      0.3229,
+      0.5521
+     ],
+     "L_win": 0.3055,
+     "best": "rf"
+    }
+   }
+  },
+  "demean": {
+   "P-int": {
+    "all": {
+     "L": 0.7361,
+     "ci": [
+      0.6778,
+      0.7889
+     ],
+     "L_win": 0.4621,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.3229,
+     "ci": [
+      0.2188,
+      0.4375
+     ],
+     "L_win": 0.1586,
+     "best": "lgbm"
+    },
+    "dynamic": {
+     "L": 0.9015,
+     "ci": [
+      0.8485,
+      0.9508
+     ],
+     "L_win": 0.7611,
+     "best": "mlp"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.7431,
+     "ci": [
+      0.7014,
+      0.7847
+     ],
+     "L_win": 0.4244,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.3958,
+     "ci": [
+      0.2917,
+      0.5
+     ],
+     "L_win": 0.1871,
+     "best": "lgbm"
+    },
+    "dynamic": {
+     "L": 0.9479,
+     "ci": [
+      0.9062,
+      0.9896
+     ],
+     "L_win": 0.7989,
+     "best": "mlp"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.2083,
+     "ci": [
+      0.1527,
+      0.2694
+     ],
+     "L_win": 0.1506,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0521,
+     "ci": [
+      0.0,
+      0.1354
+     ],
+     "L_win": 0.084,
+     "best": "lgbm"
+    },
+    "dynamic": {
+     "L": 0.2765,
+     "ci": [
+      0.2008,
+      0.3598
+     ],
+     "L_win": 0.2483,
+     "best": "mlp"
+    }
+   },
+   "P-S2D": {
+    "all": {
+     "L": 0.0644,
+     "ci": [
+      0.0454,
+      0.1439
+     ],
+     "L_win": 0.0606,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0644,
+     "ci": [
+      0.0454,
+      0.1439
+     ],
+     "L_win": 0.0606,
+     "best": "linear"
+    }
+   },
+   "P-D2S": {
+    "all": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0436,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0436,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    }
+   }
+  },
+  "lda3": {
+   "P-int": {
+    "all": {
+     "L": 0.3361,
+     "ci": [
+      0.2833,
+      0.3944
+     ],
+     "L_win": 0.173,
+     "best": "rf"
+    },
+    "static": {
+     "L": 0.125,
+     "ci": [
+      0.0625,
+      0.2188
+     ],
+     "L_win": 0.1036,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.4129,
+     "ci": [
+      0.3295,
+      0.5038
+     ],
+     "L_win": 0.2476,
+     "best": "rf"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.2847,
+     "ci": [
+      0.2292,
+      0.3611
+     ],
+     "L_win": 0.1679,
+     "best": "rf"
+    },
+    "static": {
+     "L": 0.1667,
+     "ci": [
+      0.0833,
+      0.3125
+     ],
+     "L_win": 0.1394,
+     "best": "knn"
+    },
+    "dynamic": {
+     "L": 0.3542,
+     "ci": [
+      0.2708,
+      0.4688
+     ],
+     "L_win": 0.2387,
+     "best": "rf"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.0694,
+     "ci": [
+      0.0417,
+      0.1417
+     ],
+     "L_win": 0.0716,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.0833,
+     "ci": [
+      0.0417,
+      0.1667
+     ],
+     "L_win": 0.0729,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.0758,
+     "ci": [
+      0.0417,
+      0.1742
+     ],
+     "L_win": 0.0858,
+     "best": "linear"
+    }
+   },
+   "LAOdyn": {
+    "all": {
+     "L": 0.0758,
+     "ci": [
+      0.0417,
+      0.1591
+     ],
+     "L_win": 0.087,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0758,
+     "ci": [
+      0.0417,
+      0.1591
+     ],
+     "L_win": 0.087,
+     "best": "linear"
+    }
+   }
+  },
+  "predlabel": {
+   "P-int": {
+    "all": {
+     "L": 0.0444,
+     "ci": [
+      0.0306,
+      0.0806
+     ],
+     "L_win": 0.0444,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0208,
+      0.0833
+     ],
+     "L_win": 0.0389,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0455,
+     "ci": [
+      0.0303,
+      0.0947
+     ],
+     "L_win": 0.0494,
+     "best": "linear"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.0417,
+     "ci": [
+      0.0208,
+      0.0833
+     ],
+     "L_win": 0.0557,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1042
+     ],
+     "L_win": 0.0545,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0417,
+     "ci": [
+      0.0208,
+      0.0938
+     ],
+     "L_win": 0.0573,
+     "best": "linear"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.0583,
+     "ci": [
+      0.0306,
+      0.1194
+     ],
+     "L_win": 0.0504,
+     "best": "rf"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.125
+     ],
+     "L_win": 0.0457,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0644,
+     "ci": [
+      0.0189,
+      0.1439
+     ],
+     "L_win": 0.0543,
+     "best": "rf"
+    }
+   },
+   "LAOdyn": {
+    "all": {
+     "L": 0.0682,
+     "ci": [
+      0.0189,
+      0.1516
+     ],
+     "L_win": 0.0572,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0682,
+     "ci": [
+      0.0189,
+      0.1516
+     ],
+     "L_win": 0.0572,
+     "best": "linear"
+    }
+   }
+  },
+  "lda3_r1": {
+   "P-int": {
+    "all": {
+     "L": 0.0778,
+     "ci": [
+      0.0556,
+      0.1167
+     ],
+     "L_win": 0.0593,
+     "best": "rf"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0104,
+      0.1042
+     ],
+     "L_win": 0.0447,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0909,
+     "ci": [
+      0.0644,
+      0.1402
+     ],
+     "L_win": 0.0731,
+     "best": "lgbm"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.0833,
+     "ci": [
+      0.0556,
+      0.1319
+     ],
+     "L_win": 0.0605,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0625,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0502,
+     "best": "lgbm"
+    },
+    "dynamic": {
+     "L": 0.1042,
+     "ci": [
+      0.0729,
+      0.1667
+     ],
+     "L_win": 0.0742,
+     "best": "mlp"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.0639,
+     "ci": [
+      0.0389,
+      0.1306
+     ],
+     "L_win": 0.0606,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0625,
+     "ci": [
+      0.0104,
+      0.1562
+     ],
+     "L_win": 0.0481,
+     "best": "lgbm"
+    },
+    "dynamic": {
+     "L": 0.072,
+     "ci": [
+      0.0417,
+      0.1629
+     ],
+     "L_win": 0.0712,
+     "best": "linear"
+    }
+   },
+   "LAOdyn": {
+    "all": {
+     "L": 0.0947,
+     "ci": [
+      0.0417,
+      0.197
+     ],
+     "L_win": 0.0643,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0947,
+     "ci": [
+      0.0417,
+      0.197
+     ],
+     "L_win": 0.0643,
+     "best": "mlp"
+    }
+   }
+  },
+  "act60_r1": {
+   "P-int": {
+    "all": {
+     "L": 0.0667,
+     "ci": [
+      0.0444,
+      0.1028
+     ],
+     "L_win": 0.0517,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0729,
+     "ci": [
+      0.0312,
+      0.125
+     ],
+     "L_win": 0.0511,
+     "best": "mlp"
+    },
+    "dynamic": {
+     "L": 0.0644,
+     "ci": [
+      0.0379,
+      0.1099
+     ],
+     "L_win": 0.0523,
+     "best": "mlp"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.0694,
+     "ci": [
+      0.0486,
+      0.1111
+     ],
+     "L_win": 0.0523,
+     "best": "knn"
+    },
+    "static": {
+     "L": 0.0625,
+     "ci": [
+      0.0208,
+      0.1255
+     ],
+     "L_win": 0.0502,
+     "best": "knn"
+    },
+    "dynamic": {
+     "L": 0.0833,
+     "ci": [
+      0.0625,
+      0.1354
+     ],
+     "L_win": 0.0578,
+     "best": "mlp"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.0583,
+     "ci": [
+      0.0361,
+      0.1
+     ],
+     "L_win": 0.0512,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0521,
+     "ci": [
+      0.0104,
+      0.1146
+     ],
+     "L_win": 0.0462,
+     "best": "knn"
+    },
+    "dynamic": {
+     "L": 0.0682,
+     "ci": [
+      0.0379,
+      0.1212
+     ],
+     "L_win": 0.0574,
+     "best": "mlp"
+    }
+   },
+   "LAOdyn": {
+    "all": {
+     "L": 0.0682,
+     "ci": [
+      0.0379,
+      0.1402
+     ],
+     "L_win": 0.0532,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0682,
+     "ci": [
+      0.0379,
+      0.1402
+     ],
+     "L_win": 0.0532,
+     "best": "lgbm"
+    }
+   }
+  },
+  "raw": {
+   "P-int": {
+    "all": {
+     "L": 0.7167,
+     "ci": [
+      0.6833,
+      0.7583
+     ],
+     "L_win": 0.4806,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.2604,
+     "ci": [
+      0.1562,
+      0.3958
+     ],
+     "L_win": 0.1811,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.928,
+     "ci": [
+      0.8902,
+      0.9621
+     ],
+     "L_win": 0.7788,
+     "best": "mlp"
+    }
+   },
+   "P-block": {
+    "all": {
+     "L": 0.6944,
+     "ci": [
+      0.6597,
+      0.7361
+     ],
+     "L_win": 0.4379,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.3125,
+     "ci": [
+      0.1875,
+      0.4583
+     ],
+     "L_win": 0.1992,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.9688,
+     "ci": [
+      0.9375,
+      1.0
+     ],
+     "L_win": 0.82,
+     "best": "mlp"
+    }
+   },
+   "P-LAO": {
+    "all": {
+     "L": 0.2333,
+     "ci": [
+      0.1722,
+      0.3056
+     ],
+     "L_win": 0.1598,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.1146,
+     "ci": [
+      0.0521,
+      0.1979
+     ],
+     "L_win": 0.0785,
+     "best": "rf"
+    },
+    "dynamic": {
+     "L": 0.303,
+     "ci": [
+      0.2121,
+      0.3939
+     ],
+     "L_win": 0.2631,
+     "best": "mlp"
+    }
+   },
+   "P-S2D": {
+    "all": {
+     "L": 0.0644,
+     "ci": [
+      0.0379,
+      0.1515
+     ],
+     "L_win": 0.0545,
+     "best": "knn"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0644,
+     "ci": [
+      0.0379,
+      0.1515
+     ],
+     "L_win": 0.0545,
+     "best": "knn"
+    }
+   },
+   "P-D2S": {
+    "all": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0436,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0417,
+     "ci": [
+      0.0,
+      0.1667
+     ],
+     "L_win": 0.0436,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    }
+   },
+   "LAOdyn": {
+    "all": {
+     "L": 0.2879,
+     "ci": [
+      0.2159,
+      0.3826
+     ],
+     "L_win": 0.2709,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.2879,
+     "ci": [
+      0.2159,
+      0.3826
+     ],
+     "L_win": 0.2709,
+     "best": "lgbm"
+    }
+   }
+  },
+  "rep": {
+   "LAOdyn": {
+    "all": {
+     "L": 0.1515,
+     "ci": [
+      0.1098,
+      0.2159
+     ],
+     "L_win": 0.1345,
+     "best": "mlp"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.1515,
+     "ci": [
+      0.1098,
+      0.2159
+     ],
+     "L_win": 0.1345,
+     "best": "mlp"
+    }
+   }
+  },
+  "pd_pub_s0": {
+   "LAOdyn": {
+    "all": {
+     "L": 0.0417,
+     "ci": [
+      0.0076,
+      0.0985
+     ],
+     "L_win": 0.0397,
+     "best": "lgbm"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.0417,
+     "ci": [
+      0.0076,
+      0.0985
+     ],
+     "L_win": 0.0397,
+     "best": "lgbm"
+    }
+   }
+  },
+  "msda": {
+   "LAOdyn": {
+    "all": {
+     "L": 0.2045,
+     "ci": [
+      0.1439,
+      0.2804
+     ],
+     "L_win": 0.1465,
+     "best": "linear"
+    },
+    "static": {
+     "L": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "L_win": 0.0,
+     "best": "linear"
+    },
+    "dynamic": {
+     "L": 0.2045,
+     "ci": [
+      0.1439,
+      0.2804
+     ],
+     "L_win": 0.1465,
+     "best": "linear"
+    }
+   }
+  }
+ },
+ "claims": {
+  "C1": {
+   "desc": "raw P-int >= 0.95",
+   "original": "FAIL",
+   "tightened": "FAIL",
+   "values": {
+    "L": 0.7166666666666667,
+    "ci": [
+     0.6833333333333333,
+     0.7583333333333333
+    ]
+   }
+  },
+  "C2": {
+   "desc": "raw P-block in [0.85, 0.97]",
+   "original": "FAIL",
+   "tightened": "FAIL",
+   "values": {
+    "L": 0.6944444444444444,
+    "ci": [
+     0.6597222222222222,
+     0.7361111111111112
+    ]
+   }
+  },
+  "C3": {
+   "desc": "raw P-LAO <= 0.60",
+   "original": "PASS",
+   "tightened": "PASS",
+   "values": {
+    "L": 0.23333333333333334,
+    "ci": [
+     0.17222222222222222,
+     0.3055555555555556
+    ],
+    "per_activity": {
+     "act0": 0.25,
+     "act1": 0.361,
+     "act2": 0.472,
+     "act3": 0.083,
+     "act4": 0.125,
+     "act5": 0.104
+    }
+   }
+  },
+  "C4": {
+   "desc": "raw P-S2D <= 0.25",
+   "original": "PASS",
+   "tightened": "PASS",
+   "values": {
+    "L": 0.06439393939393939,
+    "ci": [
+     0.03787878787878788,
+     0.15151515151515152
+    ]
+   }
+  },
+  "C5": {
+   "desc": "raw P-D2S <= 0.25",
+   "original": "PASS",
+   "tightened": "PASS",
+   "values": {
+    "L": 0.041666666666666664,
+    "ci": [
+     0.0,
+     0.16666666666666666
+    ]
+   }
+  },
+  "C6": {
+   "desc": "lda3 / act60_r1 / predlabel change <= 0.05 across P-int, P-block, P-LAO",
+   "original": "FAIL",
+   "tightened": "FAIL",
+   "values": {
+    "lda3": {
+     "values": [
+      0.336,
+      0.285,
+      0.069
+     ],
+     "range": 0.267,
+     "range_hi95": 0.292
+    },
+    "act60_r1": {
+     "values": [
+      0.067,
+      0.069,
+      0.058
+     ],
+     "range": 0.011,
+     "range_hi95": 0.05
+    },
+    "predlabel": {
+     "values": [
+      0.044,
+      0.042,
+      0.058
+     ],
+     "range": 0.017,
+     "range_hi95": 0.06
+    }
+   }
+  },
+  "C7": {
+   "desc": "msda and rep under leave-one-dynamic-activity-out <= 0.40 (shipped checkpoints saw the held-out activity)",
+   "original": "PASS",
+   "tightened": "PASS",
+   "values": {
+    "msda": {
+     "L": 0.20454545454545456,
+     "ci": [
+      0.14393939393939395,
+      0.2803977272727267
+     ]
+    },
+    "rep": {
+     "L": 0.15151515151515152,
+     "ci": [
+      0.10984848484848485,
+      0.2159090909090909
+     ]
+    },
+    "pd_pub_s0": {
+     "L": 0.041666666666666664,
+     "ci": [
+      0.007575757575757576,
+      0.09848484848484848
+     ]
+    }
+   }
+  },
+  "C8": {
+   "desc": "high-U floors below msda / rep (leave-one-dynamic-activity-out, first-pass A* set)",
+   "original": "PASS",
+   "tightened": "PASS",
+   "values": {
+    "lda3": {
+     "L": 0.076,
+     "below_msda": true,
+     "below_rep": true
+    },
+    "act60_r1": {
+     "L": 0.068,
+     "below_msda": true,
+     "below_rep": true
+    },
+    "predlabel": {
+     "L": 0.068,
+     "below_msda": true,
+     "below_rep": true
+    },
+    "lda3_r1": {
+     "L": 0.095,
+     "below_msda": true,
+     "below_rep": true
+    }
+   }
+  },
+  "C9": {
+   "desc": "gravity-direction attacker >= 50% of the full suite's static accuracy (P-int)",
+   "original": "PASS",
+   "tightened": "UNRESOLVED",
+   "values": {
+    "gravity_static": 0.19791666666666666,
+    "raw_static": 0.2604166666666667,
+    "ratio": 0.76,
+    "gravity_block_static": 0.20833333333333334
+   }
+  }
+ },
+ "falsifiers": {
+  "durable_biometric": {
+   "original": false,
+   "tightened": false
+  },
+  "same_activity_only": {
+   "original": false,
+   "tightened": false
+  }
+ },
+ "verdict_original": "PARTIAL: 6 of 9 claims pass",
+ "verdict_tightened": "PARTIAL/UNRESOLVED: 5 of 9 claims pass with bounds",
+ "note": "same-session closed-set wording; cannot change a floor-vs-defender label; 1D-CNN dropped (CPU only)"
+}
