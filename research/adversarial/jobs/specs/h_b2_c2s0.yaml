@@ -1,0 +1,5 @@
+name: h_b2_c2s0
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/aae_train.py fit --set sealed --config C2 --folds S0,S1,S2 --seed 0 --tag _c2s0 --save_weights --out $OUT && OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --set sealed --arm aae_re --tag _c2s0 --folds S0,S1,S2 --family nn --targets id,act --out $OUT --pd_file $OUT/aae_re_sealed_c2s0.npz"
+hf_path: runs/h_b2_c2s0
+hf_allow: ["*.json", "*.log", "*.md", "*.pt"]

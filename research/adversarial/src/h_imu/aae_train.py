@@ -151,9 +151,9 @@ def run_r0b(a):
     for r in range(3):
         net, info = A._train_estimator(Xtr_pd.reshape(-1, 1, 2, 128), idtr, 24, r, dev); id_nets.append(net)
     res = dict(configs={}, chosen=None)
-    logf = open(os.path.join(a.out, "r0b_train.log"), "a")
+    logf = open(os.path.join(a.out, f"r0b_train{a.tag}.log"), "a")
     def log(s): logf.write(s + "\n"); logf.flush()
-    for cfg in ["C1", "C2", "C3"]:
+    for cfg in a.configs.split(","):
         log(f"== {cfg}")
         enc, dec, hist = train_aae(allw["X"][tr], allw["sub"][tr], allw["act"][tr], 24, 4, cfg, 0, dev, log)
         Rtr, Rte = release(enc, dec, Xtr_pd, dev), release(enc, dec, Xte_pd, dev)
@@ -163,13 +163,13 @@ def run_r0b(a):
         ok = bool(np.mean(frozen) * 100 <= 10.0 and act_acc * 100 >= 90.0)
         res["configs"][cfg] = dict(beta=CONFIGS[cfg], frozen_id_acc_runs=frozen, frozen_id_acc_mean=float(np.mean(frozen)), retrained_act_acc=float(act_acc), mse_release_vs_input=float(np.mean((Rte - Xte_pd) ** 2)), passes=ok, history_last=hist[-1], seconds=round(time.time() - t0, 1))
         log(json.dumps(res["configs"][cfg]))
-        json.dump(res, open(os.path.join(a.out, "r0b.json"), "w"), indent=1)
+        json.dump(res, open(os.path.join(a.out, f"r0b{a.tag}.json"), "w"), indent=1)
         if ok:
             res["chosen"] = cfg; break
     res["R0B_pass"] = res["chosen"] is not None
-    if res["chosen"] is None: res["chosen"] = "C1"
+    if res["chosen"] is None: res["chosen"] = a.configs.split(",")[0]
     res["seconds"] = round(time.time() - t0, 1)
-    json.dump(res, open(os.path.join(a.out, "r0b.json"), "w"), indent=1); print(json.dumps(res, indent=1))
+    json.dump(res, open(os.path.join(a.out, f"r0b{a.tag}.json"), "w"), indent=1); print(json.dumps(res, indent=1))
 
 
 def run_fit(a):
@@ -177,7 +177,7 @@ def run_fit(a):
     dev = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     S = D.get_set(a.set); X = S["X"]
     pack = {}; hists = {}
-    logf = open(os.path.join(a.out, f"aae_fit_{a.set}.log"), "a")
+    logf = open(os.path.join(a.out, f"aae_fit_{a.set}{a.tag}.log"), "a")
     def log(s): logf.write(s + "\n"); logf.flush()
     for f in a.folds.split(","):
         te = D.test_mask(S, f); tr = ~te
@@ -186,14 +186,17 @@ def run_fit(a):
         R = release(enc, dec, S["X"], dev)
         assert np.isfinite(R).all()
         pack[f"release_{f}"] = R; hists[f] = hist
+        if a.save_weights:
+            torch.save(dict(enc=enc.state_dict(), dec=dec.state_dict(), config=a.config, seed=a.seed, fold=f), os.path.join(a.out, f"weights_{a.set}{a.tag}_{f}.pt"))
         log(f"fold {f} done {time.time()-t0:.0f}s")
-    np.savez_compressed(os.path.join(a.out, f"aae_re_{a.set}.npz"), idx=np.arange(len(X)), **pack)
-    json.dump(dict(set=a.set, config=a.config, beta=CONFIGS[a.config], seed=a.seed, history=hists, seconds=round(time.time() - t0, 1)), open(os.path.join(a.out, f"aae_fit_{a.set}.json"), "w"), indent=1)
+    np.savez_compressed(os.path.join(a.out, f"aae_re_{a.set}{a.tag}.npz"), idx=np.arange(len(X)), **pack)
+    json.dump(dict(set=a.set, config=a.config, beta=CONFIGS[a.config], seed=a.seed, history=hists, seconds=round(time.time() - t0, 1)), open(os.path.join(a.out, f"aae_fit_{a.set}{a.tag}.json"), "w"), indent=1)
     print("done", round(time.time() - t0, 1))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("mode", choices=["r0b", "fit"]); ap.add_argument("--out", required=True)
     ap.add_argument("--set", default="sealed"); ap.add_argument("--config", default="C1"); ap.add_argument("--folds", default="S0,S1,S2"); ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--configs", default="C1,C2,C3"); ap.add_argument("--tag", default=""); ap.add_argument("--save_weights", action="store_true")
     a = ap.parse_args()
     run_r0b(a) if a.mode == "r0b" else run_fit(a)
