@@ -101,3 +101,14 @@ def fit_f5(F, dem, mask, tr, va, te, seed=0, true_rows=None) -> tuple[np.ndarray
         ah[true_rows], sh[true_rows], vh[true_rows] = dem["age"][true_rows], dem["male"][true_rows].astype(float), dem["pa"][true_rows].astype(float)
     m = HistGradientBoostingClassifier(max_depth=4, max_iter=150, random_state=seed).fit(demo_pair_features(ah, sh, vh, tr["ia"], tr["ib"]), tr["y"])
     return m.predict_proba(demo_pair_features(ah, sh, vh, va["ia"], va["ib"]))[:, 1], m.predict_proba(demo_pair_features(ah, sh, vh, te["ia"], te["ib"]))[:, 1]
+
+
+def fit_f3_xl(Ftr, tr, Fva, va, Fte, te, seed=0, stats_from=None) -> dict:
+    """T.md section 12, labels14 R5: a larger MLP head (512, 256, up to 200 iterations, early stopping) on [|fa - fb|, fa * fb]."""
+    from sklearn.neural_network import MLPClassifier
+    mu, sd = std_fit(Ftr if stats_from is None else stats_from)
+    S_ = lambda F: (F - mu) / sd
+    Ftr, Fva, Fte = S_(Ftr), S_(Fva), S_(Fte)
+    Xtr, Xva, Xte = pair_matrix(Ftr, tr["ia"], tr["ib"]), pair_matrix(Fva, va["ia"], va["ib"]), pair_matrix(Fte, te["ia"], te["ib"])
+    m = MLPClassifier((512, 256), alpha=1e-3, early_stopping=True, validation_fraction=0.1, n_iter_no_change=15, max_iter=200, random_state=seed).fit(Xtr, tr["y"])
+    return {"f3x_mlp": (m.predict_proba(Xva)[:, 1], m.predict_proba(Xte)[:, 1])}

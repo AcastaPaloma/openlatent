@@ -132,6 +132,10 @@ def t_generator_releases():
     check("PCA reconstruction error decreases with k", errs[0] > errs[1] > errs[2], str([round(e, 5) for e in errs]))
 
 
+def _pr(x):
+    return A._prep(x)
+
+
 def t_attackers_synthetic():
     rng = np.random.default_rng(0)
     n, N = 64, 120
@@ -166,6 +170,17 @@ def t_attackers_synthetic():
     t0 = time.time()
     out = A.train_siamese(tr, va, te, arch="resnet18", pretrained=False, max_epochs=2, bs=16, device="cpu", amp=False, log=lambda *a: None)
     check("Siamese (resnet18, 64px, CPU) trains 2 epochs and returns finite scores", np.isfinite(out["test_score"]).all() and len(out["test_score"]) == 30, f"{time.time() - t0:.0f}s")
+    # T5 / R5: the F1+ attacker (xl head, augmentation, cosine lr, validation-AUC selection, time budget)
+    xa_ = xs[:8].float()
+    xaug = A.augment(xa_)
+    check("R5 augmentation: same shape, values in [0,1], differs from the input, identity-free of NaN", xaug.shape == xa_.shape and bool(((xaug >= 0) & (xaug <= 1)).all()) and not torch.allclose(xaug, xa_) and bool(torch.isfinite(xaug).all()))
+    net = A.Siamese("resnet18", False, head="xl")
+    lg = net(_pr(xs[:4]), _pr(xs[4:8]))
+    check("R5 head 'xl': 512-d embedding, pair feature 1536 -> 256 -> 1, one logit per pair; default head unchanged (128 -> 1)", lg.shape == (4,) and net.pair[0].in_features == 1536 and A.Siamese("resnet18", False).fc_end.in_features == 128)
+    o5 = A.train_siamese(tr, va, te, arch="resnet18", pretrained=False, max_epochs=3, bs=16, device="cpu", amp=False, log=lambda *a: None, head="xl", select="auc", aug=True, cosine=True, patience=10, time_budget_s=1e-3)
+    check("R5 trainer: AUC selection records val AUC per epoch, the time budget truncates and is flagged, scores finite", o5["truncated"] and o5["epochs"] == 1 and len(o5["curve"][0]) == 4 and np.isfinite(o5["test_score"]).all(), str(o5["curve"][:1]))
+    o5b = A.train_siamese(tr, va, te, arch="resnet18", pretrained=False, max_epochs=3, bs=16, device="cpu", amp=False, log=lambda *a: None, head="xl", select="auc", aug=True, cosine=True, patience=10)
+    check("R5 trainer without a budget runs the full cap (3 epochs), not truncated, best_val_auc is the max of the curve", (not o5b["truncated"]) and o5b["epochs"] == 3 and abs(o5b["best_val_auc"] - max(c[3] for c in o5b["curve"])) < 1e-9)
 
 
 def t_heads_planted():
@@ -325,6 +340,42 @@ def t_handstats_utility():
     check("utility pipeline runs (fine-tune, predict, macro AUC finite)", np.isfinite(a) and per.shape == (14,), f"mean AUC {a:.3f}")
 
 
+def t_ladder_r5():
+    """fabricated prediction files: the aggregator reproduces L4, applies the pre-registered rule, and the ordering test on planted scores."""
+    import json, tempfile
+    from . import ladder_r5 as L5
+    rng = np.random.default_rng(3)
+    n = 1200
+    y = np.r_[np.ones(n // 2), np.zeros(n // 2)].astype(int)
+    cl = [f"c{i % 300}" for i in range(n)]
+    root = tempfile.mkdtemp()
+
+    def put(rel, rot, suffix, name, sc):
+        d = __import__("pathlib").Path(root) / f"{rel}_rot{rot}{suffix}"; d.mkdir(exist_ok=True)
+        (d / f"preds_{name}.json").write_text(json.dumps(dict(pair_id=list(range(n)), cluster=cl, y=y.tolist(), score_test=sc.tolist(), score_val=sc.tolist(), cluster_val=cl, y_val=y.tolist())))
+        sm = d / "summary.json"
+        j = json.loads(sm.read_text()) if sm.exists() else dict(attackers={})
+        j["attackers"][name] = dict(val_auc=0.7, epochs=12, truncated=False, best_val_auc=0.8); sm.write_text(json.dumps(j))
+    gain = lambda g: y * g + rng.normal(0, 1, n)
+    for rot in (0, 1):
+        for rel, g1, g4, g5 in (("down_f4", 1.0, 1.3, 1.31), ("pcxr_mu0.01_s1_C2", 1.0, 1.28, 1.29)):
+            put(rel, rot, "", "f1_match_ens", gain(g1)); put(rel, rot, "", "f3b_mlp", gain(g1)); put(rel, rot, "", "f4_match", gain(0.2)); put(rel, rot, "", "f5a", gain(0.1))
+            put(rel, rot, "_ladderall", "f1_match_ens", gain(g4)); put(rel, rot, "_ladderall", "f3b_mlp", gain(g1))
+            put(rel, rot, "_ladderall_r5", "f1_match_ens", gain(g5))
+        put("labels14", rot, "", "f3b_mlp", gain(0.6)); put("labels14", rot, "_ladderall", "f3b_mlp", gain(0.65)); put("labels14", rot, "_ladderall_r5", "f3x_mlp", gain(0.66))
+    import subprocess
+    out = tempfile.mkdtemp()
+    r = subprocess.run([sys.executable, "-m", "t_cxr.ladder_r5", "--root", root, "--rots", "0,1", "--out", out, "--B", "300"], capture_output=True, text=True, cwd=str(__import__("pathlib").Path(__file__).resolve().parents[1]))
+    ok = r.returncode == 0 and (__import__("pathlib").Path(out) / "ladder_r5.json").exists()
+    check("ladder_r5 aggregator runs on fabricated predictions", ok, (r.stderr or r.stdout)[-300:])
+    if ok:
+        j = json.loads((__import__("pathlib").Path(out) / "ladder_r5.json").read_text())
+        dn = j["releases"]["down_f4"]
+        check("ladder_r5: L5 >= L4 in every resample (D5 lower bound >= 0) and the planted tiny D5 gets SIGNED-WITH-CAVEAT", dn["D5"]["ci"][0] >= -1e-12 and dn["D5"]["diff"] < 0.02 and j["leg2_R5"]["verdict_original"] == "SIGNED-WITH-CAVEAT", str(dn["D5"]))
+        check("ladder_r5: the rule function maps (0.01,0.03)->SIGNED, (0.025,0.06)->UNSIGNABLE, (0.015,0.05)->UNRESOLVED", L5.rule(0.01, 0.03) == "SIGNED-WITH-CAVEAT" and L5.rule(0.025, 0.06).startswith("PERMANENTLY") and L5.rule(0.015, 0.05).startswith("UNRESOLVED"))
+        check("ladder_r5: ordering test reports floor_ahead_by with the right sign and no spurious reversal", "R5" in j["ordering"] and not j["ordering"]["R5"]["defender_beats_floor"], str(j["ordering"]["R5"]))
+
+
 def t_dups(data, pri, exclude):
     import json
     d = meta.load(f"{data}/Data_Entry_2017_v2020.csv", f"{data}/test_list.txt", f"{data}/train_val_list.txt", exclude_json=exclude)
@@ -370,7 +421,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--data", required=True); ap.add_argument("--skip", default=""); ap.add_argument("--pri", default=None, help="dir with PriCheXy image_pairs_*.txt"); ap.add_argument("--exclude", default=None)
     a = ap.parse_args()
     torch.set_num_threads(4)
-    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []) + ([("dups", lambda: t_dups(a.data, a.pri, a.exclude))] if a.exclude and a.pri else []):
+    for nm, fn in [("stats", t_stats), ("generator+releases", t_generator_releases), ("attackers", t_attackers_synthetic), ("heads", t_heads_planted), ("f5", t_f5_matched), ("aggregate", t_aggregate), ("ladder_r5", t_ladder_r5), ("handstats+utility", t_handstats_utility), ("pairs", lambda: t_pairs(a.data))] + ([("roles", lambda: t_roles(a.data, a.pri))] if a.pri else []) + ([("dups", lambda: t_dups(a.data, a.pri, a.exclude))] if a.exclude and a.pri else []):
         if nm in a.skip:
             continue
         print(f"== {nm}", flush=True)

@@ -32,27 +32,36 @@ def _prep(x: torch.Tensor) -> torch.Tensor:
 class Siamese(nn.Module):
     """Packhauser et al. 2022 verifier: shared backbone, 128-d sigmoid embedding, |difference|, linear head -> logit."""
 
-    def __init__(self, arch: str = "resnet50", pretrained: bool = True):
+    def __init__(self, arch: str = "resnet50", pretrained: bool = True, head: str = "linear"):
         super().__init__()
         import torchvision.models as tvm
+        d = 128 if head == "linear" else 512                    # head "xl" (T.md section 12, R5): 512-d embedding + MLP on [|ea-eb|, ea*eb, ea+eb]
         if arch == "resnet50":
             m = tvm.resnet50(weights=tvm.ResNet50_Weights.IMAGENET1K_V1 if pretrained else None)
-            m.fc = nn.Linear(2048, 128)
+            m.fc = nn.Linear(2048, d)
         elif arch == "convnext_tiny":
             m = tvm.convnext_tiny(weights=tvm.ConvNeXt_Tiny_Weights.IMAGENET1K_V1 if pretrained else None)
-            m.classifier[2] = nn.Linear(768, 128)
+            m.classifier[2] = nn.Linear(768, d)
         elif arch == "resnet18":
             m = tvm.resnet18(weights=tvm.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
-            m.fc = nn.Linear(512, 128)
+            m.fc = nn.Linear(512, d)
         else:
             raise ValueError(arch)
-        self.model, self.fc_end = m, nn.Linear(128, 1)
+        self.head = head
+        self.model = m
+        if head == "linear":
+            self.fc_end = nn.Linear(128, 1)
+        else:
+            self.pair = nn.Sequential(nn.Linear(3 * d, 256), nn.ReLU(), nn.Dropout(0.2), nn.Linear(256, 1))
 
     def embed(self, x):
         return torch.sigmoid(self.model(x))
 
     def forward(self, a, b):
-        return self.fc_end(torch.abs(self.embed(a) - self.embed(b))).squeeze(-1)
+        ea, eb = self.embed(a), self.embed(b)
+        if self.head == "linear":
+            return self.fc_end(torch.abs(ea - eb)).squeeze(-1)
+        return self.pair(torch.cat([torch.abs(ea - eb), ea * eb, ea + eb], dim=1)).squeeze(-1)
 
 
 def _batches(n: int, bs: int, shuffle: bool, gen: torch.Generator | None):
@@ -72,23 +81,42 @@ def predict(net: Siamese, xa: torch.Tensor, xb: torch.Tensor, ia, ib, bs: int = 
     return torch.cat(out).numpy()
 
 
+def augment(x: torch.Tensor, shift_px: int = 8, jitter: float = 0.10) -> torch.Tensor:
+    """R5 training-time augmentation, independent per image: random translation up to +-shift_px and brightness / contrast jitter; x (B,n,n) float in [0,1]."""
+    B, n = x.shape[0], x.shape[-1]
+    th = torch.zeros(B, 2, 3, device=x.device); th[:, 0, 0] = 1; th[:, 1, 1] = 1
+    th[:, :, 2] = (torch.rand(B, 2, device=x.device) * 2 - 1) * shift_px * 2.0 / n
+    g = F.affine_grid(th, (B, 1, n, n), align_corners=False)
+    y = F.grid_sample(x.float().unsqueeze(1), g, padding_mode="border", align_corners=False).squeeze(1)
+    c = 1 + (torch.rand(B, 1, 1, device=x.device) * 2 - 1) * jitter
+    b = (torch.rand(B, 1, 1, device=x.device) * 2 - 1) * jitter * 0.5
+    return ((y - 0.5) * c + 0.5 + b).clamp(0, 1)
+
+
 def train_siamese(tr: dict, va: dict, te: dict, *, arch="resnet50", pretrained=True, seed=0, lr=1e-4, bs=32, max_epochs=30, patience=5, amp=True, device="cuda",
-                  log=print, return_model=False) -> dict:
+                  log=print, return_model=False, head="linear", select="loss", aug=False, cosine=False, time_budget_s=None) -> dict:
     """tr/va/te = dict(xa=(Na,n,n) float16 tensor of the images used as element A, xb= same for element B, ia, ib = index arrays, y = labels).
     The caller decides what xa/xb ARE (defended / raw) for each phase -> the three conditions.  Early stopping on validation BCE (paper: patience 5).
     Returns val/test scores at the best validation epoch, the per-epoch curve, and the epoch used."""
     torch.manual_seed(seed); np.random.seed(seed)
     gen = torch.Generator(); gen.manual_seed(seed)
     dev = torch.device(device)
-    net = Siamese(arch, pretrained).to(dev).to(memory_format=torch.channels_last)
+    net = Siamese(arch, pretrained, head).to(dev).to(memory_format=torch.channels_last)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max_epochs) if cosine else None
+    import time as _time
+    from .stats import auc as _auc
+    t_start = _time.time(); truncated = False; best_auc = -1.0
     ytr = torch.as_tensor(tr["y"], dtype=torch.float32)
     best, best_state, bad, curve = math.inf, None, 0, []
     for ep in range(max_epochs):
         net.train()
         tl = 0.0
         for sl in _batches(len(ytr), bs, True, gen):
-            a, b = _prep(tr["xa"][tr["ia"][sl]].to(dev)), _prep(tr["xb"][tr["ib"][sl]].to(dev))
+            xa_, xb_ = tr["xa"][tr["ia"][sl]].to(dev), tr["xb"][tr["ib"][sl]].to(dev)
+            if aug:
+                xa_, xb_ = augment(xa_), augment(xb_)
+            a, b = _prep(xa_), _prep(xb_)
             with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=amp and dev.type == "cuda"):
                 logit = net(a, b)
             loss = F.binary_cross_entropy_with_logits(logit.float(), ytr[sl].to(dev))
@@ -96,18 +124,27 @@ def train_siamese(tr: dict, va: dict, te: dict, *, arch="resnet50", pretrained=T
             tl += float(loss) * len(sl)
         sv = predict(net, va["xa"], va["xb"], va["ia"], va["ib"], amp=amp)
         vl = float(F.binary_cross_entropy_with_logits(torch.as_tensor(sv), torch.as_tensor(va["y"], dtype=torch.float32)))
-        curve.append((ep, tl / len(ytr), vl))
-        log(f"  ep {ep} train {tl / len(ytr):.4f} val {vl:.4f}")
-        if vl < best:
-            best, bad, best_state = vl, 0, copy.deepcopy(net.state_dict())
+        va_auc = _auc(va["y"], sv) if select == "auc" else None
+        curve.append((ep, tl / len(ytr), vl) if va_auc is None else (ep, tl / len(ytr), vl, va_auc))
+        log(f"  ep {ep} train {tl / len(ytr):.4f} val {vl:.4f}" + ("" if va_auc is None else f" val_auc {va_auc:.4f}"))
+        improved = (va_auc > best_auc + 1e-6) if select == "auc" else (vl < best)
+        if improved:
+            best, bad, best_state = vl, 0, copy.deepcopy(net.state_dict())          # best_val_loss = validation BCE at the selected epoch (whichever criterion selected it)
+            if va_auc is not None:
+                best_auc = va_auc
         else:
             bad += 1
             if bad >= patience:
                 break
+        if sched is not None:
+            sched.step()
+        if time_budget_s and _time.time() - t_start > time_budget_s:
+            truncated = True; log(f"  STOP: time budget {time_budget_s}s reached after epoch {ep}")
+            break
     net.load_state_dict(best_state)
     extra = dict(model=net) if return_model else {}
     return dict(**extra, val_score=predict(net, va["xa"], va["xb"], va["ia"], va["ib"], amp=amp), test_score=predict(net, te["xa"], te["xb"], te["ia"], te["ib"], amp=amp),
-                curve=curve, best_val_loss=best, epochs=len(curve))
+                curve=curve, best_val_loss=best, epochs=len(curve), truncated=truncated, best_val_auc=best_auc)
 
 
 # ---------------------------------------------------------------------------------------------- F4 structural (non-learned)

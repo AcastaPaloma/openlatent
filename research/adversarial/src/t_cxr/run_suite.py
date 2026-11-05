@@ -69,12 +69,13 @@ def main():
     ap.add_argument("--screen", action="store_true", help="T2 screen: validation only. T pairs / T images are never built, no ledger entry; output dir suffix _screen")
     ap.add_argument("--pcxr-dir", default=None, help="dir with generator_pcxr_mu*.pth (train_pcx.py)")
     ap.add_argument("--ladder-s", type=int, default=0, help="T4a: add this many S-role multi-visit patients (2 triples each) to the attacker-training pairs; -1 = all of them")
+    ap.add_argument("--r5", action="store_true", help="T5 (T.md section 12): attacker F1+ (xl head, augmentation, cosine lr, validation-AUC selection, time budget)")
     ap.add_argument("--design", default="N2", choices=["N2", "N3", "N3s"], help="T4b: N3 = negatives matched on the 14-finding vector (T.md section 11); N3s = N3 restricted to N2 tiers 0-1 (A12)")
     ap.add_argument("--shuffle-val", action="store_true", help="with --shuffle-labels: ALSO permute the validation labels (removes the epoch-selection leak of the control; T.md D3); suffix _shuf2")
     ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
     a = ap.parse_args()
     t0 = time.time()
-    out = Path(a.out) / f"{a.release}_rot{a.rot}{('_shuf2' if a.shuffle_val else '_shuf') if a.shuffle_labels else ''}{'_screen' if a.screen else ''}{('_ladder' + ('all' if a.ladder_s < 0 else str(a.ladder_s))) if a.ladder_s else ''}{'_' + a.design.lower() if a.design != 'N2' else ''}"; out.mkdir(parents=True, exist_ok=True)
+    out = Path(a.out) / f"{a.release}_rot{a.rot}{('_shuf2' if a.shuffle_val else '_shuf') if a.shuffle_labels else ''}{'_screen' if a.screen else ''}{('_ladder' + ('all' if a.ladder_s < 0 else str(a.ladder_s))) if a.ladder_s else ''}{'_' + a.design.lower() if a.design != 'N2' else ''}{'_r5' if a.r5 else ''}"; out.mkdir(parents=True, exist_ok=True)
     if not a.synthetic and not a.exclude:
         raise SystemExit("--exclude exclude_dups.json is required for real runs (T.md A2)")
     d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
@@ -113,7 +114,7 @@ def main():
         parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
         if a.shuffle_val:
             parts["va"]["y"] = np.random.default_rng(778).permutation(parts["va"]["y"]); sfx = "_shuf2"
-    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val, ladder_s=a.ladder_s, design=a.design)   # salt id: a new partition is new sealed material
+    cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic, salt_id=hid("salt-id", salt), shuffle_val=a.shuffle_val, ladder_s=a.ladder_s, design=a.design, r5=a.r5)   # salt id: a new partition is new sealed material
     ledger_rec = None if (a.no_ledger or a.synthetic or a.screen) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
     flow = torch.load(a.flow_stats) if a.flow_stats else None
@@ -140,9 +141,10 @@ def main():
             sc = []
             for sd in [int(s) for s in a.seeds.split(",")]:
                 o = A.train_siamese(**{k: v for k, v in zip(("tr", "va", "te"), (lambda cs: (cs["tr"], cs["va"], cs["te"]))(cond_sets(cond, Xd, Xr, parts)))}, arch=a.arch, pretrained=not a.no_pretrain,
-                                    seed=sd, max_epochs=a.max_epochs, bs=a.bs, device=dev, amp=dev == "cuda", log=lambda *x: None)
+                                    seed=sd, max_epochs=a.max_epochs, bs=a.bs, device=dev, amp=dev == "cuda", log=(print if a.r5 else (lambda *x: None)),
+                                    **(dict(head="xl", select="auc", aug=True, cosine=True, patience=10, time_budget_s=2100) if a.r5 else {}))
                 sc.append((o["val_score"], o["test_score"], o["epochs"]))
-                record(f"f1_{cond}_s{sd}", o["val_score"], o["test_score"], dict(epochs=o["epochs"]))
+                record(f"f1_{cond}_s{sd}", o["val_score"], o["test_score"], dict(epochs=o["epochs"], truncated=bool(o.get("truncated")), best_val_auc=float(o.get("best_val_auc", -1)), best_val_loss=float(o["best_val_loss"]), curve=[[round(float(v), 5) for v in c] for c in o["curve"]]))
             record(f"f1_{cond}_ens", np.mean([z[0] for z in sc], 0), np.mean([z[1] for z in sc], 0))
     if "f4" in todo:
         for cond in ("match", "anon2"):

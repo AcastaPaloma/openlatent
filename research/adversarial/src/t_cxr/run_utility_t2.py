@@ -26,7 +26,7 @@ def main():
     ap.add_argument("--data", required=True); ap.add_argument("--pri", required=True); ap.add_argument("--bank", default=None); ap.add_argument("--salt-file", default=None)
     ap.add_argument("--exclude", default=None); ap.add_argument("--gen-dir", default=None); ap.add_argument("--pcxr-dir", default=None); ap.add_argument("--flow-stats", default=None)
     ap.add_argument("--clf-init", required=True); ap.add_argument("--out", required=True); ap.add_argument("--device", default="cuda"); ap.add_argument("--epochs", type=int, default=2)
-    ap.add_argument("--size", type=int, default=224); ap.add_argument("--ladder-s", type=int, default=0); ap.add_argument("--design", default="N2", choices=["N2", "N3", "N3s"]); ap.add_argument("--skip-utility-json", action="store_true"); ap.add_argument("--synthetic", type=int, default=0); ap.add_argument("--res", type=int, default=64); ap.add_argument("--no-pretrain", action="store_true")
+    ap.add_argument("--size", type=int, default=224); ap.add_argument("--ladder-s", type=int, default=0); ap.add_argument("--design", default="N2", choices=["N2", "N3", "N3s"]); ap.add_argument("--skip-utility-json", action="store_true"); ap.add_argument("--r5", action="store_true"); ap.add_argument("--synthetic", type=int, default=0); ap.add_argument("--res", type=int, default=64); ap.add_argument("--no-pretrain", action="store_true")
     a = ap.parse_args()
     t0 = time.time(); dev = a.device; rots = [int(x) for x in a.rots.split(",")]
     if not a.synthetic and not a.exclude:
@@ -70,7 +70,7 @@ def main():
         print(f"utility {a.release} rot{r}: U_val {uv:.3f} U_test {ut:.3f}", flush=True)
     if a.labels14 and a.release == "raw":
         labcode = (Y.astype(np.int64) * (1 << np.arange(14))).sum(1)
-        sfx = (("_ladder" + ("all" if a.ladder_s < 0 else str(a.ladder_s))) if a.ladder_s else "") + (("_" + a.design.lower()) if a.design != "N2" else "")
+        sfx = (("_ladder" + ("all" if a.ladder_s < 0 else str(a.ladder_s))) if a.ladder_s else "") + (("_" + a.design.lower()) if a.design != "N2" else "") + ("_r5" if a.r5 else "")
         for r in rots:
             dr = droles[r]
             pA, _ = pairs.build(dr, "A", a.design, 2, "tr0", col="role", labcode=labcode); pV, _ = pairs.build(dr, "V", a.design, 1, "v0", col="role", labcode=labcode); pT, _ = pairs.build(dr, "T", a.design, 1, "te0", col="role", labcode=labcode)
@@ -85,7 +85,7 @@ def main():
             need = np.unique(np.r_[pA.a, pA.b, pV.a, pV.b, pT.a, pT.b]); pos = {x: i for i, x in enumerate(need)}
             C = U.predict(model, mat(need), dev, size=a.size)
             parts = dict(tr=split_pairs(pA, pos), va=split_pairs(pV, pos), te=split_pairs(pT, pos))
-            o = H.fit_f3(C, parts["tr"], C, parts["va"], C, parts["te"])
+            o = (H.fit_f3_xl if a.r5 else H.fit_f3)(C, parts["tr"], C, parts["va"], C, parts["te"])
             l14 = out / f"labels14_rot{r}{sfx}"; l14.mkdir(exist_ok=True)
             cl_te = pT.anchor_pid.map(lambda p: hid(p, salt)).to_numpy(); cl_va = pV.anchor_pid.map(lambda p: hid(p, salt)).to_numpy()
             for nm, (sv, st) in o.items():
