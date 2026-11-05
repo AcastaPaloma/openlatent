@@ -106,6 +106,7 @@ def main():
     ap.add_argument("--learned", default="msda,rep"); ap.add_argument("--control", default="pd_pub_s0,pd_pub_s1,pd_pub_s2,pd_plain_s0,pd_w1_1.8_s0,pd_w2_0.5_s0")
     ap.add_argument("--folds", default="O"); ap.add_argument("--B", type=int, default=2000)
     ap.add_argument("--set", default="astar", choices=["astar", "sealed", "wisdm"])
+    ap.add_argument("--mL_floor", type=float, default=0.15); ap.add_argument("--mU_floor", type=float, default=0.02, help="pre-registered margin floors (raise-only): m = max(floor, empirical MDE80)")
     ap.add_argument("--exclude", default="", help="comma-separated arms removed from the floor set (used for the frozen-list reading, verdict_original)")
     a = ap.parse_args()
     folds = a.folds.split(",")
@@ -133,7 +134,7 @@ def main():
     for tgt, key in [("L", "Lb"), ("U", "Ub")]:
         ses = [float(np.std(R[x][key] - R[y][key])) for x, y in pairs if R[x].get(key) is not None and R[y].get(key) is not None]
         mde[tgt] = dict(median_se=float(np.median(ses)) if ses else None, mde80=float(2.556 * np.median(ses)) if ses else None, n_pairs=len(ses))
-    m_L = max(0.15, mde["L"]["mde80"] or 0); m_U = max(0.02, mde["U"]["mde80"] or 0)
+    m_L = max(a.mL_floor, mde["L"]["mde80"] or 0); m_U = max(a.mU_floor, mde["U"]["mde80"] or 0)
     # ---------- floors set and gates
     excl = set(a.exclude.split(",")) - {""}
     floors = [x for x in R if x not in CONTROLS | ORACLES | excl and not x.startswith(("pd_", "msda", "rep")) and R[x]["U"] is not None]
