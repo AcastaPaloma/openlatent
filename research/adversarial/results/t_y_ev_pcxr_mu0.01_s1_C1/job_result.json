@@ -1,0 +1,24 @@
+{
+ "name": "t_y_ev_pcxr_mu0.01_s1_C1",
+ "config": {
+  "name": "t_y_ev_pcxr_mu0.01_s1_C1",
+  "priority": 11,
+  "cmd": "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; $HOME/venvs/t/bin/python -m t_cxr.run_suite --release pcxr_mu0.01_s1_C1 --rot 0 --attackers f1,f3,f4,f5,f6 --conds match --seeds 0  --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t3_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT && $HOME/venvs/t/bin/python -m t_cxr.run_suite --release pcxr_mu0.01_s1_C1 --rot 1 --attackers f1,f3,f4,f5,f6 --conds match --seeds 0  --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t3_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --work $HOME/work/t_work --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT",
+  "hf_path": "runs/t_y_ev_pcxr_mu0.01_s1_C1",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "b80a960",
+ "commit_after": "71a802f",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 3,
+ "host": "192-222-52-237",
+ "seconds": 656.1,
+ "finished_utc": "2026-11-05T07:47:57Z",
+ "uploaded": true
+}
