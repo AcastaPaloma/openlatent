@@ -68,10 +68,11 @@ def main():
     ap.add_argument("--exclude", default=None, help="exclude_dups.json (T.md A2 b); required for real runs")
     ap.add_argument("--screen", action="store_true", help="T2 screen: validation only. T pairs / T images are never built, no ledger entry; output dir suffix _screen")
     ap.add_argument("--pcxr-dir", default=None, help="dir with generator_pcxr_mu*.pth (train_pcx.py)")
+    ap.add_argument("--shuffle-val", action="store_true", help="with --shuffle-labels: ALSO permute the validation labels (removes the epoch-selection leak of the control; T.md D3); suffix _shuf2")
     ap.add_argument("--shuffle-labels", action="store_true", help="control: permute the TRAINING pair labels (attackers must score at chance); outputs are suffixed _shuf")
     a = ap.parse_args()
     t0 = time.time()
-    out = Path(a.out) / f"{a.release}_rot{a.rot}{'_shuf' if a.shuffle_labels else ''}{'_screen' if a.screen else ''}"; out.mkdir(parents=True, exist_ok=True)
+    out = Path(a.out) / f"{a.release}_rot{a.rot}{('_shuf2' if a.shuffle_val else '_shuf') if a.shuffle_labels else ''}{'_screen' if a.screen else ''}"; out.mkdir(parents=True, exist_ok=True)
     if not a.synthetic and not a.exclude:
         raise SystemExit("--exclude exclude_dups.json is required for real runs (T.md A2)")
     d = meta.load(f"{a.data}/Data_Entry_2017_v2020.csv", f"{a.data}/test_list.txt", f"{a.data}/train_val_list.txt", exclude_json=a.exclude)
@@ -96,6 +97,8 @@ def main():
     sfx = ""
     if a.shuffle_labels:
         parts["tr"]["y"] = np.random.default_rng(777).permutation(parts["tr"]["y"]); sfx = "_shuf"
+        if a.shuffle_val:
+            parts["va"]["y"] = np.random.default_rng(778).permutation(parts["va"]["y"]); sfx = "_shuf2"
     cfg = dict(attackers=a.attackers, conds=a.conds, seeds=a.seeds, arch=a.arch, max_epochs=a.max_epochs, synthetic=a.synthetic)
     ledger_rec = None if (a.no_ledger or a.synthetic or a.screen) else ledger.sealed_query(a.release, cfg, "T", a.rot)
     dev = a.device
