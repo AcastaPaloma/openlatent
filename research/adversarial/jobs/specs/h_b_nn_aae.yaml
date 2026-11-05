@@ -1,0 +1,5 @@
+name: h_b_nn_aae
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/suite.py --set sealed --arm aae_re --folds S0,S1,S2 --family nn --targets id,act --out $OUT --pd_file $HOME/work/runs/h_b_aae_fit/aae_re_sealed.npz"
+hf_path: runs/h_b_nn_aae
+hf_allow: ["*.json", "*.log", "*.md"]
