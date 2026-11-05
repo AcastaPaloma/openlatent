@@ -311,5 +311,52 @@
   "fires": false,
   "rule": "fires iff NO release is protective (original rule) AND a cue-isolating release (hp_s2 / hist) links at >= 0.85 on V while its utility is >= 0.10 below raw"
  },
- "controls_pass": true
+ "controls_pass": true,
+ "sealed": {
+  "down_f32": {
+   "link_test": 0.874470819553637,
+   "link_test_ci": [
+    0.861807579497923,
+    0.8865517447385944
+   ],
+   "link_test_ci_v2": [
+    0.8605703712358894,
+    0.887788953000628
+   ],
+   "util_test": 0.7357853751866988,
+   "util_test_raw": 0.7733581184692059,
+   "drop_test": 0.03757274328250704,
+   "protective_confirmed": false
+  },
+  "down_f16": {
+   "link_test": 0.9226073993010828,
+   "link_test_ci": [
+    0.9132297222612762,
+    0.9317611391243734
+   ],
+   "link_test_ci_v2": [
+    0.9123031514181213,
+    0.9326877099675283
+   ],
+   "util_test": 0.7698274078835763,
+   "util_test_raw": 0.7733581184692059,
+   "drop_test": 0.003530710585629593,
+   "protective_confirmed": false
+  },
+  "down_f8": {
+   "link_test": 0.9654799345245408,
+   "link_test_ci": [
+    0.9594393558258507,
+    0.9709447583534199
+   ],
+   "link_test_ci_v2": [
+    0.9588640856994723,
+    0.9715200284797982
+   ],
+   "util_test": 0.7864353526658124,
+   "util_test_raw": 0.7733581184692059,
+   "drop_test": -0.013077234196606558,
+   "protective_confirmed": false
+  }
+ }
 }

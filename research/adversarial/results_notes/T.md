@@ -474,3 +474,13 @@ The worst case at R5 is the F1+ attacker in both image releases (point values: `
 5. **Nomination (14.5, mechanical):** utility drop <= 0.05, lowest upper linkage bounds first -> `down_f32`, `down_f16`, `down_f8`. Each is scored once on the sealed rotation-0 T pairs by its saved screen model (jobs `t_v_seal_*`, queued after this commit; protective is confirmed iff T linkage <= 0.80 and T utility drop <= 0.02, which the validation numbers make unlikely).
 
 **Budget so far:** 11,804.5 worker-seconds = **3.28 worker-hours** of the 4.0 (screens 6 x 1,241-1,289 s, shuffled-label control 1,245 s, const 259 s, utility fits 417-517 s); up to three sealed scorings at about 250 s each are still to come.
+
+### 14.11 T6 sealed look (VM clock 20:35Z, 5 Nov; rotation 0, the three nominated releases scored once by their saved screen models; ledger looks 90-92, no refusal, 92 entries in total; `t6_curve.json` now carries the `sealed` block)
+
+| release | T linkage F1+ [95%] | T utility U_test (raw 0.7734) | drop | protective confirmed |
+|---|---|---|---|---|
+| `down_f8` | 0.965 [0.959, 0.971] | 0.786 | -0.013 | no |
+| `down_f16` | 0.923 [0.913, 0.932] | 0.770 | +0.004 | no |
+| `down_f32` | 0.874 [0.862, 0.887] | 0.736 | +0.038 | no |
+
+The sealed values reproduce the validation curve to within 0.005 (V 0.963 / 0.926 / 0.879). **Stage A verdict, original and tightened alike: no image-space floor is protective against F1+; the lowest linkage with intact utility is `down_f16` at 0.92 (V and T); the first release below 0.90 (`down_f32`, 0.87-0.88) has lost 0.03-0.04 of utility.** All of these are lower bounds (the screens were truncated at 1,200 s and five of six were still rising). Stage B was not started (gate did not fire, 14.10). **Final stage-A budget: 11,935.9 worker-seconds = 3.32 worker-hours of the 4.0** (sealed scorings 131 s in total); stage B's 3.0 is unused.
