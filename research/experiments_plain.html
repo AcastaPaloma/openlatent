@@ -1,0 +1,264 @@
+<title>Openlatent Experiments</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Source+Sans+3:wght@400;600&family=Source+Serif+4:wght@600&display=swap">
+<style>
+/* Layout concept: a field notebook read one page at a time. Each experiment owns exactly one screen:
+   field + position (top), the question as the headline, a verdict chip, what we did / what we found, one caveat, where the details live (bottom). */
+:root{
+  --bg:#ECEFF0; --surface:#F7F9F9; --ink:#14222A; --mute:#52626B; --rule:#C7D2D6; --accent:#0B6E78; --accent-ink:#FFFFFF;
+  --win:#17703D; --win-bg:#DAEFE2;
+  --simple:#A33F1C; --simple-bg:#F7E2D8;
+  --mixed:#80590A; --mixed-bg:#F4E8C6;
+  --invalid:#5A4A99; --invalid-bg:#E6E2F4;
+  --setup:#2C5C85; --setup-bg:#DCE8F2;
+  --notrun:#56636A; --notrun-bg:#E2E7E9;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F171B; --surface:#172329; --ink:#E5EDF0; --mute:#9DAFB7; --rule:#2B3B43; --accent:#62C6D1; --accent-ink:#0B1A1E;
+    --win:#6FD39A; --win-bg:#16382A;
+    --simple:#F09A78; --simple-bg:#41241A;
+    --mixed:#E8C260; --mixed-bg:#3B3010;
+    --invalid:#B6A8F0; --invalid-bg:#2A2547;
+    --setup:#85B9E6; --setup-bg:#1B3045;
+    --notrun:#A5B3BA; --notrun-bg:#262F34;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F171B; --surface:#172329; --ink:#E5EDF0; --mute:#9DAFB7; --rule:#2B3B43; --accent:#62C6D1; --accent-ink:#0B1A1E;
+  --win:#6FD39A; --win-bg:#16382A;
+  --simple:#F09A78; --simple-bg:#41241A;
+  --mixed:#E8C260; --mixed-bg:#3B3010;
+  --invalid:#B6A8F0; --invalid-bg:#2A2547;
+  --setup:#85B9E6; --setup-bg:#1B3045;
+  --notrun:#A5B3BA; --notrun-bg:#262F34;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:clamp(1.05rem,1.5vw,1.25rem);line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:12px;align-items:center;justify-content:space-between;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:var(--surface);border-top:1px solid var(--rule);font-size:.95rem}
+.bar .count{font-variant-numeric:tabular-nums;color:var(--mute)}
+.bar .hint{color:var(--mute);flex:1;text-align:center}
+button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.screen{min-height:100svh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:space-between;gap:20px;
+  padding-block:28px 84px;max-width:62rem;margin:0 auto}
+.top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.top .field{color:var(--accent);font-weight:600}
+.main{display:flex;flex-direction:column;gap:22px;max-width:50rem}
+.q{font-family:var(--serif);font-weight:600;font-size:clamp(1.65rem,4.2vw,2.9rem);line-height:1.15;margin:0;text-wrap:balance}
+.chip{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:1rem;padding:6px 14px 6px 11px;border-radius:999px;align-self:flex-start}
+.chip i{font-style:normal;font-size:.8em}
+.c-win{background:var(--win-bg);color:var(--win)} .c-simple{background:var(--simple-bg);color:var(--simple)}
+.c-mixed{background:var(--mixed-bg);color:var(--mixed)} .c-invalid{background:var(--invalid-bg);color:var(--invalid)}
+.c-setup{background:var(--setup-bg);color:var(--setup)} .c-notrun{background:var(--notrun-bg);color:var(--notrun)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.cols>div{min-width:0}
+h3{margin:0 0 6px;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);font-weight:600}
+p{margin:0;max-width:34rem}
+.caveat{color:var(--mute);border-left:3px solid var(--rule);padding-left:14px;max-width:44rem}
+.src{font-family:var(--mono);font-size:.78rem;color:var(--mute);overflow-wrap:anywhere}
+.drawer{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.drawer[hidden]{display:none}
+.drawer .inner{max-width:52rem;margin:0 auto}
+.drawer h2{font-family:var(--serif);font-size:1.5rem;margin:18px 0 8px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 18px}
+.legend small{display:block;width:100%;color:var(--mute)}
+.drawer ol{list-style:none;margin:0 0 6px;padding:0;display:grid;gap:2px}
+.drawer li button{width:100%;text-align:left;border:0;border-radius:6px;padding:7px 8px;display:flex;gap:10px;align-items:baseline}
+.drawer li button:hover{background:var(--surface)}
+.drawer .n{font-variant-numeric:tabular-nums;color:var(--mute);min-width:2.2em}
+.drawer .fd{margin-top:20px;color:var(--accent);font-weight:600;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase}
+@media (max-width:760px){.cols{grid-template-columns:1fr;gap:18px}.bar .hint{display:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+
+<div id="screens"></div>
+
+<div class="bar" role="navigation" aria-label="Experiment navigation">
+  <span class="count" id="count">1 / 81</span>
+  <span class="hint">Scroll, or press ↓ / ↑</span>
+  <span><button id="prev" aria-label="Previous experiment">↑</button> <button id="next" aria-label="Next experiment">↓</button> <button class="primary" id="jump">All experiments</button></span>
+</div>
+
+<div class="drawer" id="drawer" hidden>
+  <div class="inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0">All experiments</h2><button id="close">Close</button></div>
+    <h2>How to read</h2>
+    <p style="max-width:44rem">One screen per experiment, in the order they happened inside each topic. “Simple method won” means a cheap, obvious baseline did as well or better than the learned method we were testing; that is the most common outcome. Scores run from 0.5 (pure guessing) to 1.0 (perfect) unless the text says otherwise. Every number was copied from the project notes, not recomputed. Coloured chips are always paired with a shape and a label.</p>
+    <div class="legend" id="legend"></div>
+    <div id="toc"></div>
+  </div>
+</div>
+
+<script>
+const FIELDS={
+ A:"Cancer slides: hide the hospital", B:"Robot video: ignore distractions", C:"Voices: emotion without identity",
+ D:"Text search: hide secrets", E:"Single cells: remove lab effects", F:"Cell images: match drugs across labs",
+ H:"Wearables: hide who is wearing it", T:"Chest X-rays: re-identify a patient", S:"The checker: is the instrument sound?", N:"Planted leaks: does the checker catch them?"
+};
+const KEYS={win:["●","Worked"],simple:["◆","Simple method won"],mixed:["▲","Mixed"],invalid:["■","Test was invalid"],setup:["○","Setup step"],notrun:["–","Not run"]};
+/* [field, question, what we did, what we found, verdict key, verdict label, caveat, where to read] */
+const E=[
+["A","Can we trust the published way of measuring how hospital-dependent a pathology AI is?","We pulled features from the same slide images with four pretrained models and recomputed the published scores.","Our numbers match the published ones, exactly for one model and closely for the others. So the measuring stick is sound.","setup","Setup step","","results_notes/A.md, lines 33–60"],
+["A","Does a classic ‘erase the hospital’ formula actually hide the hospital?","We applied a standard erasing formula to three models’ features across nine hospital-pair tests and measured what hospital signal was left.","It left plenty behind: it met the bar in none of the 8 cells we could check. A much simpler linear map trained to separate tissue types hid the hospital almost completely and kept tissue accuracy near-raw, so we made that the baseline to beat.","simple","Erasing formula failed","","results_notes/A.md, lines 81–212"],
+["A","Do five learned ‘hide the hospital’ models beat that simple baseline?","We trained five families of learned models on two hospital pairs and compared them with the erasing formula and the simple baseline.","All five beat the erasing formula. None beat the simple baseline, which on one pair left the hospital at 1% readable while keeping tissue accuracy at 98%.","simple","Simple method won","The write-up of this comparison was added only after our audit.","results_notes/A.md, lines 970–972"],
+["A","Do they win on tissue types they have never seen?","We held out whole tissue classes and also checked whether nearest neighbours in the model’s space are still the same tissue. 24 model-and-test combinations.","None of the 24 won. A few hand-picked autoencoders looked better, but only against the weaker baseline, and later checks took that away.","simple","Simple method won","Those picks were chosen after looking at results, so we treated them as exploratory.","results_notes/A.md, lines 214–441"],
+["A","Does the autoencoder’s lead survive more seeds and fairer baselines?","We reran with three random seeds, chose settings on a separate split, compared with every cheap baseline, and swapped which slides were used for training.","No. On tissue-label accuracy the best model was about 5 points worse on one dataset and level on the other. We called that line ‘dead’ for label accuracy.","simple","Simple method won","","results_notes/A.md, lines 443–918"],
+["A","Is it at least better at keeping similar-looking slides together?","We measured neighbour retention (are a slide’s closest neighbours the same tissue) separately from label accuracy.","On one dataset pair it kept about 9.5 points more neighbours correct than the baseline. On the other pair there was no real difference. Label accuracy gained nothing (it was already near the ceiling).","mixed","Mixed","","results_notes/A.md, lines 945–975"],
+["A","Is that neighbour gain bigger than lucky selection of the best of many tries?","We ran a permutation test for ‘best of N’ selection.","Not clearly. The gain clears one luck test but not the stricter one, so it is not established.","mixed","Not established","","results_notes/A.md, lines 977–1008"],
+["A","Do two more models and a denser set of simple baselines change the picture?","We repeated the comparison with two more pretrained models and a finer ladder of simple baselines.","Neighbour retention improved by 6–10 points in some cells, carried by plain autoencoders without an adversary. No cell won on tissue labels. Verdict: ‘dead’ for labels, ‘alive but weak’ for neighbours.","mixed","Mixed","","results_notes/A.md, lines 1033–1061"],
+["A","Is the ‘adversary’ part of these models actually learning to guess the hospital?","We made the adversary six times stronger and checked whether it got good at guessing the hospital.","No. It never got good enough (best score 0.81 when we needed 0.55 or lower, and even pure noise scores 0.67 during training). So we cannot say what the adversary does.","invalid","Test did not work","Earlier we had claimed ‘the adversary adds nothing’; this result is why that claim was retracted.","results_notes/A.md, lines 1010–1031"],
+["A","If the adversary genuinely learns, do the models finally beat the baseline?","We trained the adversary on half the slides and judged it on the other half, with a noise-based sanity check.","It trained properly this time. It still did not beat the cheap baselines overall, but it added 5–6 points of accuracy over a similar model with no adversary.","mixed","Mixed","","results_notes/A.md, lines 1064–1132"],
+
+["B","Is there a real problem to solve?","We added distracting moving objects whose motion copies the robot’s actions, then measured how much a standard model’s predictions got worse.","At the mild level the damage was only about 6%, the same size as our success bar. So we made the distractors stronger.","setup","Setup step","","results_notes/B.md, log 08:50–09:20"],
+["B","Can a learned masking model beat a ready-made tool at ignoring distractions?","We compared our learned model with the off-the-shelf Segment Anything masks, and with perfect masks as a ceiling, over three random seeds.","No. Segment Anything was as good as ours (error 0.812 against our 0.802; we needed to win by 0.05). Even perfect masks were only 0.048 better.","simple","Simple method won","","results_notes/B.md, Results"],
+["B","Does that hold for other kinds of distraction?","We repeated it for noisy, glued-on and independent distractors.","Still no on every kind. The learned model hid the action signal better in some cases, but it was not more accurate.","simple","Simple method won","Small synthetic setup, one learned model.","results_notes/B.md, Reopened part"],
+
+["C","Can a computer tell who is speaking, and what they feel, from these recordings?","We measured speaker identification and emotion recognition on the raw audio.","Yes to both: speakers were named right about 80% of the time (73 times chance) and emotion recognised at 76%. There is something to hide.","setup","Setup step","","results_notes/C.md, section 2"],
+["C","Does the speaker signal come from the voice or from the recording setup?","We used only the silent beginnings and ends of clips, and the first 150 milliseconds.","Silence alone named the speaker 62% of the time (56 times chance). Much of the ‘identity’ is the recording channel, not the voice, so the full-clip benchmark is flawed.","invalid","Benchmark flawed","We report trimmed-clip numbers beside the full-clip ones.","results_notes/C.md, section 2"],
+["C","How far can six simple pitch and loudness numbers get?","We built a baseline from six hand-made voice numbers.","They already recognise emotion at 45% while leaking little identity (12 times chance). With each speaker’s own average removed: 54% emotion with almost no identity. Any learned method must beat this.","setup","Setup step","","results_notes/C.md, section 2"],
+["C","What do standard erasing tools do to voices?","We tried a formula that erases identity directions, and a plain compression baseline.","Erasing fitted on training speakers still left identity at 53 times chance. The compression baseline kept emotion at 56% with identity at 13 times chance.","setup","By-product","","results_notes/C.md, section 3"],
+["C","Do learned encoders beat a plain 5-number emotion projection?","We compared rate-limited, adversarial and quantised encoders with a label-only projection.","None did. The projection recognised emotion at 74%; the learned encoders were about 1.5 points worse, and not clearly more private.","simple","Simple method won","","results_notes/C.md, section 3"],
+["C","Does that hold on emotions the model never saw in training?","We held out whole emotions and asked for a gain of 5 points.","None reached it. The best case gained 1.4 points.","simple","Simple method won","Single seed, so this arm was closed as a negative.","results_notes/C.md, sections 2b and 3"],
+["C","Does a bigger round of adversarial autoencoders help?","6 settings, 3 seeds, 4 data splits.","No. The best validated setting was 21 points worse on unseen emotions. The only positive setting leaked identity heavily (35 times chance). The voice line was closed as a negative result.","simple","Simple method won","","results_notes/C.md, sections 2c–2e"],
+["C","Would plain noise on a simple autoencoder do as well as the adversary?","One-seed control: noise added to an autoencoder without an adversary.","It scored 41% on unseen emotions (identity at 10 times chance) against 33% (6.6 times) for the adversarial model. Not a clean win either way.","mixed","Claim retracted","Our sentence ‘the adversary adds nothing’ rested on this and was later retracted as unsupported.","results_notes/C.md, section 2d"],
+
+["D","Is there room for a privacy gain in text-search embeddings without ruining search?","We measured how much a standard embedding leaks a rare word, and how much deleting that word would remove while keeping search quality.","There is leakage (0.18 above guessing), but when search had to stay at 70% of normal quality the possible gain was just 0.04 (bar: 0.10). The pre-registered gate stopped the line.","simple","Stopped by its gate","","results_notes/D.md, sections 5.1–5.2"],
+["D","Does a quick learned adversarial version help?","We trained an adversarial privacy model on the embeddings.","Its training collapsed in all 24 runs (the loss sat at one value), so it tells us nothing.","invalid","Implementation failed","","results_notes/D.md, sections 5.3, 6.5, 7.1"],
+["D","Do embeddings leak digits and numbers?","We checked whether an attacker beats guessing for digit strings.","Barely: 0.010 above guessing where we needed 0.05. Learned versions were not run.","simple","Stopped by its gate","","results_notes/D.md, section 6.4"],
+["D","Re-check on rare numbers specifically.","Same data, a scale-aware reading of the rare-number group (thresholds set after the fact).","The leak is detectable (2.6 times guessing). Deleting the numbers would remove about 20% of it, but the test is too weak to decide either way.","mixed","Too weak to decide","","results_notes/D.md, sections 7.4, 7.7"],
+["D","Does a repaired adversarial version help at strict search quality?","We fixed the collapse and tested at two search-quality levels.","It trained properly (48 of 50 runs) but gains were tiny (0.015 where the bar was 0.0775), and stronger adversary settings let attackers recover more.","simple","Simple method won","","results_notes/D.md, section 7.6"],
+["D","With real names and addresses as the secret, is the leak big enough to matter?","We used the approved AI4Privacy PII-Masking-300K text (research use only, results only, nothing uploaded), split by template so copies cannot leak across.","It leaks (0.24 against 0.10 for guessing) but closes only 7% of the gap above a text baseline that is handed the entity types; the bar was 10%. The pre-registered gate stopped the line.","simple","Stopped by its gate","Data: AI4Privacy PII-Masking-300K, used for academic non-commercial research with attribution.","results_notes/D.md, sections 8.4–8.5"],
+["D","Looking only at names, what do cheap fixes do?","After the gate failed we tried cheap fixes on the 46 name tokens (post hoc, labelled as such).","A tiny 64-number linear map trained for search removed about 60% of name leakage and slightly improved search quality. Noise and erasing tricks left 70–90%.","simple","Simple method won","","results_notes/D.md, sections 8.6–8.7"],
+["D","Does an adversary-trained version beat that cheap fix?","We tried 8 adversary settings against the cheap fix.","It never engaged in any of them: attackers still read the names while the model’s own checker was fooled, and 3 of 8 fits collapsed. No learned model beat the cheap fixes.","simple","Never engaged","","results_notes/D.md, sections 8.8–8.9"],
+
+["E","Is there room for a learned method to beat simple baselines at removing lab effects in single-cell data?","First stage on three public cell atlases, simple baselines only.","The simple baselines already did well; a key check fired in all three atlases, so the learned stage was not run.","simple","Stopped by its gate","","results_notes/E.md, section 5.1"],
+["E","Can a learned map reach the strong standard methods (scVI, Harmony) on human lung cells?","13 settings, 3 folds, 3 seeds.","No. It sat 3.7 points below the cheap baselines’ best, a tight result (we can resolve 2 points). None of the adversary models passed their eligibility check.","simple","Simple method won","","results_notes/E.md, section 6.11"],
+["E","Did a tweaked variant close the gap?","We added a post-hoc variant outside the registered set.","Partly: +1.6 points, still below the 5 points required.","simple","Simple method won","Post hoc, so it cannot change the verdict.","results_notes/E.md, section 6.12"],
+
+["F","Do the same compounds show up in several labs often enough to learn from?","A quick metadata check of the public JUMP cell-image collection.","Yes: 99.3% of 82,000 compounds were imaged in at least 2 of the 5 labs, and 97% of matching pairs cross labs.","setup","Setup step","","results_notes/JUMP0.md"],
+["F","Does the pre-registered first test pass?","Floors-only first stage with its control checks.","Literally no: a control check fired in all three runs. We judged it a design flaw in the test, not a result, and kept the verdict as written.","invalid","Test flawed","","results_notes/F.md, sections 5.1–5.6"],
+["F","Does a supervised neural adapter beat the best simple baseline?","We compared an adapter trained with drug labels against the best simple baseline.","Yes, by a wide margin (+0.135) in all three runs, though the registered test was flawed.","win","Worked","Later controls shrank this (see below).","results_notes/F.md, sections 7.1–7.6"],
+["F","How many labels does the adapter need before it beats the baseline?","We varied the share of labelled wells (1%, 10%, 100%).","About 10% of labels is enough to break even (gain +0.027 to +0.032); with all labels the gain is +0.135. A ‘label-free’ version looked good but that win was later withdrawn.","mixed","Win, but fragile","","results_notes/F.md, sections 9.1–9.5"],
+["F","Is the win partly a shortcut: the same plate position?","A metadata-only check, no models.","28% of cross-lab matching pairs share the same plate position (chance is 0.3%), and a 3-number position-only code scored 0.324, as high as the adapter (0.317–0.321). Worrying, still open.","mixed","Worrying","","results_notes/F.md, section 11.4"],
+["F","Does the win carry over to labs the model has never seen?","Leave-one-lab-out over 5 labs, a second view, and a finer label grid.","The second view holds (break-even at roughly 3–4% of labels). For unseen labs there is no break-even in any of the 5 tests: the best simple method stayed 1–4 points ahead.","mixed","Partly","","results_notes/F.md, sections 10 and 13"],
+["F","After removing the shortcuts, does the win survive?","We retrained the adapters under six stricter protocols (matched plate positions, no near-duplicates, and so on).","Partly. At 10% labels the gain fell from +0.029 to about +0.014, still above the bar in 3 of 3 splits; the strict survival rule narrowly failed.","mixed","Partly survives","","results_notes/F.md, section 12.6"],
+["F","Does the gain depend on how many drug classes there are?","A sweep over the number of classes, plus a check on labelled examples per class.","The gain grows about 0.03 for every tenfold more classes, but the real driver is labelled examples per class: cutting from 3.4 to 2 per class removed 0.02–0.04 in all 3 draws.","mixed","Simple rule falsified","Only the 2 versus 3.4 contrast was tested.","results_notes/F.md, sections 15.1–15.2"],
+["F","Would recentring each lab’s data at test time help?","A pilot of per-lab recentring on top of the adapter.","It made things worse: the attacker’s reading of the lab rose from 0.19 to 0.52.","simple","Backfired","","results_notes/F.md, section 16.1"],
+["F","Would a recentred simple baseline beat the adapter?","Planned as a follow-up to the previous test.","Not run: a quick look at the pilot output showed that baseline loses too much usefulness.","notrun","Not run","","results_notes/F.md, section 17.1"],
+["F","On a second dataset (human lung cells), does the same adapter beat its baseline?","One seed of the same kind of adapter against the same-label baseline.","Our prediction (about no gain) was wrong: the adapter won by +0.055 up to +0.204 depending on the labels given.","win","Surprising win","One seed only.","results_notes/F.md, section 18.2"],
+["F","Is that win real?","Three seeds, three folds, and fair same-size neural baselines.","Yes: still +0.06 above the best same-size baseline at 10% and at 100% labels. Against all baselines together it breaks even only with all labels.","win","Worked","","results_notes/F.md, sections 19.2–19.3"],
+["F","Is the lung-cell win just because our adapter normalises its outputs?","We gave the baseline the same normalisation.","At 10% labels, yes: the gain shrinks to +0.012. At 100% it stays at +0.052 but depends on how leakage is matched.","mixed","Partly explained away","","results_notes/F.md, section 20.1"],
+["F","Can a learned ‘remove the lab’ term make the adapter hide the lab?","We added a gradient-reversal term at three strengths.","It did nothing: the model’s own lab-checker stayed at 0.34 where guessing is 0.11, so the lab was still visible. The claim is untestable, not refuted.","simple","Never engaged","","results_notes/F.md, section 20.2"],
+["F","One last, stronger try at a learned mask.","Two removal methods at two strengths each, with a strict check first.","Failed: 0 of 24 checks passed, a fresh attacker read the lab even more easily than before, and one method collapsed the model. This line is closed.","simple","Never engaged","This covers these two methods on one model, not learned masks in general.","results_notes/F.md, section 21.2"],
+["F","Can we learn from few labels by auto-matching neighbours across labs?","We built matches between labs without labels and measured how often they were right.","No: 89–97% of auto-matches were wrong. Even with perfect knowledge, only 0.7% of wells could be matched cleanly enough.","simple","Did not work","","results_notes/F.md, section 22.2"],
+["F","Does the gain carry to unseen labs in a bigger 10-source table?","Four held-out tests on a larger public table.","The test was invalid: the adapter did not beat its own shuffled-label control in any of the 4 folds, and it lost to simple baselines (−0.01 to −0.09).","invalid","Test was invalid","","results_notes/F.md, section 23.1"],
+["F","Was that failure the table’s fault or the unseen labs’ fault?","A seen-lab reference on the same table, plus the missing stricter control.","The table is fine: for labs it had seen, the adapter beat the baselines (+0.016 and +0.060). For unseen labs it lost. So: a gain for seen labs, none for unseen ones.","mixed","Seen yes, unseen no","Two of the four stricter-protocol controls failed, so those numbers are unverified.","results_notes/F.md, section 24.1"],
+
+["H","Can we reproduce a published gender-hiding method for wearables?","We ran the released method under its own test.","Yes, to the decimal: raw gender 93.5%, pushed to about 50% by the method.","setup","Setup step","","results_notes/H.md, section 5.1"],
+["H","Can we reproduce the published identity-hiding autoencoder claim?","We ran it under its own frozen-attacker test.","Yes: identity 4.1% (published about 7%). But note the published ‘under 7% identity’ used an attacker trained only on raw data, while the ‘over 92% activity’ used a retrained classifier.","setup","Setup step","","results_notes/H.md, section 5.2"],
+["H","What do cheap baselines achieve on wearables?","We measured floors, controls and oracles on 96 trials.","A 3-number code trained on activity labels let identity be guessed at 0.37 while activity stayed at 93.5%. Raw data leaked 0.97.","setup","Setup step","","results_notes/H.md, section 5.3"],
+["H","If the attacker is retrained, does the published identity-hider still hide identity?","We attacked the shipped models with a re-trained attacker suite.","No: the models were re-identified 83% and 88% of the time, and the cheap baselines did better on both privacy and accuracy. The baseline matches or beats the defence.","simple","Simple method won","This data split had been looked at before, so it was not sealed.","results_notes/H.md, sections 5.4–5.8"],
+["H","How sensitive are results to how data is split?","We compared splitting by window against splitting by whole trial.","Splitting by window inflated identity by 8–23 points. Identity is mostly a walking signal (89% for dynamic activities, 31% for static).","setup","Setup step","","results_notes/H.md, sections 5.6–5.7"],
+["H","Can we replicate on a second dataset (WISDM)?","A check on whether phone model alone identifies people.","Stopped by our own rule: phone type alone identified 67% of blocks (we stop at 50%), so identity there is mostly a device signal.","invalid","Stopped by its gate","","results_notes/H.md, section 6.5"],
+["H","On fresh sealed data, does a rebuilt identity-hiding autoencoder hold up?","We rebuilt the autoencoder from the paper and retrained it on three sealed folds (24 people).","No: it was re-identified 95% of the time (undefended 97%). Simply releasing the predicted activity gave 4% identity with slightly better accuracy.","simple","Simple method won","One configuration, one seed per fold.","results_notes/H.md, section 6.6"],
+["H","Does adding noise keep working as the attacker sees more data?","We pooled several trials per person.","Unclear with 24 people. Only the no-noise predicted-activity release stayed at guessing; undithered codes became 92–96% identifiable.","mixed","Unclear","","results_notes/H.md, section 7.4"],
+["H","Does identity carry across activities and sessions?","We tested unseen activities and static versus dynamic transfer on 360 trials.","No: identity is 93% for the same activity but 23–30% on an unseen one, and near chance between static and dynamic. Every identity number here is ‘same activity, same session’.","mixed","Narrows our claims","","results_notes/H.md, section 7.5"],
+["H","Was the rebuilt-autoencoder result a one-off?","A second seed and a second setting on the same sealed folds.","No: 94% and 91% were re-identified, a spread of only 3 points across all three runs.","simple","Simple method won","One rebuilt design family, 24 people.","results_notes/H.md, section 8.1"],
+
+["T","Can two X-rays of the same patient be matched using only the labels and file details?","A metadata-only check on matched negatives.","Barely (0.53, where 0.5 is guessing). So any strong matching must come from the image itself.","setup","Setup step","","results_notes/T.md, section 6"],
+["T","From the images, how well can the same patient be matched, and where does the signal sit?","We attacked raw images, a border strip, and the core of the image.","Raw images: 0.89. The border strip alone: 0.74 where we required 0.56 or less, so a border artefact leaks identity. A pre-registered check fired.","invalid","Check fired","","results_notes/T.md, section 6"],
+["T","Can we reproduce the published X-ray privacy method?","We ran the released weights under the paper’s protocol with 5 retrained verifiers.","The raw result replicated (79.7 against 81.8). The defence was weaker than published (67.0 against 57.7).","mixed","Not reproduced","","results_notes/T.md, section 7.7"],
+["T","Is the repaired validity test sound?","Two sealed rotations, 3,066 triples.","The image signal is real (0.885 against 0.53) and comes from inside the image. But the shuffled-label control read 0.54 against a tolerance we had set too tight (0.021), so it fails as written.","invalid","Check fired","","results_notes/T.md, section 7.7"],
+["T","Does the retrained defender beat plain shrinking of the image?","Post hoc after the validity failure; 4,585 patients.","No: the defender scored 0.860 and plain 4-times shrinking 0.805 at the same usefulness. Shrinking is better.","simple","Simple method won","Post hoc.","results_notes/T.md, section 7.7"],
+["T","Is the matching just ‘patients who share the same diseases’?","A check using saved scores, no new training.","No: raw images score 0.887 overall and 0.879 among healthy patients. A 14-number disease-label code is partly disease-based.","setup","Setup step","","results_notes/T.md, section 9.1"],
+["T","Repeat with five defenders and 37 simple methods on re-drawn roles.","Rotations with the same 4,588 patients (so not independent of the earlier run).","Still no defender beats the simple methods: the best defender scored 0.807 and plain shrinking 0.806 at the same usefulness; raw images 0.883.","simple","Simple method won","This depends on a comparator (plain shrinking) we named after seeing the first run.","results_notes/T.md, sections 8.9–8.12"],
+["T","Do these linking scores rise if the attacker gets more training data?","A ladder of attackers trained on more and more patients.","Yes: plain shrinking went from 0.806 up to 0.852. So our earlier numbers are lower bounds for shrinking and for the defender.","mixed","Numbers are floors","Raw images and the label code were only partly affected.","results_notes/T.md, section 10.1"],
+["T","Is it just matching ‘similar-looking diseases’?","We used negatives that share the same 14-finding label pattern.","No: raw images stay at 0.887 even against matched negatives. The first design failed its own control, so we repaired it and report both.","setup","Setup step","","results_notes/T.md, sections 11.1–11.2"],
+["T","What does a much stronger attacker find?","A bigger, better-trained attacker on the same pairs.","Shrunk images were linked at 0.980 and the defended images at 0.978: almost every pair. Only the 14-number label code stayed low (0.709).","simple","No protection","One seed; the attacker had not fully converged.","results_notes/T.md, section 12.2"],
+["T","Is that 0.98 genuine, or a bug in the test?","We trained the same attacker on shuffled labels, and tried raw images.","Genuine: with shuffled labels it scores 0.55 against 0.984 with true labels. Raw images score 0.988.","win","Check passed","The control passed by a narrow margin (0.553 against a limit of 0.56).","results_notes/T.md, section 13.1"],
+["T","Does any heavier compression protect while keeping the diagnostic signal?","Six releases (shrinking by 8, 16 and 32 times, strong JPEG, fine-texture only, brightness-histogram only) against the strong attacker.","No release passed. Linking falls slowly (0.99, then 0.93 at 16 times, 0.88 at 32 times) and usefulness drops only at the heaviest. The fine-texture layer alone links at 0.97 and keeps full usefulness.","simple","No protection","Attackers were stopped early, so linking is under-stated. Scored once on sealed data, the three best candidates (shrunk 8, 16 and 32 times) came out within 0.005 of these numbers (0.965, 0.923, 0.874), and none was protective.","results_notes/T.md, section 14.10"],
+
+["S","Do earlier activity-recognition rankings change when re-scored carefully?","We re-scored saved predictions from programme 1 with the sealed machinery.","Headline numbers reproduce; shifts are at most 2 points. Most rankings between methods cannot be separated with only 150 recordings.","setup","Setup step","","results_notes/S.md, section 8.1"],
+["S","How much does picking the best of several tries bias a result?","A selection-bias check.","Negligible for 2 tries; material from about 5–10 tries.","setup","Setup step","","results_notes/S.md, section 8.2"],
+["S","Does giving the attacker more evidence change results?","We pooled 1 to 10 chunks of evidence.","The gain was inside the noise in 21 of 87 cases; the pre-set failure conditions did not fire.","setup","Setup step","","results_notes/S.md, section 8.3"],
+["S","What can the checker resolve at our sample sizes?","A resolution analysis.","About 6 points with 150 units; about 1.6 points with 1,400 units.","setup","Setup step","","results_notes/S.md, section 8.4"],
+["S","On simulated data, does the checker behave?","Coverage, false alarms and selection bias on planted-truth data.","Coverage 99.8%, false alarms 5.8% or less, selection bias 0.14 points or less. One provenance rule failed and was fixed by an amendment.","win","Passed","","results_notes/S.md, sections 8.5–8.6"],
+["S","Are its confidence intervals right?","We re-verified interval coverage at several sample sizes.","The first version under-covered (92% at 4,707 units). A wider version covers 94–96%.","win","Fixed and passed","","results_notes/S.md, section 8.8"],
+["S","Does the improved checker (v3) pass acceptance on simulated leaks?","Planted-leak simulations with clean controls.","Yes: 1 false alarm in 80 clean runs, and planted leaks found 27–30 times out of 30.","win","Passed","Simulated data only.","results_notes/S.md, section 10.9"],
+
+["N","If we plant known leaks into real defended releases, does the checker find them?","704 real defended wearable releases, some with planted leaks.","No false alarms in 224 clean ones. Four planted leak types were caught 32 of 32 times, but a stealth type was missed 24 of 32 times.","mixed","Mixed","","results_notes/N.md, sections 8.1–8.7"],
+["N","Fresh round with the improved checker (v3).","386 new releases with planted leaks.","No false alarms in 106 clean releases; targeted leaks caught 20 of 20. But new kinds were missed (window-order 0 of 20, phase coupling 7 of 20). It is a leak detector, not proof that there is no leak.","mixed","Mixed","","results_notes/N.md, sections 12.1–12.7"]
+];
+
+const screens=document.getElementById("screens");
+const counters={}; const totals={};
+E.forEach(e=>{totals[e[0]]=(totals[e[0]]||0)+1;});
+E.forEach((e,i)=>{
+  const [f,q,did,found,k,label,cav,src]=e;
+  counters[f]=(counters[f]||0)+1;
+  const s=document.createElement("section"); s.className="screen"; s.id="s"+(i+1); s.setAttribute("aria-label","Experiment "+(i+1));
+  const top=document.createElement("div"); top.className="top";
+  const fe=document.createElement("span"); fe.className="field"; fe.textContent=FIELDS[f];
+  const po=document.createElement("span"); po.textContent="Experiment "+counters[f]+" of "+totals[f]+" in this topic";
+  top.append(fe,po);
+  const main=document.createElement("div"); main.className="main";
+  const h=document.createElement("h2"); h.className="q"; h.textContent=q;
+  const chip=document.createElement("span"); chip.className="chip c-"+k;
+  const ic=document.createElement("i"); ic.textContent=KEYS[k][0]; ic.setAttribute("aria-hidden","true");
+  chip.append(ic,document.createTextNode(label));
+  const cols=document.createElement("div"); cols.className="cols";
+  const a=document.createElement("div"); const ah=document.createElement("h3"); ah.textContent="What we did"; const ap=document.createElement("p"); ap.textContent=did; a.append(ah,ap);
+  const b=document.createElement("div"); const bh=document.createElement("h3"); bh.textContent="What we found"; const bp=document.createElement("p"); bp.textContent=found; b.append(bh,bp);
+  cols.append(a,b);
+  main.append(h,chip,cols);
+  if(cav){const c=document.createElement("p"); c.className="caveat"; c.textContent=cav; main.append(c);}
+  const sr=document.createElement("div"); sr.className="src"; sr.textContent="Details: research/*/"+src;
+  s.append(top,main,sr);
+  screens.append(s);
+});
+const total=E.length;
+document.getElementById("count").textContent="1 / "+total;
+
+const legend=document.getElementById("legend");
+Object.keys(KEYS).forEach(k=>{const c=document.createElement("span"); c.className="chip c-"+k; const i=document.createElement("i"); i.textContent=KEYS[k][0]; i.setAttribute("aria-hidden","true"); c.append(i,document.createTextNode(KEYS[k][1])); legend.append(c);});
+
+const toc=document.getElementById("toc"); let lastF=null, ol=null;
+E.forEach((e,i)=>{
+  if(e[0]!==lastF){const d=document.createElement("div"); d.className="fd"; d.textContent=FIELDS[e[0]]; toc.append(d); ol=document.createElement("ol"); toc.append(ol); lastF=e[0];}
+  const li=document.createElement("li"); const bt=document.createElement("button");
+  const n=document.createElement("span"); n.className="n"; n.textContent=String(i+1);
+  const t=document.createElement("span"); t.textContent=e[1];
+  bt.append(n,t); bt.addEventListener("click",()=>{closeDrawer(); go(i,true);}); li.append(bt); ol.append(li);
+});
+
+let cur=0;
+const secs=[...document.querySelectorAll(".screen")];
+function go(i,instant){cur=Math.max(0,Math.min(total-1,i)); secs[cur].scrollIntoView({behavior:instant?"auto":"smooth",block:"start"});}
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting&&en.intersectionRatio>=0.55){cur=secs.indexOf(en.target); document.getElementById("count").textContent=(cur+1)+" / "+total;}});},{threshold:[0.55]});
+secs.forEach(s=>io.observe(s));
+document.getElementById("next").addEventListener("click",()=>go(cur+1));
+document.getElementById("prev").addEventListener("click",()=>go(cur-1));
+const drawer=document.getElementById("drawer");
+function openDrawer(){drawer.hidden=false; document.getElementById("close").focus();}
+function closeDrawer(){drawer.hidden=true;}
+document.getElementById("jump").addEventListener("click",openDrawer);
+document.getElementById("close").addEventListener("click",closeDrawer);
+document.addEventListener("keydown",ev=>{
+  if(!drawer.hidden){if(ev.key==="Escape")closeDrawer(); return;}
+  if(ev.key==="ArrowDown"||ev.key==="PageDown"||(ev.key===" "&&!ev.shiftKey)){ev.preventDefault(); go(cur+1);}
+  else if(ev.key==="ArrowUp"||ev.key==="PageUp"||(ev.key===" "&&ev.shiftKey)){ev.preventDefault(); go(cur-1);}
+  else if(ev.key==="Home"){ev.preventDefault(); go(0);} else if(ev.key==="End"){ev.preventDefault(); go(total-1);}
+});
+</script>
