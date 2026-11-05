@@ -1,0 +1,4 @@
+name: f5_mnn0_s0
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 5 --salt s0 --mnn0 --regimes a,b1,b3 --oracle --no_attackers --out $OUT"
+hf_path: runs/f5_mnn0_s0
