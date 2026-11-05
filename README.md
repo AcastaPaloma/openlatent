@@ -72,6 +72,8 @@ to many decimal places, not bit-for-bit.
 
 ## Design docs
 
+- [LLM dataset onboarding](docs/design/llm-onboarding.md) — an LLM reads a raw folder and writes a
+  checked spec, manifest and obfuscation plan. Prototype: `openlatent onboard`.
 - [Video harness: dataset contract and pipeline](docs/design/video-harness.md) — SPLAVU-style
   latent anonymization for arbitrary labelled video datasets, reusing these scorers. Not implemented yet.
 - [Maintained repos and verifiable checkpoints](docs/research/maintained-repos.md) — what to build on,

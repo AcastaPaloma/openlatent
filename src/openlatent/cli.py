@@ -73,6 +73,21 @@ def cmd_compare(args: argparse.Namespace) -> None:
         print(f"x vs z: linear CKA {d['linear_cka']:.4f}  dCor {d['distance_correlation']:.4f}  (n={d['n']})")
 
 
+def cmd_onboard(args: argparse.Namespace) -> None:
+    from openlatent.onboard import onboard
+
+    spec, manifest, warnings = onboard(args.folder, args.out, headers_only=args.headers_only)
+    print(f"{spec['name']} ({spec['modality']}): {len(manifest)} samples, group {spec['group']['field']!r}, "
+          f"identity {spec['identity']['field']!r}")
+    for t in spec["targets"]:
+        print(f"  {t['role']:8} {t['name']} = {t['field']} ({t['kind']})")
+    print(f"plan ({spec['plan']['space']}): {', '.join(m['method'] for m in spec['plan']['methods'])}")
+    print(manifest["split"].value_counts().to_string())
+    for w in warnings:
+        print(f"warning: {w}")
+    print(f"review {args.out}/dataset.json before training")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="openlatent")
     sub = parser.add_subparsers(required=True)
@@ -111,6 +126,12 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--splits")
     p.add_argument("--out")
     p.set_defaults(func=cmd_compare)
+
+    p = sub.add_parser("onboard", help="LLM reads a raw dataset folder and writes a checked spec, manifest and plan")
+    p.add_argument("folder")
+    p.add_argument("--out", required=True)
+    p.add_argument("--headers-only", action="store_true", help="send table columns but no row values to the LLM")
+    p.set_defaults(func=cmd_onboard)
 
     args = parser.parse_args(argv)
     args.func(args)
