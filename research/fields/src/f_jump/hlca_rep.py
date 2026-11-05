@@ -179,6 +179,110 @@ def train_grl(Xl, yl, bl, seed, steps, lam):
                      loss_curve=[float(ls[i:i + 500].mean()) for i in range(0, steps, 500)])
 
 
+def coral_loss(z, b):
+    """scale-free CORAL between the datasets present in the batch (>= 8 cells) and the batch: mean over datasets of
+    ||mu_d - mu||^2 / tr(C) + ||C_d - C||_F^2 / ||C||_F^2."""
+    mu = z.mean(0)
+    zc = z - mu
+    C = zc.T @ zc / max(len(z) - 1, 1)
+    trC = torch.trace(C).clamp(min=1e-6)
+    fC = C.pow(2).sum().clamp(min=1e-8)
+    tot, n = z.new_zeros(()), 0
+    for d in torch.unique(b):
+        m = b == d
+        if int(m.sum()) < 8:
+            continue
+        zd = z[m]
+        mud = zd.mean(0)
+        zdc = zd - mud
+        Cd = zdc.T @ zdc / (len(zd) - 1)
+        tot = tot + ((mud - mu) ** 2).sum() / trC + (Cd - C).pow(2).sum() / fC
+        n += 1
+    return tot / max(n, 1)
+
+
+def train_mask(Xl, yl, bl, seed, steps, fam, w):
+    """Final-attempt mask candidates (section 21): fam 'grlr' = ramped gradient reversal (lambda(t) = w (2 / (1 + exp(-10 p)) - 1)),
+    fam 'coral' = beta x scale-free CORAL penalty.  A monitoring dataset-id head (MLP 16 -> 64 -> n_datasets) is always trained:
+    the adversary for grlr, a DETACHED monitor for coral.  Everything else is the section-18 adapter."""
+    torch.manual_seed(seed)
+    g = torch.Generator(device=DEV).manual_seed(seed)
+    yl = np.asarray(yl)
+    order = np.argsort(yl, kind="stable")
+    cl, start, cnt = np.unique(yl[order], return_index=True, return_counts=True)
+    elig = np.where(cnt >= 2)[0]
+    mu, sd = Xl.mean(0, keepdim=True), Xl.std(0, keepdim=True)
+    sd = torch.where(sd < 1e-6, torch.ones_like(sd), sd)
+    net = K.Net(Xl.shape[1], D_OUT, mu, sd).to(DEV)
+    nb_ds = int(np.max(bl)) + 1
+    mon = nn.Sequential(nn.Linear(D_OUT, 64), nn.GELU(), nn.Linear(64, nb_ds)).to(DEV)
+    opt = torch.optim.AdamW(list(net.parameters()) + list(mon.parameters()), lr=1e-3, weight_decay=1e-4)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=steps)
+    order_t = torch.as_tensor(order, device=DEV)
+    start_t, cnt_t = torch.as_tensor(start, device=DEV), torch.as_tensor(cnt, device=DEV)
+    elig_t = torch.as_tensor(elig, device=DEV)
+    bl_t = torch.as_tensor(np.asarray(bl), device=DEV)
+    nb = min(K.N_CLS, len(elig))
+    ls, la, aacc, lp = [], [], [], []
+    net.train()
+    for step in range(steps):
+        pick = elig_t[torch.randperm(len(elig), device=DEV, generator=g)[:nb]]
+        n = cnt_t[pick]
+        r = torch.minimum((torch.rand(nb, K.PER, device=DEV, generator=g) * n[:, None]).long(), (n - 1)[:, None])
+        gi, _ = (start_t[pick][:, None] + r).sort(dim=1)
+        keep = torch.ones_like(gi, dtype=torch.bool)
+        keep[:, 1:] = gi[:, 1:] != gi[:, :-1]
+        cells = order_t[gi[keep]]
+        y = pick[:, None].expand_as(gi)[keep]
+        z = net(Xl[cells])
+        bb = bl_t[cells]
+        l_sup = FJ.supcon(z, y)
+        if fam == "grlr":
+            lam = w * (2.0 / (1.0 + float(np.exp(-10.0 * step / steps))) - 1.0)
+            lg = mon(_GRL.apply(z, lam))
+            pen = z.new_zeros(())
+        else:
+            lg = mon(z.detach())
+            pen = w * coral_loss(z, bb)
+        l_adv = F.cross_entropy(lg, bb)
+        loss = l_sup + pen + l_adv
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+        sched.step()
+        ls.append(l_sup.detach())
+        la.append(l_adv.detach())
+        lp.append(pen.detach())
+        aacc.append((lg.argmax(1) == bb).float().mean().detach())
+    ls, la, aacc, lp = (torch.stack(x).cpu().numpy() for x in (ls, la, aacc, lp))
+    net.eval()
+    return net, dict(loss_first20=float(ls[:20].mean()), loss_last200=float(ls[-200:].mean()), nan=bool(np.isnan(ls).any()), steps=steps, fam=fam, w=w,
+                     adv_loss_first20=float(la[:20].mean()), adv_loss_last200=float(la[-200:].mean()), adv_acc_first200=float(aacc[:200].mean()),
+                     adv_acc_last200=float(aacc[-200:].mean()), pen_first20=float(lp[:20].mean()), pen_last200=float(lp[-200:].mean()),
+                     n_datasets=nb_ds, n_classes_sampled=int(len(elig)))
+
+
+def fresh_adversary(X, ds, units, nds, seed):
+    """E's attacker suite retrained from scratch on the released vectors X of unlabelled training cells; class = training dataset (local ids 0..nds-1);
+    halves are donor-disjoint within each dataset; both directions; returns the worst-of-four balanced accuracy (mean over directions) and per-kind values."""
+    h = np.zeros(len(X), np.int8)
+    rng = np.random.RandomState(900 + seed)
+    for d in np.unique(ds):
+        m = np.where(ds == d)[0]
+        us = np.unique(units[m])
+        us = us[rng.permutation(len(us))]
+        half_of = {u: i % 2 for i, u in enumerate(us)}
+        h[m] = [half_of[u] for u in units[m]]
+    acc = {k: [] for k in AT.KINDS}
+    for dd in (0, 1):
+        tr_, te_ = h == dd, h != dd
+        pr = AT.run_attackers(X[tr_], ds[tr_], units[tr_], X[te_], nds, kinds=list(AT.KINDS), seed=seed)
+        for k in AT.KINDS:
+            acc[k].append(AT.bacc(ds[te_], pr[k]))
+    per = {k: float(np.mean(v)) for k, v in acc.items()}
+    return max(per.values()), per
+
+
 def get_zB(sc, f, T):
     p = CACHE / sc.ds / f"zB_f{f}.npy"
     if p.exists():
@@ -200,8 +304,10 @@ def main():
     ap.add_argument("--folds", default="")
     ap.add_argument("--steps", type=int, default=6000)
     ap.add_argument("--budgets", default="1,10,100")
-    ap.add_argument("--stage", choices=["full", "new", "cen", "grl"], default="full")
+    ap.add_argument("--stage", choices=["full", "new", "cen", "grl", "eng"], default="full")
     ap.add_argument("--lams", default="0.3,1,3")
+    ap.add_argument("--cands", default="grlr10,grlr30,coral3,coral30")
+    ap.add_argument("--force_phase2", type=int, default=0, help="TEST ONLY (smoke): run the held-out arms even when no candidate passes the gate")
     ap.add_argument("--encoder", choices=["A", "B"], default="A")
     ap.add_argument("--perm", type=int, default=0)
     a = ap.parse_args()
@@ -354,6 +460,52 @@ def main():
                     infon["train_s"] = round(time.time() - t1, 1)
                     meta["adapters"][f"{f}|{tag}_f{b}"] = infon
                     print(f"  s{a.seed} fold {f} budget {b}% {tag}: loss {infon['loss_first20']:.3f}->{infon['loss_last200']:.3f} rank {infon['eff_rank_held']:.1f}", flush=True)
+            if a.stage == "eng":
+                labelled = np.zeros(len(sc.fine), bool)
+                labelled[idx] = True
+                dsl = np.unique(sc.b[T])
+                loc_ds = {int(x): i for i, x in enumerate(dsl)}
+                nds = len(dsl)
+                bl = np.array([loc_ds[int(x)] for x in sc.b[idx]])
+                unl = np.where(T & ~labelled)[0]
+                in_sample = bool(len(unl) < 12000)             # f = 100%: no unlabelled cells -> validation vectors are labelled training cells (like-for-like with the reference)
+                pool_v = np.where(T & (sc.fine >= 0))[0] if in_sample else unl
+                cells = np.sort(np.random.RandomState(7 + f).choice(pool_v, size=min(12000, len(pool_v)), replace=False))
+                ds_c = np.array([loc_ds[int(x)] for x in sc.b[cells]])
+                un_c = sc.unit[cells]
+                cells_t = torch.as_tensor(cells, device=DEV)
+                chance = 1.0 / nds
+                a_noise, _ = fresh_adversary(np.random.RandomState(3 + f).randn(len(cells), D_OUT).astype(np.float32), ds_c, un_c, nds, a.seed)
+                netr, infor = K.train_adapter(Zt[idx_t], ylab, sd_, a.steps)                     # the no-removal reference, same seed path as section 18
+                Er = K.embed_all(netr, Zt)
+                a_ref, _ = fresh_adversary(Er[cells_t].cpu().numpy(), ds_c, un_c, nds, a.seed)
+                rec = dict(chance=chance, n_datasets=nds, a_noise=a_noise, a_ref=a_ref, ref_supcon_ratio=infor["loss_last200"] / infor["loss_first20"], cands={})
+                embs = {}
+                for ci_, cand in enumerate(a.cands.split(",")):
+                    fam, w = ("grlr", float(cand[4:])) if cand.startswith("grlr") else ("coral", float(cand[5:]))
+                    t1 = time.time()
+                    netm, infom = train_mask(Zt[idx_t], ylab, bl, sd_ + 91000 + 10 * ci_, a.steps, fam, w)
+                    E0 = K.embed_all(netm, Zt)
+                    infom["eff_rank_held"] = FJ.effective_rank(E0[held_t])
+                    a_arm, per = fresh_adversary(E0[cells_t].cpu().numpy(), ds_c, un_c, nds, a.seed)
+                    infom["eff_rank_cells"] = FJ.effective_rank(E0[cells_t])
+                    infom["nocollapse"] = bool(infom["loss_last200"] / infom["loss_first20"] <= 0.8 and infom["eff_rank_cells"] >= 4.0)
+                    eng1 = bool(infom["adv_acc_last200"] <= 0.20)
+                    void = bool(a_noise - chance > 0.10)
+                    eng2 = bool((not void) and (a_ref - a_noise >= 0.05) and ((a_arm - a_noise) <= 0.5 * (a_ref - a_noise)))
+                    infom.update(a_arm=a_arm, a_arm_per_kind=per, eng1=eng1, eng2=eng2, passed=bool(eng1 and eng2 and infom["nocollapse"]), void_noise_floor=void, in_sample=in_sample,
+                                 supcon_ratio=infom["loss_last200"] / infom["loss_first20"], train_s=round(time.time() - t1, 1))
+                    rec["cands"][cand] = infom
+                    embs[cand] = (E0, E0[idx_t].std(0, keepdim=True))
+                    print(f"  s{a.seed} fold {f} budget {b}% {cand}: mon_acc {infom['adv_acc_last200']:.2f} (chance {chance:.2f}) fresh {a_arm:.3f} vs noise {a_noise:.3f} ref {a_ref:.3f} "
+                          f"-> ENG1 {eng1} ENG2 {eng2} nocollapse {infom['nocollapse']}  SupCon ratio {infom['supcon_ratio']:.2f} rank {infom['eff_rank_held']:.1f}", flush=True)
+                rec["any_pass"] = bool(any(c["passed"] for c in rec["cands"].values()))
+                meta.setdefault("engage", {})[f"{f}|{b}"] = rec
+                if rec["any_pass"] or a.force_phase2:            # held-out arms only where the gate is passed by some candidate (force_phase2: smoke test only)
+                    for cand, (E0, sdv) in embs.items():
+                        noise = torch.randn(E0.shape, generator=torch.Generator(device=DEV).manual_seed(sd_ + 5), device=DEV)
+                        for r in (0.0, 0.5):
+                            run_arm(f"lm2_f{b}_{cand}_r{r:g}", (E0 + r * sdv * noise).cpu().numpy())
             if a.stage == "grl":
                 dsl = np.unique(sc.b[T], return_inverse=False)
                 loc_ds = {int(x): i for i, x in enumerate(dsl)}
