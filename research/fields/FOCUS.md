@@ -153,3 +153,7 @@ Remaining: SUMMARY.md (scoped claims, per-focus table, limits, by-products) afte
 - Validation split for search, sealed test for the number. One result per config file, one commit per result.
 - Learned methods preferred. Deterministic transforms are baselines, not contributions.
 - Weights and derived embeddings to HF `KuanKuanKuan/openlatent-fields`; public datasets are never re-uploaded.
+
+## UPDATE 2026-11-05 ~10:45Z VM clock: HLCA second dataset and the learned-mask closure (Builder F; F.md 18-21; results/f_jump/h3_003_*)
+- Reduced H3-003 (HLCA, R2, d16, PCA-50): K-rule prediction refuted (dU_same +0.055..+0.204 vs predicted -0.012); controlled replication (3 seeds x 3 folds, validation-fold selection): REPLICATES, SUPCON GAIN SURVIVES against the best CE-MLP/LDA label floor (+0.060 / +0.057 at f = 10% / 100%); normalised-CE follow-up (20A): PARTIAL: +0.012 at f = 10% (explained by normalisation), +0.052 at f = 100% (rule-dependent; +0.018..+0.034 at interpolated matched leakage). Builder predictions wrong or half right twice.
+- Learned source-removal on HLCA: 20B gradient reversal INERT TERM (seed 0); final attempt (section 21): ENGAGEMENT NEVER ACHIEVED in 0 of 24 cells (ramped GRL lambda 10/30, CORAL beta 3/30); line CLOSED as pre-registered. Original verdicts beside: JUMP NO-GO at the S4 gate; E's SC-0 NO-GO.
