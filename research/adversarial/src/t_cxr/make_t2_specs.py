@@ -31,7 +31,7 @@ def main():
     Path(a.out).mkdir(parents=True, exist_ok=True)
     D = a.defenders.split(",")
     if a.kind == "post_adv":
-        gens = ",".join(D + ["pcx_mu0.01"])
+        gens = ",".join(D + ["pcx_mu0.01", "pcx_mu0.005"])      # rw3_mu0.005 uses the RELEASED mu=0.005 generator (no retrained mu=0.005, A5)
         chain = [f"{PY} -m t_cxr.flowstats --generators {gens} {DATA} {BANK} {SALT} --exclude {EX} {GEN} --out $OUT --wout {FS}"]
         for r in D:
             chain.append(f"{PY} -m t_cxr.run_suite --release {r} --rot 0 --screen --attackers f3 --conds match {COMMON}")
@@ -43,7 +43,7 @@ def main():
     floors = nom["union"]
     for r in D + floors:
         fs = f"--flow-stats {FS}" if r.startswith("rw3_") else ""
-        extra = "f1,f2,f3,f4,f5,f6" if r in D else "f1,f3,f4,f5"
+        extra = "f1,f3,f4,f5,f6" if r in D else "f1,f3,f4,f5"            # F2 dropped for pcxr (A5)
         chain = [f"{PY} -m t_cxr.run_suite --release {r} --rot {rot} --attackers {extra} --conds match --seeds 0 {fs} {COMMON}" for rot in (0, 1, 2)]
         mk(a.out, f"t_x_ev_{r}", 5, " && ".join(chain))
     UT = f"{PY} -m t_cxr.run_utility_t2 --rots 0,1,2 --clf-init $HOME/work/t_data/pcxr/classifier.pth {DATA} {BANK} {SALT} {GEN} --exclude {EX} --out $OUT"
