@@ -1,0 +1,24 @@
+{
+ "name": "d_pii_eng_s0",
+ "config": {
+  "name": "d_pii_eng_s0",
+  "priority": 5,
+  "cmd": "n=0; while [ ! -f $HOME/work/cache/d3_pii/gtr_base/done.txt ] && [ $n -lt 240 ]; do sleep 15; n=$((n+1)); done; USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/pii_run.py --name d_pii_eng_s0 --grid p_eng --seeds 0 --out $OUT",
+  "hf_path": "runs/d_pii_eng_s0",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "9f56741",
+ "commit_after": "9f56741",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 2,
+ "host": "192-222-52-237",
+ "seconds": 321.4,
+ "finished_utc": "2026-11-05T17:19:23Z",
+ "uploaded": true
+}
