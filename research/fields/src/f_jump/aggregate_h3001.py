@@ -46,6 +46,28 @@ def alias(src_dir, salt, dst):
     return dst
 
 
+SRC10 = ["source_1", "source_2", "source_3", "source_5", "source_6", "source_7", "source_8", "source_9", "source_10", "source_11"]
+
+
+def per_source(P, a, b, names, B=500, seed=5):
+    """descriptive: query-weighted mean AP difference of the V-selected adapter a and its envelope arm b, per held-out source, plate-cluster bootstrap."""
+    ax, ay = P[f"apq|H|{a}"].astype(np.float64), P[f"apq|H|{b}"].astype(np.float64)
+    y, plate = P["y|H"].astype(np.int64), P["plate|H"]
+    out = {}
+    rng = np.random.default_rng(seed)
+    for nm in names:
+        c = SRC10.index(nm)
+        m = (y == c) & ~np.isnan(ax) & ~np.isnan(ay)
+        if not m.any():
+            continue
+        ids, inv = np.unique(plate[m], return_inverse=True)
+        ds = np.bincount(inv, weights=(ax - ay)[m], minlength=len(ids))
+        n = np.bincount(inv, minlength=len(ids)).astype(np.float64)
+        bs = [(w @ ds) / (w @ n) for w in (np.bincount(rng.integers(0, len(ids), len(ids)), minlength=len(ids)) for _ in range(B))]
+        out[nm] = dict(dU=float(ds.sum() / n.sum()), ci=AG.ci(np.array(bs)), n_queries=int(m.sum()))
+    return out
+
+
 def fold_row(out):
     reg = out["regimes"]
     be = out["break_even"]
@@ -93,6 +115,14 @@ def main():
             d = dp if proto == "P0" else alias(dp, a.salt, Path(a.scratch) / f"alias_{nm}")
             sp, P, meta, out = F4.analyse(d, a.salt, a.B, 700 + i)
             outs[nm], rows[nm] = out, fold_row(out)
+            if nm == "blk" and out["hold_source"]:
+                ps = {}
+                for R in ("b10", "b100"):
+                    e = out["regimes"].get(R, {})
+                    if e.get("sel_full", {}).get("F_star"):
+                        ps[R] = per_source(P, e["a_full"], e["sel_full"]["F_star"], out["hold_source"].split(","))
+                rows[nm]["per_source"] = ps
+                md.append(f"**Per held-out source inside the block (descriptive, plate-cluster 95%)**: " + json.dumps({R: {k: [round(v["dU"], 4), [round(x, 4) for x in v["ci"]]] for k, v in d_.items()} for R, d_ in ps.items()}) + "\n")
             md.append(f"## {proto} fold {nm}: hold_source={out['hold_source']}, n_fit_wells={out['n_fit']}, H/V compounds {out['n_compounds']}\n")
             h = out["headroom"]
             md.append(f"**Headroom (G-H4)**: " + (f"ceiling {h['ceiling_arm']} U_H {AG.fmt(h['ceiling_U_H'])} vs best floor {h['best_floor']} U_H {AG.fmt(h['floor_U_H'])} -> {AG.fmt(h['headroom'])}; gate {out['gate_H4']}" if h else "no trained b100 adapter") +
