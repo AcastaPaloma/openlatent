@@ -56,9 +56,21 @@ def util_boot(U, groups, draws):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--out", required=True); ap.add_argument("--B", type=int, default=1000); ap.add_argument("--sealed", action="store_true")
+    ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--out", required=True); ap.add_argument("--B", type=int, default=1000); ap.add_argument("--sealed", action="store_true"); ap.add_argument("--controls-only", action="store_true", help="read ONLY the two controls (rule of section 14: controls are read before the curve)")
     a = ap.parse_args()
     res = dict(rule=dict(link_max=LINK_MAX, drop_max=DROP_MAX, nominate_drop=NOMINATE_DROP, gate_link=GATE_LINK, gate_drop=GATE_DROP, shuffled_tol=SHUF_TOL, const_tol=CONST_TOL), rows={}, controls={})
+    if a.controls_only:
+        out = {}
+        for nm, d, tol in (("shuffled_label_down_f32", "down_f32_rot0_shuf_screen_ladderall_r5", SHUF_TOL), ("const", "const_rot0_screen_ladderall_r5", CONST_TOL)):
+            p = preds(a.root, d)
+            if p is None:
+                continue
+            y, s_, c = np.asarray(p["y_val"]), np.asarray(p["score_val"]), np.asarray(p["cluster_val"])
+            pb0 = S.PatientBootstrap(np.unique(c), B=a.B, seed=0); b0 = S.auc_boot(y, s_, pb0.codes(c), pb0); auc0 = S.auc(y, s_)
+            out[nm] = dict(auc=auc0, ci=AG.ci(b0), tolerance=tol, passes=bool(abs(auc0 - 0.5) <= tol), train=summ(a.root, d))
+        Path(a.out).mkdir(parents=True, exist_ok=True)
+        (Path(a.out) / "t6_controls.json").write_text(json.dumps(out, indent=1, default=float)); print(out)
+        return
     # --- linkage on V (screens + anchors); shared resamples over V patients
     ref = None
     link = {}

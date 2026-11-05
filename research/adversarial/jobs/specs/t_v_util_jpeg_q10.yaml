@@ -1,0 +1,5 @@
+name: t_v_util_jpeg_q10
+priority: 5
+cmd: "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; $HOME/venvs/t/bin/python -m t_cxr.run_utility_t2 --rots 0 --clf-init $HOME/work/t_data/pcxr/classifier.pth --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --salt-file research/adversarial/sealed/t3_cxr_salt.txt --gen-dir $HOME/work/t_data/pricheXy_weights --pcxr-dir $HOME/work/t_data/pcxr --exclude research/adversarial/results/t_cxr/exclude_dups.json --out $OUT --release jpeg_q10"
+hf_path: runs/t_v_util_jpeg_q10
+hf_allow: ["*.json","*.log","*.md"]
