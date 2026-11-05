@@ -1,0 +1,24 @@
+{
+ "name": "d_pii_embed",
+ "config": {
+  "name": "d_pii_embed",
+  "priority": 5,
+  "cmd": "USE_TF=0 USE_FLAX=0 TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 $HOME/venvs/d/bin/python research/fields/src/d_embedpriv/pii_embed.py",
+  "hf_path": "runs/d_pii_embed",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "29931eb",
+ "commit_after": "29931eb",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 331.3,
+ "finished_utc": "2026-11-05T17:00:50Z",
+ "uploaded": true
+}
