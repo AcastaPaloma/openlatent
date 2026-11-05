@@ -15,6 +15,7 @@ import aggregate_f2 as F2
 
 DELTA_U = 0.010
 POWER_MAX = DELTA_U / 2
+ATT_MAX = 0.23           # repaired-control attacker bound: chance + 0.03 for the five-source table (H3-001 sets 0.13 for ten sources)
 LF = re.compile(r"^(raw|pca\d+|rp\d+|dpca\d+_r[\d.]+|noise_r[\d.]+)$")
 BUD = [("b1", 0.01), ("b3", 0.03), ("b10", 0.10), ("b30", 0.30), ("b100", 1.0)]
 ALLR = ["a"] + [b for b, _ in BUD]
@@ -49,7 +50,7 @@ def analyse(dirp, salt, B, seed, extra_floors=None, extra_label=""):
     att = sp.worst("H", "ctrl_noise16")
     adapters = [x for x in sp.arms if sp.fam[x] == "adapter"]
     nulls = {x: float(np.mean(P[f"apcnull|H|{x}|xs"])) for x in adapters + matched if f"apcnull|H|{x}|xs" in P}
-    ctrl_ok = bool(abs(un - us) <= 0.01 and att <= 0.23 and max(nulls.values()) <= un + 0.01)
+    ctrl_ok = bool(abs(un - us) <= 0.01 and att <= ATT_MAX and max(nulls.values()) <= un + 0.01)
     out["controls"] = dict(U_noise16=un, U_noise16_shuffled=us, attacker_noise16=att, null_max=max(nulls.values()), ok=ctrl_ok)
     # trained (memorisation-calibrated)
     trained, tinfo = {}, {}
