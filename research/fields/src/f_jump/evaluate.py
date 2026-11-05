@@ -597,6 +597,9 @@ PROTOS = {
 }
 
 
+ADAPT_NAMES = {"a": ["mlp_a_d8", "mlp_a_d8_r0.5"], "b10": ["mlp_b10_d8", "mlp_b10_d8_r0.5"], "b100": ["mlp_d8", "mlp_d8_r0.5"]}
+
+
 def run_s1(a, fac, Xfit, Xall, nV, sets, meta_out, P, fit_idx, lab_class, lab_prod, jcp, ptype, well, plate, src, allidx, role_of, out):
     """H3-007 stage 1 (results_notes/F.md section 12): AP-only scoring of retrained adapters (F2/F3 seeds), floors, same-label LDAs, position-only codes and ctrl_noise16
     under the retrieval protocols P0 / Pa / Pb / Pc / Pd / Pabc.  Leakage is taken from the stored runs by the aggregator."""
@@ -646,7 +649,11 @@ def run_s1(a, fac, Xfit, Xall, nV, sets, meta_out, P, fit_idx, lab_class, lab_pr
                     full[sel] = apq
                     P[f"apq|H|{name}|{pn}"] = full
 
+    only = a.arms.split(",") if a.arms else None
+
     def run(name, family, Eall, regime=None):
+        if only is not None and name not in only:
+            return
         t1 = time.time()
         En = Eall.detach().cpu().numpy() if torch.is_tensor(Eall) else Eall
         score(name, En)
@@ -731,6 +738,8 @@ def run_s1(a, fac, Xfit, Xall, nV, sets, meta_out, P, fit_idx, lab_class, lab_pr
     for R in ("a", "b10", "b100"):
         lab, npd = labels[R]
         t1 = time.time()
+        if only is not None and not any(x in only for x in ADAPT_NAMES[R]):
+            continue
         if R == "b100":
             net, info = AD.train_supcon(Xfit, lab, npd, 8, AR.seed_of(a.salt, "mlp", 8) % (2 ** 31), steps=steps)
             names, gseed = ("mlp_d8", "mlp_d8_r0.5"), AR.seed_of(a.salt, "mlpnoise", 8, 0.5)
