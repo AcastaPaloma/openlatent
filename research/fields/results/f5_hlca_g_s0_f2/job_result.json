@@ -1,0 +1,19 @@
+{
+ "name": "f5_hlca_g_s0_f2",
+ "config": {
+  "name": "f5_hlca_g_s0_f2",
+  "priority": 10,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/f_jump/hlca_rep.py --dataset hlca --seed 0 --folds 2 --stage eng --budgets 10,100 --out $OUT",
+  "hf_path": "runs/f5_hlca_g_s0_f2"
+ },
+ "commit": "f269be8",
+ "commit_after": "491fd08",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 0,
+ "host": "192-222-52-237",
+ "seconds": 924.9,
+ "finished_utc": "2026-11-05T10:39:37Z",
+ "uploaded": true
+}
