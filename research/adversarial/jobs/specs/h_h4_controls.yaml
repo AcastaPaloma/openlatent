@@ -1,0 +1,5 @@
+name: h_h4_controls
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm ctrl_const --rungs 1.0 --out $OUT && $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm shuf_raw --rungs 1.0 --out $OUT && $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm raw --rungs 1.0 --out $OUT"
+hf_path: runs/h_h4_controls
+hf_allow: ["*.json", "*.log", "*.md"]
