@@ -1,0 +1,17 @@
+{
+ "name": "f5_ctrl_s1_s0",
+ "config": {
+  "name": "f5_ctrl_s1_s0",
+  "priority": 4,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/f/bin/python research/fields/src/f_jump/evaluate.py --scenario 5 --salt s0 --s1 --out $OUT",
+  "hf_path": "runs/f5_ctrl_s1_s0"
+ },
+ "commit": "33b9ac2",
+ "commit_after": "9a74573",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 1914.8,
+ "finished_utc": "2026-11-05T05:28:59Z",
+ "uploaded": true
+}
