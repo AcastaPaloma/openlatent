@@ -1,0 +1,4 @@
+name: f5_hlca_r_s0_f0
+priority: 5
+cmd: "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false $HOME/venvs/e/bin/python research/fields/src/f_jump/hlca_rep.py --dataset hlca --seed 0 --folds 0 --stage new --budgets 1,3,10,30,100 --out $OUT"
+hf_path: runs/f5_hlca_r_s0_f0
