@@ -43,7 +43,8 @@ def main():
             mk(a.out, f"t_y_screen_{g}", "for r in " + " ".join(names) + f"; do {screen_cmd('$r')}; done")
         mk(a.out, "t_y_screen_e", " && ".join([screen_cmd("pcxr_mu0.01"), screen_cmd("rw3_mu0.005", f"--flow-stats {FS}"), screen_cmd("rw3_mu0.01", f"--flow-stats {FS}")]))
     elif a.kind == "dscreens":
-        mk(a.out, "t_y_dscreen", " && ".join(screen_cmd(r) for r in DEFENDERS[1:]))
+        for r in DEFENDERS[1:]:
+            mk(a.out, f"t_y_dscreen_{r.removeprefix('pcxr_')}", screen_cmd(r))                   # one job per new checkpoint, spread over the workers
     else:
         nom = json.loads(Path(a.nominate).read_text())
         floors = nom["union"]
