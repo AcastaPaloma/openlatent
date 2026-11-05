@@ -53,6 +53,7 @@ def main():
     ap.add_argument("--out", default="-")
     ap.add_argument("--B", type=int, default=1000)
     ap.add_argument("--draws", type=int, default=5000)
+    ap.add_argument("--family", default="ae", help="family of the best-of-N configurations (ae | aeh)")
     ap.add_argument("--undithered", action="store_true", help="post hoc variant: drop the dithered codes from the floor pool of BOTH the observed statistic and null A (their retention is low by construction)")
     a = ap.parse_args()
     recs = load(a.runs)
@@ -61,10 +62,10 @@ def main():
     rng = np.random.RandomState(7)
     for enc, ds, var in cells:
         cell = Cell(enc, ds, var, recs, a.runs, a.B)
-        if "raw" not in cell.by or not any(c.startswith("ae__") for c in cell.by):
+        if "raw" not in cell.by or not any(family(c) == a.family for c in cell.by):
             continue
         tab = build(cell)
-        aes = [c for c in tab if family(c) == "ae"]
+        aes = [c for c in tab if family(c) == a.family]
         floors = [c for c in tab if family(c) in FLOORS and not (a.undithered and family(c) == "dither")]
         for key, name in (("ut", "held-class acc" if "holdout" in var else "label acc"), ("ret", "retention xc")):
             obs = stat(tab, aes, floors, key)

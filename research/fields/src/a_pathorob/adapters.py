@@ -273,6 +273,103 @@ def train_ae(P, sp, dl, lam, beta, seed, rounds=12, steps_e=60, steps_a=120, hid
     return rep, dict(rate_bits_per_patch=rate_bits, adv_train_acc_per_round=logs)
 
 
+def _bal_acc_t(logits, y, K):
+    pred = logits.argmax(1)
+    rec = [(pred[y == k] == k).float().mean() for k in range(K) if (y == k).any()]
+    return float(torch.stack(rec).mean())
+
+
+def _fit_advs(Zn, c, Kc, dl, steps_a):
+    advs = nn.ModuleList([nn.Linear(dl, Kc), nn.Sequential(nn.Linear(dl, 256), nn.GELU(), nn.Linear(256, Kc))]).to(DEV)
+    oa = torch.optim.Adam(advs.parameters(), lr=3e-3)
+    for s in range(steps_a):
+        idx = torch.randint(0, len(Zn), (512,), device=DEV)
+        loss = sum(F.cross_entropy(a_(Zn[idx]), c[idx]) for a_ in advs)
+        oa.zero_grad(); loss.backward(); oa.step()
+    return advs
+
+
+def train_ae_heldout(P, sp, dl, lam, beta, seed, rounds=36, steps_e=60, steps_a=120, hid=512, n_noise=20):
+    """A3: AE whose adversaries are fitted on slide half A1 of the adapter-train units and whose confusion loss is applied to the OTHER half A2
+    (slides the adversary never fitted), so memorisation of training slides cannot satisfy the objective.  Logs in-sample (A1) and held-out (A2)
+    balanced accuracy of the adversaries per round and the held-out accuracy of an adversary on pure-noise latents (the calibration floor)."""
+    st, XA, yA, cA = _prep(P, sp)
+    d = XA.shape[1]
+    Kc = int(P.n_id_centres)
+    uA = P.u[sp["A"]]
+    cn = cA.cpu().numpy()
+    rng = np.random.RandomState(seed * 7 + 3)
+    in1 = np.zeros(len(uA), bool)
+    for c in np.unique(cn):
+        us = np.unique(uA[cn == c])
+        rng.shuffle(us)
+        h1 = set(us[: (len(us) + 1) // 2].tolist()) if len(us) > 1 else set(us.tolist())
+        in1 |= (cn == c) & np.isin(uA, list(h1))
+    m1 = torch.as_tensor(in1, device=DEV)
+    if (~m1).sum() == 0:
+        raise RuntimeError("A2 empty")
+    X1, c1, X2, c2 = XA[m1], cA[m1], XA[~m1], cA[~m1]
+    torch.manual_seed(seed)
+    enc = nn.Sequential(nn.Dropout(0.2), nn.Linear(d, hid), nn.GELU(), nn.Linear(hid, 2 * dl)).to(DEV)
+    dec = nn.Sequential(nn.Linear(dl, hid), nn.GELU(), nn.Linear(hid, d)).to(DEV)
+    opt = torch.optim.AdamW(list(enc.parameters()) + list(dec.parameters()), lr=1e-3, weight_decay=1e-2)
+
+    def chan(x):
+        mu, lv = enc(x).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        z = mu + torch.exp(0.5 * lv) * torch.randn_like(mu)
+        kl = 0.5 * (mu ** 2 + lv.exp() - 1 - lv).sum(-1).mean()
+        return z, kl
+    # noise-latent floor on held-out slides (should be ~chance)
+    fl_in, fl_out = [], []
+    for t in range(n_noise):
+        N1, N2 = torch.randn(len(X1), dl, device=DEV), torch.randn(len(X2), dl, device=DEV)
+        zs_ = Std().fit(N1)
+        advs_ = _fit_advs(zs_(N1), c1, Kc, dl, steps_a)
+        with torch.no_grad():
+            fl_in.append(np.mean([_bal_acc_t(a_(zs_(N1)), c1, Kc) for a_ in advs_]))
+            fl_out.append(np.mean([_bal_acc_t(a_(zs_(N2)), c2, Kc) for a_ in advs_]))
+    acc_in, acc_out = [], []
+    for r in range(rounds):
+        enc.eval()
+        with torch.no_grad():
+            Z1, Z2 = chan(X1)[0], chan(X2)[0]
+        zs = Std().fit(Z1)
+        advs = _fit_advs(zs(Z1), c1, Kc, dl, steps_a)
+        with torch.no_grad():
+            acc_in.append(round(float(np.mean([_bal_acc_t(a_(zs(Z1)), c1, Kc) for a_ in advs])), 3))
+            acc_out.append(round(float(np.mean([_bal_acc_t(a_(zs(Z2)), c2, Kc) for a_ in advs])), 3))
+        enc.train()
+        for s in range(steps_e):
+            idx = torch.randint(0, len(XA), (256,), device=DEV)
+            z, kl = chan(XA[idx])
+            loss = F.mse_loss(dec(z), XA[idx]) + beta * kl
+            if lam > 0:
+                i2 = torch.randint(0, len(X2), (256,), device=DEV)
+                zn = zs(chan(X2[i2])[0])
+                conf = 0.0
+                for a_ in advs:
+                    p = F.softmax(a_(zn), -1)
+                    conf = conf + (p * torch.log(p.clamp(min=1e-8))).sum(-1).mean() + math.log(Kc)
+                loss = loss + lam * conf / len(advs)
+            opt.zero_grad(); loss.backward(); opt.step()
+    enc.eval()
+    g = torch.Generator(device=DEV).manual_seed(5000 + seed)
+
+    def f(x):
+        mu, lv = enc(x).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        return mu + torch.exp(0.5 * lv) * torch.randn(mu.shape, device=DEV, generator=g)
+    rep = _release(f, P, sp, st)
+    with torch.no_grad():
+        mu, lv = enc(st(_t(P.X[sp["C"]]))).chunk(2, -1)
+        lv = lv.clamp(-10, 6)
+        rate_bits = float((0.5 * (mu ** 2 + lv.exp() - 1 - lv).sum(-1)).mean() / math.log(2))
+    return rep, dict(rate_bits_per_patch=rate_bits, adv_train_acc_per_round=acc_in, adv_heldout_acc_per_round=acc_out,
+                     noise_floor_heldout=float(np.mean(fl_out)), noise_floor_heldout_sd=float(np.std(fl_out)),
+                     noise_floor_insample=float(np.mean(fl_in)), n_units_A1=int(len(np.unique(uA[in1]))), n_units_A2=int(len(np.unique(uA[~in1]))))
+
+
 class VQ(nn.Module):
     def __init__(self, m, Kc, dg):
         super().__init__()
@@ -431,8 +528,11 @@ def run_floor(method, hp, P, sp, seed):
         XA = P.X[sp["A"]].astype(np.float64)
         mu = XA.mean(0)
         if method == "pca":
-            _, _, Vt = np.linalg.svd(XA - mu, full_matrices=False)
-            R = Vt[:d].T
+            key = ("pca_svd", XA.shape, float(XA[:3].sum()), float(XA[-3:].sum()))
+            if key not in _EIG:                       # one SVD per fit set, shared by the d ladder
+                _EIG.clear()
+                _EIG[key] = np.linalg.svd(XA - mu, full_matrices=False)[2][:128]
+            R = _EIG[key][:d].T
         else:
             R = np.random.RandomState(31 + seed).randn(XA.shape[1], d) / np.sqrt(XA.shape[1])
         return {s: ((P.X[sp[s]] - mu) @ R).astype(np.float32) for s in SPLITS}, {}
@@ -496,6 +596,8 @@ def build(method, hp, P, sp, seed):
         return train_adv_retrain(P, sp, hp["dl"], hp["lam"], seed)
     if method == "vq":
         return train_vq(P, sp, hp["m"], hp["K"], seed)
+    if method == "ae" and hp.get("advh"):
+        return train_ae_heldout(P, sp, hp["dl"], hp["lam"], hp["beta"], seed, rounds=hp.get("rounds", 36))
     if method == "ae":
         return train_ae(P, sp, hp["dl"], hp["lam"], hp["beta"], seed, rounds=hp.get("rounds", 12))
     if method == "supcon_xc":
@@ -551,6 +653,7 @@ P4 = (
 CONTROLS_MIN = [("ctrl_const", {}), ("ctrl_shuffle_orth", dict(rep=0))]
 DENSE = ([("raw", {})] + [("pca", dict(d=d)) for d in (6, 10, 12, 20, 24)] + [("lda_pca", dict(d=d)) for d in (6, 10, 12, 20, 24)]
          + [("randproj", dict(d=d)) for d in (8, 12, 24)])
+A3 = [("ae", dict(dl=32, lam=l, beta=1e-3, rounds=36, advh=1)) for l in (10.0, 30.0, 100.0)]
 F02 = [("ae", dict(dl=32, lam=l, beta=1e-3, rounds=36)) for l in (30.0, 100.0, 300.0)]
 P2 = (
     [("raw", {}), ("centre_whiten", {}), ("leace", dict(rho=1.0))] + LDA_ARMS

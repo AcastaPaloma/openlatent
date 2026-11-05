@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+torch.set_num_threads(min(8, torch.get_num_threads()))   # thread cap (shared box)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from a_pathorob import common as C, splits as S, adapters as AD, suite as SU
@@ -49,7 +50,7 @@ def main():
     np.savez_compressed(out / f"{tag}.splitarrays.npz", **{f"idx_{k}": v for k, v in sp.items()}, y=P.y, c=P.c, u=P.u)
     print(json.dumps(info), flush=True)
     grid = []
-    named = dict(gate=AD.GATE + AD.CONTROLS, learned=AD.LEARNED, rate=AD.RATE, controls=AD.CONTROLS, main=AD.GRID, all=AD.GRID + AD.CONTROLS, p2=AD.P2 + AD.CONTROLS, p3=AD.P3 + AD.CONTROLS, p4=AD.P4 + AD.CONTROLS_MIN, f02=AD.F02, dense=AD.DENSE)
+    named = dict(gate=AD.GATE + AD.CONTROLS, learned=AD.LEARNED, rate=AD.RATE, controls=AD.CONTROLS, main=AD.GRID, all=AD.GRID + AD.CONTROLS, p2=AD.P2 + AD.CONTROLS, p3=AD.P3 + AD.CONTROLS, p4=AD.P4 + AD.CONTROLS_MIN, f02=AD.F02, dense=AD.DENSE, a3=AD.A3)
     if a.grid in named:
         grid = list(named[a.grid])
     else:
@@ -70,7 +71,7 @@ def main():
             rep, extra = AD.build(method, hp, P, sp, a.seed)
             tfit = time.time() - t0
             m, preds = SU.evaluate(rep, P, sp, a.seed, secret_shuffle=("orth" if method == "ctrl_shuffle_orth" else method == "ctrl_shuffle"), shuffle_rep=hp.get("rep", 0), holdout=a.holdout,
-                                  patchsplit=(method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten") and a.grid not in ("p2", "p3", "p4", "f02", "dense")))
+                                  patchsplit=(method in ("raw", "lda", "leace", "isp", "centre_mean", "centre_zscore", "centre_whiten") and a.grid not in ("p2", "p3", "p4", "f02", "dense", "a3")))
             rec = dict(variant=variant, cfg=cid, method=method, hp=hp, seed=a.seed, encoder=a.encoder, dataset=a.dataset, metrics=m, extra=extra,
                        seconds_fit=round(tfit, 1))
             np.savez_compressed(out / "preds" / f"{tag}__{cid}.npz", **preds)

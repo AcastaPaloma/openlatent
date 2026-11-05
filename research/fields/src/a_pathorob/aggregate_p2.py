@@ -21,11 +21,12 @@ import numpy as np
 
 KC = ("linear", "mlp", "knn", "tfm")
 KX = ("lgbm", "rff")
-LEARNED = ("vib", "vq", "dann", "adv_retrain", "supcon_xc", "ae")
+LEARNED = ("vib", "vq", "dann", "adv_retrain", "supcon_xc", "ae", "aeh")
 
 
 def family(c):
-    return c.split("__")[0]
+    f = c.split("__")[0]
+    return "aeh" if f == "ae" and "advh1" in c else f      # A3: AE with the held-out-slide adversary is its own family
 
 
 def ci(b):
@@ -327,6 +328,24 @@ def main():
             hu = tab["raw"][ut][0] - tab[bu][ut][0]; hr = 1.0 - tab[br]["ret"][0]
             env[c] = (bu, du_, br, dr_, len(near), hu, hr)
             L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {len(near)} | {bu} ({tab[bu][ut][0]:.3f}) | {hu:.3f} | {fmtm(*du_)} | {br} ({tab[br]['ret'][0]:.3f}) | {hr:.3f} | {fmtm(*dr_)} | {trtxt} |")
+        # --- A3 attribution: held-out-slide-adversary AE (family aeh) vs the NO-ADVERSARY AE family (lam 0 AEs and dithered AE-base codes) at matched leakage
+        if any(family(c) == "aeh" for c in tab):
+            noadv = [x for x in tab if (family(x) == "ae" and "lam0.0" in x) or (family(x) == "dither" and "baseae" in x)]
+            L.append(f"\nA3 attribution: each `aeh` configuration minus the best NO-ADVERSARY AE point (lam 0 AEs, dithered AE-base codes) with L <= L(config)+{a.tol:.2f}. The adversary 'adds' if Delta >= +0.04 utility or >= +0.05 retention with CI > 0.\n")
+            L.append("| aeh config | L | best no-adversary point (utility) | Δ " + ("held-class acc" if held_mode else "label acc") + " [95% CI] (MDE80) | best no-adversary point (retention) | Δ retention xc [95% CI] (MDE80) | adversary adds? |")
+            L.append("|---|---|---|---|---|---|---|")
+            for c in order:
+                if family(c) != "aeh":
+                    continue
+                refs = [x for x in noadv if tab[x]["L"][0] <= tab[c]["L"][0] + a.tol]
+                if not refs:
+                    L.append(f"| {c} | {tab[c]['L'][0]:.2f} | (no no-adversary point at this leakage) | | | | |")
+                    continue
+                bu = max(refs, key=lambda x: tab[x][ut][0]); br = max(refs, key=lambda x: tab[x]["ret"][0])
+                du_ = (tab[c][ut][0] - tab[bu][ut][0], tab[c][ut][1] - tab[bu][ut][1])
+                dr_ = (tab[c]["ret"][0] - tab[br]["ret"][0], tab[c]["ret"][1] - tab[br]["ret"][1])
+                adds = (ci(du_[1])[0] > 0 and du_[0] >= 0.04) or (ci(dr_[1])[0] > 0 and dr_[0] >= 0.05)
+                L.append(f"| {c} | {tab[c]['L'][0]:.2f} | {bu} ({tab[bu][ut][0]:.3f}) | {fmtm(*du_)} | {br} ({tab[br]['ret'][0]:.3f}) | {fmtm(*dr_)} | {'YES' if adds else 'no'} |")
         # --- V-selected per family (the official line)
         L = Lmain
         L.append(f"\nPer family, configuration selected on V (L_V within +{a.tol:.2f} of the matched LDA arm; then max V {'held-class acc' if held_mode else 'retention xc'}):\n")
