@@ -1,0 +1,5 @@
+name: t_k_def_c2
+priority: 5
+cmd: "export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 TOKENIZERS_PARALLELISM=false PYTHONPATH=research/adversarial/src; $HOME/venvs/t/bin/python -m t_cxr.train_def --budget-s 3000 --eval-every 600 --data $HOME/work/t_data/cxr_meta --pri $HOME/work/t_data/cxr_meta --bank $HOME/work/t_data/cxr/cxr256.npy --exclude research/adversarial/results/t_cxr/exclude_dups.json --wdir $HOME/work/t_data/pcxr --out $OUT --tag c2 --lam 3"
+hf_path: runs/t_k_def_c2
+hf_allow: ["*.json","*.log","*.md"]
