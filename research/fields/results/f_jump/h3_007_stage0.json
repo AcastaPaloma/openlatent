@@ -1,0 +1,211 @@
+{
+ "stage": 0,
+ "thresholds": {
+  "A0": 0.05,
+  "B0": 0.02,
+  "position_only_open": 0.02,
+  "position_only_closed": 0.01
+ },
+ "chance_same_well": 0.0031268843873932016,
+ "chance_same_row": 0.06251828120961583,
+ "chance_same_col": 0.0500122594706076,
+ "n_positions": 320,
+ "A0": {
+  "s0": {
+   "n_compounds": 40417,
+   "n_positive_pairs": 172290.0,
+   "same_well": 0.2800220558360903,
+   "same_row": 0.32764524928898947,
+   "same_col": 0.32092402344883625
+  },
+  "s1": {
+   "n_compounds": 40617,
+   "n_positive_pairs": 173747.0,
+   "same_well": 0.2799185021899659,
+   "same_row": 0.3271078061779484,
+   "same_col": 0.3217436847830466
+  },
+  "s2": {
+   "n_compounds": 40394,
+   "n_positive_pairs": 172183.0,
+   "same_well": 0.27963271635411163,
+   "same_row": 0.3264608004274522,
+   "same_col": 0.32076337385223863
+  },
+  "all_production": {
+   "n_compounds": 80933,
+   "n_positive_pairs": 346017.0,
+   "same_well": 0.2793591066334891,
+   "same_row": 0.32708508541487846,
+   "same_col": 0.3204177829413006
+  }
+ },
+ "A0_by_source_pair": {
+  "source_2|source_3": {
+   "pairs": 29119.0,
+   "same_well": 0.0032281328342319447
+  },
+  "source_2|source_6": {
+   "pairs": 42591.0,
+   "same_well": 0.0030522880420746166
+  },
+  "source_2|source_8": {
+   "pairs": 50050.0,
+   "same_well": 0.0032767232767232767
+  },
+  "source_3|source_6": {
+   "pairs": 18807.0,
+   "same_well": 0.9707555697346733
+  },
+  "source_3|source_8": {
+   "pairs": 16913.0,
+   "same_well": 0.9737480044935848
+  },
+  "source_6|source_8": {
+   "pairs": 38272.0,
+   "same_well": 0.9418896321070234
+  },
+  "source_10|source_2": {
+   "pairs": 37106.0,
+   "same_well": 0.6774915108068776
+  },
+  "source_10|source_3": {
+   "pairs": 27661.0,
+   "same_well": 0.003217526481327501
+  },
+  "source_10|source_6": {
+   "pairs": 48000.0,
+   "same_well": 0.0031041666666666665
+  },
+  "source_10|source_8": {
+   "pairs": 37498.0,
+   "same_well": 0.0033068430316283534
+  }
+ },
+ "B0_inputs": {
+  "n_compounds": 80933,
+  "not_in_table": 0,
+  "unscored": 52
+ },
+ "B0_pairs": {
+  "tanimoto_ge_0p8": 4627,
+  "same_connectivity_block": 2,
+  "union": 4629
+ },
+ "B0": {
+  "s0": {
+   "tanimoto|vs_T": {
+    "n_H_exposed": 1502,
+    "share_of_H": 0.03716258010243215
+   },
+   "tanimoto|vs_T_or_V": {
+    "n_H_exposed": 1816,
+    "share_of_H": 0.04493158819308707
+   },
+   "connectivity|vs_T": {
+    "n_H_exposed": 1,
+    "share_of_H": 2.474206398297746e-05
+   },
+   "connectivity|vs_T_or_V": {
+    "n_H_exposed": 2,
+    "share_of_H": 4.948412796595492e-05
+   },
+   "either|vs_T": {
+    "n_H_exposed": 1503,
+    "share_of_H": 0.03718732216641512
+   },
+   "either|vs_T_or_V": {
+    "n_H_exposed": 1818,
+    "share_of_H": 0.04498107232105302
+   },
+   "n_H": 40417
+  },
+  "s1": {
+   "tanimoto|vs_T": {
+    "n_H_exposed": 1531,
+    "share_of_H": 0.037693576581234456
+   },
+   "tanimoto|vs_T_or_V": {
+    "n_H_exposed": 1858,
+    "share_of_H": 0.04574439274195534
+   },
+   "connectivity|vs_T": {
+    "n_H_exposed": 2,
+    "share_of_H": 4.924046581480661e-05
+   },
+   "connectivity|vs_T_or_V": {
+    "n_H_exposed": 2,
+    "share_of_H": 4.924046581480661e-05
+   },
+   "either|vs_T": {
+    "n_H_exposed": 1533,
+    "share_of_H": 0.037742817047049265
+   },
+   "either|vs_T_or_V": {
+    "n_H_exposed": 1860,
+    "share_of_H": 0.04579363320777015
+   },
+   "n_H": 40617
+  },
+  "s2": {
+   "tanimoto|vs_T": {
+    "n_H_exposed": 1553,
+    "share_of_H": 0.03844630390652077
+   },
+   "tanimoto|vs_T_or_V": {
+    "n_H_exposed": 1856,
+    "share_of_H": 0.04594741793335644
+   },
+   "connectivity|vs_T": {
+    "n_H_exposed": 1,
+    "share_of_H": 2.4756151903748083e-05
+   },
+   "connectivity|vs_T_or_V": {
+    "n_H_exposed": 1,
+    "share_of_H": 2.4756151903748083e-05
+   },
+   "either|vs_T": {
+    "n_H_exposed": 1554,
+    "share_of_H": 0.03847106005842452
+   },
+   "either|vs_T_or_V": {
+    "n_H_exposed": 1857,
+    "share_of_H": 0.045972174085260185
+   },
+   "n_H": 40394
+  }
+ },
+ "position_only": {
+  "P1_3number": {
+   "U_H": 0.32418835337912716,
+   "n_compounds": 40417
+  },
+  "P2_onehot_bucket8": {
+   "U_H": 0.1365566423018034,
+   "n_compounds": 40417
+  },
+  "P3_onehot_exact384": {
+   "U_H": 0.3137755417643998,
+   "n_compounds": 40417
+  },
+  "P4_shuffled_within_plate": {
+   "U_H": 0.049819845032736426,
+   "n_compounds": 40417
+  },
+  "ref_iid_noise16": {
+   "U_H": 0.04605494019232197,
+   "n_compounds": 40417
+  }
+ },
+ "U_ctrl_noise16_s0_from_F3": 0.045934073404539484,
+ "verdict": {
+  "A0_max": 0.2800220558360903,
+  "B0_max": 0.03847106005842452,
+  "A_open": true,
+  "B_open": true,
+  "position_only_open": true,
+  "position_only_closed": false,
+  "stage0": "OPEN"
+ },
+ "seconds": 416.0
+}
