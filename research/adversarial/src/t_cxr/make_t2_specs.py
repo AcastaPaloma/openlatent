@@ -45,7 +45,8 @@ def main():
         fs = f"--flow-stats {FS}" if r.startswith("rw3_") else ""
         extra = "f1,f3,f4,f5,f6" if r in D else "f1,f3,f4,f5"            # F2 dropped for pcxr (A5)
         chain = [f"{PY} -m t_cxr.run_suite --release {r} --rot {rot} --attackers {extra} --conds match --seeds 0 {fs} {COMMON}" for rot in (0, 1, 2)]
-        mk(a.out, f"t_x_ev_{r}", 5, " && ".join(chain))
+        amend = "export T_AMEND=A6; " if r in D else ""                              # A6: the pcxr rotation-0 ledger entry exists from the aborted start
+        mk(a.out, f"t_x_ev_{r}", 5, amend + " && ".join(chain))
     UT = f"{PY} -m t_cxr.run_utility_t2 --rots 0,1,2 --clf-init $HOME/work/t_data/pcxr/classifier.pth {DATA} {BANK} {SALT} {GEN} --exclude {EX} --out $OUT"
     mk(a.out, "t_x_util_raw", 5, f"{UT} --release raw --labels14")
     for r in D + floors:
