@@ -92,19 +92,14 @@ def main():
     for rname in ("R1", "R2", "R4"):
         if ("down_f4", rname) in boots and ("pcxr_mu0.01_s1_C2", rname) in boots:
             bd, bp = boots[("down_f4", rname)], boots[("pcxr_mu0.01_s1_C2", rname)]
-            gap = res["releases"]["down_f4"][rname]["L"] - res["releases"]["pcxr_mu0.01_s1_C2"][rname]["L"]
+            gap = res["releases"]["down_f4"][rname]["L"] - res["releases"]["pcxr_mu0.01_s1_C2"][rname]["L"]      # > 0: the FLOOR leaks MORE than the defender
             lo99 = float(np.nanpercentile(bd - bp, 0.5))
-            res.setdefault("ordering", {})[rname] = dict(gap_down_f4_minus_pcxr=gap, lower99=lo99, defender_beaten_by_floor=bool(gap >= 0.03 and lo99 > 0))
+            res.setdefault("ordering", {})[rname] = dict(L_down_f4_minus_L_defender=gap, lower99=lo99, upper99=float(np.nanpercentile(bd - bp, 99.5)),
+                                                         defender_beats_floor=bool(gap >= 0.03 and lo99 > 0), floor_ahead_by=float(-gap))
     if "R4" in res.get("ordering", {}):
         o = res["ordering"]["R4"]
-        res["ordering_reading"] = "T3 result REVERSED toward the floor holding by >= 0.03 (floor leaks less than the defender at R4: the defender is DOMINATED)" if o["defender_beaten_by_floor"] else "the T3 tie between down_f4 and the best defender SURVIVES (no gap of 0.03 at R4)"
-        # the pre-registered REVERSAL of 'no defender beats the floors' is the opposite sign: defender leaks less than the floor by >= 0.03
-        if "pcxr_mu0.01_s1_C2" in boots and "down_f4" in boots:
-            pass
-        bd, bp = boots[("down_f4", "R4")], boots[("pcxr_mu0.01_s1_C2", "R4")]
-        gap_rev = res["releases"]["pcxr_mu0.01_s1_C2"]["R4"]["L"] - res["releases"]["down_f4"]["R4"]["L"]
-        lo99_rev = float(np.nanpercentile(bp - bd, 0.5))
-        res["ordering"]["R4"]["floor_minus_defender_reversal_test"] = dict(defender_leaks_less_by=-(gap_rev), lower99_of_floor_minus_defender=float(np.nanpercentile(bd - bp, 0.5)), reversal=bool((-gap_rev) >= 0.03 and np.nanpercentile(bd - bp, 0.5) > 0))
+        res["ordering_reading"] = ("REVERSED: the defender leaks less than down_f4 by >= 0.03 (lower 99% bound > 0) at R4" if o["defender_beats_floor"]
+                                   else "the T3 result 'no defender beats the floors' SURVIVES: at R4 the floor is %s the defender by %.3f" % ("ahead of" if o["floor_ahead_by"] > 0 else "behind", abs(o["floor_ahead_by"])))
     Path(a.out).mkdir(parents=True, exist_ok=True)
     (Path(a.out) / "ladder.json").write_text(json.dumps(res, indent=1, default=float))
     for rel, v in res["releases"].items():
