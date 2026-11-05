@@ -1084,3 +1084,49 @@ Selection null: best-of-3 (the three lam values) with the same null A (frontier 
 **Verdict rules.** A3-ALIVE = at least one trained configuration AND (a utility win in one cell, or a retention win against both (a) and (b) in both cells) AND above both selection nulls. A3-DEAD = trained configurations exist and none wins an endpoint against (a). A3-UNTRAINED = no lam passes the criterion. A3-UNDERPOWERED = a cell's MDE80 exceeds the margin on an endpoint (that endpoint is not scored in that cell). Midnight/Tolkach utility is ceiling-limited (headroom ~0.03) and is not scored.
 
 **Constraints.** Priority 5, <= 3 `a_` jobs at once, <= 3 GPU-h (estimate ~2: A3 2 x 0.4, TCGA dense ~0.6), thread caps `OMP/MKL/OPENBLAS_NUM_THREADS=8` and LightGBM `n_jobs=8`; job outputs only under `$OUT` (`~/work/runs`), nothing written into tracked paths on the VM (specs go to `~/queue/pending`, code arrives by `git pull` of commits pushed from the laptop).
+
+### A3 RESULTS (as pre-registered above; aggregated 2026-11-05 ~04:05Z; 0.53 worker-hours: Tolkach 0.18, TCGA 0.16, TCGA dense ladder 0.19; box idle, threads capped at 8, nothing written to tracked VM paths)
+
+**1. 'Adapter trained' criterion (held-out-slide adversary vs the noise-latent floor on the same held-out slides; balanced accuracy, last-6-round mean, 4 folds):**
+
+| cell | lam | slides A1 / A2 | noise floor (held-out) | in-sample adv acc (A1) | held-out adv acc (A2): last-6 mean [min, max over folds] | trained (<= floor + 0.05)? |
+|---|---|---|---|---|---|---|
+| midnight / TCGA | 10 | 16 / 16 | 0.252 +- 0.014 | 0.881 | 0.256 [0.229, 0.284] | **YES** |
+| midnight / TCGA | 30 | 16 / 16 | 0.252 | 0.855 | 0.248 [0.223, 0.283] | **YES** |
+| midnight / TCGA | 100 | 16 / 16 | 0.252 | 0.827 | 0.236 [0.197, 0.285] | **YES** |
+| midnight / Tolkach | 10 | 7 / 6 | 0.503 +- 0.011 | 0.882 | 0.570 [0.545, 0.626] | no (misses by 0.017) |
+| midnight / Tolkach | 30 | 7 / 6 | 0.503 | 0.855 | 0.548 [0.484, 0.608] | **YES** |
+| midnight / Tolkach | 100 | 7 / 6 | 0.503 | 0.828 | 0.556 [0.487, 0.606] | no (misses by 0.003) |
+
+The noise floor on held-out slides IS chance (0.252 / 0.503, sd 0.01), unlike the same-unit floor (0.67): the held-out design removes the memorisation confound. **Competence calibration (CPU, same split and adversary code, 4 folds):** a held-out-slide adversary reaches 0.75 (Tolkach) / 0.46 (TCGA) balanced accuracy on PCA-32 of the raw embedding,
+0.63 / 0.42 on random-projection-32, 0.55 / 0.29 on dithered PCA-32 (r 2), 0.50 / 0.26 on noise; so the criterion is not vacuous: the adversary can read centre across slides from raw-derived latents and falls to the floor on the A3 latents. Caveat: the adversary is fit on 7-16 slides, the evaluation attackers on 12-48,
+so **'trained' does not mean 'removed'**: the evaluation attackers still read the centre from the same latents (L 0.34-0.50 below).
+
+**2. Endpoints, leakage-matched vs the full inductive envelope (dense ladder, dithered no-adversary codes, projections, LDA arms), cross-fit pooled out-of-fold, MDE80 beside every difference:**
+
+| cell | lam | L_worst [95% CI] | held-class acc | retention xc | utility headroom | utility Δ vs envelope [95% CI] (MDE80) | retention headroom | retention Δ vs envelope [95% CI] (MDE80) | n_near | utility win | retention win |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Tolkach | 10 (not trained) | 0.50 [0.41, 0.58] | 0.937 | 0.481 | 0.011 | -0.049 [-0.073, -0.028] (0.032) | 0.349 | -0.170 [-0.207, -0.134] (0.053) | 4 | ceiling-limited | no |
+| Tolkach | 30 (trained) | 0.40 [0.32, 0.51] | 0.945 | 0.456 | 0.011 | -0.042 [-0.064, -0.023] (0.030) | 0.429 | -0.115 [-0.154, -0.077] (0.056) | 6 | ceiling-limited | no |
+| Tolkach | 100 (not trained) | 0.47 [0.38, 0.55] | 0.955 | 0.489 | 0.011 | -0.031 [-0.048, -0.017] (0.023) | 0.429 | -0.082 [-0.131, -0.036] (0.068) | 6 | ceiling-limited | no |
+| TCGA | 10 (trained) | 0.42 [0.34, 0.50] | 0.825 | 0.386 | 0.052 | -0.013 [-0.051, +0.028] (0.056) | 0.429 | -0.185 [-0.213, -0.153] (0.042) | 7 | UNDERPOWERED (MDE 0.056 > margin 0.04) | no |
+| TCGA | 30 (trained) | 0.34 [0.26, 0.43] | 0.797 | 0.317 | 0.071 | -0.023 [-0.079, +0.037] (0.083) | 0.513 | -0.170 [-0.196, -0.142] (0.039) | 11 | UNDERPOWERED (0.083) | no |
+| TCGA | 100 (trained) | 0.34 [0.25, 0.42] | 0.831 | 0.251 | 0.071 | +0.011 [-0.044, +0.067] (0.079) | 0.513 | -0.235 [-0.262, -0.207] (0.039) | 11 | UNDERPOWERED (0.079) | no |
+
+Selection null (best-of-3, null A frontier permutation / null B max-T bootstrap): Tolkach utility best -0.031 (null A 95th pct +0.018, p 0.62; B +0.020), retention best -0.082 (A +0.080, p 0.70; B +0.040); TCGA utility best +0.011 (A +0.048, p 0.30; B +0.056), retention best -0.170 (A +0.081; B +0.029). **No gain exceeds either null (there is no positive gain to calibrate).**
+
+**3. Attribution (vs the best NO-ADVERSARY AE point at matched leakage: lam 0 AEs and the dithered AE-base codes; 'adds' = Delta >= +0.04 utility or >= +0.05 retention with CI > 0):**
+
+| cell | lam | trained | utility Δ vs no-adversary AE [95% CI] (MDE80) | comparator | retention Δ [95% CI] (MDE80) | adversary adds? |
+|---|---|---|---|---|---|---|
+| Tolkach | 30 | yes | **+0.064 [+0.029, +0.097] (0.049)** | `ae` beta 1e-3 dl8 lam 0 (0.881) | -0.082 [-0.127, -0.043] (0.059) | **yes (utility)** |
+| Tolkach | 100 | no | +0.044 [+0.018, +0.068] (0.036) | `ae` beta 1e-4 dl8 lam 0 (0.911) | -0.093 [-0.144, -0.045] | (not trained: not counted) |
+| Tolkach | 10 | no | +0.026 [+0.003, +0.047] (0.031) | same | -0.101 [-0.145, -0.062] | no |
+| TCGA | 10 | yes | **+0.050 [+0.016, +0.085] (0.049)** | dithered AE-base beta 1e-4 r 1 (0.776) | -0.128 [-0.154, -0.102] (0.037) | **yes (utility)** |
+| TCGA | 100 | yes | **+0.055 [+0.015, +0.099] (0.059)** | same | -0.088 [-0.115, -0.061] (0.041) | **yes (utility)** |
+| TCGA | 30 | yes | +0.021 [-0.013, +0.063] (0.056) | same | -0.022 [-0.053, +0.007] (0.041) | no |
+
+**A3 verdict (pre-registered rules): A3-DEAD for the question "does a converged adversary take the AE past the floors"; with a documented, limited attribution effect.**
+* Trained configurations exist in both cells (TCGA all three lam, Tolkach lam 30) and none wins an endpoint against the inductive envelope: Tolkach utility is ceiling-limited (headroom 0.011) and Delta is -0.03 to -0.05; TCGA utility is UNDERPOWERED (MDE80 0.056-0.083 against a +0.04 margin) with Delta -0.02 to +0.01; retention is clearly negative everywhere (-0.08 to -0.24, MDE 0.04-0.07). Held-class utility and retention verdicts of the original AE stay as they were: **utility DEAD, retention ALIVE-weak (and that retention positive belongs to the no-adversary AEs; the converged adversary REDUCES retention by 0.02-0.13 relative to them).**
+* Attribution: relative to the no-adversary AE family at matched leakage, a converged held-slide adversary raises held-class utility by +0.05 to +0.06 in 3 of 4 trained configurations (MDE 0.05-0.06): the first supported statement that an adversary changes something in this AE (the earlier "adds nothing" sentence is replaced by "with a converged held-slide adversary it adds held-class utility within the AE family at a retention cost, and not above simple projections / dithered codes"). It does not carry the AE past the floors; the floors' held-class accuracy at those leakages is 0.82-0.99.
+* Mechanism caveat: trained against slides it did not fit, the adversary sits at chance on the A3 latents, yet the evaluation attackers (fit on 12-48 slides) still reach L 0.34-0.50; the adapter-side adversary has too few slides (7-16) to certify removal. A larger A or a pooled-slide adversary would be the next lever (not run).
