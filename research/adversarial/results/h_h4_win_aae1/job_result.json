@@ -1,0 +1,24 @@
+{
+ "name": "h_h4_win_aae1",
+ "config": {
+  "name": "h_h4_win_aae1",
+  "priority": 5,
+  "cmd": "OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 PYTHONUNBUFFERED=1 $HOME/venvs/e/bin/python research/adversarial/src/h_imu/strong_attack.py --arm aae_re --rel_file $HOME/work/runs/h_b_aae_fit/aae_re_sealed.npz --rungs 0.25,0.5,1.0 --out $OUT",
+  "hf_path": "runs/h_h4_win_aae1",
+  "hf_allow": [
+   "*.json",
+   "*.log",
+   "*.md"
+  ]
+ },
+ "commit": "8ddbfa3",
+ "commit_after": "f260010",
+ "pull_ok": true,
+ "pull_note": "",
+ "exit_code": 0,
+ "gpu": 1,
+ "host": "192-222-52-237",
+ "seconds": 1101.7,
+ "finished_utc": "2026-11-05T22:50:11Z",
+ "uploaded": true
+}
