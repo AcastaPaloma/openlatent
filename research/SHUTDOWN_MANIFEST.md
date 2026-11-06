@@ -8,7 +8,7 @@ VM: ubuntu@192.222.52.237 (4x RTX A6000). Final state before clearing: 0 running
 | Code, job specs, notes, journals, audits, results (aggregates and job_result.json) | GitHub `AcastaPaloma/openlatent`, branch `fields-research` (tagged `fields-research-final-2026-11-05`) |
 | Job outputs (metrics, logs, checkpoints, JSON) for all 395 successful jobs | Hugging Face `KuanKuanKuan/openlatent-fields`, `runs/<job>`; verified 395 of 395 present; README added. Chest X-ray (`t_*`) and PII (`d_pii_*`) jobs uploaded JSON/log/md only |
 | Sealed-query ledgers and salts | in git: `research/adversarial/sealed/` (T ledger 92 entries, salts) and `results/N`, `results/N2` ledgers |
-| Trained chest X-ray models (defenders, T7 generators, verifier, classifier) and the split metadata | PRIVATE local archive on the owner's machine: `~/Me/openlatent-vm-archive-2026-11-05/` (409 MB; not in git, not on HF by licence policy) |
+| Trained chest X-ray models (defenders, T7 generators, verifier, classifier), split metadata, sealed and planted-leak records | PRIVATE only: a local copy at `~/Me/openlatent-vm-archive-2026-11-05/` (440 MB) and a PRIVATE Hugging Face repo `KuanKuanKuan/openlatent-fields-private-archive` (same files; uploaded 2026-11-05 at the owner's request). Deliberately not in git and not on the public repo: chest X-ray derived models are not published by licence policy (`docs/data_licences/WHITELIST.md`; the pretrained generator is GPL-3.0 PriCheXy-Net). Do not make that repo public without re-checking those licences |
 
 ## Deleted from the VM (regenerable from git + public data, or deliberately never published)
 | Item | Size | How to regenerate |
